@@ -1,0 +1,38 @@
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / frontend
+node_modules/
+.next/
+dist/
+build/
+coverage/
+
+# Runtime and local data
+data/
+logs/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# Agent operational artifacts
+.tasks/
+.protocols/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

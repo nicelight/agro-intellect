@@ -1,0 +1,95 @@
+---
+description: Optional shared SDD backbone pass after PRD decomposition and before feature design.
+status: active
+---
+# /spec-backbone - Shared SDD backbone
+
+<objective>
+Identify and document shared or cross-feature design backbone after `/prd` has created the full FT set and before `/spec-design FT-<NNN>`, `/spec-auto --all`, or `/prd-to-tasks`.
+
+Backbone areas include domains/data models, contracts/APIs/events, state/lifecycle, architecture boundaries, ADRs, security/compliance, persistence/migrations, runtime/runbooks, and testing strategy.
+
+`/spec-backbone` does not create TASK records, implementation plans, or feature-local designs, and it does not replace `/spec-design`.
+</objective>
+
+<process>
+
+## 0) Input and timing
+Run after `/prd`.
+
+Supported arguments:
+- no argument: inspect all current features and update only evident shared backbone
+- `--all`: same as no argument; explicit for autonomous or batch flow
+
+Skip when all targeted features are small independent T0/T1-only work with no shared design area.
+
+Run or recommend this command when:
+- multiple FT share domain, contract, state, API, security, data, runtime, migration, or testing concerns
+- any likely T2/T3 shared work exists
+- duplicate per-feature specs are likely without a shared backbone pass
+
+## 1) Evidence gate
+Read:
+- `.memory-bank/spec-index.md`
+- `.memory-bank/requirements.md`
+- `.memory-bank/epics/`
+- `.memory-bank/features/`
+- existing relevant specs under `.memory-bank/architecture/`, `.memory-bank/domains/`, `.memory-bank/contracts/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, and `.memory-bank/runbooks/`
+
+Only write evidence-backed authoritative specs. Do not invent decisions.
+
+Unknown, planned, candidate, conflicting, or missing decisions go to `.memory-bank/spec-index.md` as gaps, blockers, or open questions.
+
+## 2) Backbone scan
+Identify shared/cross-feature concerns:
+- domains and data ownership
+- contracts, APIs, schemas, events, and integration boundaries
+- state machines, lifecycle, and failure states
+- architecture boundaries and module ownership
+- ADR-worthy decisions
+- security, privacy, compliance, auth, secrets, payments, or abuse controls
+- persistence, migrations, retention, data loss, and rollback
+- runtime, operations, runbooks, observability, and deploy impact
+- testing strategy and verification targets
+
+Prefer updating an existing authoritative spec over creating a new one.
+
+## 3) Write only shared backbone artifacts
+Allowed outputs:
+- `.memory-bank/spec-index.md`
+- `.memory-bank/architecture/<topic>.md`
+- `.memory-bank/domains/<domain>.md`
+- `.memory-bank/contracts/<boundary>.md`
+- `.memory-bank/states/<lifecycle>.md`
+- `.memory-bank/adrs/ADR-<NNN>-<slug>.md`
+- `.memory-bank/testing/<topic>.md`
+- `.memory-bank/runbooks/<topic>.md`
+- affected `.memory-bank/features/FT-*.md` with SDD Design Gate notes and normative links where evidence exists
+
+Do not create:
+- `.memory-bank/tasks/*.task.json`
+- `.memory-bank/tasks/plans/*`
+- feature-local `.memory-bank/tech-specs/FT-*.md`
+- implementation plans
+
+## 4) Update routing
+Update `.memory-bank/spec-index.md`:
+- mark authoritative backbone specs and their feature/REQ scope
+- mark planned/candidate/unknown/not_applicable areas honestly
+- record blockers/open questions for missing decisions
+- avoid duplicate per-feature specs for shared concerns
+
+For affected feature docs:
+- add or update SDD Design Gate notes with normative backbone links where evidence exists
+- do not set `spec_design_status: complete` unless the feature-local `/spec-design` criteria are already fully satisfied
+- do not mark `not_required` for features that still depend on shared T2/T3 backbone decisions
+
+## 5) Handoff
+Report:
+- whether the pass ran or was skipped
+- shared backbone specs created/updated
+- affected features and normative links
+- blockers/open questions
+- next command: `/spec-design FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow
+
+</process>

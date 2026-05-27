@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "skills": {
+    "add-tests": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "922b5f5c952fdf2889e9c66d075aaeadc4cc9b142ea7e5e7c28bc3fb7bfb054d"
+    },
+    "analysis": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "64b4a562b57947320cbd620d83b4be60bd6a3af5ae4502d90d8e8f2a497be648"
+    },
+    "autonomous": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "1055645a11bb921238040ecd2a3dfc5577171e738e253ac767d798e8c0b2192d"
+    },
+    "autopilot": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "9b68e220440d3c52881a4344b7e5a9ad5023eb87a3eba5f5381dc2aac775b38f"
+    },
+    "brainstorm": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "8e31bfdf87ed17d84ff744cd7f03654bd925d7f4ac3d6ace2eeaebe487a961c0"
+    },
+    "brief": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "dc160ca20f71a9398549c8f30cf8b5bbe996f4655c547aeaf53413ea0e77f0e5"
+    },
+    "clarify-feature": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "74f3dee5e748e9cd22a500bb4d448f89b3866f4cd62b39e1d17373342027a8de"
+    },
+    "cold-start": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "e1820936194fce14440b726da23728e0839da372f9b2d08cf2b90d80990bc1e3"
+    },
+    "constitution": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "646893a0c20bc70fdbaba67353018e3ab4d909bd4c0e11ec70eeae01e23047df"
+    },
+    "discuss": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "2bc0dfd3909354956c4d27d1b6b04f22737f682df02dc6f0a273c52dbece20a2"
+    },
+    "execute": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "f4572d729386299c7298205b377c8b0faf1bb437336480af80f63d4edfa854d8"
+    },
+    "find-skills": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "fce0fe414ba0b4509f95a1008083931a4b3d8f915df3616a8b749d459cf91d5c"
+    },
+    "map-codebase": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "bdfcf512d644c82c9f40593cd43a395007cb65ae07ed682efcf9553224eb9160"
+    },
+    "mb": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "df9aba8ac69658b95636964817e58e0955dbfc41c1a36b33df563b6ca138e113"
+    },
+    "mb-analysis": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "efb92348fbdaaae1344cf37a3a14410e885df67034c27d7c072934efead622e8"
+    },
+    "mb-doctor": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "73af4da1cf029bf385808b911364ae471990ecf9759804da6f5bdf4f99900d33"
+    },
+    "mb-execute": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "1eb42d6d50467f2d1b433b0741391c96d2a4ea4c68028d79dd6f1707601cb547"
+    },
+    "mb-from-prd": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "03020d478310511a19f51d81fd5a935d99bc6207ac1ca5f7aee3720bf4635990"
+    },
+    "mb-garden": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "db6e39ad03b91b874dc9024e47070c88cc524ed4a593126a59bb46bc15d1a732"
+    },
+    "mb-harness": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "5c6427d198af179d0301d695efa4a50c144b2cfb7755506ec7614dcce77f6f05"
+    },
+    "mb-init": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "2d9241730f961a7b5271aa4737bc5e44d6aac0b7eab135e1f4751602ea361026"
+    },
+    "mb-map-codebase": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "923f3568fc7cc18d04b64029935695d65c5acf7e5791e72c71727f0cb0bdd50e"
+    },
+    "mb-red-verify": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "52a7d605b9aeaae2a18c755413fdd0da3e24830f53dcf4a19eb0d39b10f7ebed"
+    },
+    "mb-review": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "1b632f8ff29f11cf43d44b93f7aba551bb9bf9f3fd8ae0540394dbb29e7b4e00"
+    },
+    "mb-sync": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "614c9cec903e278946cc4d702fd2e69c9896f75e586950202deb929b966eeb19"
+    },
+    "mb-verify": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "e1bc58fdd0f1a742dde37f645bab653655e970c68057c65f74084e865e567ed0"
+    },
+    "prd": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "66fd9e7c2227d8fe47d5fc9657c3d3e9203cc6f605b0508c53ab2d9697a310a8"
+    },
+    "prd-to-tasks": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "10371060d265bf74de929ce0ca174a64c9be151c30f4d706c682c62649d469b2"
+    },
+    "red-verify": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "73662ebd09fcfbb32de3e825a36d3254d87d17d39afb8a0533de6e55516bbc5e"
+    },
+    "review": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "90c706f358e0662371381613dc749a4ec6044df0413fda1527bb2dd2c7dc5075"
+    },
+    "spec-auto": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "998fdc6e517a264d3637230bce35552e9fcbb54477e0e94e56cdf2068687b400"
+    },
+    "spec-design": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "306f2fc998c3ea1f018d32ff0e0d9ea0c4a7d2d14849be2723128aac5f44e07c"
+    },
+    "spec-init": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "e82dab75d544345ee07b18dcd3d5fd50f3475260199baeb884ccb97b648c311d"
+    },
+    "verify": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "a5c66e5470f9dfccfc972fbbe42888237ecca1853b0561c7d7b0a62cc1dd9d9f"
+    },
+    "write-prd": {
+      "source": "/tmp/memobank-skills-GgWV7C/repo",
+      "sourceType": "local",
+      "computedHash": "3652c4d3ab72618af2cae72da70961c89712c61715f95340f93eb4719b9d11ba"
+    }
+  }
+}
