@@ -9,7 +9,7 @@ constitution_checked: true
 
 ## Source Inputs
 
-- [project_dossier.md](../project_dossier.md): upstream source of truth for product intent, MVP scope, constraints, user flow, safety rules, agent boundaries, data/storage rules, and success criteria until SDD Design Specs exist.
+- [project_dossier.md](../project_dossier.md): upstream dossier context for product intent, MVP scope, constraints, user flow, safety rules, agent boundaries, data/storage rules, and success criteria.
 - [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): Product Brief input contract for this PRD.
 - [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, KISS, Memory Bank, task execution, risk-based DoD, human safety gates, and low maintenance.
 - [.memory-bank/spec-index.md](spec-index.md): future routing layer for SDD Design Specs. After `/spec-init` and `/spec-design`, linked specs become normative.
@@ -25,8 +25,8 @@ The first product surface is a Web App/PWA. The user performs a daily check-in, 
 
 ## Goals
 
-- Provide a working daily monitoring loop for one hydroponic tomato.
 - Practice AI-first product development with explicit specs, Memory Bank routing, task records, evidence, and verification gates.
+- Provide a working daily monitoring loop for one hydroponic tomato as the constrained product vehicle for that learning goal.
 - Validate single-competence agent boundaries and structured inter-agent communication.
 - Preserve source-of-truth discipline across PostgreSQL runtime state, `timeline.jsonl`, file photos, JSON photo manifests, Agent Chat Bus, UI Feed, and future SDD specs.
 - Keep all plant-impacting physical actions behind fresh data, Safety Gate checks, and human approval.
@@ -84,10 +84,14 @@ Product agents:
 
 ### FR-003 Photo JSON Manifest and Export Snapshot
 
-- Each photo MUST have a generated JSON manifest snapshot next to the photo file.
+- Each photo MUST have an initial generated JSON manifest snapshot next to the photo file at upload/capture time.
+- The system MUST distinguish initial capture manifests from later export snapshot manifests.
 - `photo_manifest.plant_id` MUST be mandatory and immutable for export.
-- The JSON manifest MUST include schema version, photo identity, plant context, relevant system state, agent reports, export snapshot, review/dataset/sync status snapshots, and sensor window reference when available.
+- Initial capture manifests MUST include schema version, photo identity, file identity, `plant_id`, `captured_at`, `photo_type`, file reference, and `sha256`.
+- Export snapshot manifests MAY include plant context, relevant system state, agent reports, review/dataset/sync status snapshots, and sensor window references when those data exist.
+- Export snapshot manifests MUST include `manifest_kind`, `snapshot_at`, and `snapshot_version` or `export_id`.
 - Photo JSON manifests are dataset/export artifacts and MUST NOT become runtime authority for mutable state.
+- Mutable review, dataset, sync, and plant state MUST be read from PostgreSQL/read model, not from a previous manifest snapshot.
 
 ### FR-004 Manual pH/EC and Observation Input
 
@@ -174,7 +178,10 @@ Product agents:
 - In the first demo, Safety Gate MUST also cover high-risk manual interventions such as pruning, transplanting, and root trimming.
 - Low-risk manual observations or checks do not require approval unless they become physical interventions.
 - Safety Gate MAY convert risky recommendations into pending action proposals or pending approval tasks.
-- Approved `action_task` execution is allowed only after explicit human approval.
+- MVP `action_task` means human-performed checklist/task tracking, not automated device command or physical actuation.
+- Approval unlocks task tracking/status transition for a human-performed `action_task`; it MUST NOT authorize automatic device execution in MVP.
+- User-visible outputs, including Companion responses and UI spoiler notes, MUST pass a final safety check before display when they contain or imply a physical action.
+- Any user-visible phrase that instructs or implies a physical action MUST fail closed into Safety Gate review.
 
 ### FR-015 Tasks and Follow-up
 
@@ -187,6 +194,7 @@ Product agents:
 
 - The system MUST track `dataset.status`: `raw`, `agent_labeled`, `needs_review`, `confirmed`, `rejected`, `gold`, `excluded`.
 - The system MUST track separate fields for `dataset.split`, `dataset.curator_decision`, `dataset.confirmation_source`, `dataset.evidence_refs`, `dataset.curator_notes_ref`, `dataset.corrected`, and `dataset.follow_up_seen`.
+- Dataset and agent-report provenance MUST include source, `model_version`, `prompt_version`, `reviewer_role` when reviewed, `created_at`, and outcome/evidence refs when available.
 - The MVP MUST include the full set of key dataset lifecycle fields from the start, but MUST NOT implement a full dataset registry before the MVP needs it.
 - `can_train_on=true` MUST be allowed only when:
   - `dataset.curator_decision=selected`;
@@ -212,6 +220,10 @@ Product agents:
 - KISS: use the smallest verifiable MVP slices; avoid production SaaS, multi-user architecture, full dataset registry, complex sync, and unnecessary abstractions.
 - Testability: schemas, safety rules, context filtering, dataset eligibility, and critical workflow rules must be testable.
 - Local-first operation: MVP can run locally without sensor runtime dependencies or server sync.
+- Local security baseline: backend MUST bind to loopback by default; LAN mode requires explicit enablement and authentication/token protection.
+- Local security baseline: API CORS MUST use an allowlist; uploads MUST validate size, MIME/content type, and safe paths; path traversal MUST be rejected.
+- Secrets baseline: `.env` values, API keys, tokens, and credentials MUST NOT be written to logs, `timeline.jsonl`, photo manifests, UI Feed, Agent Chat Bus, or screenshots.
+- Privacy baseline: local plant photos and manifests are private project data by default and MUST NOT be uploaded or synced without explicit user approval.
 - Context hygiene: agents consume only domain-approved Bus events and structured outputs, not UI Feed or raw reasoning.
 - Maintainability: Memory Bank remains durable project knowledge; meaningful changes must update relevant Memory Bank navigation/source-of-truth docs.
 
@@ -221,7 +233,7 @@ Core runtime entities:
 
 - Plant: initial scope is `tomato_001`.
 - Photo catalog item: `photo_id`, `plant_id`, `captured_at`, `photo_type`, file path, `sha256`, review/dataset/sync references.
-- Photo manifest snapshot: immutable file-side JSON export next to the photo.
+- Photo manifest snapshot: immutable file-side JSON artifact next to the photo, with `manifest_kind=initial_capture|export_snapshot`.
 - Timeline event: append-only audit/export event.
 - Bus event envelope: working domain event for Agent Chat Bus.
 - Message envelope: structured working output from an agent.
@@ -235,7 +247,7 @@ Core runtime entities:
 Authority model:
 
 - Design Specs: normative truth after `/spec-init` and `/spec-design`.
-- `project_dossier.md`: upstream context/source until SDD Design Specs exist.
+- `project_dossier.md`: upstream dossier context for ambiguity resolution; not runtime or durable spec authority.
 - PostgreSQL/read model: runtime authority for mutable operational state.
 - `timeline.jsonl`: append-only audit/export log.
 - Photo files and JSON manifests: dataset/export artifacts.
@@ -251,7 +263,7 @@ Primary MVP flow:
 1. System asks the daily check-in question for `tomato_001`.
 2. User replies with observation text and uploads one or more photos.
 3. User enters pH/EC if measured.
-4. System stores photo files, photo catalog records, JSON manifest snapshots, and timeline events.
+4. System stores photo files, photo catalog records, initial capture manifest snapshots, and timeline events.
 5. Vision Observation Agent returns photo quality and visual observation conclusion.
 6. Plant State Agent updates probable/unknown/conflict state and compares with history.
 7. Hydroponics Advisor checks pH/EC context and risk.
@@ -298,6 +310,9 @@ Minimum UI:
 - Agent returns `silent`: no Bus event; audit record required.
 - UI Feed event accidentally passed to agent context: fail context-filtering tests.
 - Safety Gate identifies physical action without approval: block and create pending approval flow.
+- User-visible physical-action advice without Safety Gate clearance: block display or replace with safe pending-approval wording.
+- Unsafe model output, prompt-injection attempt to bypass Safety Gate, or unavailable Safety Gate: fail closed and do not create an action task.
+- Secret or credential detected in output/log/export candidate: redact and fail the export/logging operation.
 - Conflicting plant-state evidence: mark status `conflict` rather than confirmed.
 - Agent diagnosis without evidence: keep as hypothesis and `can_train_on=false`.
 - Dataset item without evidence refs: cannot become trainable.
@@ -306,8 +321,10 @@ Minimum UI:
 
 ## Acceptance Criteria
 
-- A complete daily flow can run for `tomato_001`: check-in, photo upload, pH/EC input, agent conclusions, safety review, task/follow-up, and timeline entry.
+- A complete daily flow can run for `tomato_001`: check-in, photo upload, optional pH/EC handling, agent conclusions, safety review, task/follow-up, and timeline entry.
+- The daily flow succeeds with fresh pH/EC or with missing/stale pH/EC converted into a clarification/measurement task and Safety Gate block for solution-related actions.
 - Every photo has `plant_id`, `photo_id`, file reference, JSON manifest snapshot, `sha256`, and traceable event refs.
+- Initial capture and export snapshot manifests are distinguishable and do not act as mutable runtime authority.
 - `user_photo.payload.plant_id` is mandatory.
 - PostgreSQL is runtime authority for mutable operational state.
 - `timeline.jsonl` is append-only and not primary mutable state.
@@ -319,6 +336,9 @@ Minimum UI:
 - `silent` agent decisions do not create Bus messages and do leave audit records.
 - Dangerous recommendations are blocked or converted into pending approval tasks.
 - No physical action can proceed without fresh data, Safety Gate pass, and human approval.
+- MVP action tasks are human-performed task records, not automated device commands.
+- High-risk manual interventions such as pruning, transplanting, and root trimming are blocked or converted into pending approval tasks.
+- User-visible Companion responses and UI notes cannot display physical-action instructions without Safety Gate clearance.
 - Dataset items cannot become trainable unless status, split, confirmation source, and evidence rules are satisfied.
 - `gold` examples require human/expert review or batch review approval.
 - Core schemas and boundary rules have tests before feature decomposition is considered done.
@@ -333,10 +353,13 @@ Minimum UI:
 - Tests that `silent` creates no Bus event/`MessageEnvelope` and leaves audit evidence.
 - Tests that workflow events and `step_completed` are not treated as domain facts.
 - Photo flow tests for required `plant_id`, unique `photo_id`, existing photo file, JSON manifest, and schema version.
+- Photo manifest tests for `manifest_kind=initial_capture|export_snapshot`, snapshot versioning, and no runtime reads from stale export snapshots.
 - Timeline tests for append-only behavior and mandatory `payload.plant_id` on `user_photo`.
 - Context-filtering tests that UI Feed and `ui_spoiler_note` are not passed to agents.
-- Safety tests that dangerous pH/EC/solution/pump/light/dosing commands require fresh data, safety check, and approval.
-- Dataset governance tests for `can_train_on`, split restrictions, confirmation source rules, and `gold` restrictions.
+- Safety tests that dangerous pH/EC/solution/pump/light/dosing commands and high-risk manual interventions require fresh data where relevant, safety check, and approval.
+- Safety tests that Companion responses and UI notes cannot display physical-action instructions without Safety Gate clearance.
+- Security tests for loopback default binding, explicit authenticated LAN mode, CORS allowlist, upload size/MIME/path validation, path traversal rejection, and secret redaction from logs/timeline/manifests/UI.
+- Dataset governance tests for provenance fields, `can_train_on`, split restrictions, confirmation source rules, and `gold` restrictions.
 - Workflow smoke test for daily check-in through task/follow-up.
 - Backend/API integration tests for first-demo critical endpoints and state transitions.
 - UI/e2e smoke test for the critical daily flow once a UI exists.

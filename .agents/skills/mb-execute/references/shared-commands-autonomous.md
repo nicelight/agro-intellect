@@ -7,7 +7,7 @@ status: active
 <objective>
 Запустить **полный автономный цикл** без ожидания пользователя:
 - intake Product Brief / PRD / delta
-- SDD Design Specs initialization, optional backbone, and feature design
+- SDD Design Specs initialization, mandatory adaptive backbone, and feature design
 - построение L1–L3
 - PRD-level ambiguity closure
 - декомпозиция всех FT в schema-backed JSON TASK records
@@ -76,7 +76,7 @@ Default pre-queue health check:
 3) Если `.memory-bank/prd.md` отсутствует или не имеет `clarification_status: complete` + `constitution_checked: true`, запусти `/write-prd`.
 4) Запусти `/spec-auto --init` after `/write-prd` and before `/prd`.
 5) Построй L1–L3 через `/prd`.
-6) Запусти `/spec-backbone --all` when multiple FT share domain/contract/state/API/security/data/runtime/testing concerns, any likely T2/T3 shared work exists, or duplicate per-feature specs are likely. Skip for independent T0/T1-only features.
+6) Запусти `/spec-design --all`. For simple independent T0/T1-only features it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved decisions it must record blockers and stop downstream.
 7) Запусти `/spec-auto --all` before `/prd-to-tasks --all`.
 8) Если есть пробелы:
    - **non-blocking** → зафиксируй в `.protocols/AUTONOMOUS-RUN/decision-log.md` как `Assumption`
@@ -93,12 +93,13 @@ Default pre-queue health check:
 ## 5) Feature preflight перед декомпозицией
 Перед `/prd-to-tasks --all` проверь targeted features.
 Missing feature clarification metadata is valid and must not block decomposition by itself.
+`/spec-design --all` must have produced global backbone status `complete` or `minimal` before `/spec-auto --all`.
 `/spec-auto --all` must already have assigned each targeted feature `spec_design_status: complete|not_required|blocked`.
-If shared backbone concerns exist, `/spec-backbone --all` must have run or recorded a skip rationale before `/spec-auto --all`.
 
 Block `/prd-to-tasks --all` when any targeted feature has:
 - explicit `clarification_status: pending|blocked`
 - `spec_design_status: blocked`
+- missing or `blocked` global backbone status
 - likely T2/T3 work with missing/incomplete `spec_design_status` or missing linked SDD specs
 - unresolved markers that affect decomposition, acceptance criteria, dependencies, verification, security/compliance, external contracts, data migration, or data-loss risk
 
@@ -109,7 +110,7 @@ Block `/prd-to-tasks --all` when any targeted feature has:
 - never invoke `/clarify-feature` automatically in autonomous mode; it is a manual or explicit follow-up command for feature blockers
 - missing clarification metadata is not a blocker
 - do not bypass `/spec-auto`; if T2/T3 work lacks linked SDD specs, record the blocker and stop before `/prd-to-tasks --all`
-- do not bypass `/spec-backbone` when shared T2/T3 design decisions are needed; record the blocker and stop before `/prd-to-tasks --all`
+- do not bypass `/spec-design`; missing or blocked backbone status stops before `/prd-to-tasks --all`
 - продолжай только когда no targeted feature is explicitly pending/blocked and no unresolved marker blocks decomposition
 
 ## 6) Декомпозиция всех фич

@@ -29,12 +29,12 @@ status: active
 
 Выбор:
 - **Если есть код** → это **brownfield** → сначала запусти `/map-codebase` для as-is baseline.
-- **Если есть и код, и PRD / product brief / clear delta** → сначала `/map-codebase`, затем если project principles не ratified/partial рекомендуй `/constitution`, потом `/write-prd`, `/spec-init`, `/prd`, optional `/spec-backbone`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>` как delta.
-- **Если кода почти нет и есть PRD** → это **greenfield with existing PRD** → если project principles не ratified/partial, рекомендуй `/constitution`, затем перенеси/нормализуй PRD через `/write-prd`, затем `/spec-init`, `/prd`, optional `/spec-backbone`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
-- **Если кода почти нет и есть `.memory-bank/analysis/product-brief.md`** → если project principles уже `ratified|partial`, переходи к `/write-prd`; иначе рекомендуй `/constitution`, затем `/write-prd`, `/spec-init`, `/prd`, optional `/spec-backbone`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
-- **Если кода почти нет и концепт ясен, но PRD нет** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, optional `/spec-backbone`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
+- **Если есть и код, и PRD / product brief / clear delta** → сначала `/map-codebase`, затем если project principles не ratified/partial рекомендуй `/constitution`, потом `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>` как delta.
+- **Если кода почти нет и есть PRD** → это **greenfield with existing PRD** → если project principles не ratified/partial, рекомендуй `/constitution`, затем перенеси/нормализуй PRD через `/write-prd`, затем `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
+- **Если кода почти нет и есть `.memory-bank/analysis/product-brief.md`** → если project principles уже `ratified|partial`, переходи к `/write-prd`; иначе рекомендуй `/constitution`, затем `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
+- **Если кода почти нет и концепт ясен, но PRD нет** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
 - **Если кода почти нет и идея сырая / направление нестабильно** → запусти `/analysis`; `/analysis` должен направить в `/brainstorm` или `/brief`.
-- **Если есть brainstorming artifact, но нет product brief и PRD** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, optional `/spec-backbone`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
+- **Если есть brainstorming artifact, но нет product brief и PRD** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
 - **Если нет кода и нет PRD / clear concept / analysis artifacts** → это **skeleton-only**: попроси пользователя предоставить PRD, product brief или хотя бы требования текстом и остановись.
 
 ## 2) Правила (важно)
@@ -53,13 +53,13 @@ status: active
 - Product Brief — upstream input contract для `/constitution` и `/write-prd`, а не PRD, backlog или task plan.
 - `/constitution` — нормальный greenfield step после Product Brief / existing PRD context и перед `/write-prd`, если project principles ещё не `ratified|partial`. Он должен читать Product Brief, если тот есть, и провести contextual interview.
 - `/constitution` не hard-blocker: если пользователь явно пропускает interview, продолжай downstream с `project_principles: framework-default|skipped` и предложи вернуться позже.
-- `/cold-start` никогда не рекомендует `/prd-to-tasks` напрямую. Канонический downstream: optional `/constitution` when project principles are not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → optional `/spec-backbone` → `/spec-design FT-<NNN>` → `/prd-to-tasks FT-<NNN>`.
+- `/cold-start` никогда не рекомендует `/prd-to-tasks` напрямую. Канонический downstream: optional `/constitution` when project principles are not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → `/spec-design` → `/spec-improve FT-<NNN>` → `/prd-to-tasks FT-<NNN>`.
 - `/prd-to-tasks` must not run while PRD clarification is pending/blocked or a targeted feature is explicitly pending/blocked.
 
 ## 3) После запуска флоу
 После `/prd` или `/map-codebase`:
 - запусти `/review` (fresh context)
-- interactive: если есть shared design concerns, пройди `/spec-backbone`; выбери фичу, при необходимости пройди `/clarify-feature FT-<NNN>`, затем `/spec-design FT-<NNN>`, `/prd-to-tasks FT-<NNN>` и выполняй задачи через `/execute` → `/verify` → `/red-verify` (если задача T2/T3) → `/mb-sync`
+- interactive: после `/prd` всегда пройди `/spec-design`; для simple T0/T1 scope запиши minimal status с explicit `not_applicable` areas; выбери фичу, при необходимости пройди `/clarify-feature FT-<NNN>`, затем `/spec-improve FT-<NNN>`, `/prd-to-tasks FT-<NNN>` и выполняй задачи через `/execute` → `/verify` → `/red-verify` (если задача T2/T3) → `/mb-sync`
 - JSON task queue unattended: используй `/autopilot`
 - full unattended (`PRD → done`): используй `/autonomous`
 </process>

@@ -29,11 +29,11 @@ req_ids: [REQ-XXX]
 - Contracts / states / runbooks / testing docs: ...
 
 ## SDD Design Gate
-- Run `/spec-design FT-XXX` before `/prd-to-tasks FT-XXX`.
-- When `/spec-design` sets `spec_design_status: complete`, linked specs must be listed in `spec_design_links`.
-- If feature-level design is not needed, `/spec-design` may set `spec_design_status: not_required` with a short rationale.
-- If design is blocked, `/spec-design` sets `spec_design_status: blocked` and records the blocker.
-- Until `/spec-design` or an authoritative existing design establishes one of those outcomes, omit `spec_design_status`.
+- Run `/spec-improve FT-XXX` before `/prd-to-tasks FT-XXX`.
+- When `/spec-improve` sets `spec_design_status: complete`, linked specs must be listed in `spec_design_links`.
+- If feature-level design is not needed, `/spec-improve` may set `spec_design_status: not_required` with a short rationale.
+- If design is blocked, `/spec-improve` sets `spec_design_status: blocked` and records the blocker.
+- Until `/spec-improve` or an authoritative existing design establishes one of those outcomes, omit `spec_design_status`.
 
 ## Constraints / invariants (optional)
 - MUST: ...

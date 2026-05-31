@@ -79,7 +79,7 @@ The product uses single-competence agents: Companion, Vision Observation, Plant 
 
 ## 10. Constraints
 
-- `project_dossier.md` is the upstream source of truth until Design Specs exist.
+- `project_dossier.md` is upstream dossier context for the brief.
 - After `/spec-init` and `/spec-design`, `.memory-bank/spec-index.md` and linked specs become normative.
 - PostgreSQL/read model is runtime authority for mutable operational state.
 - Photo files plus generated JSON snapshots are dataset/export artifacts, not mutable runtime authority.

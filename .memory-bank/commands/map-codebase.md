@@ -47,9 +47,9 @@ status: active
 - раздели facts vs inferences
 
 5) Попроси у пользователя PRD delta (что хотим изменить).
-   - Если delta уже оформлена как PRD — `/constitution`, если principles не ratified/partial, затем `/write-prd --delta`, `/spec-init`, `/prd`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
-   - Если delta ясна, но PRD нет — сначала `/brief`, затем `/constitution`, если principles не ratified/partial, затем `/write-prd`, `/spec-init`, `/prd`, `/spec-design FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
+   - Если delta уже оформлена как PRD — `/constitution`, если principles не ratified/partial, затем `/write-prd --delta`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
+   - Если delta ясна, но PRD нет — сначала `/brief`, затем `/constitution`, если principles не ratified/partial, затем `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>` и `/prd-to-tasks FT-<NNN>`.
    - Если delta сырая / направление нестабильно — сначала `/analysis` или `/brainstorm`.
-   - Не переходи напрямую к `/prd-to-tasks`; для planning delta сначала нужен `/write-prd`, `/spec-init`, `/prd` и `/spec-design FT-<NNN>`.
+   - Не переходи напрямую к `/prd-to-tasks`; для planning delta сначала нужен `/write-prd`, `/spec-init`, `/prd`, `/spec-design` и `/spec-improve FT-<NNN>`.
 6) Запусти `/review`.
 </process>

@@ -1,122 +1,136 @@
 ---
-description: Design one feature against the SDD Design Specs Index before task decomposition.
+description: Mandatory global SDD architecture backbone gate after PRD decomposition and before feature design.
 status: active
 ---
-# /spec-design - Feature-level SDD design
+# /spec-design - Global SDD backbone gate
 
 <objective>
-Design the minimum necessary spec surface for one feature before `/prd-to-tasks`.
+Create or update the mandatory global architecture/design backbone after `/prd` has created the FT set and before `/spec-improve FT-<NNN>`, `/spec-auto --all`, or `/prd-to-tasks`.
 
-`/spec-design FT-<NNN>` checks existing specs first, finds gaps/contradictions, asks focused questions when needed, updates only necessary design artifacts, and marks the target feature with `spec_design_status`.
+The gate is mandatory by workflow, but adaptive by depth:
+- simple T0/T1 projects create a minimal backbone and mark irrelevant areas `not_applicable`;
+- projects with shared/T2/T3 concerns get staged architecture decisions and normal backbone specs;
+- unresolved key decisions are recorded as blockers and downstream commands must stop.
+
+`/spec-design` does not create TASK records, implementation plans, or feature-local tech specs, and it does not replace `/spec-improve`.
 </objective>
 
 <process>
 
-## 0) Input
-Expected `$ARGUMENTS`:
-- `FT-<NNN>`
+## 0) Input and timing
+Run after `/prd`.
 
-Run after `/prd` and before `/prd-to-tasks FT-<NNN>`.
-If `/spec-backbone` already produced shared specs, consume those normative links instead of duplicating them.
+Supported arguments:
+- no argument: inspect all current features and update the global backbone
+- `--all`: same as no argument; explicit for autonomous or batch flow
 
-If the argument is missing, ask the user to choose one feature.
+Required inputs:
+- `.memory-bank/spec-index.md`
+- `.memory-bank/requirements.md`
+- `.memory-bank/epics/`
+- `.memory-bank/features/`
+- existing relevant specs under `.memory-bank/architecture/`, `.memory-bank/guides/`, `.memory-bank/domains/`, `.memory-bank/contracts/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, and `.memory-bank/runbooks/`
 
-## 1) Read existing design surface first
-Before creating any new spec:
-1. Read `.memory-bank/spec-index.md`.
-2. Read the target `.memory-bank/features/FT-<NNN>-*.md`.
-3. Read linked epic, requirements, Constitution, and any existing specs routed by the index.
-4. Search existing `.memory-bank/architecture/`, `.memory-bank/tech-specs/`, `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, and `.memory-bank/runbooks/` for overlapping decisions.
+Never skip the command. For small independent T0/T1-only scope, write the minimal backbone status and mark non-applicable areas instead of expanding architecture.
 
-Rule: do not create a new spec before checking existing specs through the index.
-If several features need the same missing domain/contract/state/API/security/data/runtime decision, stop and route to `/spec-backbone` instead of creating duplicate feature-local specs.
+## 1) Backbone status gate
+Update `.memory-bank/spec-index.md` with a clear global backbone status:
+- `complete`: shared/global decisions are recorded and no blocker remains
+- `minimal`: project is simple/T0-T1 oriented; unnecessary areas are explicitly `not_applicable`
+- `blocked`: key architecture decisions are unresolved
 
-## 2) Decide required design depth
-Classify what the feature needs:
-- none: simple T0/T1-like work with no runtime, contract, state, data, security, migration, or cross-module design impact
-- feature hub only: a small `.memory-bank/tech-specs/FT-<NNN>-<slug>.md` is enough
-- linked specs: update or create specific architecture/contracts/domains/states/ADR/testing/runbook docs
+If status is `blocked`, stop downstream work. Record:
+- unresolved decision
+- affected features/requirements
+- why a conservative assumption would be unsafe
+- next question or owner needed
 
-If simple, mark the feature:
+## 2) Phase A - staged architecture decision interview
+Do not use a long questionnaire. Ask one question at a time with 2-3 options, a preferred option, and a short rationale. After each answer, record a summary in `.memory-bank/spec-index.md` or the relevant ADR/spec.
 
-```yaml
-spec_design_status: not_required
-spec_design_links: []
-```
+Confirm or choose only decisions that affect the current PRD:
+- monolith vs split services
+- persistence strategy
+- API style
+- frontend/backend boundary
+- event model
+- schema strategy
+- deployment assumptions
+- testing gates
 
-Add a concise rationale in the feature doc and update `.memory-bank/spec-index.md`.
+For simple/T0-T1 projects, prefer conservative defaults such as modular monolith, local/simple persistence, no event bus, no separate HTTP boundary, and minimal testing gates when supported by PRD evidence. Mark unrelated areas `not_applicable`.
 
-## 3) Problem scan
-Before writing specs, explicitly look for:
-- duplicate or conflicting existing specs
-- inconsistent boundaries, contracts, state transitions, or data ownership
-- hidden coupling or complexity growth
-- unclear acceptance criteria that would make tasks unverifiable
-- security/compliance/runtime risks
-- places where tests could pass while substance remains wrong
+In autonomous mode, do not ask questions. Record conservative assumptions only when they are reversible and safe; otherwise set backbone status `blocked`.
 
-Do not hide complexity growth. Report it and explain the tradeoff.
+## 3) Phase B - write initial global specs
+Write or update only relevant backbone artifacts:
+- `.memory-bank/spec-index.md`
+- `.memory-bank/architecture/system-architecture.md` with Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
+- `.memory-bank/architecture/source-of-truth.md`
+- `.memory-bank/architecture/module-boundaries.md`
+- `.memory-bank/domains/runtime-data-model.md`
+- `.memory-bank/contracts/api-guidelines.md`
+- `.memory-bank/contracts/http-api.md` or `.memory-bank/contracts/openapi.md` only when a separate HTTP boundary spec is needed
+- `.memory-bank/contracts/agent-chat-bus.md` if agent/event/chat boundary exists
+- `.memory-bank/contracts/message-envelope.md` if messages/events/envelopes exist
+- `.memory-bank/guides/frontend-component-guide.md` if frontend component system/design behavior is in scope
+- `.memory-bank/glossary.md`
+- `.memory-bank/invariants.md`
+- `.memory-bank/testing/*`
+- `.memory-bank/adrs/*` for stable architecture decisions
 
-## 4) Interview gate
-If design is blocked or multiple meaningful options exist, ask the user.
+Keep output conservative. Prefer updating an existing authoritative spec over creating a new one.
+
+Do not create:
+- `.memory-bank/tasks/*.task.json`
+- `.memory-bank/tasks/plans/*`
+- feature-local `.memory-bank/tech-specs/FT-*.md`
+- implementation plans
+- separate diagrams folders; diagrams belong as Mermaid sections in `.memory-bank/architecture/system-architecture.md`
+
+## 4) OpenAPI policy
+OpenAPI is not the source of truth for the whole system.
 
 Rules:
-- notify the user about the concrete problem first
-- provide options with rationale, like `/write-prd`
-- maximum 5 questions per pass
-- ask only questions needed to make the spec truthful
-- if contradiction or major complexity increase exists, stop until resolved
+- backend schemas such as FastAPI/Pydantic, or equivalent stack schemas, should generate OpenAPI when that stack exists or is selected
+- `.memory-bank/contracts/api-guidelines.md` defines naming, status codes, error format, auth, CORS, upload, pagination, and compatibility rules
+- OpenAPI covers only frontend/backend HTTP API
+- agent/domain/event/state/safety contracts live in separate specs
+- do not write a large hand-written `openapi.yaml` before architecture design
+- gate: generated OpenAPI validates and critical endpoints have integration/contract tests
 
-## 5) Write only necessary artifacts
-Allowed artifacts:
-- feature design hub: `.memory-bank/tech-specs/FT-<NNN>-<slug>.md`
-- architecture notes: `.memory-bank/architecture/<topic>.md`
-- contracts: `.memory-bank/contracts/<boundary>.md`
-- domain/data model notes: `.memory-bank/domains/<domain>.md`
-- states: `.memory-bank/states/<lifecycle>.md`
-- ADRs for significant decisions: `.memory-bank/adrs/ADR-<NNN>-<slug>.md`
-- testing/runbooks when needed: `.memory-bank/testing/`, `.memory-bank/runbooks/`
+## 5) Phase C - targeted follow-up interviews
+While writing boundary/data/testing specs, ask follow-up questions only for unresolved branch decisions that block truthful specs.
 
-Keep KISS:
-- update existing specs when that is the natural home
-- do not fork duplicate specs
-- do not add schema, migration, hook, or governance machinery just for design routing
-- write decisions, constraints, invariants, and verification targets only when grounded in PRD/user/spec evidence
-- use backbone specs from `/spec-backbone` as normative inputs when they exist
+Examples:
+- the data model needs retention or migration rules not present in PRD
+- HTTP API exists but auth/error/upload behavior is undecided
+- event/message boundary exists but envelope or ordering rules are undecided
+- frontend component behavior is normative but ownership/design system source is unclear
 
-## 6) Update routes and feature metadata
+If the answer is unavailable and a safe assumption is not possible, mark backbone status `blocked` and stop.
+
+## 6) Update routing
 Update `.memory-bank/spec-index.md`:
-- route the feature to linked specs
-- mark statuses as authoritative/planned/candidate/unknown/not_applicable
-- record gaps/open questions
+- source-of-truth hierarchy
+- global backbone status and blockers
+- baseline backbone specs and their scope
+- authoritative/planned/candidate/unknown/not_applicable areas
+- feature-to-backbone routing
+- expected spec locations
 
-Invariant for `spec_design_status: complete`:
-- set `complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
-- do not set `complete` while any feature-relevant design area remains planned, candidate, unknown, conflicting, or otherwise unresolved
-- if unresolved feature-relevant planned/candidate/unknown/conflicting areas remain, set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in `.memory-bank/spec-index.md`
-
-Update target feature frontmatter:
-
-```yaml
-spec_design_status: complete
-spec_design_links:
-  - .memory-bank/tech-specs/FT-<NNN>-<slug>.md
-```
-
-Allowed statuses:
-- `complete`
-- `not_required`
-- `blocked`
-
-Use `blocked` only when design cannot be made truthful without user or external evidence.
+For affected feature docs:
+- add SDD Design Gate notes with normative backbone links where evidence exists
+- do not set `spec_design_status: complete` unless feature-local `/spec-improve` criteria are already fully satisfied
+- do not mark `not_required` for features that still depend on shared T2/T3 backbone decisions
 
 ## 7) Handoff
 Report:
-- target feature
-- `spec_design_status`
-- linked specs
-- gaps/open questions
-- complexity or contradiction notes
-- expected next command: `/prd-to-tasks FT-<NNN>`
+- backbone status: `complete`, `minimal`, or `blocked`
+- specs created/updated
+- not_applicable areas and rationale for simple projects
+- affected features and normative links
+- blockers/open questions
+- next command: `/spec-improve FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow
 
 </process>

@@ -56,7 +56,7 @@ Manual mode:
 - Quality gates were already run (or failures were recorded).
 - For non-trivial tasks, `mb-verify` should usually run first.
 - The indexed task record contains `tier`. Authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid.
-- For `T2` / `T3`, linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`; if absent, stop and route back to `/spec-design` or `/spec-auto`.
+- For `T2` / `T3`, linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`; if absent, stop and route back to `/spec-improve` or `/spec-auto`.
 - In scheduler mode, `T2` / `T3` require this pass before scheduler marks `done`.
 - In manual mode, this pass is required for `T2` / `T3` after `mb-verify PASS` and before final closure/`/mb-sync`; `T0` / `T1` usually skip it unless their real scope grew beyond the recorded tier.
 - `T0` / `T1` usually skip it unless scope has grown and the tier is updated first.

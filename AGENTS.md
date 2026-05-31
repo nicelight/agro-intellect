@@ -32,6 +32,10 @@ Every ORCHESTRATOR response must start with:
 - Run `node scripts/mb-lint.mjs` and `/mb-doctor` where task records or Memory Bank routing change.
 - Run `/mb-doctor --strict` before autonomous/autopilot task selection.
 
+### Engineering Discipline
+- Разработку ведём по KISS: выбираем самое простое решение, которое удовлетворяет текущим specs, acceptance criteria и constraints.
+- Do not overengineering: не добавлять speculative abstractions, лишние слои, premature generalization или broad rewrites вне текущего scope.
+
 ### Delegation
 - ORCHESTRATOR delegates implementation, tests, verification, and review to subagents.
 - ORCHESTRATOR may delegate research, inspection, and context gathering to preserve context window.
@@ -110,11 +114,12 @@ Claude (fresh session):
 - `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123. Read AGENTS.md + task record + tier-policy. Use tier-appropriate .protocols/TASK-123/ state. Implement. Record evidence. Report → .tasks/TASK-123/…'`
 
 ## Two modes (interactive vs autonomous)
-- **Interactive**: target chain is `/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> optional /spec-backbone -> /spec-design FT-001 -> /prd-to-tasks FT-001 -> /execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T2/T3 -> /mb-sync`.
-- Use `/spec-backbone` after `/prd` when the feature set exposes shared T2/T3 backbone concerns; it does not replace per-feature `/spec-design FT-001`.
+- **Interactive**: target chain is `/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-001 -> /prd-to-tasks FT-001 -> /execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T2/T3 -> /mb-sync`.
+- Feature-level route template: `/write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>`.
+- Run `/spec-design` after `/prd` as the mandatory global/backbone SDD gate; it precedes and does not replace feature-level `/spec-improve FT-001`.
 - Use `/brainstorm` before `/brief` only when the idea is raw.
 - Use `/clarify-feature FT-001` only for explicit feature blockers before `/prd-to-tasks`.
-- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init` after `/write-prd` and `/spec-auto --all` after `/prd`. Use `/autopilot` only if JSON task records and required SDD spec links already exist. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
+- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init` after `/write-prd`, then global `/spec-design --all` after `/prd`, then `/spec-auto --all` before `/prd-to-tasks --all`. Use `/autopilot` only if JSON task records and required SDD spec links already exist. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
 
 Naming:
 - Folder: `.tasks/TASK-<ID>/`
@@ -137,7 +142,6 @@ Naming:
 - /write-prd → .memory-bank/commands/write-prd.md
 - /spec-init → .memory-bank/commands/spec-init.md
 - /prd → .memory-bank/commands/prd.md
-- /spec-backbone → .memory-bank/commands/spec-backbone.md (optional after /prd for shared T2/T3 backbone design)
 - /spec-design → .memory-bank/commands/spec-design.md
 - /spec-auto → .memory-bank/commands/spec-auto.md
 - /clarify-feature → .memory-bank/commands/clarify-feature.md

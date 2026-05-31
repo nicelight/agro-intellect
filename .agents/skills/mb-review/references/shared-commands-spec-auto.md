@@ -5,7 +5,7 @@ status: active
 # /spec-auto - Autonomous SDD design
 
 <objective>
-Run the autonomous equivalent of `/spec-init` and `/spec-design` without user interview.
+Run the autonomous equivalent of lightweight `/spec-init`, mandatory `/spec-design`, and `/spec-improve` without user interview.
 
 Supported arguments:
 - `--init`
@@ -33,20 +33,20 @@ If a contradiction or ambiguity is unsafe/blocking, record a blocker and stop wi
 ## 1) Arguments
 - `--init`: run autonomous spec-index initialization after `/write-prd` and before `/prd`
 - `FT-<NNN>`: run autonomous feature-level design for one feature after `/prd`
-- `--all`: run autonomous feature-level design for every targeted feature after `/prd`
+- `--all`: require or run autonomous backbone after `/prd`, then run autonomous feature-level design for every targeted feature
 
 If no argument is provided, infer:
 - before `/prd`, use `--init`
-- after `/prd`, use `--all`; if shared concerns exist, run `/spec-backbone --all` first
+- after `/prd`, use `--all`; run or require `/spec-design --all` first
 - if unclear, stop and report the missing argument
 
 ## 2) `--init`
-Perform `/spec-init` behavior without interview:
+Perform lightweight `/spec-init` behavior:
 - read Constitution, Product Brief, PRD, existing spec-index, and existing specs
-- update `.memory-bank/spec-index.md` as SDD Design Specs Index / route map
-- mark areas as planned/candidate/unknown/not_applicable
+- update `.memory-bank/spec-index.md` as the pre-PRD SDD route map
+- mark areas as planned/candidate/unknown/not_applicable only from PRD/brief/existing-spec evidence
 - record assumptions and open questions
-- do not create authoritative design specs unless PRD/user evidence already contains the decision
+- do not run architecture design, set backbone status, create diagrams, define source-of-truth hierarchy, or create authoritative design specs unless existing evidence already contains the decision
 
 If the skeleton would be misleading without unavailable user input:
 - record `BLOCKER: misleading spec-index risk`
@@ -54,6 +54,12 @@ If the skeleton would be misleading without unavailable user input:
 - stop before `/prd`
 
 ## 3) `FT-<NNN>` and `--all`
+Before any feature design:
+- read `.memory-bank/spec-index.md`
+- if global backbone status is missing, run `/spec-design --all` autonomously first
+- if global backbone status is `blocked`, stop and report the blocker
+- if the project is simple T0/T1-only, the backbone may be `minimal` only with explicit `not_applicable` areas; bare `minimal` is not ready
+
 For each targeted feature:
 1. Read `.memory-bank/spec-index.md` and relevant existing specs first.
 2. Check whether the feature is simple enough for `spec_design_status: not_required`.
@@ -64,6 +70,7 @@ For each targeted feature:
 Autonomous decision rules:
 - prefer existing specs over new files
 - choose the smallest reversible design that satisfies PRD/Constitution/requirements
+- do not ask user questions
 - record assumptions in the feature design hub or spec-index
 - do not invent external contracts, security posture, migrations, or irreversible data behavior
 - set `spec_design_status: complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
@@ -83,6 +90,7 @@ For feature design:
 
 For `--all`:
 - all targeted features have `spec_design_status: complete|not_required|blocked`
+- global backbone status is `complete`, or `minimal` with explicit `not_applicable` areas
 - no `/prd-to-tasks --all` handoff if any targeted feature is `blocked`
 
 ## 5) Handoff

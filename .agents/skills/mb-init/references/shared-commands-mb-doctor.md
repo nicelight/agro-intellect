@@ -56,11 +56,13 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - In `--strict`, `T2` / `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, and closure-eligible red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`.
 - In `--strict`, `T3` `done` tasks also have exact standalone marker lines: `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 - `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
+- In `--strict`, `.memory-bank/spec-index.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
 - Other `done` / `failed` tasks have the minimum evidence/protocol basis required by their tier and mode.
 - `failed` tasks have either a bug doc in `.memory-bank/bugs/` mentioning the task id or an indexed follow-up task depending on/referencing the failed task.
 - Direct dependents of failed tasks are marked `blocked`.
 - `T1` / `T2` / `T3` tasks have concrete `REQ-*` and `FT-*` linkage. Placeholder values such as `REQ-XXX` and `FT-XXX` do not count.
 - `T2` / `T3` tasks have relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
+- `guides/*` may count as linked SDD specs when the guide is the normative source for frontend component behavior or operating procedure; guides alone do not replace required T2/T3 architecture/contract/domain/state/testing specs when those concerns are in scope.
 - Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
 - When `.memory-bank/requirements.md` exists, referenced `REQ-*` IDs appear in it.
 - When `.memory-bank/features/` contains markdown files, referenced `FT-*` IDs have a matching `.memory-bank/features/FT-<NNN>*.md` file.

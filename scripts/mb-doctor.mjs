@@ -30,8 +30,8 @@ const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const REQ_ID_RE = /^REQ-[0-9]{3,}$/;
 const FT_ID_RE = /^FT-[0-9]{3,}$/;
-const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'runbooks'];
-const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|runbooks)\/[^\s"'`]+/i;
+const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
+const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
 const EVIDENCE_WORD_RE = /\b(evidence|result|fail|failed|error|output|log|artifact|report)\b/i;
 const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
 const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
@@ -60,6 +60,7 @@ if (options.errors.length) {
 runMbLint();
 checkObsoleteBacklog();
 checkConstitutionStructure();
+checkBackboneReadiness();
 checkFeatureClarificationReadiness();
 checkTaskReadiness();
 finish();
@@ -188,6 +189,52 @@ function checkConstitutionStructure() {
     path: CONSTITUTION_REL,
     details: { issues },
     suggested_fix: `Create ${CONSTITUTION_REL} and link constitution.md from ${MB_INDEX_REL} and ${SPEC_INDEX_REL}.`,
+  });
+}
+
+function checkBackboneReadiness() {
+  const specIndexAbs = path.join(ROOT, SPEC_INDEX_REL);
+  if (!isFile(specIndexAbs)) return;
+
+  const text = fs.readFileSync(specIndexAbs, 'utf8').replace(/\r\n/g, '\n');
+  const section = extractBackboneStatusSection(text);
+  const status = extractBackboneStatusFromSection(section);
+  if (status === 'complete') return;
+  if (status === 'minimal' && hasExplicitBackboneNotApplicableAreas(section)) return;
+
+  const severity = options.strict ? 'error' : 'warning';
+  const details = { status: status ?? 'missing' };
+  if (status === 'minimal') details.issue = 'minimal backbone must record not_applicable areas';
+
+  addFinding(
+    severity,
+    'SPEC_BACKBONE_NOT_READY',
+    `${SPEC_INDEX_REL}: mandatory /spec-design status is not ready for downstream task execution.`,
+    {
+      path: SPEC_INDEX_REL,
+      details,
+      suggested_fix:
+        'Run /spec-design after /prd. Record global backbone status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.',
+    }
+  );
+}
+
+function extractBackboneStatusSection(text) {
+  return text.match(/^##\s+Global backbone status\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1] ?? '';
+}
+
+function extractBackboneStatusFromSection(section) {
+  const statusMatch = section.match(/(?:^|\n)\s*[-*]?\s*Status\s*:\s*(complete|minimal|blocked|unknown)\b/i);
+  return statusMatch?.[1]?.toLowerCase();
+}
+
+function hasExplicitBackboneNotApplicableAreas(section) {
+  return section.split('\n').some((rawLine) => {
+    const line = rawLine.trim();
+    if (!line || /^[-*]?\s*Not applicable areas\s*:\s*(?:$|TBD\b|TODO\b|none\b|n\/a\b|-+\s*$)/i.test(line)) return false;
+    if (!/\bnot_applicable\b/i.test(line)) return false;
+    if (/\b(?:TBD|TODO|none|n\/a)\b/i.test(line)) return false;
+    return /[-:]\s*\S+/.test(line);
   });
 }
 
@@ -565,11 +612,26 @@ function checkSddSpecLinkage(record) {
   if (!SDD_SPEC_REQUIRED_TIERS.has(task.tier)) return;
 
   const taskSpecLinks = sddSpecLinkStatusFromTask(task);
-  if (taskSpecLinks.existing.length) return;
-
   const severity = options.strict ? 'error' : 'warning';
   const featureId = typeof task.feature === 'string' && FT_ID_RE.test(task.feature) ? task.feature : undefined;
   const featureSpec = featureId ? getFeatureSpecDesign(featureId) : null;
+  if (taskSpecLinks.existing.length) {
+    if (taskSpecLinks.existing.every((link) => isGuideSddSpecPath(link))) {
+      addFinding(severity, 'TASK_SDD_SPEC_GUIDE_ONLY', `${rel}: ${task.tier} task links only guide SDD specs.`, {
+        path: rel,
+        task_id: id,
+        details: {
+          feature: featureId,
+          guide_sdd_spec_links: taskSpecLinks.existing,
+          feature_spec_design_status: featureSpec?.status,
+          feature_spec_design_links: featureSpec?.links.existing ?? [],
+        },
+        suggested_fix:
+          'Keep guides as supplemental links, but add relevant architecture, contract, domain, state, testing, runbook, ADR, or tech-spec SDD links for T2/T3 work.',
+      });
+    }
+    return;
+  }
 
   addFinding(severity, 'TASK_SDD_SPEC_LINK_MISSING', `${rel}: ${task.tier} task has no existing linked SDD spec paths in richer task fields.`, {
     path: rel,
@@ -581,7 +643,7 @@ function checkSddSpecLinkage(record) {
       feature_spec_design_links: featureSpec?.links.existing ?? [],
       missing_feature_spec_design_links: featureSpec?.links.missing ?? [],
     },
-    suggested_fix: `Run /spec-design ${featureId ?? 'FT-<NNN>'} or /spec-auto, then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
+    suggested_fix: `Run /spec-improve ${featureId ?? 'FT-<NNN>'} or /spec-auto, then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
   });
 }
 
@@ -1006,6 +1068,10 @@ function isAllowedSddSpecPath(candidate) {
   const rel = normalizeRel(candidate);
   if (rel.includes('..')) return false;
   return SDD_SPEC_DIRS.some((dir) => rel.startsWith(`.memory-bank/${dir}/`));
+}
+
+function isGuideSddSpecPath(candidate) {
+  return normalizeRel(candidate).startsWith('.memory-bank/guides/');
 }
 
 function getFeatureSpecDesign(featureId) {

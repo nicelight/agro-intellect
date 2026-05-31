@@ -104,7 +104,7 @@ Before verifying, validate the authoritative task record:
 - the indexed record `id` matches `TASK_ID`
 - required fields for verification are present (`status`, `feature`, `reqs`, `depends_on`, `gates`, `verify`)
 - `tier` is present; if missing, stop
-- for `T2` / `T3`, linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`; if absent, stop and route back to `/spec-design` or `/spec-auto`
+- for `T2` / `T3`, linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`; if absent, stop and route back to `/spec-improve` or `/spec-auto`
 
 Do not block `T0` / `T1` only because SDD spec links are absent.
 If the authoritative task record is missing or invalid, stop and report the issue instead of verifying from protocol docs alone.

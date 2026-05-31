@@ -59,9 +59,10 @@ Authoritative SDD spec links are links in task richer fields or linked feature
 `spec_design_links` that point to `.memory-bank/spec-index.md`,
 `.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
 `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`,
-`.memory-bank/adrs/`, `.memory-bank/testing/`, or `.memory-bank/runbooks/`.
+`.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
 If `tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop and report a blocker instead of verifying against classic AC alone.
 Do not block `T0` / `T1` only because SDD spec links are absent.
+If task/AC wording conflicts with linked SDD specs or the global backbone, stop with a blocker instead of verifying against the task alone.
 
 Tier policy:
 - `T0`: `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<ID>/run.md`.
@@ -87,7 +88,8 @@ Status ownership:
 - отсутствие richer verification fields не является ошибкой
 - absence of SDD spec links is not a blocker for `T0` / `T1`; in that case the
   verifier should use the classic AC/REQ model
-- for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route back to `/spec-design` or `/spec-auto` when absent
+- for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route back to `/spec-improve` or `/spec-auto` when absent
+- linked SDD specs are the primary normative basis when present; conflicting task records must be blocked, not locally reinterpreted
 - `evidence_required` и `verification_targets` описывают требования/цели проверки; сами по себе они не являются proof
 - detailed verification report may live in `.protocols/TASK-<ID>/verification.md`, with artifacts in `.tasks/TASK-<ID>/`
 - before any command sets `status: done`, the task record `verify` field must contain the completed evidence summary/marker (string or structured object)

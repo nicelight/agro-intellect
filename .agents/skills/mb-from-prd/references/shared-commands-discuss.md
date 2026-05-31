@@ -22,8 +22,8 @@ status: active
 Если после обсуждения всё ясно:
 - предложи `/write-prd`, `/prd`, `/brief` или `/clarify-feature FT-<NNN>` по текущему состоянию материалов;
 - предлагай `/spec-init` после clarified `/write-prd` и до `/prd`, если SDD route map еще не готов;
-- предлагай `/spec-backbone` после `/prd`, если несколько FT делят domain/contract/state/API/security/data/runtime/testing concerns или есть вероятная shared T2/T3 работа;
-- предлагай `/spec-design FT-<NNN>` после `/prd` и до `/prd-to-tasks`;
+- после `/prd` всегда предлагай mandatory `/spec-design`; для simple T0/T1 scope он записывает minimal status с explicit `not_applicable` areas;
+- предлагай `/spec-improve FT-<NNN>` после `/prd` и до `/prd-to-tasks`;
 - предлагай `/prd-to-tasks FT-<NNN>` только если PRD complete, feature exists, feature is not explicitly pending/blocked, and SDD design status is complete/not_required;
 - предлагай `/execute TASK-<ID>` только для существующего JSON task record `.memory-bank/tasks/TASK-<ID>.task.json`, проиндексированного в `.memory-bank/tasks/index.json`.
 </process>

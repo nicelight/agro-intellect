@@ -14,7 +14,7 @@ Turn an already clarified `.memory-bank/prd.md` into Memory Bank L1-L3 artifacts
 - `.memory-bank/index.md`
 
 `/prd` does not write the PRD, ask Deep Questioning questions, create TASK records, create implementation plans, or require feature-level clarification.
-`/prd` requires `.memory-bank/spec-index.md` as the SDD route map and reads only relevant authoritative specs routed by that index before deriving L1-L3.
+`/prd` requires `.memory-bank/spec-index.md` as the lightweight SDD route map and reads only relevant existing authoritative specs routed by that index before deriving L1-L3.
 </objective>
 
 <process>
@@ -38,11 +38,11 @@ If the PRD contains unresolved `NEEDS CLARIFICATION` blockers in decomposition-r
 Read `.memory-bank/constitution.md` before writing derived docs. If the PRD conflicts with the Constitution, stop and ask for explicit resolution or `/constitution` amendment.
 
 ### SDD route map gate
-`.memory-bank/spec-index.md` is a required SDD route map for `/prd` after `/spec-init`.
+`.memory-bank/spec-index.md` is a required lightweight SDD route map for `/prd` after `/spec-init`.
 
 Before writing derived docs:
 - read `.memory-bank/spec-index.md` as a route map, not as a substitute for the specs;
-- stop and run `/spec-init` if `.memory-bank/spec-index.md` is missing, stale, placeholder-only, ambiguous, has broken links, or cannot safely identify relevant authoritative specs;
+- stop and run `/spec-init` if `.memory-bank/spec-index.md` is missing, stale, placeholder-only, ambiguous, has broken links, or cannot safely identify relevant existing specs and planned/candidate/unknown/not_applicable areas;
 - determine relevance from PRD sections, affected product areas, requirements, actors, data/domain model, contracts/APIs, states/lifecycles, security/compliance, runtime/operations, and verification strategy;
 - resolve and read only the relevant authoritative spec files routed by `.memory-bank/spec-index.md`;
 - do not load every SDD spec by default; leave non-relevant authoritative specs closed unless the index routes them into the current PRD/decomposition scope;
@@ -87,10 +87,10 @@ Before writing derived docs:
 - test strategy pointers
 - optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
  - `status: draft` по умолчанию
-- write a `## SDD Design Gate` section into every new feature: run `/spec-design FT-<NNN>` before `/prd-to-tasks FT-<NNN>`; when `/spec-design` sets `spec_design_status: complete`, linked specs go in `spec_design_links`; `not_required` needs a short rationale; `blocked` must record the blocker
+- write a `## SDD Design Gate` section into every new feature: run `/spec-improve FT-<NNN>` before `/prd-to-tasks FT-<NNN>`; when `/spec-improve` sets `spec_design_status: complete`, linked specs go in `spec_design_links`; `not_required` needs a short rationale; `blocked` must record the blocker
 - if existing SDD specs apply, add `spec_design_links` to those specs and set `spec_design_status: complete` only when the design is already authoritative and sufficient for task decomposition
-- otherwise omit `spec_design_status`; `/spec-design FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
-- if multiple features share domain/contract/state/API/security/data/runtime concerns, add an SDD Design Gate note recommending `/spec-backbone` before per-feature `/spec-design`
+- otherwise omit `spec_design_status`; `/spec-improve FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
+- add an SDD Design Gate note that `/spec-design` is the mandatory global gate before per-feature `/spec-improve`; if the feature set is simple T0/T1-only, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
 
 Do not set every new feature to `clarification_status: pending`.
 Only add feature clarification metadata when the PRD explicitly leaves a feature-level decomposition blocker:
@@ -117,9 +117,9 @@ When a feature is already clear enough for task decomposition, omit clarificatio
 Запусти `mb-review` (fresh context).
 
 ## 9) What next
-- interactive: if shared design concerns exist, run `/spec-backbone`; then choose one feature and run `/spec-design FT-<NNN>`, then `/prd-to-tasks FT-<NNN>`
+- interactive: run `/spec-design`; then choose one feature and run `/spec-improve FT-<NNN>`, then `/prd-to-tasks FT-<NNN>`
 - optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
-- autonomous end-to-end: запусти `/autonomous`; it will run `/spec-backbone --all` when needed, then `/spec-auto --all` before `/prd-to-tasks --all`
+- autonomous end-to-end: запусти `/autonomous`; it will run/require `/spec-design --all`, then `/spec-auto --all` before `/prd-to-tasks --all`
 
 Do not create TASK records from `/prd`.
 </process>

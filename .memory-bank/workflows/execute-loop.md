@@ -8,7 +8,8 @@ status: active
 - `/prd` creates L1–L3 only (product/requirements/epics/features/testing/index).
 - `/write-prd` = PRD-level ambiguity closure. `/clarify-feature` = optional feature-level ambiguity pass.
 - `/spec-init` creates the SDD Design Specs Index after `/write-prd` and before `/prd`.
-- `/spec-design FT-<NNN>` completes or marks unnecessary feature-level design before task decomposition.
+- `/spec-design` is the mandatory global/backbone SDD gate after `/prd`; `/spec-improve FT-<NNN>` completes or marks unnecessary feature-level design before task decomposition.
+- Canonical manual route: `/write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>`.
 - Tasks are created **per feature** via `/prd-to-tasks FT-<NNN>` after `/prd` creates clear feature docs and SDD design status is ready.
 
 ## Interactive mode (you stay)
@@ -17,17 +18,18 @@ status: active
 3) `/write-prd` (creates clarified .memory-bank/prd.md)
 4) `/spec-init` (updates .memory-bank/spec-index.md route map)
 5) `/prd` (fills L1–L3)
-6) Pick one top feature; use `/clarify-feature FT-001` only for explicit feature blockers
-7) `/spec-design FT-001` (updates only needed SDD specs or marks not_required)
-8) `/prd-to-tasks FT-001` (creates IMPL plan + TASK-* for this feature)
-9) Run `/mb-doctor` when task records change; use `/mb-doctor --strict` before autonomous handoff
-10) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
+6) `/spec-design` (updates the global/backbone SDD route map and shared specs)
+7) Pick one top feature; use `/clarify-feature FT-001` only for explicit feature blockers
+8) `/spec-improve FT-001` (updates only needed feature-level SDD specs or marks not_required/blocked)
+9) `/prd-to-tasks FT-001` (creates IMPL plan + TASK-* for this feature)
+10) Run `/mb-doctor` when task records change; use `/mb-doctor --strict` before autonomous handoff
+11) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
    - `/execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T2/T3 -> /mb-sync`
-11) After each wave: `/review` (fresh context)
+12) After each wave: `/review` (fresh context)
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
-2) command runs `/write-prd -> /spec-auto --init -> /prd -> /spec-auto --all -> /prd-to-tasks --all`, then schedules ready TASKs
+2) command runs `/write-prd -> /spec-auto --init -> /prd -> /spec-design --all -> /spec-auto --all -> /prd-to-tasks --all`, then schedules ready TASKs
 3) run `/mb-doctor --strict` before scheduler execution; T2/T3 tasks without SDD spec links are blockers
 4) each TASK runs in **fresh CLI sessions**
 5) after each `/mb-sync`, run `/mb-doctor --strict` before promoting dependents

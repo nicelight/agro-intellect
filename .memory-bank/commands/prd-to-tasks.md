@@ -25,7 +25,7 @@ status: active
 
 ## 1) Decomposition preflight
 Перед созданием или обновлением implementation plan и JSON task records проверь, что feature can be decomposed.
-`/prd-to-tasks` does not require feature clarification metadata. The normal path is `/write-prd` → `/spec-init` → `/prd` → optional `/spec-backbone` → `/spec-design FT-<NNN>` → `/prd-to-tasks FT-<NNN>`.
+`/prd-to-tasks` does not require feature clarification metadata. The normal path is `/write-prd` → `/spec-init` → `/prd` → `/spec-design` → `/spec-improve FT-<NNN>` → `/prd-to-tasks FT-<NNN>`.
 
 Для `FT-<NNN>`:
 1. Найди `.memory-bank/features/FT-<NNN>-*.md`.
@@ -63,6 +63,7 @@ For `--all`:
 
 ## 1.1) SDD design preflight
 Before decomposition, read `.memory-bank/spec-index.md` and the target feature doc.
+Block before task generation unless the global backbone status is `complete` or `minimal` with explicit `not_applicable` areas. If backbone status is missing or `blocked`, route to `/spec-design` and stop.
 
 Feature frontmatter may include:
 
@@ -77,9 +78,10 @@ Rules:
 - `spec_design_status: not_required` is allowed only for simple T0/T1-like features with a concise rationale in the feature doc.
 - `spec_design_status: complete` requires at least one concrete linked spec when the feature implies T2/T3 work.
 - missing or incomplete `spec_design_status` does not always block immediately; first estimate the likely task tiers from feature scope.
-- If decomposition reveals any T2/T3 task would be needed and `spec_design_status` is missing, `blocked`, `not_required`, or `complete` without linked specs, stop and route to `/spec-design FT-<NNN>` (or `/spec-auto FT-<NNN>` in autonomous flow).
-- If multiple targeted features need the same missing shared domain/contract/state/API/security/data/runtime decision, stop and route to `/spec-backbone` before `/spec-design`.
-- Do not create new specs here. This command only consumes the design surface and routes to `/spec-design` when needed.
+- If decomposition reveals any T2/T3 task would be needed and `spec_design_status` is missing, `blocked`, `not_required`, or `complete` without linked specs, stop and route to `/spec-improve FT-<NNN>` (or `/spec-auto FT-<NNN>` in autonomous flow).
+- If multiple targeted features need the same missing shared domain/contract/state/API/security/data/runtime decision, stop and route to `/spec-design` before `/spec-improve`.
+- Do not create new specs here. This command only consumes the design surface and routes to `/spec-improve` when needed.
+- Design specs are normative source of truth for task cards. If feature/task interpretation conflicts with linked SDD specs, stop with a blocker instead of resolving locally.
 
 T2/T3 indicators include:
 - cross-module behavior
@@ -212,7 +214,8 @@ Tier assignment:
 - ключи обязательны, но значения могут быть пустыми массивами, если evidence нет
 - не выдумывай содержимое без evidence из PRD / feature docs / baseline docs / contracts / states / runbooks
 - for `T2` / `T3`, include relevant linked SDD specs from `spec_design_links` and `spec-index.md` in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
-- if a planned `T2` / `T3` task has no relevant linked SDD spec to include, stop and route back to `/spec-design FT-<NNN>` instead of creating a weak task record
+- include relevant backbone specs from `spec-index.md` whenever they constrain source of truth, module boundaries, runtime data model, API behavior, events/messages, frontend component behavior, invariants, or testing gates
+- if a planned `T2` / `T3` task has no relevant linked SDD spec to include, stop and route back to `/spec-improve FT-<NNN>` instead of creating a weak task record
 
 Обнови `.memory-bank/tasks/index.json` только ссылками:
 ```json

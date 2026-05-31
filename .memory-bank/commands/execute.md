@@ -64,11 +64,12 @@ SDD spec links. For this rule, authoritative SDD spec links are links to
 `.memory-bank/spec-index.md`, `.memory-bank/tech-specs/`,
 `.memory-bank/architecture/`, `.memory-bank/contracts/`,
 `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`,
-`.memory-bank/testing/`, or `.memory-bank/runbooks/`.
+`.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
 
 Missing richer fields or absent SDD spec links are not an error for `T0` /
 `T1`. Use classic feature/requirements/docs fallback when they are absent.
 For `T2` / `T3`, missing linked SDD specs are a blocker for serious work unless the feature is explicitly marked `spec_design_status: not_required` and the task scope is downgraded to `T0` / `T1`.
+For any tier, linked SDD specs are primary normative inputs. If the task record conflicts with linked specs or the backbone, stop with a blocker instead of choosing locally.
 
 ## 1) Preflight
 Stop with an explicit error if:
@@ -80,6 +81,7 @@ Stop with an explicit error if:
 - task `status` is `blocked`, `failed`, or `done`
 - any `depends_on` task is missing or has status other than `done`
 - `tier` is `T2` or `T3` and task/feature/spec-index provide no concrete linked SDD spec in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
+- the task record, implementation plan, or feature doc contradicts linked SDD specs or a non-blocked global backbone decision
 
 Do not block `T0` / `T1` only because SDD spec links are absent.
 Authoritative routing is only `task.tier`. Do not use legacy `risk` /
@@ -124,6 +126,8 @@ Rules:
 - for any tier, if the task record or linked feature contains authoritative SDD
   spec links, read `.memory-bank/spec-index.md` and all linked authoritative SDD
   specs before editing; treat them as normative inputs, not optional reading
+- when linked SDD specs exist, they outrank local task wording for architecture,
+  contracts, data/state, invariants, and verification targets
 - preserve unrelated user changes
 - do not edit generated `skills/*/{agents,references,scripts}/shared-*` files
 - update protocol/progress with what changed and where evidence lives
