@@ -3,6 +3,9 @@ description: FT-006 - Vision observation and plant state trust.
 status: draft
 lifecycle: planned
 parent_epic: EP-002
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-006-vision-observation-plant-state-trust.md
 ---
 # FT-006 Vision Observation and Plant State Trust
 
@@ -70,12 +73,13 @@ Support mock or real visual observation for the first demo while keeping a hard 
 
 ## SDD Design Gate
 
-Global `/spec-design` completed the shared backbone. Normative backbone inputs for `/spec-improve FT-006`:
+Feature-local `/spec-improve FT-006` is complete. Normative design inputs and feature-local handoff:
 
+- [.memory-bank/tech-specs/FT-006-vision-observation-plant-state-trust.md](../tech-specs/FT-006-vision-observation-plant-state-trust.md): feature-local tech spec for Vision Observation reports, observation-vs-diagnosis boundary, source refs, confidence/status mapping, plant-state promotion gates, dataset handoff, API/service surface, and verification targets.
 - [.memory-bank/states/plant-state.md](../states/plant-state.md): confidence/status lifecycle and promotion rules.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): observation/hypothesis output envelope.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): plant state refs and future sensor-window refs.
 - [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md): hypotheses are not trainable labels by default.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): mock/real vision output must pass the same adapter boundary.
 
-Do not set feature-local `spec_design_status=complete` yet. `/spec-improve FT-006` still decides or confirms the Vision Observation adapter shape, plant-state field set, confidence mapping, and verification before task decomposition.
+No FT-006 design blocker remains for `/prd-to-tasks FT-006`.

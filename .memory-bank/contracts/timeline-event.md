@@ -26,8 +26,10 @@ Each line is one JSON event. The global envelope contains:
 - `source_id`: source identifier;
 - `topic`: routing/audit label;
 - `payload`: event-specific data;
-- `consumable_by_agents`: whether the event is eligible as agent working context when mirrored/published to Bus;
+- `consumable_by_agents`: eligibility marker for validated Bus publication through the FT-004 Bus publication service;
 - `audit_log`: adapter/runtime validation evidence where applicable.
+
+`timeline.consumable_by_agents=true` does not make a timeline event agent working context by itself. Agent context builders must read only validated Agent Chat Bus events; timeline events may be used as `source_ref` evidence during Bus publication, not as authority or replay input.
 
 ## MVP Event Types
 

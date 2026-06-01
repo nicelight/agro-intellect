@@ -2,7 +2,7 @@
 description: Feature-local SDD tech spec for FT-013 Safety Gate for physical-action advice.
 status: active
 owner: architecture
-last_updated: 2026-05-31
+last_updated: 2026-06-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -20,7 +20,7 @@ FT-013 owns:
 - deterministic physical-action detection for user-visible and agent-originated wording;
 - action taxonomy and risk classes for the MVP;
 - Safety Gate decision shape;
-- 2-hour pH/EC approval freshness checks where relevant;
+- physical-action freshness checks, including 2-hour pH/EC checks where relevant and fresh context refs for non-pH/EC interventions;
 - fail-closed behavior when data, classifier confidence, Safety Gate availability, or approval context is missing;
 - conversion of risky advice into safe block / needs-data / pending-approval handoff;
 - final display check for Companion responses, UI spoiler notes, quoted details, and approval prompt wording.
@@ -75,14 +75,18 @@ pH/EC approval freshness is evaluated from PostgreSQL/read-model measurement ref
 
 - pH-changing advice requires fresh pH within 2 hours.
 - EC-changing, nutrient dosing, and solution-change advice require fresh pH and fresh EC within 2 hours unless a later feature spec narrows the needed measurements.
-- Pump, light, and high-risk manual intervention advice require Safety Gate and human approval; pH/EC freshness is required only when the action rationale depends on pH/EC or solution chemistry.
-- If required measurement refs are missing, stale, ambiguous, or not bound to `tomato_001`, the gate returns `needs_data` or `block`.
+- Pump, light, and high-risk manual intervention advice require Safety Gate, human approval, and fresh non-chemistry context. For the MVP, that context is an explicit current-session or <=24-hour observation, photo, task/outcome, or setup note that is bound to `tomato_001` and matches the proposed action.
+- If pump, light, or high-risk manual rationale also depends on pH/EC or solution chemistry, the relevant pH/EC 2-hour freshness requirements apply in addition to the context ref.
+- If required measurement refs or context refs are missing, stale, ambiguous, or not bound to `tomato_001`, the gate returns `needs_data` or `block`.
+- Unsupported physical-action categories, or categories without an explicit freshness policy, fail closed with `needs_data` or `block`.
 
 Fresh pH/EC is necessary where relevant, but never sufficient without Safety Gate pass and human approval.
 
-### SafetyGateDecision Shape
+### SafetyGateDecision Authority And Shape
 
-Safety Gate decisions are domain records or structured outputs that can be audited and referenced by Bus/UI/task/approval flows.
+Safety Gate decisions are PostgreSQL/read-model records. `timeline.jsonl`, Agent Chat Bus, UI Feed, task records, and approval records may reference them, but none of those surfaces is Safety Gate decision authority.
+
+The canonical ref format is `safety_decision:<safety_decision_id>`.
 
 Minimum decision fields:
 
@@ -98,20 +102,29 @@ Minimum decision fields:
 | `risk_class` | `none`, `check_only`, or `physical_action`. |
 | `outcome` | `pass`, `block`, `pending_approval`, or `needs_data`. |
 | `required_measurement_refs` | pH/EC refs required for the candidate action, when relevant. |
+| `required_context_refs` | Observation, photo, task/outcome, setup note, or other domain refs required for non-pH/EC physical actions, when relevant. |
 | `missing_requirements` | Missing/stale data, safety uncertainty, approval missing, unsupported action, or automated-command attempt. |
 | `safety_check_passed` | Boolean; true only when deterministic safety checks passed. |
 | `human_approval_required` | Boolean; true for physical actions. |
 | `approval_ref` | Optional future FT-014 approval ref; absent in normal pending flows. |
 | `safe_display_text` | Optional safe replacement/blocking text. |
-| `expires_at` | Optional; for chemistry-related decisions, no later than the earliest required measurement freshness expiry. |
+| `expires_at` | Required for physical-action candidates; no later than the earliest required measurement or context freshness expiry. |
+| `event_refs` | Timeline/audit refs emitted for the decision where applicable. |
 
 `SafetyGateDecision` is not human approval. FT-014 owns approval/rejection records and action unlock semantics.
+
+Rules:
+
+- A Safety Gate decision record must be created before downstream pending approval, task handoff, UI display, or Bus publication references it.
+- `block`, `needs_data`, and `pending_approval` decisions used by downstream flows must be referenceable through `safety_decision:<safety_decision_id>`.
+- Physical-action `pass` decisions are valid only when the checked display/action context carries a valid FT-014 approval/unlock ref; otherwise the outcome must be `pending_approval`, `needs_data`, or `block`.
+- Re-checks create new decision records rather than mutating old decisions to represent current safety state.
 
 ### Outcome Semantics
 
 | Outcome | Meaning |
 |---|---|
-| `pass` | No physical action detected, low-risk check only, or a future approved context is valid; may display/publish the checked wording. |
+| `pass` | No physical action detected, low-risk check only, or a valid FT-014-approved context has passed unlock/display checks; may display/publish the checked wording. |
 | `needs_data` | Required fresh measurement/context is missing or stale; request measurement/check rather than action. |
 | `pending_approval` | Physical action candidate is structured enough for human decision, but cannot be presented as cleared action. |
 | `block` | Unsafe, unsupported, automated, unclassifiable, or immediate action wording must not display as action advice. |
@@ -167,9 +180,11 @@ Required before FT-013 can be marked implemented:
 - `node scripts/mb-doctor.mjs`
 - Policy tests for action taxonomy: pH change, EC change, solution change, dosing, pump change, light change, pruning, transplanting, root trimming, and low-risk checks.
 - Freshness tests proving pH/EC-dependent physical actions require measurement refs fresh within 2 hours.
-- Fail-closed tests for missing/stale measurements, unsupported plant, uncertain classifier, unavailable gate, malformed action candidate, unsupported action type, and automated command wording.
+- Freshness tests proving pump, light, and high-risk manual interventions require fresh context refs, and that unsupported categories or missing freshness policy fail closed.
+- Fail-closed tests for missing/stale measurements or context refs, unsupported plant, uncertain classifier, unavailable gate, malformed action candidate, unsupported action type, and automated command wording.
 - Display tests proving Companion output, UI spoiler notes, quoted detail replies, approval prompts, and task wording cannot display physical-action instructions without Safety Gate clearance.
 - Routing tests proving unsafe wording becomes `block`, `needs_data`, or `pending_approval`, not cleared action advice.
+- Authority tests proving every downstream `safety_decision_ref` resolves to a PostgreSQL/read-model Safety Gate decision record and cannot be satisfied by timeline, Bus, UI Feed, or transient object refs.
 - Bus integration test proving `safety_block` routes through FT-004 Bus publication and uses FT-012 MessageEnvelope shape when agent-originated.
 - Task handoff tests proving Safety Gate may create pending proposal/approval handoff refs but cannot create `action_task` without FT-014 approval.
 - Anti-cheat tests proving Safety Gate output is not treated as human approval and no automated device execution command can be produced.

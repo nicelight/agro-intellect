@@ -2,7 +2,7 @@
 description: MessageEnvelope and agent runtime decision contract.
 status: active
 owner: architecture
-last_updated: 2026-05-31
+last_updated: 2026-06-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/spec-index.md
@@ -22,6 +22,7 @@ Each invoked agent must return exactly one runtime decision:
 
 Publishable agent work output uses `MessageEnvelope`:
 
+- `message_id`
 - `agent_id`
 - `claim_type`
 - `confidence`
@@ -30,6 +31,15 @@ Publishable agent work output uses `MessageEnvelope`:
 - `source_refs`
 - `consumable_output`
 - `ui_spoiler_note_ref`
+
+## Stable Identity
+
+- Every validated publishable `MessageEnvelope` MUST have a backend-generated stable `message_id`.
+- Recommended `message_id` prefix is `msg_`.
+- Canonical reference format is `message:<message_id>`.
+- `message_id` identifies the validated agent work output. Bus event IDs, timeline event IDs, UI Feed event IDs, and provider message IDs do not replace it.
+- `silent` decisions create no `MessageEnvelope` and no `message_id`.
+- Downstream specs reference publishable agent output with `message:<message_id>`. Bus, timeline, UI, and dataset refs may be retained as publication, audit, presentation, or governance refs, but they are not the MessageEnvelope identity.
 
 ## Claim Types
 
@@ -64,6 +74,7 @@ Reject or adapt before publication when:
 
 - runtime decision is missing or duplicated;
 - `silent` attempts to publish a message;
+- a publishable decision lacks a backend-generated `message_id`;
 - output is raw reasoning, long unstructured prose, or mixes hidden reasoning with conclusions;
 - source refs are missing where the output affects state, safety, tasking, review, or dataset decisions;
 - `ui_spoiler_note_ref` points outside UI Feed.

@@ -2,7 +2,7 @@
 description: Feature-local SDD tech spec for FT-004 Agent Chat Bus event stream and publication boundary.
 status: active
 owner: architecture
-last_updated: 2026-05-31
+last_updated: 2026-06-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -72,6 +72,7 @@ Every candidate Bus publication must pass through one backend publication servic
 - payload is structured JSON, not raw unstructured model output;
 - `consumable_by_agents` is present and boolean;
 - UI Feed refs, spoiler text, raw chain-of-thought, and secrets are absent from agent-consumable payload fields;
+- agent-originated events include canonical `message_ref=message:<message_id>` for the FT-012 validated `MessageEnvelope`;
 - event-specific required refs are present.
 
 Rejected events must not be partially published. Errors use the shared API/error shape when exposed over HTTP; internal publication failures must be auditable without leaking secrets.
@@ -84,10 +85,10 @@ Feature-local specs may add fields, but FT-004 defines minimum refs needed for B
 |---|---|---|
 | `user_message` | `user` | `plant_id`, `message_ref` or `observation_ref`, safe user-visible text or structured intake refs. |
 | `user_photo` | `user` | `plant_id`, `photo_id`, `photo_type`, photo event/catalog refs. |
-| `agent_conclusion` | `agent` | `message_envelope_ref` or inline `message_envelope`; detailed fields owned by FT-012. |
-| `agent_clarification_request` | `agent` | `message_envelope_ref` or inline `message_envelope`; optional `target_agent_id` as routing hint. |
-| `agent_quoted_detail_reply` | `agent` | `message_envelope_ref` or inline `message_envelope`; source refs. |
-| `agent_team_signal` | `agent` | `message_envelope_ref` or inline `message_envelope`; reason/source refs. |
+| `agent_conclusion` | `agent` | `message_ref` in canonical `message:<message_id>` format; detailed fields owned by FT-012. |
+| `agent_clarification_request` | `agent` | `message_ref` in canonical `message:<message_id>` format; optional `target_agent_id` as routing hint. |
+| `agent_quoted_detail_reply` | `agent` | `message_ref` in canonical `message:<message_id>` format; source refs. |
+| `agent_team_signal` | `agent` | `message_ref` in canonical `message:<message_id>` format; reason/source refs. |
 | `safety_block` | `safety` or `agent` | blocked proposal/source ref, `plant_id` when plant-bound, safety reason/code. |
 | `task_created` | `task` | `plant_id`, `task_id`, task type, source refs. |
 | `human_confirmation` | `user` | `plant_id`, confirmation subject ref, decision/ref metadata. |
@@ -101,7 +102,7 @@ Plant-bound events must include explicit `plant_id`; `topic` cannot be the only 
 Allowed publication paths:
 
 - domain/application workflow produces a structured Bus candidate;
-- Agno adapter produces a runtime decision and, for publishable decisions, a valid `MessageEnvelope` candidate refined by FT-012;
+- Agno adapter produces a runtime decision and, for publishable decisions, an FT-012 validated `MessageEnvelope` with canonical `message_id`;
 - Safety Gate or task modules publish structured domain events through the same Bus publication service.
 
 Forbidden publication paths:
@@ -111,6 +112,7 @@ Forbidden publication paths:
 - UI Feed events or spoiler notes routed into Bus;
 - timeline import/replay used as normal Bus publication authority;
 - controllers constructing Bus events without the publication service.
+- inline-only `MessageEnvelope` payloads used as a substitute for `message_ref`.
 
 `agent_clarification_request` may include `target_agent_id`, but this is a routing hint only. It is not a direct command; the target agent decides whether to react through its own competence and runtime decision.
 
@@ -140,6 +142,10 @@ FT-004 primarily owns internal backend publication boundaries. A minimal debug/r
 
 Normal product workflows should publish Bus events through application services, not through a public arbitrary publish API.
 
+### FT-012 Coordination Note
+
+For agent-originated publication, decompose work in this order: FT-004 first provides the foundation `BusPublicationService` and `BusEventEnvelope` validation stub; FT-012 then validates `AgentRuntimeResult` / `MessageEnvelope`, assigns `message_id`, and maps runtime decisions to Bus candidates carrying `message_ref=message:<message_id>`; integration tests then prove the FT-012 validated output can publish only through the FT-004 service.
+
 ## Verification Targets
 
 Required before FT-004 can be marked implemented:
@@ -149,6 +155,7 @@ Required before FT-004 can be marked implemented:
 - Schema tests for `BusEventEnvelope` required fields, event type set, source identifiers, timezone-aware `created_at`, structured payload, `consumable_by_agents`, and `audit_log`.
 - Event-specific tests for minimum payload refs on `user_message`, `user_photo`, agent-output events, `safety_block`, `task_created`, `human_confirmation`, `system_event`, and `sync_event`.
 - Publication-boundary tests proving all Bus writes go through the project-owned publication service.
+- Agent-publication tests proving agent-originated events carry canonical `message_ref=message:<message_id>` and cannot use inline-only envelopes as identity.
 - Anti-cheat tests proving raw Agno output, workflow events, Team synthesis, memory/storage, raw reasoning, UI Feed events, spoiler notes, and timeline replay cannot enter Bus directly.
 - Context-filtering tests proving only `consumable_by_agents=true` Bus events are available to agents.
 - Authority tests proving Bus events do not become current mutable plant/task/approval/dataset/sync state.

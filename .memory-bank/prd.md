@@ -208,8 +208,9 @@ Product agents:
 ### FR-017 Lazy Sync
 
 - MVP sync status MUST support `local_only`.
-- If local dataset storage exceeds 200 MB, the UI SHOULD prompt the user to upload data later when Wi-Fi is available.
-- The 200 MB prompt MUST NOT imply that a server exists or that sync status changed.
+- If local dataset storage exceeds 200 MB, the UI SHOULD show a local storage prompt only.
+- Server/upload sync is TODO for a later version and MUST NOT be implied or triggered in the MVP.
+- The 200 MB prompt MUST NOT imply that a server/upload target exists or that sync status changed.
 - `server_verified` MUST NOT appear before a server sync stage exists.
 
 ## Non-functional Requirements
@@ -317,7 +318,7 @@ Minimum UI:
 - Agent diagnosis without evidence: keep as hypothesis and `can_train_on=false`.
 - Dataset item without evidence refs: cannot become trainable.
 - `eval` or `holdout` item selected for fine-tuning: reject.
-- Local storage over 200 MB: show upload prompt only; keep `sync.status=local_only`.
+- Local storage over 200 MB: show local storage prompt only; keep `sync.status=local_only`; server/upload sync remains TODO for a later version.
 
 ## Acceptance Criteria
 

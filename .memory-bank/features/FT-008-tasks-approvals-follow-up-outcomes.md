@@ -3,6 +3,17 @@ description: FT-008 - Tasks, approvals, and follow-up outcomes.
 status: draft
 lifecycle: planned
 parent_epic: EP-002
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md
+  - .memory-bank/states/task-follow-up.md
+  - .memory-bank/states/safety-approval.md
+  - .memory-bank/domains/runtime-data-model.md
+  - .memory-bank/contracts/timeline-event.md
+  - .memory-bank/tech-specs/FT-014-human-approval-action-unlock-semantics.md
+  - .memory-bank/tech-specs/FT-013-safety-gate-physical-action-advice.md
+  - .memory-bank/tech-specs/FT-001-daily-check-in-observations-manual-measurements.md
+  - .memory-bank/testing/first-demo.md
 ---
 # FT-008 Tasks, Approvals, and Follow-up Outcomes
 
@@ -21,6 +32,7 @@ Track safe next steps after advisory output: check tasks, measurement tasks, pen
 - [.memory-bank/requirements.md](../requirements.md): REQ-010, REQ-004 for pH/EC freshness-driven measurement tasks, and task/approval parts of REQ-009.
 - [.memory-bank/constitution.md](../constitution.md): human gate for physical actions, bounded agent autonomy, and evidence-based workflow.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for task follow-up lifecycle, safety approval lifecycle, runtime data model, and first-demo verification.
+- [.memory-bank/tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md](../tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md): feature-local task lifecycle, due/follow-up timing, outcome schema, event refs, API/service surface, and verification targets.
 - [.memory-bank/testing/index.md](../testing/index.md): task/follow-up, approval transition, and safety verification.
 
 ## Use Cases
@@ -71,12 +83,18 @@ Track safe next steps after advisory output: check tasks, measurement tasks, pen
 
 ## SDD Design Gate
 
-Global `/spec-design` completed the shared backbone. Normative backbone inputs for `/spec-improve FT-008`:
+Global `/spec-design` completed the shared backbone. Feature-local `/spec-improve FT-008` is complete.
 
+Normative design links:
+
+- [.memory-bank/tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md](../tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md): task boundaries, statuses, creation sources, FT-014 unlock coordination, due/follow-up timing, outcome capture, event refs, API/service surface, and verification targets.
 - [.memory-bank/states/task-follow-up.md](../states/task-follow-up.md): task types, creation rules, and outcome values.
 - [.memory-bank/states/safety-approval.md](../states/safety-approval.md): pending approval and action-task unlock semantics.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): task/approval refs and mutable state ownership.
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): event refs for task and approval transitions.
+- [.memory-bank/tech-specs/FT-014-human-approval-action-unlock-semantics.md](../tech-specs/FT-014-human-approval-action-unlock-semantics.md): approval records, action unlock validation, stale/replay prevention, and consumption rules.
+- [.memory-bank/tech-specs/FT-013-safety-gate-physical-action-advice.md](../tech-specs/FT-013-safety-gate-physical-action-advice.md): Safety Gate handoffs and display checks.
+- [.memory-bank/tech-specs/FT-001-daily-check-in-observations-manual-measurements.md](../tech-specs/FT-001-daily-check-in-observations-manual-measurements.md): pH/EC freshness and measurement refs for measurement tasks.
 - [.memory-bank/testing/first-demo.md](../testing/first-demo.md): task/follow-up workflow gates.
 
-Do not set feature-local `spec_design_status=complete` yet. `/spec-improve FT-008` still decides or confirms task state fields, approval transition details, outcome schema, event refs, and tests before task decomposition.
+No FT-008 blocker remains for `/prd-to-tasks FT-008`. FT-014 remains the owner of approval/rejection record logic and unlock validation; FT-008 must call it before creating or transitioning any actionable `action_task`.

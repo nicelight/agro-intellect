@@ -45,8 +45,9 @@ Define the MVP local operations baseline that keeps the app private by default, 
 - Local plant photos and manifests are private project data by default.
 - Upload or sync requires explicit user approval.
 - MVP sync status supports `local_only`.
-- The 200 MB prompt can ask the user to upload data later when Wi-Fi is available.
-- The 200 MB prompt does not imply that a server exists and does not mutate `sync.status`.
+- The 200 MB prompt can only show local storage pressure and acknowledge/dismiss behavior.
+- Server/upload sync is TODO for a later version and is unavailable in the MVP.
+- The 200 MB prompt does not imply that a server/upload target exists and does not mutate `sync.status`.
 - `server_verified` is unavailable until a real server sync stage exists.
 
 ## Edge Cases / Failure Modes
@@ -57,7 +58,7 @@ Define the MVP local operations baseline that keeps the app private by default, 
 - Upload has unsupported MIME/content type, unsafe size, missing file, unsafe path, or path traversal sequence: reject.
 - Secret-like value appears in logs, manifests, timeline, UI Feed, Bus, screenshots, or export candidates: redact and fail the unsafe operation where applicable.
 - User has not approved upload/sync: keep artifacts local.
-- Local storage exceeds 200 MB: show prompt only and keep `sync.status=local_only`.
+- Local storage exceeds 200 MB: show local storage prompt only and keep `sync.status=local_only`.
 - A `server_verified` status appears before server sync exists: reject.
 
 ## Test Strategy Pointers

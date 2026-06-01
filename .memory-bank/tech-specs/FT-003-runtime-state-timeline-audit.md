@@ -56,6 +56,7 @@ The first FT-003 migration should provide the smallest durable read model that c
 | `manual_measurements` | Manual pH/EC values and freshness inputs | `measurement_id`, `plant_id`, `measured_at`, pH/EC value fields, provenance, `event_refs` |
 | `photo_catalog` | Accepted photo metadata and mutable photo-related refs | globally unique `photo_id`, `plant_id`, `captured_at`, `photo_type`, file reference, `sha256`, review/dataset/sync refs, `event_refs`, optional `sensor_window_ref` |
 | `tasks` | Check, measurement, pending approval, approved action, and follow-up task tracking | `task_id`, `plant_id`, task type/status, source refs, optional approval ref, outcome fields, `event_refs` |
+| `safety_decisions` | Deterministic Safety Gate decisions used by display, task handoff, pending approval, and action unlock flows | `safety_decision_id`, `plant_id`, action/risk/outcome fields, checked input ref/hash, required measurement/context refs, `expires_at`, safe display text, source refs, `event_refs` |
 | `human_approvals` | Human approval/rejection decisions for physical-action proposals | `approval_id`, `plant_id`, status, proposal/source refs, decision provenance, `event_refs` |
 | `human_reviews` | Manual review decisions for data/labels when needed by dataset governance | `review_id`, subject ref, reviewer role/status, evidence refs, `event_refs` |
 | `dataset_items` | Dataset lifecycle metadata without a full registry | subject ref, status, split, curator decision, confirmation source, evidence refs, `can_train_on`, provenance refs |
@@ -65,7 +66,7 @@ Implementation tasks may split or defer non-blocking columns inside these table 
 
 ### Runtime Authority Reads
 
-- Application services must read current plant state, photo status, task status, approval status, review status, dataset status, `can_train_on`, sync status, and future `sensor_window_ref` from PostgreSQL.
+- Application services must read current plant state, photo status, task status, Safety Gate decision status/expiry, approval status, review status, dataset status, `can_train_on`, sync status, and future `sensor_window_ref` from PostgreSQL.
 - `timeline.jsonl` may be read for audit, export, debugging, and evidence trails only.
 - Photo manifests may be read as immutable artifacts only. They must not be used to answer current mutable status questions.
 - If PostgreSQL conflicts with `timeline.jsonl`, treat it as an integrity issue and report it through verification or a later repair task. Do not silently rebuild mutable state from the timeline during normal runtime.
@@ -132,6 +133,7 @@ Required before FT-003 can be marked implemented:
 - Migration test or equivalent setup check proving required table boundaries exist.
 - Schema tests for timeline envelope validation, timezone-aware timestamps, allowed event types, and `user_photo.payload.plant_id`.
 - Integration test proving current mutable state reads come from PostgreSQL, not `timeline.jsonl` or photo manifests.
+- Integration test proving `safety_decision:<safety_decision_id>` refs resolve to PostgreSQL/read-model `safety_decisions` rows for display, task, pending approval, and action unlock flows.
 - Integration test proving a successful state-changing workflow writes PostgreSQL state and a corresponding timeline event ref.
 - Append-only test proving existing timeline lines are not mutated by updates/corrections.
 - Negative test for malformed timeline payloads and missing required identifiers.

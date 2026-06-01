@@ -38,8 +38,9 @@ Secret categories include `.env` values, API keys, tokens, credentials, local au
 ## Lazy Sync
 
 - MVP sync status is `local_only`.
-- If local dataset storage exceeds 200 MB, the UI may prompt the user to upload later when Wi-Fi is available.
-- The prompt must not imply a server exists.
+- If local dataset/photo storage exceeds 200 MiB, the UI may show a local storage prompt.
+- The user may acknowledge or dismiss the local prompt only.
+- The prompt must not imply upload availability, server availability, or remote sync.
 - The prompt must not mutate sync status.
 - `server_verified` is forbidden before a real server sync stage exists.
 
@@ -50,4 +51,4 @@ Secret categories include `.env` values, API keys, tokens, credentials, local au
 - CORS wildcard behavior is rejected outside explicitly safe local development.
 - Upload path traversal attempts are rejected.
 - Secret-like values are redacted from logs/export surfaces.
-- Privacy and lazy-sync tests prove no upload occurs without explicit user approval.
+- Privacy and lazy-sync tests prove no upload occurs in the MVP and prompt acknowledgement does not trigger transfer.

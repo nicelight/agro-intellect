@@ -66,7 +66,7 @@ Recommended read-model boundary:
 | Event type | Minimum payload | Notes |
 |---|---|---|
 | `agent_silent_decision` | `agent_id`, `audit_ref`, safe status text or reason code | Optional user-visible trace of silent work; never Bus context. |
-| `ui_spoiler_note` | `source_message_ref`, `spoiler_title`, controlled summary `text` | `visible_to_agents=false` and `consumable_by_agents=false` are mandatory. |
+| `ui_spoiler_note` | `source_message_ref` in canonical `message:<message_id>` format, `spoiler_title`, controlled summary `text` | `visible_to_agents=false` and `consumable_by_agents=false` are mandatory. |
 | `agent_ui_status` | `agent_id`, status code/text, source refs | Presentation status only. |
 | `system_ui_status` | system status code/text, source refs | Presentation status only. |
 | `debug_lite_card` | safe debug title/details, source refs | Must not expose secrets, raw reasoning, provider traces, or local absolute paths. |

@@ -3,6 +3,9 @@ description: FT-011 - Minimal Web App/PWA operator surface.
 status: draft
 lifecycle: planned
 parent_epic: EP-004
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md
 ---
 # FT-011 Minimal Web App/PWA Operator Surface
 
@@ -21,6 +24,7 @@ Define the smallest user-facing Web App/PWA feature that lets the primary user o
 - [.memory-bank/requirements.md](../requirements.md): REQ-013.
 - [.memory-bank/constitution.md](../constitution.md): KISS, bounded agent autonomy, human gate, source-of-truth discipline, and low-maintenance constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for UI information architecture/PWA flow, UI Feed, safety approval, and lazy sync.
+- [.memory-bank/tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md](../tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md): feature-local SDD tech spec for route/view set, daily operator workflow, API consumption, safety display, PWA/offline boundaries, and UI/e2e targets.
 - [.memory-bank/testing/index.md](../testing/index.md): UI/e2e smoke and user-visible safety gates.
 
 ## Use Cases
@@ -73,7 +77,13 @@ Define the smallest user-facing Web App/PWA feature that lets the primary user o
 
 ## SDD Design Gate
 
-Global `/spec-design` completed the shared backbone. Normative backbone inputs for `/spec-improve FT-011`:
+Feature-local `/spec-improve FT-011` is complete.
+
+Normative feature-local design:
+
+- [.memory-bank/tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md](../tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md): resolves minimal routes/views, daily operator workflow, surface behavior, API dependency map, UI Feed consumption, safety display checks, local auth/LAN considerations, PWA/offline boundaries, and verification targets.
+
+Normative backbone inputs:
 
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): frontend/backend boundary and daily sequence.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): frontend/backend HTTP boundary.
@@ -81,4 +91,4 @@ Global `/spec-design` completed the shared backbone. Normative backbone inputs f
 - [.memory-bank/states/safety-approval.md](../states/safety-approval.md): approval prompts and physical-action display checks.
 - [.memory-bank/testing/first-demo.md](../testing/first-demo.md): UI/e2e smoke expectations once UI exists.
 
-Do not set feature-local `spec_design_status=complete` yet. `/spec-improve FT-011` still decides or confirms UI IA, screens/states, approval surfaces, spoiler presentation, safety display checks, API usage, and e2e smoke before task decomposition.
+No feature-local SDD blocker remains for `/prd-to-tasks FT-011`.

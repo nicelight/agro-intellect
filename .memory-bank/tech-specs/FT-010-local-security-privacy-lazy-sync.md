@@ -130,7 +130,7 @@ Rules:
 - FT-010 must not add outbound sync, remote upload, server target configuration, or background network transfer.
 - Any future upload/sync feature requires a new spec stage and explicit user approval flow.
 - For the MVP, user approval for upload/sync can only acknowledge or dismiss the local prompt; it must not trigger remote transfer because no server sync exists.
-- Privacy checks must treat photo files and manifests as local artifacts even when the UI displays a Wi-Fi/upload prompt.
+- Privacy checks must treat photo files and manifests as local artifacts even when the UI displays a local storage prompt.
 
 ### Lazy Sync State
 

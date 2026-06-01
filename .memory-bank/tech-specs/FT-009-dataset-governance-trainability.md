@@ -51,7 +51,7 @@ Allowed MVP subject types:
 | `photo` | `photo:<photo_id>` |
 | `daily_observation` | `observation:<observation_id>` |
 | `manual_measurement` | `measurement:<measurement_id>` |
-| `agent_output` | `message:<message_id>` or `bus:<bus_event_id>` |
+| `agent_output` | `message:<message_id>` canonical subject ref; `bus:<bus_event_id>` only as publication provenance. |
 | `follow_up_outcome` | `task:<task_id>:outcome` |
 | `export_candidate` | `export_candidate:<id>` |
 
@@ -133,7 +133,7 @@ Allowed evidence refs include:
 - human review refs;
 - approval/rejection refs where relevant;
 - timeline event refs;
-- validated MessageEnvelope/Bus refs only as provenance for agent-labeled status, not as sole confirmation evidence unless later review/follow-up supports it.
+- validated `message:<message_id>` refs, with optional Bus refs only as publication provenance for agent-labeled status, not as sole confirmation evidence unless later review/follow-up supports it.
 
 Forbidden as evidence for trainability:
 

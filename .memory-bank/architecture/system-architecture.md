@@ -222,6 +222,7 @@ The following are execution artifacts, not domain facts:
 flowchart LR
   intake["User check-in/photo/pH/EC"]
   validate["API validation"]
+  workflow["Domain/application workflow"]
   persist["PostgreSQL runtime state"]
   artifacts["Photo files + initial manifest"]
   audit["timeline.jsonl append"]
@@ -232,11 +233,11 @@ flowchart LR
   ui["UI Feed / operator UI"]
 
   intake --> validate
-  validate --> persist
-  validate --> artifacts
-  persist --> audit
-  artifacts --> audit
-  audit --> bus
+  validate --> workflow
+  workflow --> persist
+  workflow --> artifacts
+  workflow --> audit
+  workflow --> bus
   bus --> agno
   agno --> adapter
   adapter --> safety
@@ -245,6 +246,8 @@ flowchart LR
   safety --> bus
   safety --> ui
 ```
+
+Domain/application workflows publish separately to `timeline.jsonl` and Agent Chat Bus. Timeline events may be referenced by Bus payloads as `source_ref` evidence, but timeline import/replay is not Bus publication authority and agent context builders must read validated Bus events, not timeline events directly.
 
 ## Daily Check-in Sequence
 

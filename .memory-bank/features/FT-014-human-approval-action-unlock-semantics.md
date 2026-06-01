@@ -3,6 +3,9 @@ description: FT-014 - Human approval and action unlock semantics.
 status: draft
 lifecycle: planned
 parent_epic: EP-002
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-014-human-approval-action-unlock-semantics.md
 ---
 # FT-014 Human Approval and Action Unlock Semantics
 
@@ -21,6 +24,7 @@ Define how pending physical-action proposals are approved or rejected by the hum
 - [.memory-bank/requirements.md](../requirements.md): approval portions of REQ-009 and REQ-010.
 - [.memory-bank/constitution.md](../constitution.md): human gate for physical actions, bounded autonomy, and no automated actuation.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for safety approval lifecycle, task follow-up lifecycle, runtime data model, and timeline event areas.
+- [.memory-bank/tech-specs/FT-014-human-approval-action-unlock-semantics.md](../tech-specs/FT-014-human-approval-action-unlock-semantics.md): feature-local approval/rejection, stale/replay prevention, and action unlock semantics.
 - [.memory-bank/testing/index.md](../testing/index.md): approval transition and no-device-execution verification.
 
 ## Use Cases
@@ -70,12 +74,17 @@ Define how pending physical-action proposals are approved or rejected by the hum
 
 ## SDD Design Gate
 
-Global `/spec-design` completed the shared backbone. Normative backbone inputs for `/spec-improve FT-014`:
+Global `/spec-design` completed the shared backbone. Feature-local `/spec-improve FT-014` is complete.
 
+Normative design links:
+
+- [.memory-bank/tech-specs/FT-014-human-approval-action-unlock-semantics.md](../tech-specs/FT-014-human-approval-action-unlock-semantics.md): approval/rejection record shape, stale/replay prevention, action unlock service, event/audit refs, API surface, and verification targets.
 - [.memory-bank/states/safety-approval.md](../states/safety-approval.md): human approval semantics and stale-condition routing.
 - [.memory-bank/states/task-follow-up.md](../states/task-follow-up.md): approved action-task creation and follow-up coordination.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): approval/task refs and mutable state ownership.
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): approval/rejection event refs.
+- [.memory-bank/tech-specs/FT-013-safety-gate-physical-action-advice.md](../tech-specs/FT-013-safety-gate-physical-action-advice.md): Safety Gate pending approval handoff and display checks.
+- [.memory-bank/tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md](../tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md): task lifecycle, due/follow-up ownership, and action-task coordination.
 - [.memory-bank/testing/first-demo.md](../testing/first-demo.md): no-device-execution and approval workflow gates.
 
-Do not set feature-local `spec_design_status=complete` yet. `/spec-improve FT-014` still decides or confirms approval/rejection schema, pending action proposal/task states, stale approval handling, FT-008 coordination, and tests before task decomposition.
+No FT-014 blocker remains for `/prd-to-tasks FT-014`. FT-008 design is complete and owns task lifecycle/follow-up; FT-014 owns approval/unlock semantics. Task decomposition must link both specs where action-task approval transitions are planned.

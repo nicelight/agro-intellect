@@ -2,7 +2,7 @@
 description: Safety Gate and human approval lifecycle for physical-action advice.
 status: active
 owner: architecture
-last_updated: 2026-05-31
+last_updated: 2026-06-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/spec-index.md
@@ -17,6 +17,8 @@ Physical actions include changing pH, changing EC, changing solution, changing p
 
 - pH/EC measurements are fresh for analysis for up to 24 hours.
 - pH/EC measurements are fresh for physical-action approval for up to 2 hours.
+- Non-pH/EC physical actions still require fresh relevant evidence before approval. For the MVP, pump, light, and high-risk manual interventions require an explicit current-session or <=24-hour context ref, such as a user observation, photo, task/outcome, or setup note that matches the proposed action.
+- If a physical-action category has no explicit freshness policy or lacks the required fresh context refs, Safety Gate must return `needs_data` or `block`, never cleared `pass` or actionable `pending_approval`.
 
 Fresh data is necessary for relevant approvals, but never sufficient by itself.
 

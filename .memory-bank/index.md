@@ -31,7 +31,7 @@ status: active
 - [.memory-bank/features/FT-012-agent-runtime-decisions-message-envelope-output-contracts.md](features/FT-012-agent-runtime-decisions-message-envelope-output-contracts.md): FT-012, Agent runtime decisions and MessageEnvelope output contracts under EP-002.
 - [.memory-bank/features/FT-013-safety-gate-physical-action-advice.md](features/FT-013-safety-gate-physical-action-advice.md): FT-013, Safety Gate for physical-action advice under EP-002.
 - [.memory-bank/features/FT-014-human-approval-action-unlock-semantics.md](features/FT-014-human-approval-action-unlock-semantics.md): FT-014, human approval and action unlock semantics under EP-002.
-- Next route: `/spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>`.
+- Current route: `/prd-to-tasks FT-<NNN>` for one feature or `/prd-to-tasks --all` for the current feature set after active review blockers/gates are resolved; global `/spec-design` and all feature-local `/spec-improve` gates are complete per [.memory-bank/spec-index.md](spec-index.md).
 - [.memory-bank/tasks/index.json](tasks/index.json): Authoritative JSON task record index.
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
 - [.memory-bank/workflows/index.md](workflows/index.md): Workflow policies and execution-loop router.
@@ -46,10 +46,15 @@ status: active
 - [.memory-bank/tech-specs/FT-003-runtime-state-timeline-audit.md](tech-specs/FT-003-runtime-state-timeline-audit.md): Feature-local SDD tech spec for PostgreSQL runtime authority and `timeline.jsonl` audit/export.
 - [.memory-bank/tech-specs/FT-004-agent-chat-bus-event-stream-publication-boundary.md](tech-specs/FT-004-agent-chat-bus-event-stream-publication-boundary.md): Feature-local SDD tech spec for Agent Chat Bus publication boundary.
 - [.memory-bank/tech-specs/FT-005-ui-feed-context-hygiene.md](tech-specs/FT-005-ui-feed-context-hygiene.md): Feature-local SDD tech spec for UI Feed and context hygiene.
+- [.memory-bank/tech-specs/FT-006-vision-observation-plant-state-trust.md](tech-specs/FT-006-vision-observation-plant-state-trust.md): Feature-local SDD tech spec for Vision Observation reports, plant-state trust gates, and dataset handoff.
+- [.memory-bank/tech-specs/FT-007-hydroponics-advisor-missing-data-policy.md](tech-specs/FT-007-hydroponics-advisor-missing-data-policy.md): Feature-local SDD tech spec for Hydroponics Advisor input, missing-data policy, Safety Gate handoff, and verification.
+- [.memory-bank/tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md](tech-specs/FT-008-tasks-approvals-follow-up-outcomes.md): Feature-local SDD tech spec for tasks, approvals coordination, and follow-up outcomes.
 - [.memory-bank/tech-specs/FT-009-dataset-governance-trainability.md](tech-specs/FT-009-dataset-governance-trainability.md): Feature-local SDD tech spec for dataset governance and trainability.
 - [.memory-bank/tech-specs/FT-010-local-security-privacy-lazy-sync.md](tech-specs/FT-010-local-security-privacy-lazy-sync.md): Feature-local SDD tech spec for local security, privacy, upload validation, and lazy sync.
+- [.memory-bank/tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md](tech-specs/FT-011-minimal-web-app-pwa-operator-surface.md): Feature-local SDD tech spec for the minimal Web App/PWA operator surface.
 - [.memory-bank/tech-specs/FT-012-agent-runtime-decisions-message-envelope-output-contracts.md](tech-specs/FT-012-agent-runtime-decisions-message-envelope-output-contracts.md): Feature-local SDD tech spec for agent runtime decisions and MessageEnvelope output contracts.
 - [.memory-bank/tech-specs/FT-013-safety-gate-physical-action-advice.md](tech-specs/FT-013-safety-gate-physical-action-advice.md): Feature-local SDD tech spec for Safety Gate physical-action advice checks.
+- [.memory-bank/tech-specs/FT-014-human-approval-action-unlock-semantics.md](tech-specs/FT-014-human-approval-action-unlock-semantics.md): Feature-local SDD tech spec for human approval and action unlock semantics.
 - [.memory-bank/guides/](guides/): Valid HOW docs для использования, запуска и troubleshooting.
 - [.memory-bank/adrs/](adrs/): ADR решения.
 - [.memory-bank/adrs/ADR-001-local-modular-monolith-and-authority-boundaries.md](adrs/ADR-001-local-modular-monolith-and-authority-boundaries.md): Accepted decision for local modular monolith and authority boundaries.

@@ -4,6 +4,61 @@ status: active
 ---
 # Changelog
 
+## [2026-06-01] P1-07 navigation drift fixed
+- Updated current Memory Bank route text to point from completed SDD gates to `/prd-to-tasks FT-<NNN>` or `/prd-to-tasks --all`, subject to active review blockers/gates.
+- Marked historical analysis as complete and aligned FT-014/FT-008 coordination wording with completed feature-local `/spec-improve` gates.
+- Marked the old `SPEC_BACKBONE_NOT_READY` review-request warning as historical context for the earlier pre-backbone review phase.
+
+## [2026-06-01] SafetyGateDecision authority clarified
+- Defined `SafetyGateDecision` runtime authority as PostgreSQL/read-model `safety_decisions` records with canonical `safety_decision:<safety_decision_id>` refs.
+- Updated runtime model, FT-003, FT-013, FT-014, FT-008, and FT-011 specs so timeline, Bus, UI Feed, tasks, and approvals may reference Safety Gate decisions but cannot replace their authority.
+- Added verification targets for resolving Safety Gate decision refs through PostgreSQL/read-model records in display, task, pending approval, and action unlock flows.
+
+## [2026-06-01] MessageEnvelope stable identity docs-sync
+- Added backend-owned `message_id` and canonical `message:<message_id>` refs to the global MessageEnvelope contract and FT-012 lifecycle.
+- Aligned FT-004 agent-originated Bus publication to carry `message_ref` instead of inline-only MessageEnvelope identity.
+- Updated Vision, Advisor, Tasks, Dataset Governance, UI Feed, and PWA quote/detail refs to use the canonical message reference vocabulary.
+
+## [2026-06-01] Issue 2 safety freshness policy closed
+- Closed the review blocker for non-pH/EC physical-action freshness.
+- Added MVP fresh context requirements for pump, light, and high-risk manual interventions in Safety Approval and FT-013.
+- Tightened FT-014 approval unlock rules so physical-action approvals require expiry and validate non-pH/EC context freshness.
+
+## [2026-06-01] RTM primary/supporting feature alignment
+- Updated `.memory-bank/requirements.md` RTM to distinguish primary feature ownership from supporting/affected feature coverage.
+- Added missing cross-feature traceability for FT-003 runtime authority/event-ref support and FT-008 task/approval handoff scope.
+- Kept REQ rows intact while making cross-feature constraints visible for future `/prd-to-tasks`.
+
+## [2026-06-01] FT-011 spec-improve completed
+- Completed feature-level SDD design for FT-011 Minimal Web App/PWA Operator Surface.
+- Added minimal route/view set, daily operator workflow, surface behavior, API dependency map, UI Feed presentation-only consumption, safety display checks, local auth/LAN behavior, PWA/offline boundaries, and UI/e2e verification targets.
+- Updated FT-011, spec-index, tech-specs router, and Memory Bank routing to mark the feature design gate complete.
+
+## [2026-06-01] FT-007 spec-improve completed
+- Completed feature-level SDD design for FT-007 Hydroponics Advisor and Missing Data Policy.
+- Added advisor input refs, missing/stale pH/EC policy, clarification-vs-task handoff, cautious recommendation wording, MessageEnvelope claim mapping, Safety Gate handoff, no-direct-action-task boundary, API/service surface, and verification targets.
+- Updated FT-007, spec-index, tech-specs router, and Memory Bank routing to mark the feature design gate complete.
+
+## [2026-06-01] FT-006 spec-improve completed
+- Completed feature-level SDD design for FT-006 Vision Observation and Plant State Trust.
+- Added Vision Observation report shape, observation-vs-diagnosis boundary, source/evidence refs, confidence/status mapping, plant-state promotion gates, contradiction handling, dataset handoff, API/service surface, and verification targets.
+- Updated FT-006, spec-index, tech-specs router, and Memory Bank routing to mark the feature design gate complete.
+
+## [2026-06-01] FT-008 spec-improve completed
+- Completed feature-level SDD design for FT-008 Tasks, Approvals, and Follow-up Outcomes.
+- Added task boundaries/statuses, creation sources, FT-014 unlock coordination, due/follow-up timing, outcome capture, event/audit refs, API/service surface, and verification targets.
+- Updated FT-008, spec-index, tech-specs router, and Memory Bank routing to mark the feature design gate complete.
+
+## [2026-06-01] FT-014 spec-improve completed
+- Completed feature-level SDD design for FT-014 Human Approval and Action Unlock Semantics.
+- Added pending approval representation, approval/rejection record lifecycle, stale/replay prevention, human-performed action unlock service, event/audit refs, API surface, and no-device-execution verification targets.
+- Updated FT-014, spec-index, tech-specs router, and Memory Bank routing to mark the feature design gate complete.
+
+## [2026-06-01] Invariants docs-sync
+- Refactored `.memory-bank/invariants.md` into a short cross-cutting MUST/NEVER guardrail list.
+- Replaced duplicated photo schema, timeline payload, pH/EC freshness/provenance, Bus mechanics, and dataset trainability details with pointers to owning domain, contract, state, runbook, and feature-local specs.
+- Kept global guardrails for Spec Before Code, `tomato_001`, runtime authority, timeline audit, Agno/raw output boundary, UI Feed isolation, Safety Gate and human approval, local/private MVP sync, secret redaction, and MVP exclusions.
+
 ## [2026-05-31] FT-009 spec-improve finalized
 - Added a feature-local SDD tech spec for FT-009 Dataset Governance and Trainability to complete the handoff surface.
 - Clarified dataset item boundary, transition service, trainability recomputation, evidence refs, curator rules, API/service surface, and verification targets without creating a full dataset registry.

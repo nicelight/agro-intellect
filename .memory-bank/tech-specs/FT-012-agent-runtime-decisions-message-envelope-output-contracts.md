@@ -2,7 +2,7 @@
 description: Feature-local SDD tech spec for FT-012 agent runtime decisions and MessageEnvelope output contracts.
 status: active
 owner: architecture
-last_updated: 2026-05-31
+last_updated: 2026-06-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -20,6 +20,7 @@ FT-012 owns:
 - exactly-one runtime decision handling for invoked agents;
 - Agno/mock execution output adaptation into domain decisions;
 - `MessageEnvelope` validation for publishable agent work output;
+- backend-generated `message_id` lifecycle and canonical `message:<message_id>` refs;
 - `silent` audit evidence with no MessageEnvelope and no Bus publication;
 - output-size and raw-reasoning rejection rules;
 - Team Signal / Safety Block routing shape before FT-004 Bus publication;
@@ -74,7 +75,7 @@ Minimum normalized result:
 | `model_version` | Required when a real model/provider was used; `mock` value allowed for mock adapters. |
 | `prompt_version` | Required when prompt-based output was used; `mock` value allowed for mock adapters. |
 | `created_at` | Timezone-aware adapter result time. |
-| `message_envelope` | Required only for publishable decisions. |
+| `message_envelope` | Required only for publishable decisions; after validation it includes canonical `message_id`. |
 | `audit` | Adapter name, validation status, and rejection/fail-closed reason when applicable. |
 
 Provider messages, Agno step output, Team synthesis, tool traces, memory, storage, and raw reasoning are execution artifacts only. They cannot become Bus events or `MessageEnvelope` content without this adapter.
@@ -85,6 +86,7 @@ Publishable agent work output must validate this schema-level contract:
 
 | Field | Rule |
 |---|---|
+| `message_id` | Required backend-generated stable ID for publishable decisions; recommended prefix `msg_`. |
 | `agent_id` | Required; matches the runtime result agent. |
 | `claim_type` | Required MVP enum: `observation`, `hypothesis`, `recommendation`, `safety_block`, `task_request`, `clarification_request`, `quoted_detail_reply`, `team_signal`. |
 | `confidence` | Required enum: `unknown`, `low`, `medium`, `high`. |
@@ -96,10 +98,25 @@ Publishable agent work output must validate this schema-level contract:
 
 Rules:
 
+- `message_id` is assigned only after FT-012 validates a publishable `MessageEnvelope`; canonical ref format is `message:<message_id>`.
+- Bus event IDs, timeline event IDs, UI Feed event IDs, and provider message IDs do not replace `message_id`.
+- Downstream source refs for publishable agent output use `message:<message_id>`; Bus/timeline/UI refs may be included only as publication, audit, or presentation refs.
 - `can_train_on=true` is forbidden for raw or ordinary agent-labeled output unless dataset governance has already produced an eligible selected train item with evidence refs.
 - `source_refs` must reference domain evidence such as photo, observation, measurement, task, approval, timeline, review, or dataset refs.
 - `consumable_output` must be safe to give to another agent as working context; it must not contain raw chain-of-thought, hidden reasoning, secrets, or UI-only prose.
 - `ui_spoiler_note_ref`, when present, must point to a UI Feed event with `visible_to_agents=false` and `consumable_by_agents=false`.
+
+### MessageEnvelope Identity And Publication Lifecycle
+
+Publishable agent output follows this lifecycle:
+
+1. The adapter normalizes provider or mock output into an `AgentRuntimeResult` candidate.
+2. For `speak`, `clarify`, and `escalate`, FT-012 validates the `MessageEnvelope` fields and assigns backend-owned `message_id`.
+3. The validated envelope becomes an immutable agent-output record or equivalent backend-visible snapshot addressable as `message:<message_id>`.
+4. FT-004 Bus publication receives `message_ref=message:<message_id>` and maps the runtime decision to the Bus event type. The Bus event ID is a publication ref, not the MessageEnvelope identity.
+5. Timeline, UI Feed, and dataset refs may point to the same `message:<message_id>` while keeping their own audit, presentation, or governance identities.
+
+Rejected candidates and `silent` decisions get no `message_id`. If Bus publication fails after envelope validation, no agent-consumable Bus event exists; implementation must either roll back the visible envelope or leave only non-consumable audit evidence.
 
 ### Decision To Event Mapping
 
@@ -157,8 +174,13 @@ Useful implementation surfaces:
 
 - schema validators for `AgentRuntimeResult` and `MessageEnvelope`;
 - adapter function from Agno/mock output to runtime result;
+- validated envelope storage/read/ref lookup if needed by Bus, UI, task, dataset, or audit flows;
 - internal publish handoff to FT-004 Bus service for publishable decisions;
 - local debug endpoint only if needed for test inspection, with secrets/raw reasoning redacted.
+
+### FT-004 Coordination Note
+
+FT-012 depends on the FT-004 foundation `BusPublicationService` and `BusEventEnvelope` validation stub for agent-originated publication. Task decomposition should implement FT-004 foundation first, then FT-012 `AgentRuntimeResult` / `MessageEnvelope` validation, `message_id` assignment, and adapter mapping, then cross-feature integration tests proving publishable agent output carries `message_ref=message:<message_id>` before FT-004 Bus publication.
 
 ## Verification Targets
 
@@ -166,10 +188,11 @@ Required before FT-012 can be marked implemented:
 
 - `node scripts/mb-lint.mjs`
 - `node scripts/mb-doctor.mjs`
-- Schema tests for `AgentRuntimeResult` and `MessageEnvelope` required fields, enum values, non-empty `source_refs`, `can_train_on` default/guard, and `ui_spoiler_note_ref` pointer shape.
+- Schema tests for `AgentRuntimeResult` and `MessageEnvelope` required fields, backend-generated `message_id`, canonical `message:<message_id>` ref shape, enum values, non-empty `source_refs`, `can_train_on` default/guard, and `ui_spoiler_note_ref` pointer shape.
 - Runtime-decision tests proving exactly one decision is required.
 - Mapping tests for `speak`, `clarify`, `escalate`, and `silent` to valid Bus/no-Bus outcomes.
-- `silent` audit tests proving no `MessageEnvelope` and no Bus event are created while audit evidence exists.
+- `silent` audit tests proving no `MessageEnvelope`, no `message_id`, and no Bus event are created while audit evidence exists.
+- Lifecycle tests proving rejected candidates get no `message_id` and agent-originated Bus events carry `message_ref=message:<message_id>` instead of inline-only envelopes.
 - Concise-output tests for ordinary conclusions, clarification requests, quoted detail replies, and large-message routing.
 - Anti-cheat tests proving raw Agno output, raw reasoning, provider message history, Team synthesis, memory/storage, and UI spoiler text cannot become `MessageEnvelope.consumable_output`.
 - Safety-boundary tests proving physical-action wording is not displayed or routed to task/action handling by FT-012 alone.
