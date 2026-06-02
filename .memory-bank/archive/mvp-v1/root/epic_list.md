@@ -1,3 +1,7 @@
+---
+description: Archived early MVP v1 epic list.
+status: archived
+---
 10. Epic list
 Epic	Цель	Risk
 E1. Project governance & AI-first protocol	Управляемая разработка через task cards, роли, stop conditions	T2

@@ -1,22 +1,24 @@
 ---
-description: Integration plan for introducing Companion governance and local Farm/Admin accounts into the MVP spec layer.
+description: Feature-scope input for Companion governance and local Farm/Admin accounts in MVP v2.
 status: draft
 type: analysis
-last_updated: 2026-06-01
+last_updated: 2026-06-02
 ---
-# MVP Scope Expansion Integration Plan
+# MVP Scope Expansion Feature-Scope Input
 
 ## Status
 
-This is a pre-PRD planning artifact. It records the intended route for promoting two
-draft analysis notes into the spec layer:
+This is an MVP v2 feature-scope input. The active PRD has already promoted the accepted
+direction into [.memory-bank/prd.md](../prd.md) with `clarification_status: complete`.
+This document now records scope and impact for downstream `/spec-init`, `/prd`, and
+`/spec-design`; it is not a separate integration workflow.
 
 - [.memory-bank/analysis/companion-issue-stack-decision-governance.md](companion-issue-stack-decision-governance.md): Companion `IssueStack`, proposal, and decision governance.
 - [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](accounts-farm-access-admin-analysis.md): Accounts, Farm access, Boss admin, personnel, and Plant management.
 
 This document is not a binding feature spec and does not authorize implementation tasks.
-Binding changes must go through `/constitution`, `/write-prd`, `/prd`, `/spec-design`,
-and feature-level `/spec-improve`.
+Binding implementation scope must come from the active PRD, generated requirements,
+SDD backbone, feature specs, and task records.
 
 ## Accepted Direction
 
@@ -38,20 +40,11 @@ The MVP should still avoid production SaaS scope:
 - no password recovery or enterprise identity provider requirement unless a later PRD adds it;
 - no automated physical actuation.
 
-## Constitution Amendment Needed
+## Constitution And PRD Status
 
-The current Constitution and PRD prohibit multi-user/SaaS-like expansion before the MVP
-needs it. Because Accounts/Farm/Boss Admin are now intentionally in MVP scope, the first
-workflow step must be `/constitution`.
-
-Expected amendment shape:
-
-- Replace the absolute "no multi-user architecture before MVP" constraint with a bounded rule:
-  local-first, single-Farm, multi-account, role-scoped MVP is allowed when explicitly specified.
-- Keep the low-maintenance principle.
-- Keep production SaaS, complex sync, cloud hosting, billing, and broad farm-management scope out
-  unless a later product stage explicitly adds them.
-- Keep Safety Gate and human approval non-negotiable.
+The Constitution has been amended for bounded local-first Farm workspace scope, and the
+active PRD is complete. No additional Constitution amendment is required for the scope
+captured here.
 
 ## Product Scope Target
 
@@ -132,7 +125,7 @@ Companion must not:
 
 ## Feature Plan
 
-Add new MVP features after `/write-prd` and `/prd`:
+Candidate MVP features for `/prd` decomposition:
 
 - `FT-015 Local Accounts, Sessions, and Actor Context`
 - `FT-016 Farm, Plant Lifecycle, and Plant Access Grants`
@@ -168,23 +161,18 @@ Lower-impact but still affected:
 
 ## Workflow Route
 
-Use one combined delta route because Companion and Accounts share role and decision semantics:
+Continue after explicit user instruction from the completed PRD:
 
-1. `/constitution`
-   - Amend MVP scope and low-maintenance constraints.
-2. `/write-prd`
-   - Use both delta sources plus this plan as context.
-   - Clarify product decisions before writing binding PRD content.
-3. `/spec-init`
+1. `/spec-init`
    - Refresh SDD route map if needed.
-4. `/prd`
+2. `/prd`
    - Update product, requirements, RTM, epics, features, testing, and navigation.
-5. `/spec-design`
+3. `/spec-design`
    - Rebuild global architecture backbone for Account/Farm/Plant/ActorContext and Companion governance.
-6. `/spec-improve`
+4. `/spec-improve`
    - First improve new foundation features.
    - Then re-improve affected existing features in dependency order.
-7. `/prd-to-tasks`
+5. `/prd-to-tasks`
    - Only after affected feature specs are complete.
 
 ## Suggested Spec-Improve Order
@@ -197,20 +185,21 @@ Use one combined delta route because Companion and Accounts share role and decis
 6. `FT-013`, `FT-014`, `FT-008` safety, approval, and task semantics.
 7. `FT-001`, `FT-002`, `FT-006`, `FT-007`, `FT-009` feature-local scoping updates.
 
-## Open Decisions For `/constitution` And `/write-prd`
+## Closed PRD Decisions
 
-- Is MVP deployment strictly local/LAN, or is hosted access allowed later only?
-- Is MVP limited to one Farm workspace?
-- Can one Account belong to multiple Farms in MVP?
-- Are roles only presets, or can Boss grant per-permission overrides in MVP?
-- Which roles can approve physical-action proposals?
-- Is Consultant allowed to comment only, or create recommendations/tasks?
-- What exact action archives/removes a Plant: archive, delete, hide, or transfer?
-- What is the scope of `IssueStack`: per Farm, per Plant, per conversation, per daily check-in, or per workflow session?
-- What decisions can `DecisionRecord` make: discussion direction only, task creation, workflow routing, or state changes?
-- How does `CompanionProposal.version` expire or get superseded?
-- What approved governance summary becomes agent-consumable?
-- How should `tomato_001` migrate into the new Farm/Plant model?
+- Deployment is loopback by default; LAN is optional only when explicitly enabled with auth/session/CORS controls.
+- MVP is limited to one local Farm workspace.
+- Multi-Farm membership/tenancy is out of MVP.
+- Roles are Boss/Engineer/Consultant presets plus PlantAccessGrant; the only MVP permission override is `plant_approve_actions`.
+- Boss may approve physical-action proposals; Engineer may approve only with per-Plant `plant_approve_actions`; Consultant never approves.
+- Consultant is read/comment/advice only and does not create domain task/recommendation records or approvals.
+- Plant removal is archive/restore only; no hard delete in MVP.
+- `IssueStack` is Plant-scoped.
+- `DecisionRecord` may route Plant-scoped workflow and safe check/measurement/follow-up task requests, but cannot mutate Plant state or unlock physical actions.
+- A new CompanionProposal for the same Plant issue supersedes the previous pending proposal; no parallel proposals.
+- Agent-consumable governance summary is compact typed facts from a valid DecisionRecord only.
+- `tomato_001` is the initial Plant inside the local Farm.
+- MVP runtime/demo agents must be real LLM/model-backed flows over actual scoped Plant data; fake/mock/stub outputs are not acceptable as the MVP runtime path.
 
 ## Non-Negotiable Guardrails
 
@@ -219,6 +208,7 @@ Use one combined delta route because Companion and Accounts share role and decis
 - Physical-action advice still requires fresh data, Safety Gate, and valid human approval.
 - UI Feed, admin UI text, unapproved proposals, and raw chat do not become agent facts.
 - Agents must receive only authorized, typed, agent-consumable context.
+- Product-agent runtime/demo flows must use real LLM/model-backed agents over actual scoped Plant data; test-only mocks are not acceptable as MVP runtime.
 - Secrets/session/auth material must never enter logs, timeline, manifests, UI Feed, Bus, screenshots, or exports.
 
 ## Verification Gates After Spec Changes

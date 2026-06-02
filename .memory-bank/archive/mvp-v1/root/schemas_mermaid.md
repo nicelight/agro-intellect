@@ -1,3 +1,7 @@
+---
+description: Archived MVP v1 overview architecture diagrams.
+status: archived
+---
 # Agro Intellect Architecture Diagrams
 
 Статус: обзорный onboarding-документ.

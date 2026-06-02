@@ -1,10 +1,10 @@
 ---
 description: Project Constitution — governing principles for AI-first development.
 status: active
-version: 1
+version: 2
 project_principles: ratified
 ratified: 2026-05-27
-last_updated: 2026-05-27
+last_updated: 2026-06-01
 ---
 # Project Constitution
 
@@ -20,7 +20,7 @@ Agents MUST derive implementation work from explicit product, requirement, featu
 
 ### II. DO NOT Overengineering
 
-Project level is `medium`: use strict specs and gates for risky zones, but avoid enterprise overhead. Prefer KISS for ordinary MVP work; require stability-first design for safety, data authority, dataset governance, Agent Chat Bus, MessageEnvelope, UI Feed isolation, and other agent-contract boundaries.
+Project level is `medium`: use strict specs and gates for risky zones, but avoid enterprise overhead. Prefer KISS for ordinary MVP work; require stability-first design for safety, data authority, account/farm access boundaries, Companion governance decisions, dataset governance, Agent Chat Bus, MessageEnvelope, UI Feed isolation, and other agent-contract boundaries.
 
 ### III. Memory Bank Is Durable Project Knowledge
 
@@ -36,15 +36,15 @@ Every completed task MUST have evidence appropriate to its risk and tier. Core b
 
 ### VI. Bounded Agent Autonomy
 
-Product agents may analyze observations, request missing data, publish structured conclusions, and create safe check/follow-up tasks within their competence. Plant state cannot be promoted to confirmed without human review or follow-up evidence. Training data curation may be mostly autonomous only when strong `evidence_refs` exist; `gold` status requires human, expert, or batch review.
+Product agents may analyze observations, request missing data, publish structured conclusions, and create safe check/follow-up tasks within their competence. Plant state cannot be promoted to confirmed without human review or follow-up evidence. Companion governance may organize discussion and propose decisions only through explicit typed state and human-authorized `DecisionRecord` semantics. Training data curation may be mostly autonomous only when strong `evidence_refs` exist; `gold` status requires human, expert, or batch review.
 
 ### VII. Human Gate for Physical Actions
 
 Any action that changes the physical plant system requires fresh data, safety check, and human approval before execution. Agents may create pending proposals or approval tasks, but MUST NOT issue immediate commands for pH, EC, solution, pumps, dosing, or light changes without the gate.
 
-### VIII. Low Maintenance Non-Negotiable
+### VIII. Low Maintenance and Bounded MVP Scope
 
-Low maintenance is a critical non-negotiable. Prefer simple local architecture, minimal infrastructure, clear source-of-truth boundaries, and reversible MVP slices. Do not add production SaaS, multi-user architecture, complex sync, sensor runtime dependencies, full dataset registry, or broad abstractions before the MVP needs them.
+Low maintenance is a critical non-negotiable. Prefer simple local architecture, minimal infrastructure, clear source-of-truth boundaries, and reversible MVP slices. The MVP may include a bounded local-first Farm workspace with local Accounts, Boss/Engineer/Consultant roles, per-Plant access, multiple Plants, and Companion governance when explicitly specified by PRD/specs. Do not add production SaaS, hosted/cloud sync as an MVP requirement, billing/subscription boundaries, enterprise identity, microservices, complex sync, sensor runtime dependencies, full dataset registry, automated physical actuation, or broad farm-management scope before a later product stage explicitly requires them.
 
 ### IX. No Legacy Fallback and No Speculation
 
@@ -64,6 +64,7 @@ After meaningful changes, agents MUST synchronize affected Memory Bank docs, tas
 - Architecture priority: KISS by default, stability-first for safety, data, and agent-contract boundaries.
 - Definition of Done: risk-based checks; schema/contract/safety gates are mandatory for core boundaries, UI/e2e checks for real user flows.
 - Agent autonomy: plant state requires human/follow-up gate for confirmation; training data curation is mostly autonomous only with strong evidence.
+- MVP scope amendment on 2026-06-01: bounded local-first Farm workspace, local Accounts, role-scoped access, multiple Plants, and Companion governance are allowed in MVP after PRD/spec promotion; production SaaS and broad farm-management scope remain excluded.
 - Critical non-negotiable: low maintenance.
 
 ## Governance
@@ -73,4 +74,4 @@ After meaningful changes, agents MUST synchronize affected Memory Bank docs, tas
 - Amendments must include rationale and update affected docs if needed.
 - Constitution should stay short. Put concrete project rules into `invariants.md`, `contracts/*`, `states/*`, or workflow policy docs.
 
-**Version**: 1 | **Ratified**: 2026-05-27 | **Last updated**: 2026-05-27
+**Version**: 2 | **Ratified**: 2026-05-27 | **Last updated**: 2026-06-01

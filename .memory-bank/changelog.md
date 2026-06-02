@@ -4,6 +4,19 @@ status: active
 ---
 # Changelog
 
+## [2026-06-02] MVP v2 PRD completed and source docs synced
+- Created clarified MVP v2 PRD at `.memory-bank/prd.md` with `clarification_status: complete` and Constitution gate passed.
+- Synchronized Product Brief, dossier, glossary, invariants, analysis router, spec-index, and Memory Bank index with PRD decisions.
+- Fixed MVP runtime/demo boundary: product-agent flows must use real LLM/model-backed agents over actual scoped Plant data; fake/mock/stub outputs are test-only and do not satisfy MVP runtime acceptance.
+- Updated routing so the next possible workflow step is `/spec-init` after explicit user instruction; `/prd-to-tasks` remains blocked until `/spec-init`, `/prd`, `/spec-design`, and feature-level `/spec-improve` complete.
+
+## [2026-06-01] MVP v1 spec-layer archived for MVP v2 migration
+- Hard-archived the MVP v1 PRD, requirements, epics, features, SDD backbone, contracts, states, domains, runbooks, tech specs, testing docs, and v1 analysis inputs under `.memory-bank/archive/mvp-v1/`.
+- Archived old root-level MVP v1 planning/onboarding artifacts `epic_list.md`, `features_list.md`, and `schemas_mermaid.md` under `.memory-bank/archive/mvp-v1/root/`.
+- Kept active governance and planning docs for MVP v2: Constitution, invariants, glossary, analysis inputs, migration plan, and routing stubs.
+- Replaced active Memory Bank and SDD routing with MVP v2 migration stubs that block `/prd-to-tasks` until `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, and feature-level `/spec-improve` are rerun.
+- Updated the active glossary for Accounts/Farm/Admin and Companion governance vocabulary while keeping MVP v1 vocabulary available in the archive.
+
 ## [2026-06-01] P1-07 navigation drift fixed
 - Updated current Memory Bank route text to point from completed SDD gates to `/prd-to-tasks FT-<NNN>` or `/prd-to-tasks --all`, subject to active review blockers/gates.
 - Marked historical analysis as complete and aligned FT-014/FT-008 coordination wording with completed feature-local `/spec-improve` gates.

@@ -1,7 +1,8 @@
 ---
-description: Product Brief input contract for PRD.
+description: Product Brief input contract for MVP v2 PRD.
 status: draft
 type: product-brief
+last_updated: 2026-06-02
 ---
 # Product Brief
 
@@ -10,111 +11,185 @@ type: product-brief
 - Status: draft
 - Decision: proceed
 - Source artifacts:
-  - [project_dossier.md](../../project_dossier.md)
-  - [.memory-bank/analysis/brainstorming/BR-001.md](brainstorming/BR-001.md)
+  - [project_dossier_v2.md](../../project_dossier_v2.md): upstream MVP v2 dossier.
+  - [.memory-bank/constitution.md](../constitution.md): amended governing policy for bounded local-first Farm workspace and Companion governance.
+  - [.memory-bank/invariants.md](../invariants.md): cross-cutting guardrails.
+  - [.memory-bank/glossary.md](../glossary.md): active MVP v2 vocabulary.
+  - [.memory-bank/analysis/mvp-scope-expansion-integration-plan.md](mvp-scope-expansion-integration-plan.md): MVP v2 feature-scope input.
+  - [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](accounts-farm-access-admin-analysis.md): Accounts/Farm/Admin analysis.
+  - [.memory-bank/analysis/companion-issue-stack-decision-governance.md](companion-issue-stack-decision-governance.md): Companion governance analysis.
 
 ## 1. One-liner
 
-Agro Intellect MVP is a personal tomato-monitoring assistant and AI-first training ground for learning how to design, implement, test, and govern agentic agricultural monitoring systems.
+Agro Intellect MVP v2 is a local-first Farm workspace and AI-first agentic development
+training ground for role-scoped Plant operations, starting with `tomato_001` as the
+initial Plant.
 
 ## 2. Target Users
 
-- Primary user: the project owner acting as Human Architect, Product Owner, Safety Owner, QA Gatekeeper, and Domain Learner.
-- Near-term user role: one person caring for one hydroponic tomato and using the system for daily observation and decision support.
-- Future reference user: operators/agronomists in a farm-scale agentic monitoring system, but not as MVP users.
+- `Boss`: local Farm owner/admin who manages Accounts, roles, Plants, per-Plant access, and admin audit.
+- `Engineer`: operational user for assigned Plants; performs check-ins, photos, measurements, tasks, and permitted approvals.
+- `Consultant`: advisory/read/comment user for granted Plant context; no operational authority by default.
+- Project owner / AI-first development operator: uses the product to learn and validate agentic architecture, Memory Bank workflow, source-of-truth boundaries, and safety governance.
 
 ## 3. Problem
 
-The user wants practical experience building agentic systems without jumping directly into a complex commercial farm product. A small hydroponic tomato provides a controlled environment for learning agent boundaries, workflow orchestration, state over time, multimodal observation, safety gates, human approval, data governance, and future learning loops.
+The project needs a useful Plant operations tool and a realistic AI-first architecture
+training ground. MVP v1 proved the single-user tomato direction, but it did not exercise
+the harder boundaries that will matter for future farm-scale systems: local Accounts,
+role-scoped access, Farm/Plant authority, permission-aware agent context, Companion
+governance, admin audit, and strict safety separation.
 
 ## 4. Current Alternatives
 
-- Manual notes, photos, and reminders without structured state or traceability.
-- Ad hoc use of a general LLM or vision model without durable plant history, safety gates, or dataset governance.
-- Building a large farm-management system too early, before the architecture and agent workflow patterns are proven.
+- Manual notes, photos, and spreadsheets: simple but weak on traceability, safety, and dataset governance.
+- Generic chat/LLM advice: useful for conversation but unsafe as source of truth and weak on role/access boundaries.
+- Commercial farm-management software: too broad and SaaS-oriented for the current local AI-first learning goal.
+- Single-user MVP v1 flow: too narrow to validate Accounts/Farm/Admin, role-scoped access, and governance decisions.
 
 ## 5. Value Proposition
 
-The MVP turns one plant into a disciplined learning environment: every daily observation, photo, recommendation, approval, task, and outcome becomes traceable evidence. The user gets a useful tomato assistant now and reusable engineering patterns for future farm-scale agentic systems later.
+MVP v2 gives a bounded local Farm workspace where humans and product agents can work
+with Plants safely and traceably. The product stays small enough for MVP execution while
+testing the important future-facing patterns: ActorContext, per-Plant access, Agent Chat
+Bus boundaries, UI Feed isolation, Safety Gate enforcement, Companion `DecisionRecord`
+governance, task/follow-up loops, and dataset evidence hygiene.
 
 ## 6. Product Concept
 
-The first product is a Web App/PWA where the user performs a daily check-in for `tomato_001`, uploads photos, enters manual pH/EC and observations, receives cautious agent conclusions, approves risky actions, and tracks follow-up tasks.
+The first product surface is a Web App/PWA backed by a local modular monolith. A Boss
+sets up one local Farm workspace, creates or migrates Plants, manages local Accounts,
+assigns roles, grants per-Plant access, and sees durable admin audit. Authorized users
+select a Plant, run daily check-ins, upload photos, enter observations and pH/EC
+measurements, receive cautious agent-assisted outputs, handle Safety Gate prompts,
+create or complete tasks, and record follow-up outcomes.
 
-The product uses single-competence agents: Companion, Vision Observation, Plant State, Hydroponics Advisor, Task & Follow-up, Safety Gate, Dataset Governance, and Training Data Curator. Agno may execute agents and workflows, but domain truth flows through project-owned contracts such as Agent Chat Bus, `MessageEnvelope`, UI Feed, PostgreSQL state, and `timeline.jsonl`.
+Companion helps coordinate discussion through explicit typed governance state:
+`IssueStack`, `HumanAttentionNeeded`, `CompanionProposal`, `CompanionConclusion`, and
+`DecisionRecord`. Companion does not become hidden authority. Governance decisions do
+not authorize physical actions and do not replace Safety Gate approval.
 
 ## 7. MVP Scope
 
-- One plant: `tomato_001`.
-- Daily check-in and user observation capture.
-- Photo upload with required `plant_id`, filesystem storage, and JSON manifest snapshot.
-- Manual pH/EC entry.
-- PostgreSQL runtime state for plant, photo catalog, tasks, approvals, review/dataset/sync statuses, and event references.
-- Append-only `timeline.jsonl` audit/export log.
-- Mock or real Vision Observation Agent.
-- Structured agent conclusions through domain envelopes.
-- UI-only spoiler notes that are not consumable by agents.
-- Hydroponics Advisor with cautious recommendations and no hard dosing commands without required context.
-- Safety Gate and human approval for physical actions.
-- Task/follow-up flow and dataset statuses.
+- One local Farm workspace.
+- Local Accounts and local login/session baseline.
+- Role presets: Boss, Engineer, Consultant.
+- FarmMembership and ActorContext for authorization, attribution, UI visibility, agent context filtering, tasks, approvals, and audit.
+- Multiple Plants, with `tomato_001` as the initial migrated Plant.
+- Plant lifecycle: create, archive, restore, and retain history.
+- Per-Plant access grants.
+- Minimal Boss Admin Surface: personnel list, local-only user add/invite, role assignment, Plant list, Plant lifecycle, access grants, durable audit records, and admin audit view.
+- Daily Plant operations: check-in, observations, photo upload, manual pH/EC, plant card, history, recommendations, tasks, approvals, and follow-up.
+- Photo catalog, local files, `sha256`, initial capture manifests, export-ready refs, and timeline audit.
+- Product agents with single-competence boundaries and permission-aware context.
+- Agent Chat Bus, MessageEnvelope, UI Feed isolation, concise outputs, and controlled spoiler notes.
+- Safety Gate for physical-action wording and authorized human approval before human-performed action tasks.
+- Companion governance state and decision path.
+- Dataset lifecycle fields, evidence refs, trainability guardrails, and `can_train_on=false` by default.
+- Local privacy, `local_only` sync status, 200 MB local storage prompt without implying server upload.
+
+First-demo boundary:
+- Must work: one local Farm, local login/session, Boss plus at least one Engineer path, `tomato_001`, Plant selector with access check, daily check-in, photo upload with `photo_id`/file/`sha256`/manifest/catalog row, manual pH/EC, Bus/UI Feed split, real LLM/model-backed product agents over actual scoped Plant data, Vision Observation over actual uploaded photo data, Plant State trust statuses, Hydroponics Advisor missing-data behavior, Safety Gate, tasks/follow-up, visible Companion `HumanAttentionNeeded` and proposal/decision path, dataset fields, timeline audit/export, and local storage prompt.
+- May defer from first demo: advanced Boss Admin Surface, full role matrix, sync UI details, and sensor runtime.
+- Deferred from first demo: Consultant UI/path, while Consultant remains in MVP v2 product scope.
+- Runtime/demo boundary: fake, mock, hardcoded, or stubbed product-agent outputs do not satisfy MVP acceptance criteria. Test-only mocks may exist for automated tests, but not as the MVP runtime path.
 
 ## 8. Non-goals
 
-- Production SaaS, multi-user support, or full commercial farm management.
-- Autopilot control, pumps, dosing, pH/EC adjustment, light control, or other physical actions.
-- Complex RAG, expert panel, full dataset registry, or real model fine-tuning.
-- Storing photo binaries in PostgreSQL or InfluxDB.
-- Making InfluxDB a runtime dependency before real sensors exist.
-- Using Agno Team `coordinate` as a domain coordinator.
-- Treating agent hypotheses as confirmed facts or training data.
+- Production SaaS.
+- Hosted/cloud sync as an MVP requirement.
+- Billing or subscription boundaries.
+- Enterprise identity provider.
+- Email delivery, password recovery, hosted account recovery, enterprise IdP, or SaaS tenancy for local user add/invite.
+- Multi-Farm tenancy unless a later PRD/spec stage adds it.
+- Broad commercial farm-management scope.
+- Microservices in place of the local modular monolith.
+- Automated physical actuation, pumps, dosing, pH/EC correction, light-control commands, autowatering, or autodosing.
+- Agno as a source of truth or replacement for the domain-owned Agent Chat Bus.
+- Agno Team `coordinate` mode as domain coordinator.
+- Complex RAG, mandatory expert panel, full dataset registry, real fine-tuning, or InfluxDB runtime dependency before real sensors exist.
+- Fake, mock, hardcoded, or stubbed product-agent flows as the MVP runtime/demo path.
 
 ## 9. Success Metrics
 
-- A complete daily flow can be run for `tomato_001`: check-in, photo, pH/EC, agent conclusions, safety review, task/follow-up, and timeline entry.
-- Every photo has `plant_id`, `photo_id`, file reference, JSON manifest, and traceable event references.
-- Dangerous recommendations are blocked or converted into pending approval tasks.
-- Agent outputs are structured, concise by default, and separated from UI-only explanation notes.
-- Dataset items cannot become trainable unless status, split, confirmation source, and evidence rules are satisfied.
-- Core schemas and boundary rules are covered by tests before feature decomposition is considered done.
+- Boss and Engineer can complete the first authorized Plant workflow end to end on `tomato_001`.
+- Every Farm/Plant route can identify who acts, in which Farm, with which role and permissions.
+- Backend enforces every Farm/Plant read/mutate route and agent context builder; frontend hide/show is never sufficient.
+- Users see only authorized Plants and Plant data.
+- Daily check-in, photo, pH/EC, agent output, task, approval, outcome, and durable audit records remain traceable.
+- UI Feed content, unapproved proposals, raw reasoning, and unauthorized Plant context never enter agent working context.
+- Physical-action advice fails closed unless fresh data, Safety Gate pass, and authorized human approval are present.
+- Dataset candidates remain non-trainable until dataset governance rules allow them.
+- First demo agent behavior is produced by real LLM/model-backed agents over actual scoped Plant data, not fake, mock, hardcoded, or stubbed outputs.
 
 ## 10. Constraints
 
-- `project_dossier.md` is upstream dossier context for the brief.
-- After `/spec-init` and `/spec-design`, `.memory-bank/spec-index.md` and linked specs become normative.
-- PostgreSQL/read model is runtime authority for mutable operational state.
-- Photo files plus generated JSON snapshots are dataset/export artifacts, not mutable runtime authority.
-- `timeline.jsonl` is append-only audit/export log.
-- Agno is an execution SDK only; Agno invocation is not Agent Chat Bus publication.
-- Physical state changes require fresh data, Safety Gate, and human approval.
-- KISS applies: implement the smallest verifiable MVP slices.
+- Constitution v2 allows bounded local-first Farm workspace scope, but keeps low maintenance non-negotiable.
+- PostgreSQL/read model remains runtime authority unless a later architecture spec changes it.
+- `timeline.jsonl` is audit/export only.
+- Photo files and manifests are local artifacts, not mutable state authority.
+- UI Feed is presentation only.
+- Companion `DecisionRecord` is governance authority only within backend rules; it is not Safety Gate approval.
+- Backend authorization must enforce every Farm/Plant read/mutate route and every context builder; frontend visibility controls are presentation only.
+- Account, role, Plant lifecycle, and Plant access changes must create durable admin audit records, not only appear in an admin audit view.
+- Local user add/invite means minimal local-only account creation/invite; no email delivery, password recovery, hosted account recovery, enterprise IdP, or SaaS tenancy.
+- Local data and artifacts are private by default.
+- Sessions, tokens, credentials, `.env` values, API keys, and auth material must never enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.
 
 ## 11. Assumptions
 
-- The first working demo can use mock Vision while preserving the same output contracts as a future real vision model.
-- The learning platform value and personal tomato assistant value are both important, with learning value primary.
-- Sensors, sync server, and InfluxDB come after the local MVP proves the core workflow.
-- Open product details can be clarified in `/constitution` and `/write-prd` without blocking this brief.
+- MVP v2 starts with exactly one local Farm workspace.
+- `tomato_001` migrates into the Farm/Plant model as the initial Plant.
+- Boss is the first local Account and initial Farm admin.
+- Local auth/session can be minimal but must support authorization and audit attribution.
+- Consultant remains in product scope, but the first demo may defer a full Consultant UI path.
+- MVP product agents must run as real LLM/model-backed flows over actual user-entered or uploaded Plant data. Sensor runtime remains future-only until real sensors exist.
+- Server sync remains future-only; MVP sync status is `local_only`.
 
 ## 12. Risks
 
-- Overbuilding a farm-scale system before validating the tomato MVP workflow.
-- Letting Agno capabilities replace explicit project contracts and domain authority.
-- Mixing agent hypotheses, UI explanations, and confirmed data.
-- Producing unsafe physical-action recommendations without fresh pH/EC, safety check, and human approval.
-- Polluting future datasets with raw or agent-labeled examples.
-- Creating too many abstractions before schema and boundary tests exist.
+- Scope growth from Accounts/Farm/Admin could recreate broad farm-management or SaaS complexity.
+- Role and permission semantics could become too detailed before the first demo proves the workflow.
+- Governance approval could be confused with Safety Gate physical-action approval.
+- Unapproved Companion proposals or UI markdown could leak into agent context as facts.
+- ActorContext and authorization could be enforced in UI only instead of backend routes and context builders.
+- Dataset/export evidence could mix unauthorized Farm/Plant context if isolation is not specified early.
+- The PRD may overfit to the 3000-line dossier unless `/write-prd` keeps product scope separate from design details.
+- Requiring real LLM/model-backed MVP agents increases integration risk, so specs must keep adapters simple while forbidding fake runtime/demo outputs.
 
-## 13. Open Questions
+## 13. Closed Clarifications
 
-- What exact Definition of Done should apply to the first end-to-end workflow: schema tests, API tests, UI smoke, or all of them?
-- Should the first demo default to mock Vision and make real vision a later switch?
-- Should the first dataset governance implementation include the full lifecycle fields immediately or start with a minimal subset that preserves migration safety?
-- Should safety approval cover only pH/EC/dosing/light/pumps in the first demo, or also manual interventions such as pruning or transplanting?
+The active PRD at [.memory-bank/prd.md](../prd.md) resolves the high-impact `/write-prd`
+questions for MVP v2:
+
+- Loopback is the first-demo default; LAN is optional only when explicitly enabled with auth/session/CORS controls.
+- MVP uses Boss/Engineer/Consultant role presets plus PlantAccessGrant; the only MVP permission override is `plant_approve_actions`.
+- Boss may approve Safety Gate physical-action proposals; Engineer may approve only with per-Plant `plant_approve_actions`; Consultant never approves.
+- Consultant is read/comment/advice only and does not create domain task/recommendation records or approvals.
+- Plant removal is archive/restore only; no hard delete in MVP.
+- `IssueStack` is Plant-scoped in MVP.
+- `DecisionRecord` may route Plant-scoped workflow and safe check/measurement/follow-up task requests, but cannot mutate Plant state or unlock physical actions.
+- A new CompanionProposal for the same Plant issue supersedes the previous pending proposal; no parallel proposals.
+- Agent-consumable governance summary is compact typed facts from a valid DecisionRecord only.
+- MVP runtime/demo agents must be real LLM/model-backed flows over actual scoped Plant data; fake/mock/stub outputs are not acceptable as the MVP runtime path.
 
 ## 14. PRD Input Summary
 
-Write a PRD for a greenfield AI-first MVP that turns one hydroponic tomato into a traceable agentic monitoring workflow. The PRD should preserve the dual purpose: practical personal assistant now, architecture and learning loop training ground for future farm-scale systems later. The MVP must prioritize source-of-truth discipline, single-competence agents, safe human-in-the-loop recommendations, structured outputs, photo/data traceability, schema validation, and dataset governance.
+Write a PRD for MVP v2 as a bounded local-first Farm workspace with local Accounts,
+Boss/Engineer/Consultant roles, one local Farm, multiple Plants starting with
+`tomato_001`, per-Plant access, daily Plant operations, safety-gated agent assistance,
+Companion governance, task/follow-up tracking, local evidence/audit, and dataset
+governance. Preserve KISS and local modular monolith architecture. Keep production SaaS,
+hosted sync, billing, enterprise identity, automated actuation, broad farm management,
+and real fine-tuning outside MVP.
 
-## Decision
+The PRD must clarify role permissions, ActorContext, Plant lifecycle, physical-action
+approval roles, Companion governance scope, `DecisionRecord` authority, first demo
+scope, backend authz/audit constraints, local-only account invite limits, and migration
+of `tomato_001` into the Farm/Plant model.
+
+## 15. Decision
+
+### Decision
 
 proceed

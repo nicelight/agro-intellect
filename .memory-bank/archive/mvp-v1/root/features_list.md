@@ -1,3 +1,7 @@
+---
+description: Archived early MVP v1 feature list.
+status: archived
+---
 11. Feature list
 Feature	MVP status	Notes
 One plant tomato_001	in scope	один объект

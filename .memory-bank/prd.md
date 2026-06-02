@@ -4,376 +4,222 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
+last_updated: 2026-06-02
 ---
 # PRD
 
 ## Source Inputs
 
-- [project_dossier.md](../project_dossier.md): upstream dossier context for product intent, MVP scope, constraints, user flow, safety rules, agent boundaries, data/storage rules, and success criteria.
-- [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): Product Brief input contract for this PRD.
-- [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, KISS, Memory Bank, task execution, risk-based DoD, human safety gates, and low maintenance.
-- [.memory-bank/spec-index.md](spec-index.md): future routing layer for SDD Design Specs. After `/spec-init` and `/spec-design`, linked specs become normative.
-- [.memory-bank/testing/index.md](testing/index.md): baseline verification strategy.
+- [project_dossier_v2.md](../project_dossier_v2.md): upstream MVP v2 dossier and detailed product/architecture context.
+- [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): direct PRD input contract.
+- [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, low-maintenance, bounded local-first MVP scope.
+- [.memory-bank/invariants.md](invariants.md): cross-cutting MUST/NEVER guardrails.
+- [.memory-bank/glossary.md](glossary.md): agreed MVP v2 vocabulary.
+- [.memory-bank/analysis/mvp-scope-expansion-integration-plan.md](analysis/mvp-scope-expansion-integration-plan.md): MVP v2 feature-scope input for Accounts, Farm access, Boss Admin, and Companion governance.
+- [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](analysis/accounts-farm-access-admin-analysis.md): Accounts, Farm, roles, Plant lifecycle, and access-control analysis.
+- [.memory-bank/analysis/companion-issue-stack-decision-governance.md](analysis/companion-issue-stack-decision-governance.md): Companion IssueStack, proposal, and DecisionRecord governance analysis.
 
 ## Product Summary
 
-Agro Intellect MVP is a personal hydroponic tomato monitoring assistant and an AI-first training ground for designing, implementing, testing, and governing agentic agricultural monitoring systems.
+Agro Intellect MVP v2 is a local-first Farm workspace and AI-first agentic development
+training ground for safe, traceable Plant operations. The MVP starts with one local
+Farm, local Accounts, Boss/Engineer/Consultant role presets, multiple Plants, and
+`tomato_001` as the initial Plant.
 
-The MVP focuses on one plant, `tomato_001`, and turns daily observations, photos, manual pH/EC inputs, agent conclusions, safety decisions, follow-up tasks, approvals, outcomes, and dataset metadata into traceable evidence. The system must be useful as a personal tomato assistant now while preserving reusable architectural patterns for a future farm-scale agentic monitoring system.
+The product is a Web App/PWA backed by a local modular monolith. It lets authorized
+humans perform daily Plant care workflows, upload photos, record pH/EC measurements,
+receive cautious agent-assisted outputs, handle Safety Gate prompts, manage tasks and
+follow-up outcomes, and preserve evidence for future dataset governance.
 
-The first product surface is a Web App/PWA. The user performs a daily check-in, uploads photos, enters manual observations and pH/EC values, receives cautious agent conclusions, approves risky physical actions, and tracks follow-up tasks.
+Companion governance is included in MVP v2 as explicit typed state and human decision
+flow. Companion may coordinate discussion and proposals, but it is not hidden authority,
+does not replace backend rules, and cannot authorize physical actions.
 
 ## Goals
 
-- Practice AI-first product development with explicit specs, Memory Bank routing, task records, evidence, and verification gates.
-- Provide a working daily monitoring loop for one hydroponic tomato as the constrained product vehicle for that learning goal.
-- Validate single-competence agent boundaries and structured inter-agent communication.
-- Preserve source-of-truth discipline across PostgreSQL runtime state, `timeline.jsonl`, file photos, JSON photo manifests, Agent Chat Bus, UI Feed, and future SDD specs.
-- Keep all plant-impacting physical actions behind fresh data, Safety Gate checks, and human approval.
-- Build dataset governance foundations so future training/evaluation data is based on evidence rather than raw agent hypotheses.
-- Keep the MVP low-maintenance and small enough to implement as a local monolith.
+- Provide a useful local Farm workspace for bounded Plant operations.
+- Support one local Farm, local Accounts, role-scoped Plant access, and multiple Plants.
+- Migrate `tomato_001` into the Farm/Plant model as the initial Plant.
+- Give Boss a minimal admin surface for personnel, roles, Plants, Plant access, and admin audit.
+- Let Boss and Engineer complete the first authorized Plant workflow end to end.
+- Keep every Farm/Plant workflow actor-scoped through ActorContext and backend authorization.
+- Preserve strict authority boundaries between runtime state, audit/export, UI presentation, agent context, governance decisions, and physical-action approval.
+- Exercise AI-first architecture patterns: single-competence product agents, Agent Chat Bus boundaries, UI Feed isolation, Safety Gate, task/follow-up loop, and dataset evidence hygiene.
 
 ## Non-goals
 
-- Production SaaS.
-- Multi-user support.
-- Commercial farm-management product scope.
-- Autopilot control, pumps, dosing, pH/EC adjustment, light control, or any direct physical actuation.
-- Automatic pH/EC correction or mandatory dosing instructions without approval.
-- Complex RAG, expert panel, full dataset registry, or real model fine-tuning.
-- Storing photo binaries in PostgreSQL or InfluxDB.
-- Making InfluxDB a runtime dependency before real sensors exist.
-- Treating Agno, Agno Team, Agno Workflow events, Agno memory, or Agno storage as domain source of truth.
-- Using Agno Team `coordinate` mode as a domain coordinator.
-- Treating agent hypotheses, UI explanations, or raw model reasoning as confirmed facts or trainable labels.
+- Production SaaS or hosted cloud sync as an MVP requirement.
+- Billing, subscription boundaries, enterprise identity, email delivery, hosted account recovery, or SaaS tenancy.
+- Multi-Farm tenancy or multi-Farm membership in MVP.
+- Broad commercial farm-management scope.
+- Microservices instead of a local modular monolith.
+- Automated physical actuation, pumps, dosing, pH/EC correction, light-control commands, autowatering, or autodosing.
+- Agno as source of truth, Agent Chat Bus replacement, or domain coordinator.
+- Complex RAG, mandatory expert panels, full dataset registry, real fine-tuning, or sensor runtime dependency before real sensors exist.
+- Hard delete for Plant removal in MVP.
+- Fake, mock, or stub product-agent flows as the MVP runtime/demo path.
 
 ## Users / Actors
 
-- Primary user: the project owner acting as Human Architect, Product Owner, Safety Owner, QA Gatekeeper, Domain Learner, and operator of one hydroponic tomato.
-- Product user role: one person caring for `tomato_001` through daily observation and decision support.
-- Future reference user: farm operators or agronomists in a future farm-scale system; not an MVP user.
-
-Product agents:
-
-- Companion Agent: user dialogue, daily flow, plain-language synthesis, missing-data prompts.
-- Vision Observation Agent: photo quality and visual observations; not final diagnosis or pH/EC correction.
-- Plant State Agent: state over time, trends, uncertainty statuses, conflicts; cannot confirm agent-labeled hypotheses without human review or follow-up evidence.
-- Hydroponics Advisor Agent: hydroponic parameters and cautious recommendations; cannot bypass Safety Gate.
-- Task & Follow-up Agent: check tasks, approved action tasks, follow-up tracking, outcomes.
-- Safety Gate Agent: blocks or converts risky physical-action recommendations into pending approval flows.
-- Dataset Governance Agent: dataset lifecycle rules, train/eval/holdout constraints, `can_train_on` eligibility.
-- Training Data Curator Agent: delayed dataset selection using evidence refs; mostly silent in Agent Chat Bus.
+- `Boss`: first local Account and Farm owner/admin. Boss manages Accounts, role presets, Plant lifecycle, PlantAccessGrant records, and admin audit. Boss can approve Safety Gate physical-action proposals for Farm Plants, but cannot bypass fresh data, Safety Gate pass, or backend approval rules.
+- `Engineer`: operational user for assigned Plants. Engineer performs check-ins, uploads photos, records pH/EC and observations, manages allowed tasks/follow-up, sees recommendations, and may approve physical-action proposals only when granted `plant_approve_actions` for that Plant.
+- `Consultant`: advisory/read/comment user for granted Plant context. Consultant may participate in discussion and give advice, but does not create domain task/recommendation records, does not approve Companion governance decisions by default, and never approves physical actions in MVP.
+- Project owner / AI-first development operator: uses the product to validate Memory Bank workflow, source-of-truth boundaries, product-agent architecture, and safety governance.
 
 ## Functional Requirements
 
-### FR-001 Daily Check-in
-
-- The system MUST support a daily check-in flow for `tomato_001`.
-- The system MUST allow the user to record textual observations for the day.
-- The system SHOULD initiate or guide the daily ritual with a short prompt such as "Как томат сегодня?"
-- The daily check-in MUST be recorded as traceable state/event data.
-
-### FR-002 Photo Capture and Catalog
-
-- The system MUST allow the user to upload photos for `tomato_001`.
-- Every photo MUST have `plant_id`, `photo_id`, `captured_at`, `photo_type`, file path, and `sha256`.
-- `photo_catalog.photo_id` MUST be globally unique.
-- `photo_catalog.plant_id` MUST be mandatory and canonical for runtime plant binding.
-- The system MUST support MVP photo types: `whole_plant`, `leaf_closeup`, `lower_leaf_closeup`, `top_view`, `stem`, `roots`, `solution_tank`, `problem_area`.
-- Photo binaries MUST be stored as files, not PostgreSQL or InfluxDB blobs.
-
-### FR-003 Photo JSON Manifest and Export Snapshot
-
-- Each photo MUST have an initial generated JSON manifest snapshot next to the photo file at upload/capture time.
-- The system MUST distinguish initial capture manifests from later export snapshot manifests.
-- `photo_manifest.plant_id` MUST be mandatory and immutable for export.
-- Initial capture manifests MUST include schema version, photo identity, file identity, `plant_id`, `captured_at`, `photo_type`, file reference, and `sha256`.
-- Export snapshot manifests MAY include plant context, relevant system state, agent reports, review/dataset/sync status snapshots, and sensor window references when those data exist.
-- Export snapshot manifests MUST include `manifest_kind`, `snapshot_at`, and `snapshot_version` or `export_id`.
-- Photo JSON manifests are dataset/export artifacts and MUST NOT become runtime authority for mutable state.
-- Mutable review, dataset, sync, and plant state MUST be read from PostgreSQL/read model, not from a previous manifest snapshot.
-
-### FR-004 Manual pH/EC and Observation Input
-
-- The system MUST allow manual pH and EC entry.
-- Manual measurements MUST include timestamp/provenance.
-- Hydroponics recommendations that depend on pH/EC MUST request fresh measurements when missing or stale.
-- pH/EC measurements are fresh for analysis for up to 24 hours.
-- pH/EC measurements are fresh for physical action approval for up to 2 hours.
-
-### FR-005 Runtime State in PostgreSQL
-
-- PostgreSQL MUST be part of the MVP.
-- PostgreSQL/read model MUST be runtime authority for mutable operational state.
-- Minimal runtime state MUST include plants, photo catalog, tasks, human approvals, review statuses, dataset statuses, `can_train_on`, event refs, sync status, and future `sensor_window_ref`.
-- The MVP schema SHOULD remain minimal and avoid broad farm-scale abstractions before needed.
-
-### FR-006 Timeline Audit Export
-
-- The system MUST maintain `timeline.jsonl` as an append-only audit/export log.
-- Each line MUST represent one event.
-- Timeline events MUST include enough identifiers to trace daily observations, photo uploads, agent conclusions, task creation, approvals, safety blocks, and sync events.
-- For `event_type=user_photo`, `payload.plant_id` MUST be mandatory and MUST NOT be inferred only from `topic`.
-- `timeline.jsonl` MUST NOT be treated as primary mutable state.
-
-### FR-007 Agent Chat Bus
-
-- The system MUST use a domain-owned Agent Chat Bus for consumable agent events.
-- Agno invocation MUST NOT equal Agent Chat Bus publication.
-- Bus events MUST pass through `BusEventEnvelope`.
-- Agent work outputs published to the Bus MUST pass through `MessageEnvelope`.
-- Agent Chat Bus events MUST include `consumable_by_agents`.
-- MVP event types MUST include `user_message`, `user_photo`, `agent_conclusion`, `agent_clarification_request`, `agent_quoted_detail_reply`, `agent_team_signal`, `safety_block`, `task_created`, `human_confirmation`, `system_event`, and `sync_event`.
-
-### FR-008 Agent Runtime Decision
-
-- Each invoked agent MUST return one runtime decision: `speak`, `silent`, `clarify`, or `escalate`.
-- `silent` MUST NOT create a `MessageEnvelope` or publish to Agent Chat Bus.
-- `silent` MUST still leave an audit record.
-- `speak` MUST publish a concise consumable conclusion through `MessageEnvelope`.
-- `clarify` MUST publish a short missing-data request.
-- `escalate` MUST publish a Team Signal or Safety Block.
-
-### FR-009 UI Feed Separation
-
-- The system MUST maintain UI Feed as a presentation layer separate from Agent Chat Bus.
-- UI Feed events MUST NOT be passed to agents as working context.
-- `ui_spoiler_note` MUST have `consumable_by_agents=false` and `visible_to_agents=false`.
-- UI-only explanations MUST be controlled summaries for the user, not raw chain-of-thought.
-- `ui_spoiler_note_ref` MAY be included in `MessageEnvelope`, but it MUST refer only to a UI Feed event.
-
-### FR-010 Concise Agent Communication
-
-- Ordinary agent conclusions SHOULD be 1-3 lines.
-- Clarification requests MUST be short and targeted.
-- Quoted detail replies SHOULD be 3-7 lines and remain shorter than UI Spoiler Notes.
-- Large team messages MUST be reserved for Team Signals or Safety Blocks.
-
-### FR-011 Vision Observation
-
-- The system MUST support mock or real Vision Observation Agent for the first demo.
-- Vision Observation Agent MUST describe photo quality, visible symptoms, missing visual context, and observation confidence.
-- Vision Observation Agent MUST distinguish observation from diagnosis.
-- Vision Observation Agent MUST NOT recommend pH/EC correction, dosing, or physical plant-system actions.
-- The first working demo MAY default to mock Vision if output contracts match the future real vision model.
-
-### FR-012 Plant State
-
-- Plant State Agent MUST track plant state over time.
-- Important fields MUST carry confidence/status metadata such as `confirmed_updated`, `confirmed_unchanged`, `assumed_unchanged`, `probable`, `unknown`, or `conflict`.
-- Agent-labeled conclusions MAY update probable, unknown, or conflict states.
-- Agent-labeled conclusions MUST NOT promote state to confirmed without human review or follow-up evidence.
-
-### FR-013 Hydroponics Advisor
-
-- Hydroponics Advisor Agent MUST reason over pH, EC, temperature, humidity, light, solution context, visual observations, and history when available.
-- Hydroponics Advisor Agent MUST issue cautious recommendations and ask for missing critical data.
-- Hydroponics Advisor Agent MUST NOT create action tasks directly.
-- Hydroponics Advisor Agent MUST NOT bypass Safety Gate or issue mandatory dosing/action commands.
-
-### FR-014 Safety Gate and Human Approval
-
-- The system MUST block any immediate physical-action command without fresh data, safety check, and human approval.
-- Physical actions include changing pH, changing EC, changing solution, changing pumps, changing dosing, changing light regime, and similar plant-system interventions.
-- In the first demo, Safety Gate MUST also cover high-risk manual interventions such as pruning, transplanting, and root trimming.
-- Low-risk manual observations or checks do not require approval unless they become physical interventions.
-- Safety Gate MAY convert risky recommendations into pending action proposals or pending approval tasks.
-- MVP `action_task` means human-performed checklist/task tracking, not automated device command or physical actuation.
-- Approval unlocks task tracking/status transition for a human-performed `action_task`; it MUST NOT authorize automatic device execution in MVP.
-- User-visible outputs, including Companion responses and UI spoiler notes, MUST pass a final safety check before display when they contain or imply a physical action.
-- Any user-visible phrase that instructs or implies a physical action MUST fail closed into Safety Gate review.
-
-### FR-015 Tasks and Follow-up
-
-- Task & Follow-up Agent MUST create check/measurement tasks without approval when additional data is needed.
-- Task & Follow-up Agent MUST create action tasks only from approved action proposals.
-- The system MUST support follow-up after 1-3 days.
-- Follow-up outcome MUST record whether the situation improved, worsened, stayed unchanged, or has no data.
-
-### FR-016 Dataset Governance
-
-- The system MUST track `dataset.status`: `raw`, `agent_labeled`, `needs_review`, `confirmed`, `rejected`, `gold`, `excluded`.
-- The system MUST track separate fields for `dataset.split`, `dataset.curator_decision`, `dataset.confirmation_source`, `dataset.evidence_refs`, `dataset.curator_notes_ref`, `dataset.corrected`, and `dataset.follow_up_seen`.
-- Dataset and agent-report provenance MUST include source, `model_version`, `prompt_version`, `reviewer_role` when reviewed, `created_at`, and outcome/evidence refs when available.
-- The MVP MUST include the full set of key dataset lifecycle fields from the start, but MUST NOT implement a full dataset registry before the MVP needs it.
-- `can_train_on=true` MUST be allowed only when:
-  - `dataset.curator_decision=selected`;
-  - `dataset.split=train`;
-  - `dataset.evidence_refs` is not empty;
-  - and status/source rules allow either confirmed training item or gold item as defined by the dossier.
-- `dataset.split=eval` and `dataset.split=holdout` MUST NOT be used for fine-tuning/train.
-- `gold` MUST require human, expert, or batch review approval.
-- `curator_auto` MAY confirm ordinary train items only when strong `evidence_refs` exist.
-
-### FR-017 Lazy Sync
-
-- MVP sync status MUST support `local_only`.
-- If local dataset storage exceeds 200 MB, the UI SHOULD show a local storage prompt only.
-- Server/upload sync is TODO for a later version and MUST NOT be implied or triggered in the MVP.
-- The 200 MB prompt MUST NOT imply that a server/upload target exists or that sync status changed.
-- `server_verified` MUST NOT appear before a server sync stage exists.
+- The system MUST support exactly one local Farm workspace in MVP.
+- The system MUST support local Accounts and a local login/session baseline sufficient for authorization and audit attribution.
+- The system MUST support Boss, Engineer, and Consultant role presets.
+- The system MUST support FarmMembership and ActorContext for every Farm/Plant read, mutation, context-builder path, task, approval, and audit record.
+- The system MUST support multiple Plants inside the local Farm, with `tomato_001` as the initial Plant.
+- The system MUST support Plant create, archive, and restore. Archive is the only MVP removal action; history, photos, tasks, outcomes, timeline audit, and admin audit remain retained and accessible to authorized roles.
+- The system MUST support PlantAccessGrant for per-Plant visibility and work authorization.
+- The system MUST limit MVP permission overrides to `plant_approve_actions`; other MVP permissions come from Boss/Engineer/Consultant role presets plus PlantAccessGrant.
+- Boss Admin Surface MUST support personnel list, local-only account add/invite, role assignment, Plant list, Plant archive/restore, Plant access management, durable admin audit records, and minimal admin audit view.
+- Authorized users MUST be able to select only authorized Plants.
+- Daily Plant operations MUST support check-in, observations, photo upload, manual pH/EC, Plant card/history, cautious agent-assisted outputs, tasks, approvals, and follow-up outcomes.
+- Photo intake MUST store local photo files, accepted catalog metadata, `sha256`, initial capture manifest, export-ready refs, and timeline audit refs.
+- Product agents MUST operate with single-competence boundaries and permission-aware context.
+- MVP product agents MUST run as real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users.
+- MVP MUST NOT satisfy agent acceptance criteria with fake, mock, hardcoded, or stubbed agent outputs.
+- Vision Observation Agent MUST process actual uploaded photo data through a real vision-capable model or real vision model integration; it MUST NOT be replaced by a mock/fake adapter in MVP.
+- Agent-originated product output MUST pass project-owned runtime decision, MessageEnvelope, Agent Chat Bus, and UI Feed boundaries as applicable.
+- UI Feed MUST remain presentation-only and unavailable as agent working context.
+- Safety Gate MUST block or route physical-action wording until fresh data, Safety Gate pass, authorized human approval, and task/action tracking exist.
+- Companion governance MUST use explicit typed Plant-scoped state for IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord.
+- CompanionProposal MUST NOT be parallel for the same Plant-scoped issue. When Companion creates a new proposal for the same issue, the previous pending proposal automatically becomes superseded and non-operative.
+- DecisionRecord MAY direct Plant-scoped discussion/workflow and safe task requests such as check, measurement, or follow-up tasks through backend rules.
+- DecisionRecord MUST NOT change Plant state by itself, create `action_task`, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
+- Approved governance summary MAY become agent-consumable only as compact typed facts derived from a valid DecisionRecord: decision, decision summary, allowed workflow effect, role/time attribution, source refs, Plant/issue/proposal refs, and explicit `safety_gate_authority=not_granted`.
+- Approved governance summary MUST NOT include raw proposal text, raw rationale, raw chat, UI markdown, or unapproved discussion content.
+- Dataset governance MUST keep candidates non-trainable by default and require evidence refs before any future trainability change.
+- Local storage prompt MUST appear when local dataset/photo storage exceeds 200 MB and MUST NOT imply upload or server availability.
 
 ## Non-functional Requirements
 
-- Safety: physical plant-system changes require fresh data, Safety Gate, and human approval.
-- Traceability: photos, observations, agent outputs, tasks, approvals, outcomes, and dataset decisions must be traceable via IDs and event refs.
-- Source-of-truth discipline: PostgreSQL owns mutable runtime state; photo JSON is export snapshot; `timeline.jsonl` is audit/export; Agent Chat Bus is domain event context; UI Feed is presentation; Agno is execution SDK.
-- KISS: use the smallest verifiable MVP slices; avoid production SaaS, multi-user architecture, full dataset registry, complex sync, and unnecessary abstractions.
-- Testability: schemas, safety rules, context filtering, dataset eligibility, and critical workflow rules must be testable.
-- Local-first operation: MVP can run locally without sensor runtime dependencies or server sync.
-- Local security baseline: backend MUST bind to loopback by default; LAN mode requires explicit enablement and authentication/token protection.
-- Local security baseline: API CORS MUST use an allowlist; uploads MUST validate size, MIME/content type, and safe paths; path traversal MUST be rejected.
-- Secrets baseline: `.env` values, API keys, tokens, and credentials MUST NOT be written to logs, `timeline.jsonl`, photo manifests, UI Feed, Agent Chat Bus, or screenshots.
-- Privacy baseline: local plant photos and manifests are private project data by default and MUST NOT be uploaded or synced without explicit user approval.
-- Context hygiene: agents consume only domain-approved Bus events and structured outputs, not UI Feed or raw reasoning.
-- Maintainability: Memory Bank remains durable project knowledge; meaningful changes must update relevant Memory Bank navigation/source-of-truth docs.
+- The MVP MUST remain local-first and private by default.
+- Default exposure boundary is loopback. LAN mode MAY exist only when explicitly enabled and protected by authentication, authorization, session/token protection, and CORS/origin controls.
+- MVP sync status MUST be `local_only`; `server_verified` and server upload semantics are forbidden until a later server-sync stage exists.
+- Backend authorization MUST enforce every Farm/Plant route and context builder; frontend visibility is presentation only.
+- PostgreSQL/read model remains runtime authority for mutable operational state unless a later active architecture spec replaces it.
+- `timeline.jsonl` remains append-only audit/export, not mutable runtime authority.
+- Photo files and manifests are local artifacts, not mutable runtime authority.
+- Sessions, tokens, credentials, `.env` values, API keys, and auth material MUST NOT enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.
+- The MVP MUST preserve KISS and avoid speculative enterprise abstractions.
 
 ## Data / Domain Model
 
-Core runtime entities:
+The PRD-level domain model includes:
 
-- Plant: initial scope is `tomato_001`.
-- Photo catalog item: `photo_id`, `plant_id`, `captured_at`, `photo_type`, file path, `sha256`, review/dataset/sync references.
-- Photo manifest snapshot: immutable file-side JSON artifact next to the photo, with `manifest_kind=initial_capture|export_snapshot`.
-- Timeline event: append-only audit/export event.
-- Bus event envelope: working domain event for Agent Chat Bus.
-- Message envelope: structured working output from an agent.
-- UI Feed event: presentation-only event for UI status/spoiler/debug-lite display.
-- Task: check task, measurement task, pending approval task, approved action task, follow-up task.
-- Human approval: approval/rejection for physical actions and selected data decisions.
-- Human review: manual data item/label review lifecycle.
-- Dataset item/status: future learning-loop metadata and train/eval/holdout eligibility.
-- Sensor window reference: future link to sensor readings; initially manual measurement or placeholder reference, not InfluxDB runtime dependency.
+- `Account`: local user identity for login, authorization, attribution, and audit.
+- `Farm`: single local workspace and data-ownership boundary.
+- `FarmMembership`: Account-to-Farm relationship with role preset and membership status.
+- `ActorContext`: application/API boundary context containing Account, Farm, role/membership, Plant permissions, and session/auth provenance.
+- `Plant`: Farm-managed Plant or crop unit. `tomato_001` is the initial Plant.
+- `PlantAccessGrant`: explicit per-Plant access and authorization grant.
+- `AdminAuditRecord`: durable record for Account, role, Plant lifecycle, membership, and access changes.
+- `PhotoCatalogItem`: accepted photo metadata and refs, backed by local photo file and manifest artifacts.
+- `TimelineEvent`: append-only audit/export event.
+- `BusEventEnvelope`, `MessageEnvelope`, and `UIFeedEvent`: high-level contract areas for agent working context and human-facing presentation.
+- `Task`, `Approval`, and `Outcome`: operational loop records for checks, measurements, approved human-performed actions, and follow-up.
+- `IssueStack`, `CompanionProposal`, `CompanionConclusion`, `HumanAttentionNeeded`, and `DecisionRecord`: Companion governance records scoped to a Plant in MVP.
+- Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
 
-Authority model:
-
-- Design Specs: normative truth after `/spec-init` and `/spec-design`.
-- `project_dossier.md`: upstream dossier context for ambiguity resolution; not runtime or durable spec authority.
-- PostgreSQL/read model: runtime authority for mutable operational state.
-- `timeline.jsonl`: append-only audit/export log.
-- Photo files and JSON manifests: dataset/export artifacts.
-- Agent Chat Bus: working domain communication stream for agents.
-- UI Feed: human-facing presentation stream.
-- Agno: execution SDK only.
-- InfluxDB: future time-series authority after real sensors exist.
+Detailed schemas, payload fields, state machines, and event matrices belong to `/spec-design`
+and feature-level `/spec-improve`, not to this PRD.
 
 ## UX / Interaction Flow
 
-Primary MVP flow:
+First working flow:
 
-1. System asks the daily check-in question for `tomato_001`.
-2. User replies with observation text and uploads one or more photos.
-3. User enters pH/EC if measured.
-4. System stores photo files, photo catalog records, initial capture manifest snapshots, and timeline events.
-5. Vision Observation Agent returns photo quality and visual observation conclusion.
-6. Plant State Agent updates probable/unknown/conflict state and compares with history.
-7. Hydroponics Advisor checks pH/EC context and risk.
-8. Safety Gate blocks risky recommendations when required inputs/approval are missing.
-9. Companion Agent produces a short user-facing response with next useful actions.
-10. Task & Follow-up Agent creates missing-data, follow-up, or approved action tasks.
-11. Outcomes and follow-up evidence are recorded later.
+1. User logs in or opens a local session.
+2. System resolves Account, Farm, role preset, PlantAccessGrant, and ActorContext.
+3. User selects an authorized Plant, initially `tomato_001`.
+4. System starts a daily check-in.
+5. User records observations, uploads a photo, and/or enters pH/EC measurements.
+6. Backend stores photo file, catalog row, initial capture manifest, runtime state, and timeline audit.
+7. Validated agent-consumable events are published through the Agent Chat Bus.
+8. Real LLM/model-backed product agents process actual scoped Plant data and produce concise, permission-aware outputs or remain silent.
+9. UI Feed shows human-facing messages, cards, prompts, tasks, approvals, and local storage status without becoming agent context.
+10. Safety Gate blocks or routes physical-action wording.
+11. Boss or an Engineer with `plant_approve_actions` may approve a physical-action proposal only after fresh data and Safety Gate pass.
+12. Approved physical action creates only a human-performed `action_task`, never automated execution.
+13. Task and follow-up outcomes preserve evidence and audit trail.
 
-Minimum UI:
-
-- chat;
-- photo upload;
-- plant card;
-- daily check-in;
-- manual pH/EC input;
-- task list;
-- day history;
-- photo history;
-- recommendations;
-- human approval prompt;
-- controlled "поразмыслил" spoiler notes for educational explanation.
+First demo MUST include Boss and at least one Engineer path, real LLM/model-backed
+product agents, real uploaded photo/measurement/observation data, Plant State trust
+statuses, Hydroponics Advisor missing-data behavior, Task & Follow-up Agent behavior,
+Safety Gate behavior, and visible Companion HumanAttentionNeeded plus proposal/decision
+path. Consultant remains in MVP v2 product scope, but Consultant UI/path may be deferred
+from first demo.
 
 ## Integrations / Dependencies
 
-- Backend: Python + FastAPI.
-- Frontend: React / Next.js / PWA.
-- AI runtime: Agno SDK for agents/workflows inside the monolith.
-- LLM: dialogue and structured outputs.
-- Vision model: real or mock at MVP start, preserving the same output contract.
-- Storage: PostgreSQL plus local file storage, JSON manifests, and JSONL export.
-- Future sensors: InfluxDB or equivalent time-series authority after real sensors exist.
-- Future scale: DuckDB/object storage/dataset registry/server sync only after MVP proves the core workflow.
+- Backend: Python, FastAPI, Pydantic/schema validation, PostgreSQL/read model, local filesystem for photos/artifacts, JSONL timeline export.
+- Frontend: Web App/PWA with role-aware UI, Plant selector, chat/feed surface, task/approval cards, and minimal Boss Admin Surface.
+- AI runtime: Agno SDK as execution layer only, real LLM-backed product agents, real vision-capable model or real vision model integration for photos, and project-owned domain adapters.
+- Future/non-MVP options: InfluxDB, object storage, DuckDB, Capacitor wrapper, server sync/cloud deployment, full dataset registry, and real fine-tuning.
 
 ## Edge Cases / Failure Handling
 
-- Missing pH/EC: request measurement; block solution correction recommendations.
-- Stale pH/EC for analysis: request a new measurement when the latest pH/EC is older than 24 hours.
-- Stale pH/EC for physical action approval: block the action and request a new measurement when the latest pH/EC is older than 2 hours.
-- Low-quality or incomplete photo: request a specific photo type, such as `lower_leaf_closeup` under neutral light.
-- Photo without `plant_id`: reject or fail validation.
-- Photo manifest without existing photo file: fail validation.
-- Duplicate `photo_id`: fail validation.
-- Agent returns long/unstructured output: reject or adapt to concise `MessageEnvelope`.
-- Agent returns `silent`: no Bus event; audit record required.
-- UI Feed event accidentally passed to agent context: fail context-filtering tests.
-- Safety Gate identifies physical action without approval: block and create pending approval flow.
-- User-visible physical-action advice without Safety Gate clearance: block display or replace with safe pending-approval wording.
-- Unsafe model output, prompt-injection attempt to bypass Safety Gate, or unavailable Safety Gate: fail closed and do not create an action task.
-- Secret or credential detected in output/log/export candidate: redact and fail the export/logging operation.
-- Conflicting plant-state evidence: mark status `conflict` rather than confirmed.
-- Agent diagnosis without evidence: keep as hypothesis and `can_train_on=false`.
-- Dataset item without evidence refs: cannot become trainable.
-- `eval` or `holdout` item selected for fine-tuning: reject.
-- Local storage over 200 MB: show local storage prompt only; keep `sync.status=local_only`; server/upload sync remains TODO for a later version.
+- Unauthorized users MUST NOT see or mutate unauthorized Plants, photos, measurements, tasks, approvals, admin audit, or agent context.
+- Archived Plants MUST disappear from normal operational flows but remain retained for authorized history/audit/export access.
+- Physical-action advice MUST fail closed when pH/EC or required evidence is stale/missing, Safety Gate fails, or actor approval authority is missing.
+- Governance approval MUST NOT be treated as Safety Gate approval.
+- Superseded CompanionProposal records MUST NOT be approvable and MUST NOT become agent facts.
+- DecisionRecord MUST NOT be treated as Plant-state evidence or action approval by itself.
+- Raw CompanionProposal content, rationale, discussion history, and UI projection MUST NOT become agent-consumable even after approval.
+- Admin UI notices, UI markdown, UI cards, raw chat, unapproved Companion proposals, and spoiler notes MUST NOT become agent facts.
+- Local storage warnings MUST allow acknowledge/dismiss and MUST NOT imply upload/server availability.
+- LAN mode, if enabled, MUST add exposure controls and MUST NOT weaken local auth/authz.
+- Agent output MUST NOT promote hypotheses to confirmed Plant state without human review or follow-up evidence.
+- Dataset candidates MUST remain non-trainable until dataset governance rules allow otherwise.
 
 ## Acceptance Criteria
 
-- A complete daily flow can run for `tomato_001`: check-in, photo upload, optional pH/EC handling, agent conclusions, safety review, task/follow-up, and timeline entry.
-- The daily flow succeeds with fresh pH/EC or with missing/stale pH/EC converted into a clarification/measurement task and Safety Gate block for solution-related actions.
-- Every photo has `plant_id`, `photo_id`, file reference, JSON manifest snapshot, `sha256`, and traceable event refs.
-- Initial capture and export snapshot manifests are distinguishable and do not act as mutable runtime authority.
-- `user_photo.payload.plant_id` is mandatory.
-- PostgreSQL is runtime authority for mutable operational state.
-- `timeline.jsonl` is append-only and not primary mutable state.
-- Photo JSON manifests are generated as export snapshots and are not runtime authority.
-- Agent outputs published to Agent Chat Bus use `MessageEnvelope`.
-- Agent Chat Bus events use `BusEventEnvelope`.
-- UI Feed events use `UIFeedEvent` and are not consumable by agents.
-- `ui_spoiler_note` is visible to the user but has `consumable_by_agents=false` and `visible_to_agents=false`.
-- `silent` agent decisions do not create Bus messages and do leave audit records.
-- Dangerous recommendations are blocked or converted into pending approval tasks.
-- No physical action can proceed without fresh data, Safety Gate pass, and human approval.
-- MVP action tasks are human-performed task records, not automated device commands.
-- High-risk manual interventions such as pruning, transplanting, and root trimming are blocked or converted into pending approval tasks.
-- User-visible Companion responses and UI notes cannot display physical-action instructions without Safety Gate clearance.
-- Dataset items cannot become trainable unless status, split, confirmation source, and evidence rules are satisfied.
-- `gold` examples require human/expert review or batch review approval.
-- Core schemas and boundary rules have tests before feature decomposition is considered done.
-- First end-to-end demo Definition of Done includes schema tests, backend/API integration tests, and workflow smoke.
-- UI/e2e smoke is required when the UI flow exists, but it is not mandatory for the first backend/workflow demo.
+- Boss can create or use one local Farm workspace, manage at least one Engineer Account, and grant Plant access.
+- Boss and Engineer can complete the first authorized Plant workflow on `tomato_001`.
+- First demo agent behavior is produced by real LLM/model-backed agents over actual scoped Plant data, not fake, mock, hardcoded, or stubbed outputs.
+- Engineer sees only assigned Plants and cannot approve physical actions without `plant_approve_actions`.
+- Consultant, when present, is limited to authorized advisory/read/comment context.
+- Every Farm/Plant route and agent context builder can identify Account, Farm, role preset, Plant permission, and session provenance.
+- Plant archive/restore works without hard deletion and retains authorized history/audit.
+- Photo upload produces a local file, catalog row, `sha256`, initial capture manifest, and audit/export refs.
+- UI Feed and unapproved proposal content are not consumed by agents.
+- Physical-action wording is blocked or routed until fresh data, Safety Gate pass, and authorized human approval exist.
+- Governance DecisionRecord remains separate from Safety Gate approval.
+- DecisionRecord can route Plant-scoped workflow or safe check/measurement/follow-up task requests, but cannot mutate Plant state or unlock physical actions.
+- Creating a new CompanionProposal for the same Plant issue supersedes the previous pending proposal; only the current proposal can be approved/rejected.
+- After valid DecisionRecord, agents can receive only compact approved governance summary facts and refs, not raw proposal text, rationale, UI markdown, or chat discussion.
+- Dataset items are non-trainable by default.
+- Local storage prompt appears at the 200 MB threshold without server/upload implication.
 
 ## Verification Strategy
 
-- Schema validation tests for `BusEventEnvelope`, `MessageEnvelope`, `UIFeedEvent`, `photo_manifest`, `timeline_event`, agent report, plant state, task, and human review where applicable.
-- Tests that Agno Agent/Workflow output cannot enter Agent Chat Bus without runtime decision and domain adapter.
-- Tests that Agno Team output, if Team is configured/enabled, passes through the same adapter and does not use `coordinate`.
-- Tests that `silent` creates no Bus event/`MessageEnvelope` and leaves audit evidence.
-- Tests that workflow events and `step_completed` are not treated as domain facts.
-- Photo flow tests for required `plant_id`, unique `photo_id`, existing photo file, JSON manifest, and schema version.
-- Photo manifest tests for `manifest_kind=initial_capture|export_snapshot`, snapshot versioning, and no runtime reads from stale export snapshots.
-- Timeline tests for append-only behavior and mandatory `payload.plant_id` on `user_photo`.
-- Context-filtering tests that UI Feed and `ui_spoiler_note` are not passed to agents.
-- Safety tests that dangerous pH/EC/solution/pump/light/dosing commands and high-risk manual interventions require fresh data where relevant, safety check, and approval.
-- Safety tests that Companion responses and UI notes cannot display physical-action instructions without Safety Gate clearance.
-- Security tests for loopback default binding, explicit authenticated LAN mode, CORS allowlist, upload size/MIME/path validation, path traversal rejection, and secret redaction from logs/timeline/manifests/UI.
-- Dataset governance tests for provenance fields, `can_train_on`, split restrictions, confirmation source rules, and `gold` restrictions.
-- Workflow smoke test for daily check-in through task/follow-up.
-- Backend/API integration tests for first-demo critical endpoints and state transitions.
-- UI/e2e smoke test for the critical daily flow once a UI exists.
+- Constitution check: confirm PRD remains bounded local-first MVP and does not introduce production SaaS, cloud sync, enterprise identity, automated actuation, or broad farm-management scope.
+- Requirements decomposition readiness: verify all high-impact `NEEDS CLARIFICATION` items are resolved before `/prd`.
+- Authorization tests later MUST cover Boss, Engineer, Consultant, missing PlantAccessGrant, archived Plant visibility, and context-builder filtering.
+- Safety tests later MUST cover stale data, missing approval authority, failed Safety Gate, governance-vs-safety approval separation, and action-task unlock semantics.
+- UI/context hygiene tests later MUST prove UI Feed, spoiler notes, raw chat, admin notices, and unapproved proposals do not enter agent working context.
+- Storage/export tests later MUST cover photo file/catalog/manifest/timeline refs and secret redaction.
+- Agent runtime tests later MUST distinguish real LLM/model-backed MVP flows from test-only mocks; mocks may be used only in tests, not as the MVP runtime/demo path.
 
 ## Clarifications
 
-### Session 2026-05-27
+### Session 2026-06-02
 
-- Q: What freshness window should apply to pH/EC measurements for analysis and physical action approval? -> A: Analysis up to 24 hours; physical action approval up to 2 hours.
-- Q: Should first-demo Safety Gate cover manual interventions such as pruning/transplanting or only pH/EC/dosing/light/pumps/solution actions? -> A: Cover pH/EC, solution, dosing, pumps, light, plus high-risk manual interventions such as pruning, transplanting, and root trimming.
-- Q: What Definition of Done should apply to the first end-to-end demo workflow? -> A: Schema tests, backend/API integration tests, and workflow smoke; UI/e2e smoke once a UI flow exists.
-- Q: Should dataset governance start with full lifecycle fields or a minimal subset? -> A: Include the full key lifecycle fields immediately, but keep implementation simple and avoid a full dataset registry.
+- Q: How should MVP deployment boundary be fixed? -> A: Loopback is the default and first-demo boundary. LAN mode may exist only as explicitly enabled MVP capability with auth/session/CORS controls; LAN is not required for the first demo.
+- Q: How should MVP permission model be fixed? -> A: Use Boss/Engineer/Consultant role presets plus PlantAccessGrant. The only MVP per-permission override is `plant_approve_actions`.
+- Q: Who can approve Safety Gate physical-action proposals? -> A: Boss can approve for Farm Plants. Engineer can approve only with per-Plant `plant_approve_actions`. Consultant never approves. Approval still requires fresh data and Safety Gate pass.
+- Q: What can Consultant do in MVP? -> A: Consultant is read/comment/advice only in granted Plant context and does not create domain task/recommendation records or approvals.
+- Q: What are Plant removal semantics? -> A: Use KISS archive/restore only. No hard delete in MVP. Retain history, audit, photos, tasks, outcomes, and evidence for authorized access.
+- Q: What is the MVP `IssueStack` scope? -> A: `IssueStack` is scoped to a Plant. Farm-level issues and separate Farm-level chat are deferred beyond MVP PRD.
+- Q: What may a `DecisionRecord` control in MVP? -> A: DecisionRecord may direct Plant-scoped discussion/workflow and safe task requests such as check, measurement, or follow-up tasks through backend rules. It must not change Plant state by itself, create `action_task`, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
+- Q: What is the high-level CompanionProposal supersede/expiry policy? -> A: No parallel proposals for the same Plant-scoped issue. When Companion creates a new proposal for the same issue, the previous pending proposal automatically becomes superseded and non-operative. No time-based expiry is required in PRD.
+- Q: What approved governance summary becomes agent-consumable? -> A: Only compact typed facts derived from a valid DecisionRecord: decision id, Plant id, issue id, proposal id/version, decision, decision summary, allowed workflow effect, decider role, decided_at, source refs, and explicit `safety_gate_authority=not_granted`. Raw proposal text, raw rationale, UI markdown, raw chat, and unapproved discussion content remain non-consumable.
+- Q: Is the first-demo boundary sufficient, and can any agent/model behavior be stubbed in MVP? -> A: MVP must use real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users. Fake, mock, hardcoded, or stubbed agent outputs are not acceptable as the MVP runtime/demo path. Sensor runtime remains out of MVP until real sensors exist.
 
 ## Unresolved Blockers
 
-- None.
+None.

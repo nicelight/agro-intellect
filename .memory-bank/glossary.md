@@ -2,24 +2,45 @@
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
 owner: architecture
-last_updated: 2026-05-31
+last_updated: 2026-06-02
 source_of_truth:
   - .memory-bank/constitution.md
-  - .memory-bank/prd.md
-  - .memory-bank/spec-index.md
+  - .memory-bank/invariants.md
+  - .memory-bank/analysis/mvp-scope-expansion-integration-plan.md
+  - .memory-bank/analysis/accounts-farm-access-admin-analysis.md
+  - .memory-bank/analysis/companion-issue-stack-decision-governance.md
 ---
 # Glossary
 
 ## Product Scope
 
-- `Agro Intellect MVP`: local-first Web App/PWA and backend for monitoring one hydroponic tomato while practicing AI-first agentic system development.
-- `tomato_001`: the single canonical MVP plant.
-- `operator`: primary user caring for `tomato_001` and approving/rejecting risky actions.
+- `Agro Intellect MVP`: local-first Web App/PWA and backend for a bounded Farm workspace, Plant care workflows, and AI-first agentic system development.
+- `MVP v2`: planned bounded scope expansion that allows local Accounts, one local Farm workspace, role-scoped Plant access, multiple Plants, and Companion governance after PRD/spec promotion.
+- `tomato_001`: initial canonical Plant for the MVP and expected migration seed into the Farm/Plant model; not a permanent product limit.
+- `operator`: legacy shorthand for a human with operational Plant responsibilities; in MVP v2 usually maps to an Engineer or Boss with relevant Plant access.
 - `Human Architect`: project owner role responsible for architecture direction and final scope/safety decisions.
 - `AI Team Orchestrator`: project owner role coordinating AI development agents through Memory Bank workflows.
 - `local-first`: default operating mode where runtime state, photos, manifests, and audit logs remain local unless the user explicitly approves upload/sync.
 - `Web App/PWA`: first product surface for daily check-in, uploads, measurements, tasks, approvals, history, and recommendations.
-- `MVP`: smallest useful local system for one plant; not production SaaS, not farm management, and not automated control.
+- `MVP`: smallest useful local system for bounded Plant operations; not production SaaS, not broad farm management, and not automated control.
+
+## Accounts, Farm Access, And Admin
+
+- `Account`: local user identity used for login, authorization, attribution, and audit.
+- `Farm`: bounded local workspace and data-ownership boundary containing Plants, memberships, access grants, and admin audit.
+- `Plant`: farm-managed plant or crop unit; `tomato_001` is the initial Plant until migration details are specified.
+- `Boss`: farm owner/admin role for personnel, role, Plant lifecycle, per-Plant access, and admin audit; cannot bypass Safety Gate.
+- `Boss Admin Surface`: UI/workflow area where Boss manages personnel, roles, Plants, access, and admin audit.
+- `Engineer`: operational role for assigned Plants, responsible for check-ins, photos, measurements, tasks, and action approvals only when granted.
+- `Consultant`: advisory/read/comment role for assigned Plant context; no operational authority or binding decision authority by default.
+- `FarmMembership`: relationship between an Account and a Farm that carries role and membership status for authorization.
+- `PlantAccessGrant`: explicit per-Plant permission grant for an Account or FarmMembership.
+- `Plant lifecycle`: creation, active use, archival, restoration, and history retention for a Plant.
+- `ActorContext`: application/API boundary context that identifies the acting Account, Farm, role, Plant permissions, and session provenance for authorization.
+- `admin audit`: durable trace of personnel, role, Plant lifecycle, access, and other admin changes.
+- `role preset`: simple default permission bundle for Boss, Engineer, or Consultant before any narrow per-Plant override.
+- `per-Plant access`: authorization model where a human may work only with Plants granted to their Account or membership.
+- `local auth/authz baseline`: MVP security direction where local sessions/tokens and permission checks protect every farm/plant data route.
 
 ## Process And Memory Bank
 
@@ -73,7 +94,7 @@ source_of_truth:
 
 - `single-competence agent`: agent constrained to one domain responsibility.
 - `Competence Boundary`: explicit rule for what an agent may and may not do.
-- `Companion Agent`: user dialogue and plain-language synthesis agent; does not replace domain specialists or Safety Gate.
+- `Companion Agent`: user dialogue and governance-coordination agent; may manage typed discussion state but does not replace domain specialists, backend rules, or Safety Gate.
 - `Vision Observation Agent`: photo-quality and visual-observation agent; observes but does not diagnose or recommend physical actions.
 - `Plant State Agent`: state-over-time agent; tracks trends, uncertainty, and conflicts without confirming agent hypotheses alone.
 - `Hydroponics Advisor Agent`: hydroponic-parameter advisor; asks for missing critical data and cannot bypass Safety Gate.
@@ -94,10 +115,24 @@ source_of_truth:
 - `Team Signal`: rare strong working message intended to redirect shared agent flow.
 - `Safety Block`: hard stop for physical-action flow until unlock conditions are satisfied.
 - `Large-Font Team Message`: visually prominent team-level message reserved for Team Signals or Safety Blocks.
-- `Global Flow`: current shared direction of the product workflow, formed by Bus events, tasks, safety rules, and human decisions.
+- `Global Flow`: current shared direction of the product workflow, formed by typed Bus events, tasks, safety rules, and valid governance or safety decisions.
 - `Context Hygiene`: rule that agents consume only approved domain context, not UI Feed or raw reasoning.
 - `ui_spoiler_note`: controlled user-facing explanation in UI Feed with `visible_to_agents=false` and `consumable_by_agents=false`.
 - `raw reasoning`: hidden model reasoning; never stored as facts, labels, or agent working context.
+
+## Companion Governance
+
+- `IssueStack`: explicit structured state for findings, gaps, problems, open questions, and disagreements; not hidden LLM memory.
+- `current_issue`: one IssueStack item receiving Companion primary attention with a short rationale.
+- `CompanionConclusion`: Companion summary that an issue is resolved enough for discussion; not a binding system decision by itself.
+- `IssueClosedByCompanion`: event recording Companion closure of a discussion issue; does not authorize backend action.
+- `CompanionProposal`: typed human-visible proposal for process direction or decision; not operative until valid approval/rejection.
+- `DecisionRecord`: typed binding governance record created from a valid human decision on a CompanionProposal.
+- `HumanAttentionNeeded`: typed marker that Companion expects or requires human reaction before a governance path can proceed.
+- `governance approval`: human approval/rejection of a CompanionProposal that may create a DecisionRecord; never authorizes physical action.
+- `governance decision`: binding DecisionRecord for discussion, workflow, or domain direction within existing backend rules.
+- `approved governance summary`: agent-consumable summary derived from an approved DecisionRecord, not from raw proposal discussion.
+- `unapproved proposal`: CompanionProposal that remains human-visible only and must not enter agent working context as fact.
 
 ## Event And Envelope Fields
 
@@ -123,6 +158,7 @@ source_of_truth:
 
 - `physical action`: plant-system intervention such as pH/EC change, solution change, pump/light/dosing change, pruning, transplanting, or root trimming.
 - `Safety Gate`: policy boundary that blocks or routes physical-action advice before user display or task/action creation.
+- `Safety Gate approval`: physical-action approval path requiring Safety Gate clearance, fresh data, and authorized human decision; distinct from governance approval.
 - `human approval`: explicit user approval/rejection for risky physical actions; unlocks only human-performed task tracking in MVP.
 - `Human-in-the-loop`: pattern where important plant-impacting decisions require explicit human decision.
 - `analysis freshness`: pH/EC freshness window of up to 24 hours for analysis.
@@ -144,7 +180,7 @@ source_of_truth:
 
 ## Data And Photo Artifacts
 
-- `plant_id`: canonical plant identifier; MVP accepted plant is `tomato_001`.
+- `plant_id`: canonical Plant identifier; initial accepted Plant is `tomato_001` until multi-Plant migration is specified.
 - `photo_catalog`: PostgreSQL/read-model catalog of accepted photo metadata and mutable refs.
 - `photo_id`: globally unique photo identifier.
 - `captured_at`: timestamp when the photo was captured.
@@ -194,7 +230,7 @@ source_of_truth:
 - `200 MB prompt`: UI prompt shown when local dataset storage exceeds threshold; does not mutate sync status.
 - `idempotency key`: future sync identity key, likely `plant_id + photo_id + sha256`.
 - `loopback`: default backend binding to local machine only.
-- `LAN mode`: explicit network-access mode requiring auth/token protection.
+- `LAN mode`: explicit network-access mode requiring authentication, authorization, and token/session protection.
 - `CORS allowlist`: explicit allowed origins list for API access.
 - `secret redaction`: removing `.env`, tokens, API keys, credentials, and auth material from logs and export surfaces.
 
@@ -204,8 +240,8 @@ source_of_truth:
 - `React / Next.js / PWA`: frontend stack selected for the MVP operator surface.
 - `Capacitor`: possible future mobile wrapper after Web App/PWA.
 - `LLM`: language model used for dialogue and structured outputs.
-- `vision model`: model or mock adapter used for photo observation.
-- `mock agent`: early deterministic/stub agent preserving future output contracts.
+- `vision model`: real vision-capable model or real vision model integration used for photo observation in the MVP runtime/demo path.
+- `test mock`: deterministic or fake dependency used only in automated tests; it is not an acceptable MVP runtime/demo agent path.
 - `JSONL`: newline-delimited JSON format used for append-only timeline export.
 - `Pydantic`: likely FastAPI schema layer; exact usage belongs to feature-local design.
 
