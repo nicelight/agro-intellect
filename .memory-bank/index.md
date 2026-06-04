@@ -13,22 +13,36 @@ The MVP v1 spec-layer has been hard-archived under
 epics, features, SDD specs, contracts, states, domains, runbooks, and testing docs.
 
 Active agents must not use archived MVP v1 specs as current source of truth.
-Archived docs are historical reference only. The active MVP v2 PRD now promotes the
-first product decisions back into the active Memory Bank; downstream requirements,
-features, and SDD backbone still need the normal workflow.
+Archived docs are historical reference only. The active MVP v2 PRD has now been
+decomposed into MVP v2 L1-L3 product, requirements, epics, and features. The global SDD
+backbone has completed `/spec-design`; feature-level `/spec-improve FT-<NNN>` is still
+required before task decomposition.
 
 ## Active Governance And Routing
 
 - [.memory-bank/constitution.md](constitution.md): Project Constitution — top governing policy for agents.
+- [.memory-bank/product.md](product.md): active MVP v2 product summary.
 - [.memory-bank/prd.md](prd.md): clarified MVP v2 PRD with `clarification_status: complete`.
+- [.memory-bank/requirements.md](requirements.md): active MVP v2 REQ list and RTM.
+- [.memory-bank/epics/index.md](epics/index.md): active MVP v2 L2 epic router.
+- [.memory-bank/features/index.md](features/index.md): active MVP v2 L3 feature router.
 - [.memory-bank/mbb/index.md](mbb/index.md): Memory Bank Bible rules.
 - [.memory-bank/invariants.md](invariants.md): current cross-cutting MUST/NEVER guardrails.
 - [.memory-bank/glossary.md](glossary.md): active shared vocabulary for MVP v2 migration.
 - [.memory-bank/spec-index.md](spec-index.md): active MVP v2 migration route map.
 - [.memory-bank/spec-backbone.md](spec-backbone.md): pre-PRD spec framing status and /prd handoff.
+- [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md): global MVP v2 system architecture backbone.
 - [.memory-bank/user-scenarios.md](user-scenarios.md): active pre-PRD user scenarios and decomposition implications.
 - [.memory-bank/domains/core-domain.md](domains/core-domain.md): active pre-PRD core domain framing.
+- [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md): runtime authority, storage ownership, and shared entity groups.
+- [.memory-bank/contracts/index.md](contracts/index.md): active MVP v2 contract router.
+- [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md): frontend/backend API, auth, errors, uploads, CORS, and OpenAPI generation rules.
+- [.memory-bank/contracts/agent-harness.md](contracts/agent-harness.md): shared AgentHarness and AgentProfile runtime contract.
+- [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md): agent-consumable BusEventEnvelope contract.
+- [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md): MessageEnvelope, runtime decision, and UI Feed projection contract.
+- [.memory-bank/contracts/safety-gate.md](contracts/safety-gate.md): physical-action advice and Safety Gate approval contract.
 - [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): active preliminary boundary hints for decomposition.
+- [.memory-bank/states/core-lifecycles.md](states/core-lifecycles.md): global lifecycle state guardrails for shared entities.
 - [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md): active lifecycle hints for decomposition.
 - [.memory-bank/testing/index.md](testing/index.md): testing and verification router for the migration stage.
 - [.memory-bank/changelog.md](changelog.md): Memory Bank changelog.
@@ -54,13 +68,13 @@ features, and SDD backbone still need the normal workflow.
 Next route:
 
 ```text
-/prd
--> /spec-design
--> /spec-improve FT-<NNN>
+/spec-improve FT-<NNN>
 -> /prd-to-tasks FT-<NNN>
 ```
 
 Do not run `/prd-to-tasks` from archived MVP v1 features.
+Do not create TASK records from the PRD output until the relevant feature-level
+`/spec-improve` gates are complete.
 
 ## Operational Roots
 

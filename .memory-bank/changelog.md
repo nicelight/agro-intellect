@@ -4,6 +4,29 @@ status: active
 ---
 # Changelog
 
+## [2026-06-04] MVP v2 global /spec-design completed
+- Completed the global SDD architecture backbone for MVP v2 with `standard_ai_first`
+  mode and `single-file` architecture strategy.
+- Added `.memory-bank/architecture/system-architecture.md` as the global architecture
+  hub and `.memory-bank/domains/runtime-data-model.md` for runtime authority and shared
+  entity groups.
+- Added active contract specs for API guidelines, AgentHarness, Agent Chat Bus,
+  MessageEnvelope/UI Feed projection, and Safety Gate.
+- Added `.memory-bank/states/core-lifecycles.md` with shared lifecycle guardrails.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/spec-backbone.md`,
+  `.memory-bank/testing/index.md`, `.memory-bank/index.md`, epics/features routing,
+  and FT-001..FT-017 gate metadata.
+- Kept feature-local design pending: each feature remains `spec_design_status:
+  needs_spec_improve` before `/prd-to-tasks`.
+
+## [2026-06-04] MVP v2 PRD decomposed into L1-L3 Memory Bank
+- Ran `/prd` from the clarified MVP v2 PRD and active pre-PRD spec framing.
+- Updated `.memory-bank/product.md` and `.memory-bank/requirements.md` with MVP v2 product summary, REQ-001..REQ-024, out-of-scope, and RTM.
+- Created active MVP v2 epic router and six epics under `.memory-bank/epics/`.
+- Created active MVP v2 feature router and FT-001..FT-017 under `.memory-bank/features/`.
+- Updated `.memory-bank/testing/index.md`, `.memory-bank/index.md`, and `.memory-bank/analysis/index.md` routing for the post-`/prd` state.
+- Preserved task registry/records out of scope; `/prd` created no TASK records or implementation plans.
+
 ## [2026-06-03] /spec-init pre-PRD framing completed
 - Marked `.memory-bank/spec-backbone.md` `Pre-PRD Spec Status` as `ready_for_prd`.
 - Added active pre-PRD framing artifacts for MVP v2: `.memory-bank/user-scenarios.md`, `.memory-bank/domains/core-domain.md`, `.memory-bank/contracts/boundary-map.md`, and `.memory-bank/states/lifecycle-map.md`.

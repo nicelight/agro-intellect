@@ -9,7 +9,8 @@ status: active
 - The project has moved into MVP v2 migration planning.
 - The previous MVP v1 spec-layer is archived under [.memory-bank/archive/mvp-v1/](../archive/mvp-v1/).
 - Active MVP v2 PRD exists at [.memory-bank/prd.md](../prd.md) with `clarification_status: complete`.
-- Active MVP v2 requirements, epics, features, global architecture backbone, and feature-local SDD specs do not exist yet.
+- Active MVP v2 requirements, epics, and features now exist as `/prd` output.
+- Global architecture backbone exists and `/spec-design` is complete; feature-local SDD specs remain routed through `/spec-improve FT-<NNN>`.
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -18,6 +19,9 @@ status: active
 
 - [project_dossier_v2.md](../../project_dossier_v2.md): upstream MVP v2 product and architecture dossier context.
 - [.memory-bank/prd.md](../prd.md): clarified MVP v2 PRD; current source of truth for downstream `/spec-init` and `/prd`.
+- [.memory-bank/requirements.md](../requirements.md): MVP v2 REQ list and RTM created by `/prd`.
+- [.memory-bank/epics/index.md](../epics/index.md): MVP v2 epic router created by `/prd`.
+- [.memory-bank/features/index.md](../features/index.md): MVP v2 feature router created by `/prd`.
 - [.memory-bank/analysis/product-brief.md](product-brief.md): Product Brief input contract, now clarified by the active PRD.
 - [.memory-bank/analysis/companion-issue-stack-decision-governance.md](companion-issue-stack-decision-governance.md): draft analysis for Companion-driven `IssueStack`, `CompanionProposal`, and human `DecisionRecord` governance.
 - [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](accounts-farm-access-admin-analysis.md): draft analysis for Accounts, Farm access, Boss admin, personnel, Plants, and per-Plant access control.
@@ -26,6 +30,8 @@ status: active
 - [.memory-bank/invariants.md](../invariants.md): active cross-cutting guardrails.
 - [.memory-bank/glossary.md](../glossary.md): active vocabulary.
 - [.memory-bank/spec-index.md](../spec-index.md): MVP v2 migration route map.
+- [.memory-bank/spec-backbone.md](../spec-backbone.md): global backbone status and handoff to `/spec-improve`.
+- [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): global MVP v2 architecture backbone.
 
 ## Archived MVP v1 Inputs
 
@@ -38,10 +44,10 @@ status: active
 
 ## Recommended Next Step
 
-After explicit user instruction, continue from the completed PRD:
+After explicit user instruction, continue from the completed `/prd` decomposition:
 
 ```text
-/spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>
+/spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>
 ```
 
 ## Closed PRD Clarifications
