@@ -2,9 +2,11 @@
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
 owner: architecture
-last_updated: 2026-06-02
+last_updated: 2026-06-04
 source_of_truth:
   - .memory-bank/constitution.md
+  - .memory-bank/prd.md
+  - .memory-bank/analysis/product-brief.md
   - .memory-bank/invariants.md
   - .memory-bank/analysis/mvp-scope-expansion-integration-plan.md
   - .memory-bank/analysis/accounts-farm-access-admin-analysis.md
@@ -58,6 +60,7 @@ source_of_truth:
 - `task record`: schema-backed JSON `TASK-*` work item used for execution and verification.
 - `Memory Bank greenfield flow`: canonical route from analysis/brief/PRD/specs to tasks, execute, verify, and sync.
 - `project_dossier.md`: upstream dossier context for product intent, architecture rationale, constraints, safety, data, and staging; not a normative spec layer.
+- `agents-best-practices`: Codex skill used as the guiding doctrine for provider-neutral agent harness direction; it informs `/prd`, `/spec-design`, and `/spec-improve` but does not add product scope by itself.
 
 ## Architecture And Authority
 
@@ -68,6 +71,9 @@ source_of_truth:
 - `export_snapshot`: manifest kind created later for dataset/export context snapshots.
 - `Agent Chat Bus`: domain-owned working event stream for agent-consumable events.
 - `UI Feed`: human-facing presentation stream; never agent working context.
+- `AgentHarness`: project-owned shared control plane for all product agents; it assembles context, calls models, validates tool/action proposals, enforces permissions and approvals, records observations/traces, manages memory retrieval/compaction, and routes output through project contracts.
+- `context builder`: harness component that assembles permission-aware, source-ref backed context from runtime state, evidence, approved governance summaries, and allowed agent memory.
+- `permission decision`: project-owned runtime decision that allows, denies, asks, pauses for approval, or routes an agent tool/action proposal before any side effect.
 - `Agno`: execution SDK for agents/workflows; not source of truth and not Agent Chat Bus.
 - `Agno Agent`: Agno execution unit wrapping model, tools, instructions, memory, HITL, and guardrails.
 - `Agno Workflow`: Agno execution flow for predictable steps, routers, conditions, loops, or parallel steps.
@@ -94,6 +100,11 @@ source_of_truth:
 
 - `single-competence agent`: agent constrained to one domain responsibility.
 - `Competence Boundary`: explicit rule for what an agent may and may not do.
+- `AgentProfile`: explicit single-competence product-agent definition inside the shared `AgentHarness`, including allowed context, tools, outputs, permissions, memory scope, and risk boundaries.
+- `AgentMemoryRecord`: durable, scoped, source-ref backed memory item for one product agent's long-running analysis of Plant processes; not runtime authority by itself.
+- `agent long-term memory`: project-owned memory store for multi-week or multi-cycle Plant analysis, retrieved through the context builder and scoped by agent, Farm, Plant, ActorContext permissions, and evidence provenance.
+- `tool/action proposal`: structured model request to use a tool, create a task, write memory, publish output, or trigger an approval path; the harness validates and permission-checks it before execution.
+- `structured observation`: bounded tool or harness result returned to the model after success, denial, timeout, error, approval pause, or abort.
 - `Companion Agent`: user dialogue and governance-coordination agent; may manage typed discussion state but does not replace domain specialists, backend rules, or Safety Gate.
 - `Vision Observation Agent`: photo-quality and visual-observation agent; observes but does not diagnose or recommend physical actions.
 - `Plant State Agent`: state-over-time agent; tracks trends, uncertainty, and conflicts without confirming agent hypotheses alone.

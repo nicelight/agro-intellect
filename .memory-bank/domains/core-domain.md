@@ -2,9 +2,10 @@
 description: Pre-PRD core domain framing for MVP v2 decomposition.
 status: active
 owner: domain
-last_updated: 2026-06-03
+last_updated: 2026-06-04
 source_of_truth:
   - .memory-bank/prd.md
+  - .memory-bank/analysis/product-brief.md
   - .memory-bank/glossary.md
   - .memory-bank/invariants.md
 ---
@@ -22,6 +23,9 @@ source_of_truth:
 - `PhotoCatalogItem`: accepted local photo metadata and refs backed by a local file and capture manifest.
 - `TimelineEvent`: append-only audit/export event, not mutable runtime authority.
 - `BusEventEnvelope`, `MessageEnvelope`, `UIFeedEvent`: high-level boundaries for agent working context and human-facing presentation.
+- `AgentHarness`: shared project-owned control plane for all product agents.
+- `AgentProfile`: single-competence product-agent definition inside the shared harness.
+- `AgentMemoryRecord`: scoped, durable, source-ref backed long-term memory item for one product agent's Plant analysis.
 - `Task`, `Approval`, `Outcome`: operational loop records for checks, measurements, approved human-performed actions, and follow-up.
 - `IssueStack`, `CompanionProposal`, `CompanionConclusion`, `HumanAttentionNeeded`, `DecisionRecord`: Plant-scoped Companion governance records.
 - Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
@@ -41,6 +45,10 @@ source_of_truth:
 - Every Farm/Plant read, mutation, context-builder path, task, approval, and audit record must be actor-scoped through ActorContext.
 - Backend authorization enforces Farm/Plant access; UI visibility controls are presentation only.
 - MVP permission overrides are limited to `plant_approve_actions`; other permissions come from role presets and PlantAccessGrant.
+- Product agents share one `AgentHarness`; separate ungoverned agent runtimes are out of MVP direction.
+- Agent-specific capabilities are expressed as `AgentProfile` definitions with explicit context, tools, permissions, output contracts, risk boundaries, and memory scope.
+- Agent long-term memory supports multi-week and multi-cycle Plant analysis, but it is non-authoritative unless promoted through owning runtime/state/governance rules with evidence and required human review.
+- Agent memory retrieval must respect ActorContext, Farm/Plant scope, PlantAccessGrant, evidence provenance, freshness/trust semantics, Safety Gate boundaries, and dataset governance.
 - Product-agent runtime/demo outputs must use real LLM/model-backed flows over actual scoped Plant data.
 - UI Feed, raw chat, raw reasoning, spoiler notes, admin UI text, and unapproved proposals must not become agent working context.
 - Physical-action wording requires fresh data, Safety Gate pass, authorized human approval, and task/action tracking.
@@ -55,6 +63,8 @@ source_of_truth:
 - `FarmMembership`: active/invited/disabled/removed style states need later exact spec; decomposition requires role and membership status.
 - `Plant`: active, archived, restored history semantics. Archive removes from normal operations but retains history/audit/export access for authorized roles.
 - `PlantAccessGrant`: granted/revoked semantics need later exact spec; decomposition requires per-Plant filtering and authorization.
+- `AgentProfile`: defined/active/disabled or versioned style states need later exact spec; decomposition requires a stable way to bind agent competence, tools, context, and memory scope.
+- `AgentMemoryRecord`: candidate/active/stale/superseded/archived style states need later exact spec; decomposition requires provenance, permission filtering, and non-authority semantics.
 - `Task` / `Approval` / `Outcome`: operational loop states need later state spec; decomposition requires separation between check/measurement/follow-up and approved human-performed action tasks.
 - `CompanionProposal`: pending, approved, rejected, superseded style states; no parallel pending proposals for the same Plant-scoped issue.
 - `DecisionRecord`: binding governance record within backend rules only; not Plant-state evidence and not Safety Gate approval.
@@ -66,6 +76,8 @@ source_of_truth:
 - Plant lifecycle: create -> active operations -> archive -> retained history/audit/export -> restore when authorized.
 - Daily Plant operation lifecycle: select Plant -> check-in -> observation/photo/measurement -> persistence/audit -> agent publication boundary -> UI Feed display -> tasks/approvals/follow-up.
 - Photo lifecycle: upload -> local file -> catalog item -> sha256 -> initial capture manifest -> timeline refs -> future export/dataset refs.
+- Agent harness run lifecycle: ActorContext and source refs -> context build -> model execution -> tool/action proposal or output -> validation -> permission/approval decision -> structured observation -> trace/eval refs -> Bus/UI/domain routing when allowed.
+- Agent memory lifecycle: evidence-backed candidate -> validation and provenance check -> scoped retrievable memory -> stale/superseded/archive handling -> later analysis context only when allowed.
 - Physical-action lifecycle: agent/advisor wording -> Safety Gate route/block -> authorized human decision -> human-performed action task -> follow-up outcome.
 - Companion governance lifecycle: issue detected -> current focus / human attention -> proposal -> decision -> compact approved governance summary -> allowed workflow effect.
 
@@ -76,6 +88,7 @@ source_of_truth:
 - PostgreSQL/read model is mutable runtime authority unless replaced by later active architecture spec.
 - Timeline is append-only audit/export only.
 - Photo files and manifests are local artifacts, not mutable state authority.
+- `agents-best-practices` is the guiding doctrine for the shared agent harness direction; `/spec-design` owns exact contracts, schemas, loop rules, memory rules, tools, permissions, traces, evals, and budgets.
 - Agno is execution layer only, not source of truth, domain coordinator, Agent Chat Bus replacement, or domain authority.
 - Secrets, sessions, tokens, credentials, `.env` values, and auth material must not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.
 

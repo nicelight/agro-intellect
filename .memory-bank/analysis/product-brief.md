@@ -2,7 +2,7 @@
 description: Product Brief input contract for MVP v2 PRD.
 status: draft
 type: product-brief
-last_updated: 2026-06-02
+last_updated: 2026-06-04
 ---
 # Product Brief
 
@@ -18,6 +18,7 @@ last_updated: 2026-06-02
   - [.memory-bank/analysis/mvp-scope-expansion-integration-plan.md](mvp-scope-expansion-integration-plan.md): MVP v2 feature-scope input.
   - [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](accounts-farm-access-admin-analysis.md): Accounts/Farm/Admin analysis.
   - [.memory-bank/analysis/companion-issue-stack-decision-governance.md](companion-issue-stack-decision-governance.md): Companion governance analysis.
+  - `agents-best-practices` skill: guiding doctrine for the project's shared provider-neutral agent harness direction and its relevant subskill/reference areas.
 
 ## 1. One-liner
 
@@ -51,9 +52,11 @@ governance, admin audit, and strict safety separation.
 
 MVP v2 gives a bounded local Farm workspace where humans and product agents can work
 with Plants safely and traceably. The product stays small enough for MVP execution while
-testing the important future-facing patterns: ActorContext, per-Plant access, Agent Chat
-Bus boundaries, UI Feed isolation, Safety Gate enforcement, Companion `DecisionRecord`
-governance, task/follow-up loops, and dataset evidence hygiene.
+testing the important future-facing patterns: ActorContext, per-Plant access, one shared
+agent harness/control plane, single-competence agent profiles, scoped long-term agent
+memory for multi-cycle Plant analysis, Agent Chat Bus boundaries, UI Feed isolation,
+Safety Gate enforcement, Companion `DecisionRecord` governance, task/follow-up loops,
+and dataset evidence hygiene.
 
 ## 6. Product Concept
 
@@ -69,6 +72,12 @@ Companion helps coordinate discussion through explicit typed governance state:
 `DecisionRecord`. Companion does not become hidden authority. Governance decisions do
 not authorize physical actions and do not replace Safety Gate approval.
 
+All product agents run under one project-owned agent harness/control plane, guided by
+the `agents-best-practices` skill and its relevant subskill/reference areas. The product
+direction is not separate harnesses per agent. Each product agent is an explicit
+single-competence profile with scoped tools, context, permissions, output contracts, and
+eventually its own durable long-term memory for long-running agricultural analysis.
+
 ## 7. MVP Scope
 
 - One local Farm workspace.
@@ -82,6 +91,8 @@ not authorize physical actions and do not replace Safety Gate approval.
 - Daily Plant operations: check-in, observations, photo upload, manual pH/EC, plant card, history, recommendations, tasks, approvals, and follow-up.
 - Photo catalog, local files, `sha256`, initial capture manifests, export-ready refs, and timeline audit.
 - Product agents with single-competence boundaries and permission-aware context.
+- One shared provider-neutral agent harness/control plane for all product agents, guided by `agents-best-practices`.
+- Per-agent scoped long-term memory direction for long-running Plant processes; memory must be durable, auditable, source-ref backed, permission-aware, and retrieved through the shared harness context builder.
 - Agent Chat Bus, MessageEnvelope, UI Feed isolation, concise outputs, and controlled spoiler notes.
 - Safety Gate for physical-action wording and authorized human approval before human-performed action tasks.
 - Companion governance state and decision path.
@@ -107,6 +118,7 @@ First-demo boundary:
 - Automated physical actuation, pumps, dosing, pH/EC correction, light-control commands, autowatering, or autodosing.
 - Agno as a source of truth or replacement for the domain-owned Agent Chat Bus.
 - Agno Team `coordinate` mode as domain coordinator.
+- Separate ungoverned agent harnesses per product agent, hidden provider memory as source of truth, or memory/context paths that bypass project-owned authorization, audit, Safety Gate, or runtime authority.
 - Complex RAG, mandatory expert panel, full dataset registry, real fine-tuning, or InfluxDB runtime dependency before real sensors exist.
 - Fake, mock, hardcoded, or stubbed product-agent flows as the MVP runtime/demo path.
 
@@ -118,6 +130,7 @@ First-demo boundary:
 - Users see only authorized Plants and Plant data.
 - Daily check-in, photo, pH/EC, agent output, task, approval, outcome, and durable audit records remain traceable.
 - UI Feed content, unapproved proposals, raw reasoning, and unauthorized Plant context never enter agent working context.
+- Product agents share one harness/control-plane direction, and each agent's long-term memory remains scoped, source-ref backed, permission-aware, and non-authoritative unless promoted through the owning runtime/state rules.
 - Physical-action advice fails closed unless fresh data, Safety Gate pass, and authorized human approval are present.
 - Dataset candidates remain non-trainable until dataset governance rules allow them.
 - First demo agent behavior is produced by real LLM/model-backed agents over actual scoped Plant data, not fake, mock, hardcoded, or stubbed outputs.
@@ -129,6 +142,8 @@ First-demo boundary:
 - `timeline.jsonl` is audit/export only.
 - Photo files and manifests are local artifacts, not mutable state authority.
 - UI Feed is presentation only.
+- `agents-best-practices` is the guiding doctrine for the agent harness direction; `/spec-design` must translate it into project-specific harness architecture, and `/spec-improve` must apply it feature by feature.
+- Agent long-term memory is a project-owned harness concern. It cannot be hidden provider memory, raw chat replay, UI Feed replay, unapproved proposal content, or a shortcut around ActorContext, PlantAccessGrant, Safety Gate, Plant State trust, or dataset governance.
 - Companion `DecisionRecord` is governance authority only within backend rules; it is not Safety Gate approval.
 - Backend authorization must enforce every Farm/Plant read/mutate route and every context builder; frontend visibility controls are presentation only.
 - Account, role, Plant lifecycle, and Plant access changes must create durable admin audit records, not only appear in an admin audit view.
@@ -144,6 +159,7 @@ First-demo boundary:
 - Local auth/session can be minimal but must support authorization and audit attribution.
 - Consultant remains in product scope, but the first demo may defer a full Consultant UI path.
 - MVP product agents must run as real LLM/model-backed flows over actual user-entered or uploaded Plant data. Sensor runtime remains future-only until real sensors exist.
+- The first harness implementation should be the smallest reliable shared loop; per-agent long-term memory can be introduced incrementally but must be anticipated in `/spec-design` so later growing-cycle analysis is not bolted on as hidden prompt state.
 - Server sync remains future-only; MVP sync status is `local_only`.
 
 ## 12. Risks
@@ -153,6 +169,7 @@ First-demo boundary:
 - Governance approval could be confused with Safety Gate physical-action approval.
 - Unapproved Companion proposals or UI markdown could leak into agent context as facts.
 - ActorContext and authorization could be enforced in UI only instead of backend routes and context builders.
+- Long-term agent memory could become stale, unauthorized, overbroad, or confused with runtime authority if not scoped and retrieved through explicit harness rules.
 - Dataset/export evidence could mix unauthorized Farm/Plant context if isolation is not specified early.
 - The PRD may overfit to the 3000-line dossier unless `/write-prd` keeps product scope separate from design details.
 - Requiring real LLM/model-backed MVP agents increases integration risk, so specs must keep adapters simple while forbidding fake runtime/demo outputs.
@@ -179,9 +196,12 @@ Write a PRD for MVP v2 as a bounded local-first Farm workspace with local Accoun
 Boss/Engineer/Consultant roles, one local Farm, multiple Plants starting with
 `tomato_001`, per-Plant access, daily Plant operations, safety-gated agent assistance,
 Companion governance, task/follow-up tracking, local evidence/audit, and dataset
-governance. Preserve KISS and local modular monolith architecture. Keep production SaaS,
-hosted sync, billing, enterprise identity, automated actuation, broad farm management,
-and real fine-tuning outside MVP.
+governance. Preserve KISS and local modular monolith architecture. Use
+`agents-best-practices` as the guiding doctrine for one shared provider-neutral agent
+harness/control plane, with explicit single-competence agent profiles and a scoped
+long-term memory direction for each agent. Keep production SaaS, hosted sync, billing,
+enterprise identity, automated actuation, broad farm management, and real fine-tuning
+outside MVP.
 
 The PRD must clarify role permissions, ActorContext, Plant lifecycle, physical-action
 approval roles, Companion governance scope, `DecisionRecord` authority, first demo

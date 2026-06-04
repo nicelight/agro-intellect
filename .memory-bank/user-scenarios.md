@@ -2,7 +2,7 @@
 description: Pre-PRD user scenarios for MVP v2 decomposition.
 status: active
 owner: product
-last_updated: 2026-06-03
+last_updated: 2026-06-04
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/analysis/product-brief.md
@@ -16,6 +16,7 @@ source_of_truth:
 - `Engineer`: operational user for assigned Plants. Runs check-ins, uploads photos, records measurements and observations, works tasks/follow-up, and approves physical-action proposals only when granted `plant_approve_actions`.
 - `Consultant`: advisory/read/comment user for granted Plant context. Consultant does not create domain task/recommendation records and never approves physical actions in MVP.
 - `Companion`: governance coordinator. Maintains typed Plant-scoped discussion state and proposals, but does not replace backend rules, Safety Gate approval, or human authority.
+- Product agents: single-competence profiles inside one shared project-owned harness. They may use scoped long-term memory for Plant analysis only through permission-aware context building.
 - Project owner / AI-first development operator: validates the product workflow, Memory Bank process, source-of-truth boundaries, and agent architecture.
 
 ## Core Scenarios
@@ -37,10 +38,11 @@ Decomposition implication: account/session/authz, Farm/Plant lifecycle, PlantAcc
 3. Engineer selects only authorized Plants, initially `tomato_001`.
 4. Engineer records observations, uploads a photo, and/or enters pH/EC measurements.
 5. Backend persists runtime state, local photo artifacts, catalog refs, and timeline audit/export refs.
-6. Real LLM/model-backed product agents process actual scoped Plant data and publish only through project-owned boundaries.
-7. UI Feed displays human-facing cards, prompts, tasks, approvals, history, and storage warnings while remaining unavailable as agent working context.
+6. The shared harness assembles context from authorized runtime state, source refs, approved governance summaries, and allowed scoped agent memory.
+7. Real LLM/model-backed product agents process actual scoped Plant data and publish only through project-owned boundaries.
+8. UI Feed displays human-facing cards, prompts, tasks, approvals, history, and storage warnings while remaining unavailable as agent working context.
 
-Decomposition implication: daily operations, photo intake, runtime state, agent publication, UI Feed, and context hygiene must be cut with ActorContext and Plant authorization in mind.
+Decomposition implication: daily operations, photo intake, runtime state, agent harness context building, scoped agent memory, agent publication, UI Feed, and context hygiene must be cut with ActorContext and Plant authorization in mind.
 
 ### 3. Safety-Gated Recommendation Becomes Human-Performed Task
 
@@ -66,6 +68,7 @@ Decomposition implication: Companion governance is a typed state/workflow slice 
 
 - Production SaaS, hosted multi-tenant deployment, billing, subscriptions, enterprise identity, email delivery, hosted account recovery, or SaaS tenancy.
 - Multi-Farm tenancy or multi-Farm membership.
+- Separate ungoverned harnesses per product agent or hidden provider memory as Plant-analysis authority.
 - Automated physical actuation, pumps, dosing, pH/EC correction, light commands, autowatering, or autodosing.
 - Broad commercial farm management beyond the bounded local Farm/Plant MVP.
 - Sensor runtime dependency before real sensors exist.
@@ -78,6 +81,8 @@ Decomposition implication: Companion governance is a typed state/workflow slice 
 - `tomato_001` is the initial Plant and migration seed, not a permanent product limit.
 - PostgreSQL/read model remains runtime authority for mutable operational state unless a later active architecture spec replaces it.
 - Timeline, photo files, and manifests are audit/export or local artifact layers, not mutable runtime authority.
+- Product agents run as AgentProfiles inside one shared AgentHarness; `/spec-design` must define harness loop, tool/action validation, permission decisions, approval pauses, traces, evals, and memory retrieval rules.
+- Agent long-term memory can support long-running grow-cycle analysis only when it is source-ref backed, scoped, permission-aware, and non-authoritative by itself.
 - Agent Chat Bus is the agent-consumable working stream; UI Feed is human presentation only.
 - Companion governance approval and Safety Gate approval are separate approval classes with different semantics.
 
