@@ -1,84 +1,44 @@
 ---
-description: MVP v2 SDD Design Specs Index and migration route map.
+description: Pure SDD spec registry and planned-spec index.
 status: active
 owner: architecture
-last_updated: 2026-06-02
+last_updated: 2026-06-03
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
-  - .memory-bank/invariants.md
-  - .memory-bank/glossary.md
-  - project_dossier_v2.md
-  - .memory-bank/analysis/mvp-scope-expansion-integration-plan.md
+  - .memory-bank/spec-backbone.md
 ---
-# SDD Design Specs Index
+# SDD Spec Index
 
 ## Purpose
+- Keep a concise registry of existing and planned SDD specs.
+- Read this index before creating new specs or doing serious T2/T3 work.
+- Keep readiness, open design questions, backbone status, and routing handoffs in [.memory-bank/spec-backbone.md](spec-backbone.md).
+- Feature `spec_design_status` lives in feature frontmatter, not in this index.
 
-This file is the active route map during MVP v2 migration.
+## Spec Registry
+| Spec | Type | Path | Status | Owner command | Scope |
+|---|---|---|---|---|---|
+| Project Constitution | governance | [.memory-bank/constitution.md](constitution.md) | active | /constitution | Top governing policy. |
+| Invariants | invariants | [.memory-bank/invariants.md](invariants.md) | active | /spec-init or /spec-design | Global MUST/NEVER rules. |
+| Glossary | glossary | [.memory-bank/glossary.md](glossary.md) | active | /spec-init or /spec-design | Shared MVP v2 vocabulary. |
+| User Scenarios | scenarios | [.memory-bank/user-scenarios.md](user-scenarios.md) | active | /spec-init | Primary actors, core scenarios, out-of-scope scenarios, and decomposition implications. |
+| Core Domain | domain | [.memory-bank/domains/core-domain.md](domains/core-domain.md) | active | /spec-init | Main entities, roles, business rules, lifecycle hints, and decomposition constraints. |
+| Boundary Map | boundary_hints | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | active | /spec-init | Preliminary boundary hints only; no endpoints, schemas, or OpenAPI details. |
+| Lifecycle Map | lifecycle_hints | [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md) | active | /spec-init | Lifecycle hints that affect epic/feature cuts. |
+| Testing Index | testing | [.memory-bank/testing/index.md](testing/index.md) | planned | /prd or /spec-design | Verification strategy and quality gates. |
 
-The MVP v1 spec-layer has been archived under
-[.memory-bank/archive/mvp-v1/](archive/mvp-v1/). Archived MVP v1 specs are historical
-reference only and must not be treated as current source of truth for task decomposition.
+## Planned Specs
+| Area | Expected path | Needed by | Notes |
+|---|---|---|---|
+| system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Default global architecture hub after /prd. |
+| feature_design | .memory-bank/tech-specs/FT-<NNN>-<slug>.md | /spec-improve | Feature-local specs only when needed before task decomposition. |
 
-## Active Backbone Status
+## Broken / Missing Links
+- TBD
 
-- Status: `blocked`.
-- Reason: MVP v2 PRD is complete, but `/spec-init`, `/prd`, and global SDD backbone have not been produced yet.
-- Next required command: `/spec-init` after explicit user instruction.
-- Downstream gate: `/prd-to-tasks` is blocked until `/spec-init`, `/prd`,
-  `/spec-design`, and feature-level `/spec-improve` complete for MVP v2 features.
-
-## Active Source Inputs
-
-- [.memory-bank/constitution.md](constitution.md): governing policy, amended for bounded local-first Farm workspace and Companion governance.
-- [.memory-bank/prd.md](prd.md): clarified MVP v2 PRD with `clarification_status: complete`.
-- [.memory-bank/invariants.md](invariants.md): active cross-cutting guardrails.
-- [.memory-bank/glossary.md](glossary.md): active vocabulary.
-- [project_dossier_v2.md](../project_dossier_v2.md): upstream MVP v2 dossier.
-- [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): PRD input brief, now clarified by the active PRD.
-- [.memory-bank/analysis/mvp-scope-expansion-integration-plan.md](analysis/mvp-scope-expansion-integration-plan.md): MVP v2 feature-scope input.
-- [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](analysis/accounts-farm-access-admin-analysis.md): Accounts/Farm/Admin analysis input.
-- [.memory-bank/analysis/companion-issue-stack-decision-governance.md](analysis/companion-issue-stack-decision-governance.md): Companion governance analysis input.
-
-## Archived MVP v1 References
-
-- [.memory-bank/archive/mvp-v1/index.md](archive/mvp-v1/index.md): archived MVP v1 router.
-- [.memory-bank/archive/mvp-v1/prd.md](archive/mvp-v1/prd.md): archived MVP v1 PRD.
-- [.memory-bank/archive/mvp-v1/spec-index.md](archive/mvp-v1/spec-index.md): archived MVP v1 SDD route map.
-- [.memory-bank/archive/mvp-v1/features/index.md](archive/mvp-v1/features/index.md): archived MVP v1 features.
-- [.memory-bank/archive/mvp-v1/tech-specs/index.md](archive/mvp-v1/tech-specs/index.md): archived MVP v1 feature-local tech specs.
-
-## Not Yet Active
-
-The following active MVP v2 docs do not exist yet and must be created through the normal workflow:
-
-- `.memory-bank/product.md`
-- `.memory-bank/requirements.md`
-- `.memory-bank/epics/EP-*.md`
-- `.memory-bank/features/FT-*.md`
-- `.memory-bank/architecture/system-architecture.md`
-- `.memory-bank/domains/*.md`
-- `.memory-bank/contracts/*.md`
-- `.memory-bank/states/*.md`
-- `.memory-bank/runbooks/*.md`
-- `.memory-bank/tech-specs/FT-*.md`
-
-## Expected Workflow
-
-```text
-/spec-init
--> /prd
--> /spec-design
--> /spec-improve FT-<NNN>
--> /prd-to-tasks FT-<NNN>
-```
-
-## Migration Guardrails
-
-- Do not resurrect archived MVP v1 feature completion statuses into MVP v2.
-- Do not mark MVP v2 feature specs complete until `/spec-improve` has run against the new PRD/backbone.
-- Keep `DecisionRecord` governance separate from Safety Gate physical-action approval.
-- Keep local Farm/Admin account scope bounded until PRD/specs explicitly widen it.
-- Keep production SaaS, hosted/cloud sync as an MVP requirement, billing, enterprise identity,
-  automated actuation, and broad farm-management scope out of MVP v2 unless a later product stage amends the project.
+## Update Rules
+- Keep this file as index/registry only: names, paths, statuses, owners, scopes, and broken links.
+- Do not add global backbone status, backbone matrices, feature status maps, long hard rules, or open design question dumps here.
+- Use [.memory-bank/spec-backbone.md](spec-backbone.md) for pre-PRD readiness, decomposition inputs, global backbone status, matrix, and handoffs.
+- Use linked specs or ADRs for detailed decisions, rationale, contracts, state transitions, schemas, invariants, and testing rules.

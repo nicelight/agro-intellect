@@ -31,10 +31,11 @@ Canonical route:
 ## 1) Read existing design surface first
 Before creating any new spec:
 1. Read `.memory-bank/spec-index.md`.
-2. Confirm global backbone status is `complete`, or `minimal` with explicit `not_applicable` areas; if missing, bare `minimal`, or `blocked`, stop and route to `/spec-design`.
-3. Read the target `.memory-bank/features/FT-<NNN>-*.md`.
-4. Read linked epic, requirements, Constitution, backbone specs, and any existing specs routed by the index.
-5. Search existing `.memory-bank/architecture/`, `.memory-bank/tech-specs/`, `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, and `.memory-bank/runbooks/` for overlapping decisions.
+2. Read `.memory-bank/spec-backbone.md`.
+3. Confirm global backbone status in `.memory-bank/spec-backbone.md` is `complete`, or `minimal` with explicit `not_applicable` areas; if missing, bare `minimal`, or `blocked`, stop and route to `/spec-design`.
+4. Read the target `.memory-bank/features/FT-<NNN>-*.md`.
+5. Read linked epic, requirements, Constitution, backbone specs, and any existing specs routed by the index/backbone.
+6. Search existing `.memory-bank/architecture/`, `.memory-bank/tech-specs/`, `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, and `.memory-bank/runbooks/` for overlapping decisions.
 
 Rule: do not create a new spec before checking existing specs through the index.
 If several features need the same missing domain/contract/state/API/security/data/runtime/testing decision, stop and route to `/spec-design` instead of creating duplicate feature-local specs.
@@ -96,14 +97,16 @@ Keep KISS:
 
 ## 6) Update routes and feature metadata
 Update `.memory-bank/spec-index.md`:
-- route the feature to linked specs
-- mark statuses as authoritative/planned/candidate/unknown/not_applicable
-- record gaps/open questions
+- keep the spec registry/planned specs current
+- add linked specs created or used for the feature
+- record broken/missing links only when relevant
+
+Do not write feature status maps into `.memory-bank/spec-index.md`; feature `spec_design_status` lives in feature frontmatter. If a global/shared gap appears, update `.memory-bank/spec-backbone.md` or route back to `/spec-design`.
 
 Invariant for `spec_design_status: complete`:
 - set `complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
 - do not set `complete` while any feature-relevant design area remains planned, candidate, unknown, conflicting, or otherwise unresolved
-- if unresolved feature-relevant planned/candidate/unknown/conflicting areas remain, set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in `.memory-bank/spec-index.md`
+- if unresolved feature-relevant planned/candidate/unknown/conflicting areas remain, set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in the feature doc or relevant spec; use `.memory-bank/spec-backbone.md` only for shared/global gaps
 
 Update target feature frontmatter:
 
@@ -127,6 +130,8 @@ Report:
 - linked specs
 - gaps/open questions
 - complexity or contradiction notes
-- expected next command: `/prd-to-tasks FT-<NNN>`
+- expected next command routing:
+  - if `spec_design_status` is `complete` or `not_required`: `/prd-to-tasks FT-<NNN>`
+  - if `spec_design_status` is `blocked`: no `/prd-to-tasks`; resolve the blocker and rerun `/spec-improve FT-<NNN>`, or route back to `/spec-design` when the gap is shared/global
 
 </process>

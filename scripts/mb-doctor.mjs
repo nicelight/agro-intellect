@@ -17,10 +17,12 @@ const LINT_REL = 'scripts/mb-lint.mjs';
 const CONSTITUTION_REL = '.memory-bank/constitution.md';
 const MB_INDEX_REL = '.memory-bank/index.md';
 const SPEC_INDEX_REL = '.memory-bank/spec-index.md';
+const SPEC_BACKBONE_REL = '.memory-bank/spec-backbone.md';
 const TASK_ID_RE = /^TASK-[0-9]{3,}$/;
 const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
+const COMPLETE_BACKBONE_AREA_STATUSES = new Set(['authoritative', 'not_applicable']);
 const COMPACT_TIERS = new Set(['T0', 'T1']);
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const TERMINAL_STATUSES = new Set(['done', 'failed']);
@@ -164,6 +166,7 @@ function checkConstitutionStructure() {
   const constitutionAbs = path.join(ROOT, CONSTITUTION_REL);
   const indexAbs = path.join(ROOT, MB_INDEX_REL);
   const specIndexAbs = path.join(ROOT, SPEC_INDEX_REL);
+  const specBackboneAbs = path.join(ROOT, SPEC_BACKBONE_REL);
 
   if (!isFile(constitutionAbs)) {
     issues.push(`${CONSTITUTION_REL} missing`);
@@ -183,44 +186,115 @@ function checkConstitutionStructure() {
     if (!text.includes('constitution.md')) issues.push(`${SPEC_INDEX_REL} does not mention constitution.md`);
   }
 
+  if (!isFile(specBackboneAbs)) {
+    issues.push(`${SPEC_BACKBONE_REL} missing`);
+  }
+
   if (!issues.length) return;
 
   addFinding('error', 'CONSTITUTION_STRUCTURE_INVALID', 'Strict mode requires Constitution file and router links.', {
     path: CONSTITUTION_REL,
     details: { issues },
-    suggested_fix: `Create ${CONSTITUTION_REL} and link constitution.md from ${MB_INDEX_REL} and ${SPEC_INDEX_REL}.`,
+    suggested_fix: `Create ${CONSTITUTION_REL}, ${SPEC_INDEX_REL}, and ${SPEC_BACKBONE_REL}; link constitution.md from ${MB_INDEX_REL} and ${SPEC_INDEX_REL}.`,
   });
 }
 
 function checkBackboneReadiness() {
+  const specBackboneAbs = path.join(ROOT, SPEC_BACKBONE_REL);
   const specIndexAbs = path.join(ROOT, SPEC_INDEX_REL);
-  if (!isFile(specIndexAbs)) return;
+  const severity = options.strict ? 'error' : 'warning';
 
-  const text = fs.readFileSync(specIndexAbs, 'utf8').replace(/\r\n/g, '\n');
+  checkSpecIndexPurity(specIndexAbs, specBackboneAbs, severity);
+
+  if (!isFile(specBackboneAbs)) {
+    let migrationHint = undefined;
+    if (isFile(specIndexAbs)) {
+      const oldText = fs.readFileSync(specIndexAbs, 'utf8').replace(/\r\n/g, '\n');
+      if (extractBackboneStatusSection(oldText)) {
+        migrationHint = `${SPEC_INDEX_REL} still contains old Global backbone status. Move readiness state to ${SPEC_BACKBONE_REL} and keep spec-index as a pure registry.`;
+      }
+    }
+
+    addFinding(
+      severity,
+      'SPEC_BACKBONE_NOT_READY',
+      `${SPEC_BACKBONE_REL}: mandatory /spec-design status is missing.`,
+      {
+        path: SPEC_BACKBONE_REL,
+        details: { status: 'missing', migration_hint: migrationHint },
+        suggested_fix:
+          `Run /spec-init to create ${SPEC_BACKBONE_REL}, then /spec-design after /prd. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.`,
+      }
+    );
+    return;
+  }
+
+  const text = fs.readFileSync(specBackboneAbs, 'utf8').replace(/\r\n/g, '\n');
   const section = extractBackboneStatusSection(text);
   const status = extractBackboneStatusFromSection(section);
-  if (status === 'complete') return;
+  if (status === 'complete') {
+    const matrix = analyzeBackboneAreaMatrix(text);
+    if (matrix.ready) return;
+
+    addFinding(
+      severity,
+      'SPEC_BACKBONE_MATRIX_NOT_READY',
+      `${SPEC_BACKBONE_REL}: complete Global Backbone Status requires authoritative or not_applicable matrix rows.`,
+      {
+        path: SPEC_BACKBONE_REL,
+        details: { issues: matrix.issues },
+        suggested_fix:
+          'Update ## Backbone Area Matrix so every row status is authoritative or not_applicable before marking Global Backbone Status complete.',
+      }
+    );
+    return;
+  }
   if (status === 'minimal' && hasExplicitBackboneNotApplicableAreas(section)) return;
 
-  const severity = options.strict ? 'error' : 'warning';
   const details = { status: status ?? 'missing' };
   if (status === 'minimal') details.issue = 'minimal backbone must record not_applicable areas';
 
   addFinding(
     severity,
     'SPEC_BACKBONE_NOT_READY',
-    `${SPEC_INDEX_REL}: mandatory /spec-design status is not ready for downstream task execution.`,
+    `${SPEC_BACKBONE_REL}: mandatory /spec-design status is not ready for downstream task execution.`,
     {
-      path: SPEC_INDEX_REL,
+      path: SPEC_BACKBONE_REL,
       details,
       suggested_fix:
-        'Run /spec-design after /prd. Record global backbone status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.',
+        'Run /spec-design after /prd. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.',
     }
   );
 }
 
+function checkSpecIndexPurity(specIndexAbs, specBackboneAbs, severity) {
+  if (!isFile(specIndexAbs) || !isFile(specBackboneAbs)) return;
+
+  const text = fs.readFileSync(specIndexAbs, 'utf8').replace(/\r\n/g, '\n');
+  const staleSections = findStaleSpecIndexSections(text);
+  if (!staleSections.length) return;
+
+  addFinding(severity, 'SPEC_INDEX_NOT_PURE', `${SPEC_INDEX_REL}: stale non-index sections remain after spec-backbone split.`, {
+    path: SPEC_INDEX_REL,
+    details: { sections: staleSections },
+    suggested_fix:
+      `Move backbone/status content to ${SPEC_BACKBONE_REL} and keep ${SPEC_INDEX_REL} as a pure registry/planned-spec index.`,
+  });
+}
+
+function findStaleSpecIndexSections(text) {
+  const stale = [];
+  const sectionRe = /^##\s+(Feature Design Status Map|Global backbone status|Global Backbone Status|Backbone Area Matrix)\s*$/gim;
+  for (const match of text.matchAll(sectionRe)) {
+    stale.push(match[1]);
+  }
+  return [...new Set(stale)];
+}
+
 function extractBackboneStatusSection(text) {
-  return text.match(/^##\s+Global backbone status\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1] ?? '';
+  return text.match(/^##\s+Global Backbone Status\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1]
+    ?? text.match(/^##\s+Global backbone status\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1]
+    ?? '';
 }
 
 function extractBackboneStatusFromSection(section) {
@@ -229,13 +303,106 @@ function extractBackboneStatusFromSection(section) {
 }
 
 function hasExplicitBackboneNotApplicableAreas(section) {
-  return section.split('\n').some((rawLine) => {
-    const line = rawLine.trim();
-    if (!line || /^[-*]?\s*Not applicable areas\s*:\s*(?:$|TBD\b|TODO\b|none\b|n\/a\b|-+\s*$)/i.test(line)) return false;
-    if (!/\bnot_applicable\b/i.test(line)) return false;
-    if (/\b(?:TBD|TODO|none|n\/a)\b/i.test(line)) return false;
-    return /[-:]\s*\S+/.test(line);
+  const lines = section.split('\n');
+  const markerIndex = lines.findIndex((rawLine) => /^\s*[-*]\s*Not applicable areas\s*:/i.test(rawLine));
+  if (markerIndex === -1) return false;
+
+  const markerIndent = leadingSpaceCount(lines[markerIndex]);
+  for (const rawLine of lines.slice(markerIndex + 1)) {
+    if (!rawLine.trim()) continue;
+
+    const indent = leadingSpaceCount(rawLine);
+    if (indent <= markerIndent && /^\s*[-*]\s+\S/.test(rawLine)) break;
+    if (indent <= markerIndent) continue;
+
+    const childMatch = rawLine.match(/^\s*[-*]\s+(.+)$/);
+    if (!childMatch) continue;
+    if (hasNotApplicableRationale(childMatch[1])) return true;
+  }
+
+  return false;
+}
+
+function hasNotApplicableRationale(text) {
+  const normalized = String(text ?? '').trim();
+  if (!normalized || /\b(?:TBD|TODO|none|n\/a)\b/i.test(normalized)) return false;
+  return /\bnot_applicable\b\s*(?:-|:)\s*\S+/i.test(normalized);
+}
+
+function analyzeBackboneAreaMatrix(text) {
+  const section = extractBackboneAreaMatrixSection(text);
+  if (!section) {
+    return { ready: false, issues: [{ issue: 'matrix_missing' }] };
+  }
+
+  const rows = parseMarkdownTableRows(section);
+  if (!rows.length) {
+    return { ready: false, issues: [{ issue: 'matrix_rows_missing' }] };
+  }
+
+  const issues = rows
+    .map((row) => {
+      const status = normalizeMatrixCell(row.status);
+      if (COMPLETE_BACKBONE_AREA_STATUSES.has(status)) return null;
+      return {
+        area: row.area || 'unknown',
+        status: status || 'missing',
+        issue: status ? 'status_not_ready' : 'status_missing',
+      };
+    })
+    .filter(Boolean);
+
+  return { ready: issues.length === 0, issues };
+}
+
+function extractBackboneAreaMatrixSection(text) {
+  return text.match(/^##\s+Backbone Area Matrix\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1] ?? '';
+}
+
+function parseMarkdownTableRows(section) {
+  const tableLines = section
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('|') && line.includes('|', 1));
+
+  if (tableLines.length < 2) return [];
+
+  const header = splitMarkdownTableRow(tableLines[0]).map((cell) => cell.toLowerCase());
+  const statusIndex = header.indexOf('status');
+  const areaIndex = header.indexOf('area');
+  if (statusIndex === -1) return [];
+
+  return tableLines.slice(1).flatMap((line) => {
+    const cells = splitMarkdownTableRow(line);
+    if (isMarkdownSeparatorRow(cells)) return [];
+    return [{
+      area: cells[areaIndex] ?? '',
+      status: cells[statusIndex] ?? '',
+    }];
   });
+}
+
+function splitMarkdownTableRow(line) {
+  return line
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim());
+}
+
+function isMarkdownSeparatorRow(cells) {
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function normalizeMatrixCell(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/^[`*_]+|[`*_]+$/g, '')
+    .toLowerCase();
+}
+
+function leadingSpaceCount(value) {
+  return String(value ?? '').match(/^\s*/)?.[0].length ?? 0;
 }
 
 function checkTaskReadiness() {

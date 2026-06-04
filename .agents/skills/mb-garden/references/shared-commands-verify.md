@@ -50,7 +50,7 @@ Manual mode:
   - `.memory-bank/features/FT-*` и/или
   - `.memory-bank/requirements.md` (REQ IDs)
 - if the task record or linked feature contains authoritative SDD spec links,
-  read `.memory-bank/spec-index.md` and all linked authoritative SDD specs, for
+  read `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and all linked authoritative SDD specs, for
   any tier
 
 If the task record is missing, stop with an explicit error.
@@ -62,7 +62,7 @@ Authoritative SDD spec links are links in task richer fields or linked feature
 `.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
 If `tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop and report a blocker instead of verifying against classic AC alone.
 Do not block `T0` / `T1` only because SDD spec links are absent.
-If task/AC wording conflicts with linked SDD specs or the global backbone, stop with a blocker instead of verifying against the task alone.
+If task/AC wording conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with a blocker instead of verifying against the task alone.
 
 Tier policy:
 - `T0`: `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<ID>/run.md`.

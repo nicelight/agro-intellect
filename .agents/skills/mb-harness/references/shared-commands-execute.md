@@ -48,8 +48,9 @@ Required sources:
 - `.memory-bank/tasks/TASK-<ID>.task.json`
 - task-relevant feature, epic, requirements, or normative docs referenced by the
   task
-- `.memory-bank/spec-index.md` and all linked authoritative SDD specs when the
-  task record or linked feature contains SDD spec links, for any tier
+- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and all linked
+  authoritative SDD specs when the task record or linked feature contains SDD
+  spec links, for any tier
 
 Use richer task fields when present:
 - `source_artifacts`
@@ -60,7 +61,8 @@ Use richer task fields when present:
 
 Scan richer task fields and linked feature `spec_design_links` for authoritative
 SDD spec links. For this rule, authoritative SDD spec links are links to
-`.memory-bank/spec-index.md`, `.memory-bank/tech-specs/`,
+`.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`,
+`.memory-bank/tech-specs/`,
 `.memory-bank/architecture/`, `.memory-bank/contracts/`,
 `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`,
 `.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
@@ -79,7 +81,7 @@ Stop with an explicit error if:
 - `tier` is not `T0`, `T1`, `T2`, or `T3`
 - task `status` is `blocked`, `failed`, or `done`
 - any `depends_on` task is missing or has status other than `done`
-- `tier` is `T2` or `T3` and task/feature/spec-index provide no concrete linked SDD spec in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
+- `tier` is `T2` or `T3` and task/feature/spec-backbone/spec-index provide no concrete linked SDD spec in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
 - the task record, implementation plan, or feature doc contradicts linked SDD specs or a non-blocked global backbone decision
 
 Do not block `T0` / `T1` only because SDD spec links are absent.
@@ -123,8 +125,9 @@ Implement only scoped task changes.
 Rules:
 - keep edits bounded to acceptance criteria and referenced specs
 - for any tier, if the task record or linked feature contains authoritative SDD
-  spec links, read `.memory-bank/spec-index.md` and all linked authoritative SDD
-  specs before editing; treat them as normative inputs, not optional reading
+  spec links, read `.memory-bank/spec-backbone.md`,
+  `.memory-bank/spec-index.md`, and all linked authoritative SDD specs before
+  editing; treat them as normative inputs, not optional reading
 - when linked SDD specs exist, they outrank local task wording for architecture,
   contracts, data/state, invariants, and verification targets
 - preserve unrelated user changes

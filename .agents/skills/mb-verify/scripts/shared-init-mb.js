@@ -429,6 +429,7 @@ Run a contextual governing-principles interview and maintain \`.memory-bank/cons
 3. If \`.memory-bank/constitution.md\` is missing, create it from the generated Constitution skeleton.
 4. Read governance context before amendments:
    - \`.memory-bank/mbb/index.md\`
+   - \`.memory-bank/spec-backbone.md\`
    - \`.memory-bank/spec-index.md\`
    - \`.memory-bank/invariants.md\`
    - \`.memory-bank/workflows/*\`
@@ -501,9 +502,10 @@ ${GENERATED_MARKER}
 1. Read \`AGENTS.md\` (this guide)
 2. Read \`.memory-bank/constitution.md\` (top governing policy)
 3. Read \`.memory-bank/mbb/index.md\` (Memory Bank rules)
-4. Read \`.memory-bank/spec-index.md\` (normative routing)
-5. Read \`.memory-bank/index.md\` (table of contents)
-6. Read task/feature-specific docs
+4. Read \`.memory-bank/spec-backbone.md\` (spec readiness/backbone state)
+5. Read \`.memory-bank/spec-index.md\` (normative spec registry)
+6. Read \`.memory-bank/index.md\` (table of contents)
+7. Read task/feature-specific docs
 
 ## Orchestrator Mode
 
@@ -553,9 +555,9 @@ Every ORCHESTRATOR response must start with:
 
 ## Preferred context routing
 - Start with \`.memory-bank/architecture/*\` and \`.memory-bank/guides/*\` for concept priming.
-- If present, prefer explicit normative docs such as \`.memory-bank/constitution.md\`, \`.memory-bank/spec-index.md\`, \`.memory-bank/invariants.md\`, \`.memory-bank/glossary.md\`, \`.memory-bank/contracts/*\`, \`.memory-bank/states/*\`, \`.memory-bank/runbooks/*\`, and \`.memory-bank/testing/*\`.
+- If present, prefer explicit normative docs such as \`.memory-bank/constitution.md\`, \`.memory-bank/spec-backbone.md\`, \`.memory-bank/spec-index.md\`, \`.memory-bank/invariants.md\`, \`.memory-bank/glossary.md\`, \`.memory-bank/contracts/*\`, \`.memory-bank/states/*\`, \`.memory-bank/runbooks/*\`, and \`.memory-bank/testing/*\`.
 - Normative docs enrich the Memory Bank; they do not invalidate valid duo docs.
-- Before serious work, read \`.memory-bank/spec-index.md\` and follow linked SDD specs.
+- Before serious work, read \`.memory-bank/spec-backbone.md\`, \`.memory-bank/spec-index.md\`, and follow linked SDD specs.
 - Do not create a new spec before checking existing specs through \`.memory-bank/spec-index.md\`.
 - For \`T2\` / \`T3\` tasks, linked SDD specs are normative inputs; missing linked specs are a blocker for serious work.
 
@@ -671,7 +673,9 @@ status: active
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
 - [.memory-bank/workflows/tier-policy.md](workflows/tier-policy.md): Tier policy for TASK routing and protocol depth.
 
-- [.memory-bank/spec-index.md](spec-index.md): Lightweight SDD route map for existing specs, planned/candidate/unknown areas, and \`/spec-design\` handoff.
+- [.memory-bank/spec-index.md](spec-index.md): Pure SDD spec registry and planned-spec index.
+- [.memory-bank/spec-backbone.md](spec-backbone.md): Pre-PRD framing status and global backbone state for \`/prd\` and \`/spec-design\`.
+- [.memory-bank/user-scenarios.md](user-scenarios.md): User scenarios and architecture implications when created by \`/spec-init\` or \`/spec-design\`.
 - [.memory-bank/glossary.md](glossary.md): Общий словарь терминов и доменных значений.
 - [.memory-bank/invariants.md](invariants.md): Глобальные MUST/NEVER правила.
 - [.memory-bank/architecture/](architecture/): Duo + boundaries (WHAT/WHY).
@@ -693,7 +697,7 @@ status: active
 
 ## Constitution precedence
 - [.memory-bank/constitution.md](../constitution.md) is the top governing policy for agent decisions.
-- MBB, spec-index, invariants, contracts, states, testing, and workflow docs refine the Constitution and MUST NOT contradict it.
+- MBB, spec-index, spec-backbone, invariants, contracts, states, testing, and workflow docs refine the Constitution and MUST NOT contradict it.
 
 ## SSOT pyramid
 - **Code**: WHAT/HOW — implementation truth.
@@ -712,7 +716,7 @@ status: active
 9. Separate facts from interpretations: mark hypotheses explicitly ("предположительно", "требует проверки").
 10. After merge/rebase conflicts: re-check MB consistency.
 11. MB-SYNC after each wave/significant change (see \`workflows/mb-sync.md\`).
-12. When present, \`constitution.md\`, \`spec-index.md\`, \`glossary.md\`, \`invariants.md\`, \`contracts/*\`, \`states/*\`, \`runbooks/*\`, and \`testing/*\` act as an explicit normative layer and should be linked from relevant docs.
+12. When present, \`constitution.md\`, \`spec-backbone.md\`, \`spec-index.md\`, \`glossary.md\`, \`invariants.md\`, \`contracts/*\`, \`states/*\`, \`runbooks/*\`, and \`testing/*\` act as an explicit normative layer and should be linked from relevant docs.
 
 ## Forbidden
 - Copy-paste implementation details / pseudocode
@@ -727,82 +731,105 @@ status: active
 `);
 
 writeFile(`${MB}/spec-index.md`, `---
-description: Lightweight SDD Design Specs Index route map.
+description: Pure SDD spec registry and planned-spec index.
 status: active
 ---
-# SDD Design Specs Index
+# SDD Spec Index
 
 ## Purpose
-- Use this file as the lightweight route map for SDD design specs and explicit normative docs.
-- \`/spec-init\` creates or refreshes this skeleton before \`/prd\`; it is preflight/bootstrap, not design.
+- Keep a concise registry of existing and planned SDD specs.
 - Read this index before creating new specs or doing serious T2/T3 work.
-- If a design area is not needed, mark it \`not_applicable\` with a short reason.
-- Do not create authoritative specs unless PRD/user/spec evidence contains the decision.
+- Keep readiness, open design questions, backbone status, and routing handoffs in [.memory-bank/spec-backbone.md](spec-backbone.md).
+- Feature \`spec_design_status\` lives in feature frontmatter, not in this index.
 
-## Hard rules
-- Do not create a new spec before checking existing specs through this index.
-- \`/spec-init\` may mark areas as planned/candidate/unknown/not_applicable from PRD/brief/existing-spec evidence, but must not interview for or invent authoritative architecture/contracts/states/data specs.
-- \`/spec-init\` does not own global backbone status, source-of-truth hierarchy, OpenAPI policy, diagrams, or global design decisions.
-- \`/spec-design\` is mandatory after \`/prd\`. It consumes this lightweight route map, creates \`complete\`, \`minimal\`, or \`blocked\` global backbone status, owns the source-of-truth hierarchy and global design decisions, and routes shared backbone specs through this index. Simple T0/T1 scope may use \`minimal\` with explicit \`not_applicable\` areas. It does not replace per-feature \`/spec-improve FT-<NNN>\`.
-- \`/spec-improve FT-<NNN>\` owns feature-level design before \`/prd-to-tasks FT-<NNN>\`.
-- \`T2\` / \`T3\` tasks must carry relevant linked specs in task richer fields.
+## Spec Registry
+| Spec | Type | Path | Status | Owner command | Scope |
+|---|---|---|---|---|---|
+| Project Constitution | governance | [.memory-bank/constitution.md](constitution.md) | active | /constitution | Top governing policy. |
+| Invariants | invariants | [.memory-bank/invariants.md](invariants.md) | planned | /spec-init or /spec-design | Global MUST/NEVER rules when evidence exists. |
+| Glossary | glossary | [.memory-bank/glossary.md](glossary.md) | planned | /spec-init or /spec-design | Shared vocabulary when needed. |
+| Testing Index | testing | [.memory-bank/testing/index.md](testing/index.md) | planned | /prd or /spec-design | Verification strategy and quality gates. |
 
-## Existing authoritative specs
-- [.memory-bank/glossary.md](glossary.md): Термины и agreed vocabulary.
-- [.memory-bank/invariants.md](invariants.md): Глобальные MUST/NEVER правила.
-- [.memory-bank/constitution.md](constitution.md): Top governing policy for AI-first project decisions.
-- [.memory-bank/contracts/](contracts/): Контракты интерфейсов и boundary specs.
-- [.memory-bank/domains/](domains/): Domain/data model specs.
-- [.memory-bank/states/](states/): Lifecycle/state rules.
-- [.memory-bank/runbooks/](runbooks/): Operational procedures.
-- [.memory-bank/testing/index.md](testing/index.md): Verification basis и quality gates.
-
-## Expected backbone/spec locations
-- [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md): Global architecture with Mermaid diagrams when useful.
-- [.memory-bank/architecture/source-of-truth.md](architecture/source-of-truth.md): Ownership and SSOT rules.
-- [.memory-bank/architecture/module-boundaries.md](architecture/module-boundaries.md): Module/service boundaries.
-- [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md): Runtime data model.
-- [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md): HTTP/API rules when HTTP boundary exists.
-- [.memory-bank/guides/frontend-component-guide.md](guides/frontend-component-guide.md): Frontend component/design behavior when UI component system is in scope.
-- [.memory-bank/testing/index.md](testing/index.md): Required verification gates.
-
-## Planned design areas
-- TBD
-
-## Candidate design areas
-- TBD
-
-## Unknown design areas
-- TBD
-
-## Not applicable areas
-- TBD
-
-## Feature design status map
-| Feature | spec_design_status | Linked specs | Notes |
+## Planned Specs
+| Area | Expected path | Needed by | Notes |
 |---|---|---|---|
-| FT-XXX | unknown | - | Fill via /spec-improve or /spec-auto; link backbone specs when /spec-design applies |
+| user_scenarios | .memory-bank/user-scenarios.md | /prd, /spec-design | Create only when scenario evidence exists or gaps must be explicit. |
+| core_domain | .memory-bank/domains/core-domain.md | /prd, /spec-design | Create only when domain model affects decomposition or shared design. |
+| boundary_hints | .memory-bank/contracts/boundary-map.md | /prd, /spec-design | Preliminary boundary hints only; no endpoint/OpenAPI details. |
+| lifecycle_hints | .memory-bank/states/lifecycle-map.md | /prd, /spec-design | Create only when lifecycles affect feature boundaries. |
+| system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Default global architecture hub after /prd. |
+| feature_design | .memory-bank/tech-specs/FT-<NNN>-<slug>.md | /spec-improve | Feature-local specs only when needed before task decomposition. |
 
-## Expected spec locations
-- Feature hubs: \`.memory-bank/tech-specs/FT-<NNN>-<slug>.md\`
-- Backbone/shared specs: \`.memory-bank/architecture/\`, \`.memory-bank/contracts/\`, \`.memory-bank/domains/\`, and \`.memory-bank/states/\`
-- Architecture notes: \`.memory-bank/architecture/<topic>.md\`
-- Contracts: \`.memory-bank/contracts/<boundary>.md\`
-- Domain/data models: \`.memory-bank/domains/<domain>.md\`
-- States: \`.memory-bank/states/<lifecycle>.md\`
-- ADRs: \`.memory-bank/adrs/ADR-<NNN>-<slug>.md\`
-- Testing/runbooks: \`.memory-bank/testing/\` and \`.memory-bank/runbooks/\`
-
-## Gaps and open questions
+## Broken / Missing Links
 - TBD
 
-## Handoff to /spec-design
-- \`/spec-design\` fills real backbone status, source-of-truth hierarchy, OpenAPI/API policy, diagrams, and global decisions after \`/prd\`.
-- Blocking uncertainty from this preflight should be listed above as gaps/open questions.
+## Update Rules
+- Keep this file as index/registry only: names, paths, statuses, owners, scopes, and broken links.
+- Do not add global backbone status, backbone matrices, feature status maps, long hard rules, or open design question dumps here.
+- Use [.memory-bank/spec-backbone.md](spec-backbone.md) for pre-PRD readiness, decomposition inputs, global backbone status, matrix, and handoffs.
+- Use linked specs or ADRs for detailed decisions, rationale, contracts, state transitions, schemas, invariants, and testing rules.
+`);
 
-## Compatibility note
-- Duo docs в \`architecture/\` и \`guides/\` остаются валидными.
-- Этот слой уточняет source-of-truth, а не отменяет duo docs.
+writeFile(`${MB}/spec-backbone.md`, `---
+description: Pre-PRD spec framing and global SDD backbone state.
+status: active
+---
+# SDD Spec Backbone
+
+## Pre-PRD Spec Status
+- Status: blocked
+- Last updated: ${TODAY}
+- Notes: Run /spec-init after /write-prd to determine whether PRD decomposition is safe.
+
+## Decomposition Inputs
+- User scenarios: not_started
+- Domain model: not_started
+- Constraints: not_started
+- Non-goals: not_started
+- Risks: not_started
+- Boundary hints: not_started
+- Lifecycle hints: not_started
+
+## Open Design Questions
+- TBD
+
+## Backbone Area Matrix
+| Area | Status | Authoritative source | Notes |
+|---|---|---|---|
+| architecture_style | blocked | - | Decide in /spec-design after /prd. |
+| source_of_truth | blocked | - | Decide in /spec-design after /prd. |
+| module_boundaries | blocked | - | Decide in /spec-design after /prd. |
+| user_scenarios | blocked | .memory-bank/user-scenarios.md | Create/review when scenarios affect decomposition or architecture. |
+| constraints | blocked | - | Capture in /spec-init and refine in /spec-design. |
+| non_goals | blocked | - | Capture in /spec-init and refine in /spec-design. |
+| domain_model | blocked | .memory-bank/domains/core-domain.md | Create only when domain model affects decomposition or shared design. |
+| data_flow | blocked | - | Decide in /spec-design after /prd. |
+| storage | blocked | - | Decide in /spec-design after /prd. |
+| api_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
+| event_message_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
+| agent_io_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
+| security_safety | blocked | - | Decide in /spec-design after /prd. |
+| testing_strategy | blocked | .memory-bank/testing/index.md | Decide in /spec-design after /prd. |
+| deployment | blocked | - | Decide in /spec-design after /prd. |
+| risks | blocked | - | Capture in /spec-init and refine in /spec-design. |
+| open_questions | blocked | - | Resolve or keep blocked. |
+
+## Handoff To /prd
+- Ready: no
+- Required reads: .memory-bank/prd.md, .memory-bank/spec-index.md, this file, and linked pre-PRD specs.
+- Stop conditions: Pre-PRD Spec Status is missing, stale, or blocked.
+
+## Handoff To /spec-design
+- Backbone areas to revisit: all
+- Candidate specs: see .memory-bank/spec-index.md Planned Specs.
+
+## Global Backbone Status
+- Status: blocked
+- Mode: standard_ai_first
+- Architecture artifact strategy: single-file
+- Not applicable areas:
+  - TBD
+- Notes: /spec-design has not completed the global AI-first architecture guardrails yet.
 `);
 
 writeFile(`${MB}/constitution.md`, `---
@@ -860,7 +887,7 @@ After meaningful changes, agents MUST synchronize affected Memory Bank docs, tas
 ## Governance
 
 - Constitution has precedence over workflow habits and generated plans.
-- MBB, spec-index, invariants, contracts, states, testing, and workflow docs refine this Constitution; they must not contradict it.
+- MBB, spec-index, spec-backbone, invariants, contracts, states, testing, and workflow docs refine this Constitution; they must not contradict it.
 - Amendments must include rationale and update affected docs if needed.
 - Constitution should stay short. Put concrete project rules into \`invariants.md\`, \`contracts/*\`, \`states/*\`, or workflow policy docs.
 
@@ -1086,7 +1113,7 @@ status: active
 1) \`/analysis -> /brief\` when idea discovery is needed; use \`/brainstorm\` before \`/brief\` only for raw ideas
 2) \`/constitution\` for contextual governing principles when \`.memory-bank/constitution.md\` is missing or \`project_principles\` is framework-default|skipped|missing; if principles are already ratified/partial, continue to \`/write-prd\`; if explicitly skipped, continue with framework-default/skipped principles
 3) \`/write-prd\` (creates clarified .memory-bank/prd.md)
-4) \`/spec-init\` (updates .memory-bank/spec-index.md route map)
+4) \`/spec-init\` (updates .memory-bank/spec-backbone.md framing and .memory-bank/spec-index.md registry)
 5) \`/prd\` (fills L1–L3)
 6) \`/spec-design\` (mandatory; minimal is valid for simple T0/T1-only scope)
 7) Pick one top feature; use \`/clarify-feature FT-001\` only for explicit feature blockers

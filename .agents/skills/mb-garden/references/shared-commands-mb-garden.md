@@ -15,7 +15,7 @@ status: active
 
 ## 1) Быстрый чек
 - Пробеги `.memory-bank/index.md` и роутеры в подпапках.
-- Если есть `.memory-bank/constitution.md`, проверь ссылки и упоминания Constitution в MBB, spec-index, workflows, AGENTS.md и generated plans.
+- Если есть `.memory-bank/constitution.md`, проверь ссылки и упоминания Constitution в MBB, spec-backbone, spec-index, workflows, AGENTS.md и generated plans.
 - Найди stale или contradictory Constitution references: старые пути, alias-команды, legacy task/risk routing, или правила, противоречащие текущей Constitution.
 - Найди “Known gaps / TBD / TODO” и реши: закрываем или превращаем в задачи.
 
@@ -36,4 +36,3 @@ status: active
 ## 5) Review (периодически)
 Запусти `/review` fresh-context (например, раз в неделю или после большой волны изменений).
 </process>
-

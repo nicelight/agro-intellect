@@ -25,6 +25,11 @@ features, and SDD backbone still need the normal workflow.
 - [.memory-bank/invariants.md](invariants.md): current cross-cutting MUST/NEVER guardrails.
 - [.memory-bank/glossary.md](glossary.md): active shared vocabulary for MVP v2 migration.
 - [.memory-bank/spec-index.md](spec-index.md): active MVP v2 migration route map.
+- [.memory-bank/spec-backbone.md](spec-backbone.md): pre-PRD spec framing status and /prd handoff.
+- [.memory-bank/user-scenarios.md](user-scenarios.md): active pre-PRD user scenarios and decomposition implications.
+- [.memory-bank/domains/core-domain.md](domains/core-domain.md): active pre-PRD core domain framing.
+- [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): active preliminary boundary hints for decomposition.
+- [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md): active lifecycle hints for decomposition.
 - [.memory-bank/testing/index.md](testing/index.md): testing and verification router for the migration stage.
 - [.memory-bank/changelog.md](changelog.md): Memory Bank changelog.
 
@@ -49,8 +54,7 @@ features, and SDD backbone still need the normal workflow.
 Next route:
 
 ```text
-/spec-init
--> /prd
+/prd
 -> /spec-design
 -> /spec-improve FT-<NNN>
 -> /prd-to-tasks FT-<NNN>

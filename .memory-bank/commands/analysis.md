@@ -75,7 +75,7 @@ Use this table:
 | State | Next step |
 |---|---|
 | Product brief exists, but `.memory-bank/prd.md` is missing | `/constitution` if principles are not `ratified|partial`, then `/write-prd` |
-| `.memory-bank/prd.md` exists with `clarification_status: complete` and `constitution_checked: true`, but spec-index is missing/stale | `/spec-init` |
+| `.memory-bank/prd.md` exists with `clarification_status: complete` and `constitution_checked: true`, but spec-backbone/spec-index is missing/stale or Pre-PRD Spec Status is not `ready_for_prd` | `/spec-init` |
 | `.memory-bank/prd.md` exists with `clarification_status: complete` and `constitution_checked: true`, but feature docs are not created | `/spec-init`, then `/prd` |
 | `.memory-bank/prd.md` exists with `clarification_status: pending|blocked` | `/write-prd` |
 | Feature docs exist with `clarification_status: pending|blocked` | `/clarify-feature FT-<NNN>` |

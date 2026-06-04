@@ -59,7 +59,7 @@ Task synchronization rule:
 - Analysis artifacts in `.memory-bank/analysis/` are durable Memory Bank artifacts, but optional.
 - If `.memory-bank/analysis/product-brief.md` exists, keep downstream docs consistent with it or record explicit deltas / override notes.
 - If brainstorming artifacts exist without a product brief, preserve them and warn that `/brief` is the expected bridge before `/prd` unless an existing PRD was intentionally used.
-- When governance, workflow, routing, AGENTS.md, MBB, spec-index, invariants, task schema, or tier policy changes, compare affected docs with `.memory-bank/constitution.md`.
+- When governance, workflow, routing, AGENTS.md, MBB, spec-backbone, spec-index, invariants, task schema, or tier policy changes, compare affected docs with `.memory-bank/constitution.md`.
 - If the change contradicts the Constitution, stop sync and require either a minimal doc correction or explicit `/constitution` amendment.
 - Do not use `/mb-sync` to invent new governing principles; only reconcile documented changes and evidence.
 - JSON task records are authoritative for task status, dependencies, tier, gates, verification targets, and evidence markers.

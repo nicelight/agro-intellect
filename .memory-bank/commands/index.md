@@ -28,9 +28,9 @@ status: active
 - [.memory-bank/commands/prd-to-tasks.md](prd-to-tasks.md): Декомпозиция фичи в implementation plan и атомарные задачи (waves).
 - [.memory-bank/commands/red-verify.md](red-verify.md): Adversarial semantic verification задачи (TASK-XXX) для поиска "дисциплинированно, но по существу неверно".
 - [.memory-bank/commands/review.md](review.md): Multi-expert ревью Memory Bank (fresh context) с артефактами в .tasks/TASK-MB-REVIEW/.
-- [.memory-bank/commands/spec-auto.md](spec-auto.md): Autonomous SDD Design Specs workflow for spec-index initialization and feature design.
+- [.memory-bank/commands/spec-auto.md](spec-auto.md): Autonomous SDD Design Specs workflow for pre-PRD framing, global backbone, and feature design.
 - [.memory-bank/commands/spec-design.md](spec-design.md): Mandatory global SDD architecture backbone gate after PRD decomposition and before feature design.
 - [.memory-bank/commands/spec-improve.md](spec-improve.md): Improve one feature's SDD design against the Design Specs Index before task decomposition.
-- [.memory-bank/commands/spec-init.md](spec-init.md): Bootstrap the lightweight SDD Design Specs Index route map before PRD decomposition.
+- [.memory-bank/commands/spec-init.md](spec-init.md): Frame pre-PRD domain, scenario, constraints, and spec context before PRD decomposition.
 - [.memory-bank/commands/verify.md](verify.md): Верификация выполненной задачи по acceptance criteria + evidence, итог PASS/FAIL.
 - [.memory-bank/commands/write-prd.md](write-prd.md): Turn Product Brief + Constitution + optional context into a clarified PRD.
