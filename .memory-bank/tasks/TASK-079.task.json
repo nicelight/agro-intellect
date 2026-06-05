@@ -1,0 +1,98 @@
+{
+  "id": "TASK-079",
+  "title": "Implement follow-up Outcome recording and no-data conflict semantics",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-007",
+    "REQ-017"
+  ],
+  "depends_on": [
+    "TASK-012",
+    "TASK-035",
+    "TASK-038",
+    "TASK-064",
+    "TASK-076",
+    "TASK-078"
+  ],
+  "touched_files": [
+    "backend/app/outcomes/*",
+    "backend/app/tasks/*",
+    "backend/app/runtime_state/*",
+    "backend/app/plant_operations/*",
+    "backend/app/access/*",
+    "backend/app/privacy/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/outcomes/*",
+    "backend/tests/tasks/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "outcome lifecycle and evidence tests",
+      "command": "pytest backend/tests/outcomes backend/tests/tasks backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Outcome records support improved, worsened, unchanged, no_data, conflict, and superseded semantics.",
+    "Follow-up outcomes preserve evidence, measurement, photo, observation, timeline, and source refs.",
+    "no_data is explicit and cannot backfill success.",
+    "Outcome text alone cannot promote confirmed Plant state."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-013.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Outcome schema and lifecycle tests",
+    "evidence ref preservation tests",
+    "no_data/conflict/supersede tests",
+    "negative test proving outcome text alone cannot confirm Plant state",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/states/core-lifecycles.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Outcome records are evidence refs for later Plant State rules, not automatic confirmed state.",
+    "No-data outcome must be explicit.",
+    "Conflict preserves refs and requests re-check rather than silently resolving."
+  ],
+  "invariants": [
+    "Agent hypotheses or outcome text cannot become confirmed Plant state without owning rules and human/follow-up evidence.",
+    "Timeline refs are append-only audit/export evidence, not mutable runtime authority.",
+    "Every outcome mutation is actor/Farm/Plant scoped."
+  ],
+  "verification_targets": [
+    "test:tasks.approval-action-follow-up-no-actuation",
+    "follow-up outcomes preserve evidence refs",
+    "explicit no_data semantics",
+    "outcome text alone cannot promote confirmed Plant state"
+  ]
+}

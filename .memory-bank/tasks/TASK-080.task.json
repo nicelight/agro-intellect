@@ -1,0 +1,111 @@
+{
+  "id": "TASK-080",
+  "title": "Publish task approval and outcome refs to Bus UI timeline and history",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-007",
+    "REQ-014",
+    "REQ-017"
+  ],
+  "depends_on": [
+    "TASK-012",
+    "TASK-037",
+    "TASK-038",
+    "TASK-049",
+    "TASK-050",
+    "TASK-052",
+    "TASK-076",
+    "TASK-077",
+    "TASK-078",
+    "TASK-079"
+  ],
+  "touched_files": [
+    "backend/app/publication/*",
+    "backend/app/timeline/*",
+    "backend/app/tasks/*",
+    "backend/app/approvals/*",
+    "backend/app/outcomes/*",
+    "backend/app/runtime_state/*",
+    "frontend/src/*",
+    "backend/tests/integration/*",
+    "backend/tests/tasks/*",
+    "backend/tests/approvals/*",
+    "backend/tests/outcomes/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "publication integration tests",
+      "command": "pytest backend/tests/integration backend/tests/tasks backend/tests/approvals backend/tests/outcomes",
+      "required": true
+    },
+    {
+      "name": "frontend smoke when UI exists",
+      "command": "npm test",
+      "required": false
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Task, approval, and outcome Bus/UI/timeline/history refs publish only after authoritative persistence.",
+    "Failed or denied task/approval/outcome mutations publish no success events.",
+    "UI Feed displays task and approval cards as presentation-only records with visible_to_agents=false and consumable_by_agents=false.",
+    "Bus payloads use structured refs and bounded redacted summaries, not raw UI text."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-013.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "publication-after-persistence integration tests",
+    "failed/denied mutation no-success-publication tests",
+    "UI Feed presentation-only flag tests",
+    "timeline append and history ref evidence",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "PostgreSQL/read model is authority for Task, Approval, and Outcome.",
+    "Timeline, Bus, and UI Feed are refs/projections only.",
+    "Failed or denied mutations must not publish successful Bus/UI/timeline refs.",
+    "Secret/auth material and raw UI/model/chat content must be redacted or rejected before publication."
+  ],
+  "invariants": [
+    "UI Feed content is never agent working context.",
+    "Bus events are backend-adapter produced and permission scoped.",
+    "Timeline replay cannot recreate authority or overwrite runtime state."
+  ],
+  "verification_targets": [
+    "task, approval, and outcome refs publish only after persistence",
+    "UI Feed projection isolation",
+    "BusEventEnvelope filtering and redaction",
+    "timeline refs are append-only audit/export evidence"
+  ]
+}

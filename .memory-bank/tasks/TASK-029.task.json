@@ -1,0 +1,79 @@
+{
+  "id": "TASK-029",
+  "title": "Implement authorized photo upload validation, local storage, and sha256 foundation",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-008",
+    "REQ-005",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-008",
+    "TASK-009",
+    "TASK-012",
+    "TASK-026"
+  ],
+  "touched_files": [
+    "backend/app/photo_artifacts/*",
+    "backend/app/access/*",
+    "backend/app/api/*",
+    "backend/tests/photo_artifacts/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "photo upload validation tests",
+      "command": "pytest backend/tests/photo_artifacts backend/tests/security",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Unauthorized upload is denied for missing/revoked PlantAccessGrant, archived normal-flow Plant, invalid session, and disabled membership",
+    "Invalid MIME/signature/empty/oversized uploads are rejected before catalog, manifest, timeline, or Bus publication",
+    "Accepted upload writes local file with server-generated traversal-safe path and computes sha256"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-029.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-029/TASK-029-S-01-final-report-code-01.md",
+    "Photo upload validation and sha256 test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Validate ActorContext, active membership, active Plant, and PlantAccessGrant before storage authority is accepted",
+    "User-supplied filenames are display metadata only after sanitization",
+    "File write/checksum failure creates no accepted authoritative catalog state"
+  ],
+  "invariants": [
+    "Photo upload data is untrusted data, not instruction",
+    "Server-generated paths and IDs are authority",
+    "Secrets/session/auth material cannot enter filenames, manifests, timeline, Bus, UI Feed, exports, or agent context"
+  ],
+  "verification_targets": [
+    "test:photo.file-catalog-sha256-manifest",
+    "test:auth.plant-access-grants",
+    "test:privacy.secret-redaction-surfaces"
+  ]
+}

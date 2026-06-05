@@ -1,0 +1,77 @@
+{
+  "id": "TASK-044",
+  "title": "Implement permission engine and approval-pause handoff",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-007",
+  "reqs": [
+    "REQ-011"
+  ],
+  "depends_on": [
+    "TASK-008",
+    "TASK-009",
+    "TASK-043",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/agent_harness/*",
+    "backend/app/access/*",
+    "backend/app/safety/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "permission and approval tests",
+      "command": "pytest backend/tests/agent_harness backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Permission decision happens before every side effect.",
+    "Risky actions pause for exact scoped approval and cannot be self-approved by the model."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Permission matrix tests for read_only, draft_only, write_local/write_internal, identity_access, privileged_admin, safety_sensitive, process_execution, network_open_world, and destructive risk classes.",
+    "Approval-pause evidence with scoped approval request refs and structured observation.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Permission decisions record redacted args or argument hash, ActorContext ref, resource scope, PlantAccessGrant result, policy rule, approver when present, timestamp, and trace ref.",
+    "Draft/propose and commit/approve remain separate for risky side effects."
+  ],
+  "invariants": [
+    "The model cannot approve its own action.",
+    "Physical-action advice requires Safety Gate path and authorized human approval where physical action is involved."
+  ],
+  "verification_targets": [
+    "test:harness.approval-bypass-attempt",
+    "Permission correctness, approval correctness, and side-effect-before-permission regression evals."
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "TASK-031",
+  "title": "Implement authorized photo catalog, file, manifest, and archive-history reads",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-008",
+    "REQ-005",
+    "REQ-004",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-030",
+    "TASK-009",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/photo_artifacts/*",
+    "backend/app/access/*",
+    "backend/app/api/*",
+    "backend/tests/photo_artifacts/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "authorized photo read tests",
+      "command": "pytest backend/tests/photo_artifacts backend/tests/integration",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Unauthorized metadata/file/manifest reads are denied",
+    "Revoked PlantAccessGrant blocks future normal retrieval without deleting retained evidence",
+    "Archived Plant photos remain available only through authorized history/audit/export paths"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-031.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-031/TASK-031-S-01-final-report-code-01.md",
+    "Authorized photo read/archive-history test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Photo file reads require ActorContext and authorized Plant access",
+    "Archived Plant photos are excluded from normal operations",
+    "API responses return refs for bulky artifacts instead of embedding large blobs"
+  ],
+  "invariants": [
+    "Revoking PlantAccessGrant removes normal visibility/context retrieval without deleting retained audit/evidence",
+    "Plant archive never hard-deletes photos or timeline evidence",
+    "Secret/auth material must not appear in responses"
+  ],
+  "verification_targets": [
+    "test:photo.file-catalog-sha256-manifest",
+    "test:plant.lifecycle-archive-restore-retention",
+    "test:auth.plant-access-grants"
+  ]
+}

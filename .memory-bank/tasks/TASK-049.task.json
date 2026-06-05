@@ -1,0 +1,79 @@
+{
+  "id": "TASK-049",
+  "title": "Publish MessageEnvelope-derived BusEventEnvelope records with trust labels",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-009",
+  "reqs": [
+    "REQ-014"
+  ],
+  "depends_on": [
+    "TASK-037",
+    "TASK-038",
+    "TASK-047",
+    "TASK-048"
+  ],
+  "touched_files": [
+    "backend/app/publication/*",
+    "backend/app/runtime_state/*",
+    "backend/tests/publication/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "Bus publication tests",
+      "command": "pytest backend/tests/publication backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Bus publication uses MessageEnvelope refs and consumable structured fields, not UI projection text.",
+    "Trust labels reserve trusted for backend-owned policy, approval/decision, or approved governance-summary facts."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-009.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "BusEventEnvelope contract tests for scope, allowed AgentProfile visibility, source refs, trace refs, trust labels, and redaction.",
+    "Duplicate publication idempotency tests.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/requirements.md",
+    ".tasks/SPEC-IMPROVE-REVIEW-FIXES/final-report.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Publisher is backend/harness adapter, never direct model response.",
+    "Raw model output, hidden reasoning, UI Feed content, admin notices, raw chat, unapproved proposals, provider memory, and secrets are forbidden Bus content."
+  ],
+  "invariants": [
+    "Timeline events may be referenced but cannot publish authoritative state by replay.",
+    "Duplicate publication attempts are rejected or idempotently ignored by message/event refs."
+  ],
+  "verification_targets": [
+    "test:agent-output.bus-message-ui-isolation",
+    "Bus publication trust-label mapping and forbidden-content rejection."
+  ]
+}

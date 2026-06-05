@@ -1,0 +1,77 @@
+{
+  "id": "TASK-007",
+  "title": "Implement Plant create, archive, and restore service and routes",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-002",
+  "reqs": [
+    "REQ-003",
+    "REQ-004"
+  ],
+  "depends_on": [
+    "TASK-006"
+  ],
+  "touched_files": [
+    "backend/app/plants/",
+    "backend/app/api/",
+    "backend/app/audit/",
+    "backend/tests/plants/",
+    "backend/tests/integration/"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "plant lifecycle tests",
+      "command": "pytest backend/tests/plants backend/tests/integration -k 'plant_lifecycle or archive or restore'",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-007/: plant lifecycle tests: pytest backend/tests/plants backend/tests/integration -k 'plant_lifecycle or archive or restore'; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:plant.lifecycle-archive-restore-retention; Plant create/archive/restore transitions obey active/archived rules; Hard delete route or command is absent",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure and record VERDICT: PASS plus SEMANTIC_VERDICT: semantic-pass."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Lifecycle transition tests for active and archived Plants",
+    "Negative evidence that hard delete route/command is absent",
+    "Audit evidence for create/archive/restore actor attribution"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/states/core-lifecycles.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Plant lifecycle is active or archived in MVP",
+    "Archive removes Plant from normal operational eligibility",
+    "Restore returns Plant to normal operational eligibility when authorized",
+    "Hard delete is absent"
+  ],
+  "invariants": [
+    "Timeline replay never overwrites Plant state",
+    "Every state-changing transition is actor-attributed and Farm/Plant scoped"
+  ],
+  "verification_targets": [
+    "test:plant.lifecycle-archive-restore-retention",
+    "Plant create/archive/restore transitions obey active/archived rules",
+    "Hard delete route or command is absent"
+  ]
+}

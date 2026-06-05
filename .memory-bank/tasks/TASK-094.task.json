@@ -1,0 +1,100 @@
+{
+  "id": "TASK-094",
+  "title": "Implement DatasetCandidate schema, lifecycle, and evidence refs",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021",
+    "REQ-024"
+  ],
+  "depends_on": [
+    "TASK-008",
+    "TASK-012",
+    "TASK-030",
+    "TASK-031",
+    "TASK-036",
+    "TASK-079"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/*",
+    "backend/app/storage/*",
+    "backend/app/agent_harness/*",
+    "backend/app/privacy/*",
+    "backend/app/photo_intake/*",
+    "backend/app/tasks/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/dataset/*",
+    "backend/tests/storage/*",
+    "backend/tests/privacy/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "DatasetCandidate metadata attaches to existing evidence subjects.",
+    "New candidates default to raw/null/non-trainable.",
+    "Evidence refs are required and authorized by Farm/Plant scope."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-016.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "dataset schema tests",
+    "authorized evidence ref tests",
+    "non-trainable default test"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/tech-specs/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "DatasetCandidate is metadata over existing evidence, not a full dataset registry.",
+    "Photo manifests/timeline/UI/Bus/raw output cannot grant trainability."
+  ],
+  "invariants": [
+    "Dataset candidates remain non-trainable by default."
+  ],
+  "verification_targets": [
+    "test:dataset.non-trainable-by-default",
+    "authorized evidence refs",
+    "metadata-only dataset boundary"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "id": "TASK-047",
+  "title": "Implement runtime decision adapter and MessageEnvelope validation schemas",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-009",
+  "reqs": [
+    "REQ-014"
+  ],
+  "depends_on": [
+    "TASK-035",
+    "TASK-041",
+    "TASK-042",
+    "TASK-043",
+    "TASK-044",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/publication/*",
+    "backend/app/agent_harness/*",
+    "backend/app/db/migrations/*",
+    "backend/tests/publication/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "publication schema tests",
+      "command": "pytest backend/tests/publication backend/tests/agent_harness backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Raw model/provider output cannot bypass runtime decision and MessageEnvelope validation.",
+    "Malformed, overlong, unsafe, secret-containing, or out-of-profile output is rejected, downgraded, escalated, or recorded with trace evidence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-009.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "MessageEnvelope schema validation tests for allowed decisions, claim types, safety flags, refs, trace refs, redaction status, and publication flags.",
+    "Negative tests for raw output bypass and secret-like payloads.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/requirements.md",
+    ".tasks/SPEC-IMPROVE-REVIEW-FIXES/final-report.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Every agent invocation ends with exactly one project-owned runtime decision.",
+    "Raw provider output alone cannot choose publication authority."
+  ],
+  "invariants": [
+    "Raw provider output, hidden reasoning, unapproved governance content, UI markdown, and secrets are rejected before envelope creation.",
+    "Agent-labeled hypotheses cannot become confirmed Plant state without owning runtime/state rules and human/follow-up evidence."
+  ],
+  "verification_targets": [
+    "test:agent-output.bus-message-ui-isolation",
+    "MessageEnvelope validation and raw output bypass regression."
+  ]
+}

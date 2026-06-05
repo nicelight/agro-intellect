@@ -1,0 +1,81 @@
+{
+  "id": "TASK-010",
+  "title": "Add Plant lifecycle, access grant, and OpenAPI integration coverage",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-002",
+  "reqs": [
+    "REQ-001",
+    "REQ-003",
+    "REQ-004",
+    "REQ-005"
+  ],
+  "depends_on": [
+    "TASK-008",
+    "TASK-009"
+  ],
+  "touched_files": [
+    "backend/tests/integration/",
+    "backend/tests/openapi/",
+    "backend/tests/plants/",
+    "backend/tests/access/"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "plant access integration suite",
+      "command": "pytest backend/tests/integration backend/tests/openapi backend/tests/plants backend/tests/access",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-010/: plant access integration suite: pytest backend/tests/integration backend/tests/openapi backend/tests/plants backend/tests/access; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:farm.single-local-workspace; test:plant.lifecycle-archive-restore-retention; test:auth.plant-access-grants; Generated OpenAPI validation after implementation schemas exist",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure, record VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and include HUMAN_CHECKPOINT: done plus ROLLBACK_RECOVERY_NOTE: present as standalone evidence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "End-to-end integration results covering single Farm, tomato_001, lifecycle, grants, archive retention, and safe denials",
+    "Generated OpenAPI validation after implementation schemas exist",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/contracts/api-guidelines.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Generated OpenAPI comes from implementation schemas",
+    "Safe error envelope must avoid private record-existence leaks",
+    "Integration coverage must not treat frontend selector visibility as authorization"
+  ],
+  "invariants": [
+    "Backend authorization filters every Plant-scoped route and context-builder path",
+    "PostgreSQL/read model remains mutable authority for Farm, Plant, and PlantAccessGrant"
+  ],
+  "verification_targets": [
+    "test:farm.single-local-workspace",
+    "test:plant.lifecycle-archive-restore-retention",
+    "test:auth.plant-access-grants",
+    "Generated OpenAPI validation after implementation schemas exist"
+  ]
+}

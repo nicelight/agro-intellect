@@ -1,0 +1,79 @@
+{
+  "id": "TASK-038",
+  "title": "Wire runtime/timeline source-ref integration and integrity checks",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-006",
+  "reqs": [
+    "REQ-007",
+    "REQ-009"
+  ],
+  "depends_on": [
+    "TASK-027",
+    "TASK-030",
+    "TASK-032",
+    "TASK-034",
+    "TASK-035",
+    "TASK-037"
+  ],
+  "touched_files": [
+    "backend/app/runtime_state/*",
+    "backend/app/plant_operations/*",
+    "backend/app/photo_artifacts/*",
+    "backend/app/timeline/*",
+    "backend/tests/runtime_state/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "runtime integration tests",
+      "command": "pytest backend/tests/runtime_state backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Successful audited mutations persist authoritative state plus required timeline refs or fail without misleading success.",
+    "Runtime records reference source records and timeline events instead of copying bulky blobs."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-006.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Integrity tests for missing/mismatched timeline refs.",
+    "Integration evidence for CheckIn/photo/admin refs connected to runtime history without authority leakage.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Timeline append and runtime source refs must preserve source-of-truth separation.",
+    "Photo refs, manifests, and timeline refs cannot mutate runtime Plant state by themselves."
+  ],
+  "invariants": [
+    "Runtime state source_refs and evidence_refs point to persisted authoritative records.",
+    "Timeline replay cannot publish authoritative Bus or Plant-state facts."
+  ],
+  "verification_targets": [
+    "Audited mutation integrity: source record plus timeline ref or fail safely.",
+    "Photo/timeline artifact non-authority regression."
+  ]
+}

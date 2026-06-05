@@ -1,0 +1,81 @@
+{
+  "id": "TASK-017",
+  "title": "Define Boss-only admin API command boundary and schemas",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-006",
+    "REQ-003",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-002",
+    "TASK-003",
+    "TASK-011"
+  ],
+  "touched_files": [
+    "backend/app/admin/*",
+    "backend/app/api/*",
+    "backend/tests/admin/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "admin api tests",
+      "command": "pytest backend/tests/admin",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Non-Boss admin mutations are denied by backend authorization",
+    "Admin command payloads reject unknown/unsafe fields",
+    "Safe API error envelope is used without leaking private record existence"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-017.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-017/TASK-017-S-01-final-report-code-01.md",
+    "pytest output for backend/tests/admin",
+    "OpenAPI/schema evidence when implementation schemas exist",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Admin mutations require resolved ActorContext and active Boss role",
+    "Local add/invite must not imply email delivery, hosted recovery, SaaS tenancy, or enterprise identity",
+    "Frontend visibility is presentation only"
+  ],
+  "invariants": [
+    "Backend authorization is authority",
+    "Admin authority cannot bypass Safety Gate or physical-action approval rules",
+    "Secrets and auth material must be redacted before product or agent-visible surfaces"
+  ],
+  "verification_targets": [
+    "test:admin.audit-and-access-management",
+    "test:auth.actor-context-all-boundaries",
+    "Non-Boss admin mutation denial"
+  ]
+}

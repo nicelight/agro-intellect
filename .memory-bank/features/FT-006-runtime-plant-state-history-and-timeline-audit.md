@@ -1,14 +1,18 @@
 ---
 description: Feature FT-006 for runtime Plant state, history views, and timeline audit/export separation.
-status: draft
+status: active
+owner: product
 lifecycle: planned
-spec_design_status: needs_spec_improve
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md
 epic: EP-002
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
+  - .memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md
 ---
 # FT-006 Runtime Plant State, History, And Timeline Audit
 
@@ -47,6 +51,6 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Global `/spec-design` is complete. Before `/prd-to-tasks FT-006`, run
-`/spec-improve FT-006` using the completed backbone docs: [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/states/core-lifecycles.md](../states/core-lifecycles.md), [.memory-bank/contracts/index.md](../contracts/index.md), and [.memory-bank/testing/index.md](../testing/index.md). `/spec-improve` must decide runtime state ownership, history
-projection, timeline event taxonomy, and audit/export refs.
+Global `/spec-design` and feature-level `/spec-improve FT-006` are complete. Use
+[.memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md](../tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md)
+as the feature-local design hub before `/prd-to-tasks FT-006`.

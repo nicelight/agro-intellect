@@ -1,0 +1,78 @@
+{
+  "id": "TASK-050",
+  "title": "Implement UI Feed projection isolation and authorized human feed reads",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-009",
+  "reqs": [
+    "REQ-014"
+  ],
+  "depends_on": [
+    "TASK-002",
+    "TASK-012",
+    "TASK-047",
+    "TASK-049"
+  ],
+  "touched_files": [
+    "backend/app/publication/*",
+    "backend/app/access/*",
+    "backend/app/api/*",
+    "frontend/src/*",
+    "backend/tests/publication/*",
+    "backend/tests/integration/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "UI Feed projection tests",
+      "command": "pytest backend/tests/publication backend/tests/integration && npm test",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "UI Feed events always set visible_to_agents=false and consumable_by_agents=false.",
+    "Authorized humans can read display projections without granting agents UI Feed access."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-009.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "UIFeedEvent contract tests for projection flags, source refs, redaction, and authorized reads.",
+    "UI/e2e smoke proving human-facing feed uses display payload only.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "UI Feed stores display payloads, source refs, task/approval refs, and safe presentation metadata only.",
+    "UI markdown cannot change claim type, safety status, Plant state, governance authority, or dataset trainability."
+  ],
+  "invariants": [
+    "UI Feed is human presentation only and never agent working context.",
+    "Future agent runs must retrieve underlying approved domain refs through context builder, not UI Feed replay."
+  ],
+  "verification_targets": [
+    "UI Feed projection isolation.",
+    "Authorized human feed read with no agent-consumable flag leakage."
+  ]
+}

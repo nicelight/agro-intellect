@@ -1,0 +1,76 @@
+{
+  "id": "TASK-041",
+  "title": "Create AgentProfile registry, schemas, and initial profile validation",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-007",
+  "reqs": [
+    "REQ-010",
+    "REQ-011"
+  ],
+  "depends_on": [
+    "TASK-002",
+    "TASK-004",
+    "TASK-011",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/agent_harness/*",
+    "backend/app/db/migrations/*",
+    "backend/tests/agent_harness/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "agent harness unit tests",
+      "command": "pytest backend/tests/agent_harness",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "All product agents are registered as AgentProfile records inside one shared AgentHarness.",
+    "Profile risk_class values remain read_only, draft_only, or approval_gated."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Schema validation tests for AgentProfile fields, statuses, risk classes, allowed tools/context/output contracts, budget profiles, and trace policies.",
+    "Negative tests for disabled/deprecated profile run starts.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/requirements.md",
+    ".tasks/SPEC-IMPROVE-REVIEW-FIXES/final-report.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Agent-specific behavior is explicit in AgentProfile allowlists, not hidden prompts.",
+    "No profile receives UI Feed replay, raw chat as fact, hidden provider memory, unapproved governance content, secrets, or auth material."
+  ],
+  "invariants": [
+    "Separate ungoverned product-agent harnesses are forbidden.",
+    "Agno configuration cannot grant authority beyond project profile and harness policy."
+  ],
+  "verification_targets": [
+    "test:harness.shared-profile-control-plane",
+    "Every product agent profile has competence boundary, allowed context/tools/claims, memory scope, risk class, budget profile, trace policy, and eval refs."
+  ]
+}

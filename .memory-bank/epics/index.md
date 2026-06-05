@@ -1,7 +1,7 @@
 ---
 description: Router for active MVP v2 epics derived from the clarified PRD.
-status: draft
-last_updated: 2026-06-04
+status: active
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -18,4 +18,6 @@ Active MVP v2 epics:
 - [EP-006 Dataset Privacy And Local Deployment](EP-006-dataset-privacy-and-local-deployment.md): dataset governance, trainability guardrails, local storage prompt, local privacy, loopback/LAN controls, and secret redaction.
 
 Do not create TASK records directly from these epics. Global `/spec-design` is
-complete; continue through `/spec-improve FT-<NNN>`, then `/prd-to-tasks FT-<NNN>`.
+complete, feature-level `/spec-improve` is complete for FT-001..FT-017, and
+schema-backed TASK-001..TASK-099 records already exist. Use
+`.memory-bank/tasks/index.json` and the indexed task records for execution routing.

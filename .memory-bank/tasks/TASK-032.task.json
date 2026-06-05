@@ -1,0 +1,79 @@
+{
+  "id": "TASK-032",
+  "title": "Integrate accepted photo refs with CheckIn and Bus photo_ref_attached publication",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-008",
+    "REQ-007",
+    "REQ-014",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-027",
+    "TASK-030"
+  ],
+  "touched_files": [
+    "backend/app/photo_artifacts/*",
+    "backend/app/plant_operations/*",
+    "backend/app/publication/*",
+    "backend/tests/photo_artifacts/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "photo checkin bus tests",
+      "command": "pytest backend/tests/photo_artifacts backend/tests/integration backend/tests/security",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Accepted photo refs attach to CheckIn after catalog/file/manifest refs exist",
+    "Bus photo_ref_attached event contains refs, scope, sha256, trust label, and redaction status",
+    "Bus payload excludes raw image bytes, secrets, UI text, and unauthorized Plant data"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-032.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-032/TASK-032-S-01-final-report-code-01.md",
+    "CheckIn photo integration and BusEventEnvelope test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Publish after accepted catalog/file/manifest refs exist",
+    "Bus carries refs and metadata, not raw image bytes",
+    "Photo artifacts cannot mutate runtime Plant state or dataset trainability"
+  ],
+  "invariants": [
+    "Agent Chat Bus contains only validated, permission-scoped, adapter-produced events",
+    "UI Feed and raw chat cannot enter Bus as agent context",
+    "Secrets and unauthorized Plant/Farm data are forbidden Bus content"
+  ],
+  "verification_targets": [
+    "test:photo.file-catalog-sha256-manifest",
+    "test:agent-output.bus-message-ui-isolation",
+    "test:privacy.secret-redaction-surfaces"
+  ]
+}

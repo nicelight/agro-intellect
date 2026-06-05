@@ -1,0 +1,77 @@
+{
+  "id": "TASK-006",
+  "title": "Implement single Farm workspace and tomato_001 seed/read model",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-002",
+  "reqs": [
+    "REQ-001",
+    "REQ-003",
+    "REQ-004"
+  ],
+  "depends_on": [
+    "TASK-001",
+    "TASK-002"
+  ],
+  "touched_files": [
+    "backend/app/farm/",
+    "backend/app/plants/",
+    "backend/app/db/migrations/",
+    "backend/app/api/",
+    "backend/tests/plants/"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "farm seed tests",
+      "command": "pytest backend/tests/plants -k 'farm or tomato_001'",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-006/: farm seed tests: pytest backend/tests/plants -k 'farm or tomato_001'; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:farm.single-local-workspace; Only one active local Farm exists and multi-Farm routes are absent; tomato_001 is present as initial Plant seed/migration target",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure and record VERDICT: PASS plus SEMANTIC_VERDICT: semantic-pass."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Test evidence that exactly one active local Farm exists",
+    "Test evidence that tomato_001 is present as initial Plant seed/migration target",
+    "Evidence that no multi-Farm route/workspace selector was added"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "MVP has exactly one active local Farm",
+    "Farm identity must be stable for ActorContext, Plant, audit, context-builder, and future export refs",
+    "No tenancy abstractions that imply multiple Farms, hosted organizations, billing, or server workspace selection"
+  ],
+  "invariants": [
+    "PostgreSQL/read model owns Farm and Plant mutable state",
+    "tomato_001 is the initial Plant seed, not a permanent product limit"
+  ],
+  "verification_targets": [
+    "test:farm.single-local-workspace",
+    "Only one active local Farm exists and multi-Farm routes are absent",
+    "tomato_001 is present as initial Plant seed/migration target"
+  ]
+}

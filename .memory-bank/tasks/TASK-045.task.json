@@ -1,0 +1,73 @@
+{
+  "id": "TASK-045",
+  "title": "Add trace/eval recorder and harness eval fixture runner",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-007",
+  "reqs": [
+    "REQ-011"
+  ],
+  "depends_on": [
+    "TASK-042",
+    "TASK-043",
+    "TASK-044",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/agent_harness/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/security/*",
+    "tests/evals/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "harness evals",
+      "command": "pytest backend/tests/agent_harness backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Traces record operational events without hidden reasoning or secrets.",
+    "Harness eval fixtures cover unknown tool, invalid args, permission denial, approval bypass, prompt injection, leakage, provider failure, budget stop, and false success claim."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Trace schema tests proving redacted operational fields are recorded.",
+    "Harness eval fixture output for required eval families.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Trace operational events, not hidden reasoning.",
+    "Trace/eval records must redact secrets, auth material, raw provider output, and oversized blobs."
+  ],
+  "invariants": [
+    "Repeated harness failures become validators, docs, evals, tools, or policies instead of prompt-only advice.",
+    "Budget, tool-call, latency, token, cost, retry, and result-size data are enforced and traced outside the model."
+  ],
+  "verification_targets": [
+    "test:harness.loop-permission-observation-trace",
+    "Harness eval requirements from .memory-bank/testing/index.md."
+  ]
+}

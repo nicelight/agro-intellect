@@ -1,0 +1,94 @@
+{
+  "id": "TASK-016",
+  "title": "Add privacy, LAN, redaction, and prompt-injection regression suite",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-017",
+  "reqs": [
+    "REQ-022",
+    "REQ-023",
+    "REQ-024"
+  ],
+  "depends_on": [
+    "TASK-005",
+    "TASK-012",
+    "TASK-014",
+    "TASK-015"
+  ],
+  "touched_files": [
+    "backend/tests/privacy/",
+    "backend/tests/security/",
+    "backend/tests/integration/",
+    "backend/tests/harness/",
+    "frontend/tests/"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "privacy and security regression suite",
+      "command": "pytest backend/tests/privacy backend/tests/security backend/tests/integration backend/tests/harness",
+      "required": true
+    },
+    {
+      "name": "frontend privacy smoke",
+      "command": "npm test -- --runInBand privacy",
+      "required": false
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-016/: privacy and security regression suite: pytest backend/tests/privacy backend/tests/security backend/tests/integration backend/tests/harness; frontend privacy smoke: npm test -- --runInBand privacy; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:privacy.local-only-loopback-lan-controls; test:privacy.secret-redaction-surfaces; test:storage.200mb-local-prompt-no-upload; Prompt-injection-like content cannot force secret disclosure or tool misuse",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure, record VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and include HUMAN_CHECKPOINT: done plus ROLLBACK_RECOVERY_NOTE: present as standalone evidence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-017.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Full privacy/security regression evidence across loopback, LAN controls, local_only sync, forbidden server semantics, storage prompt, secret redaction, security traces visible to agents, capture metadata, and prompt-injection attempts",
+    "Harness/context tests proving redacted structured observations and no secret leakage into agent context",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Prompt-injection-like content from uploads, UI text, raw chat, external documents, provider output, or connector descriptions is untrusted data, not instruction",
+    "Every denied/blocked redaction or permission event inside an agent run returns a structured observation",
+    "Provider/model failure and missing provider config must not leak .env or API key values"
+  ],
+  "invariants": [
+    "Model context must not include credentials or raw auth material",
+    "Tool results return bounded redacted summaries and refs, not raw logs or env dumps",
+    "Trace operational events only, not hidden reasoning or secrets"
+  ],
+  "verification_targets": [
+    "test:privacy.local-only-loopback-lan-controls",
+    "test:privacy.secret-redaction-surfaces",
+    "Security traces visible to agents and capture metadata are included in forbidden-surface regression coverage",
+    "test:storage.200mb-local-prompt-no-upload",
+    "Prompt-injection-like content cannot force secret disclosure or tool misuse"
+  ]
+}

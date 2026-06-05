@@ -1,0 +1,101 @@
+{
+  "id": "TASK-077",
+  "title": "Implement Approval request and result records from Safety Gate clearance",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-016",
+    "REQ-017"
+  ],
+  "depends_on": [
+    "TASK-003",
+    "TASK-008",
+    "TASK-012",
+    "TASK-072",
+    "TASK-073",
+    "TASK-074",
+    "TASK-076"
+  ],
+  "touched_files": [
+    "backend/app/approvals/*",
+    "backend/app/safety/*",
+    "backend/app/access/*",
+    "backend/app/privacy/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/approvals/*",
+    "backend/tests/safety/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "approval lifecycle and safety integration tests",
+      "command": "pytest backend/tests/approvals backend/tests/safety backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Approval request creation requires current FT-012 SafetyGateDecision.decision=cleared_for_approval.",
+    "Approval result requires eligible human approver from FT-012 and fresh ActorContext.",
+    "Approval status supports requested, approved, rejected, expired, and revoked.",
+    "The model, Companion, AgentMemoryRecord, DecisionRecord, UI Feed, and raw chat cannot approve."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-013.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Approval schema and lifecycle tests",
+    "SafetyGateDecision lookup and current-clearance tests",
+    "eligible/ineligible approver integration tests",
+    "negative tests for model/Companion/DecisionRecord/UI Feed approval bypass",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/contracts/agent-harness.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Approval request creation requires a current `cleared_for_approval` SafetyGateDecision.",
+    "Approval is scoped to exact_proposal_only.",
+    "Rejected, expired, revoked, stale, or mismatched approval creates no action_task.",
+    "Approval never authorizes automated actuation."
+  ],
+  "invariants": [
+    "Never let the model approve its own action.",
+    "Governance DecisionRecord cannot replace Safety Gate approval.",
+    "Approval result requires fresh ActorContext and backend policy checks."
+  ],
+  "verification_targets": [
+    "test:safety-gate.fail-closed-approval-boundary",
+    "test:tasks.approval-action-follow-up-no-actuation",
+    "Approval requires SafetyGateDecision clearance",
+    "Boss/Engineer/Consultant approval boundary",
+    "governance and UI Feed approval bypass denied"
+  ]
+}

@@ -1,10 +1,10 @@
 ---
 description: Product Requirements Document.
-status: draft
+status: active
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 ---
 # PRD
 

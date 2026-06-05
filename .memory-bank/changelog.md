@@ -4,6 +4,203 @@ status: active
 ---
 # Changelog
 
+## [2026-06-05] SDD consistency findings fixed
+- Normalized Safety Gate publishable vocabulary to `cleared_for_approval`.
+- Removed FT-016 dataset-specific `StructuredObservation.status=blocked` drift by
+  routing policy blocks through the shared `denied` observation status with typed
+  reasons.
+- Clarified that FT-011 `silent` advisor decisions are trace/eval-only and create no
+  publishable advisor output, MessageEnvelope, Bus event, or UI Feed projection.
+- Expanded FT-017 redaction verification coverage to include security traces visible
+  to agents and capture metadata.
+- Activated PRD, epic, and feature document metadata while keeping implementation
+  lifecycle fields as `planned`.
+- Synchronized stale `/spec-improve` and `/prd-to-tasks` routing text now that
+  TASK-001..TASK-099 exist.
+- Added owning feature docs and requirements to task `source_artifacts` for consistent
+  fresh-session traceability.
+
+## [2026-06-05] MVP v2 requirements and feature routers activated
+- Marked `.memory-bank/requirements.md` and `.memory-bank/features/index.md` as
+  `status: active` to match their current role as active MVP v2 routing and
+  source-of-truth documents for execution handoff.
+
+## [2026-06-05] Final task review findings triaged
+- Normalized schema-backed task records so `task.wave` uses `/prd-to-tasks` workflow
+  slices only: `W1` foundation, `W2` core logic, and `W3` integration/polish.
+- Added missing `/verify` handoff instructions for TASK-001..TASK-016 and explicit T3
+  closure evidence markers to T3 task records.
+- Replaced placeholder required eval/frontend gate commands in task records with
+  concrete planned test gates or evidence-backed verification requirements.
+- Added missing implementation-plan links to task `docs` fields where plans were only
+  present as source artifacts.
+- Strengthened FT-017/TASK-014 privacy handoff with browser write-protection checks for
+  state-changing loopback/LAN requests.
+
+## [2026-06-05] Wave 6 /prd-to-tasks completed
+- Decomposed FT-014, FT-015, and FT-016 into implementation plans and schema-backed
+  JSON task records.
+- Created .memory-bank/tasks/plans/IMPL-FT-014.md, IMPL-FT-015.md, and
+  IMPL-FT-016.md, and updated .memory-bank/tasks/plans/index.md routing.
+- Created TASK-082..TASK-099 and updated .memory-bank/tasks/index.json.
+- Created feature protocol plans and decision logs under .protocols/FT-014/,
+  .protocols/FT-015/, and .protocols/FT-016/.
+- Kept all Wave 6 tasks planned because Wave 1-5 dependencies are not done.
+- Preserved FT-017 as already decomposed in Wave 1 and used it only as privacy,
+  local_only, no-upload, and redaction dependency input for FT-016.
+
+## [2026-06-05] Wave 5 /prd-to-tasks completed
+- Decomposed FT-012 and FT-013 into implementation plans and schema-backed JSON task
+  records.
+- Created `.memory-bank/tasks/plans/IMPL-FT-012.md` and `IMPL-FT-013.md`, and updated
+  `.memory-bank/tasks/plans/index.md` routing.
+- Created TASK-070..TASK-081 and updated `.memory-bank/tasks/index.json`.
+- Created feature protocol plans and decision logs under `.protocols/FT-012/` and
+  `.protocols/FT-013/`.
+- Kept all Wave 5 tasks `planned` because Wave 1-4 dependencies are not done.
+- Applied `agents-best-practices` guidance to approval-gated risky actions, typed
+  proposals, draft/commit separation, runtime permission decisions, structured
+  observations, traces/evals, budgets, and no automated actuation.
+
+## [2026-06-05] Wave 4 /prd-to-tasks completed
+- Decomposed FT-008, FT-010, and FT-011 into implementation plans and schema-backed
+  JSON task records.
+- Created `.memory-bank/tasks/plans/IMPL-FT-008.md`, `IMPL-FT-010.md`, and
+  `IMPL-FT-011.md`, and updated `.memory-bank/tasks/plans/index.md` routing.
+- Created TASK-053..TASK-069 and updated `.memory-bank/tasks/index.json`.
+- Created feature protocol plans and decision logs under `.protocols/FT-008/`,
+  `.protocols/FT-010/`, and `.protocols/FT-011/`.
+- Kept all Wave 4 tasks `planned` because Wave 1-3 dependencies are not done.
+- Applied `agents-best-practices` guidance to permission-aware context and memory,
+  provider/model runtime, prompt-cache-aware ordering, tool permissions, traces/evals,
+  budget/stop rules, provider failure, and no fake runtime acceptance.
+
+## [2026-06-05] Wave 3 /prd-to-tasks completed
+- Decomposed FT-006, FT-007, and FT-009 into implementation plans and schema-backed
+  JSON task records.
+- Created `.memory-bank/tasks/plans/IMPL-FT-006.md`, `IMPL-FT-007.md`, and
+  `IMPL-FT-009.md`, and updated `.memory-bank/tasks/plans/index.md` routing.
+- Created TASK-035..TASK-052 and updated `.memory-bank/tasks/index.json`.
+- Created feature protocol plans and decision logs under `.protocols/FT-006/`,
+  `.protocols/FT-007/`, and `.protocols/FT-009/`.
+- Kept all Wave 3 tasks `planned` because Wave 1 and Wave 2 dependencies are not done.
+- Applied `agents-best-practices` guidance to shared AgentHarness control-plane
+  ownership, typed tool contracts, runtime permission decisions, context isolation,
+  traces/evals, budgets, MessageEnvelope/Bus boundaries, and no prompt-only safety.
+
+## [2026-06-05] Wave 2 /prd-to-tasks completed
+- Decomposed FT-003, FT-004, and FT-005 into implementation plans and schema-backed
+  JSON task records.
+- Created `.memory-bank/tasks/plans/IMPL-FT-003.md`, `IMPL-FT-004.md`, and
+  `IMPL-FT-005.md`, and added `.memory-bank/tasks/plans/index.md` routing.
+- Created TASK-017..TASK-034 and updated `.memory-bank/tasks/index.json`.
+- Created feature protocol plans and decision logs under `.protocols/FT-003/`,
+  `.protocols/FT-004/`, and `.protocols/FT-005/`.
+- Kept all Wave 2 tasks `planned` because Wave 1 dependencies are not done.
+- Applied `agents-best-practices` guidance to privileged admin, identity/access,
+  authorized Plant operations, untrusted user/upload data, backend-owned permission
+  checks, Bus publication boundaries, redacted traces/observations, and evidence refs.
+
+## [2026-06-05] Wave 1 /prd-to-tasks completed
+- Decomposed FT-001, FT-002, and FT-017 into implementation plans and schema-backed
+  JSON task records.
+- Created `.memory-bank/tasks/plans/IMPL-FT-001.md`, `IMPL-FT-002.md`, and
+  `IMPL-FT-017.md`.
+- Created TASK-001..TASK-016 and updated `.memory-bank/tasks/index.json`.
+- Created feature protocol plans and decision logs under `.protocols/FT-001/`,
+  `.protocols/FT-002/`, and `.protocols/FT-017/`.
+- Marked independent foundations ready: TASK-001, TASK-011, and TASK-013. Kept
+  downstream auth, Plant access, LAN, and regression tasks planned with explicit
+  dependencies.
+- Applied `agents-best-practices` guidance to task decomposition for backend-owned
+  permission decisions, narrow tool/context boundaries, redacted traces/observations,
+  prompt-injection treatment, and secret handling.
+
+## [2026-06-05] Spec review fixes B1-B4
+- Fixed semantic review findings across FT-007, FT-008, FT-009, and FT-015 alignment:
+  AgentProfile risk classes now stay within the shared enum, governance-summary
+  authority role is explicit in context items, adapted model claims cannot become
+  `trusted` by adapter validation alone, and pre-clearance physical-action wording is
+  barred from agent-consumable Bus context.
+
+## [2026-06-05] Wave 6 /spec-improve completed
+- Completed feature-level SDD design for FT-014, FT-015, and FT-016.
+- Added feature-local tech specs under `.memory-bank/tech-specs/` for Companion
+  governance typed state and DecisionRecord semantics, approved governance summary
+  context isolation, and dataset governance/local storage prompt behavior.
+- Updated the three feature frontmatter blocks to `spec_design_status: complete` with
+  `spec_design_links`.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/index.md`,
+  `.memory-bank/features/index.md`, and `.memory-bank/tech-specs/index.md` routing.
+- Preserved FT-017 as the authoritative Wave 1 `/spec-improve` pass and checked FT-016
+  against FT-017 local privacy, `local_only`, no-upload, and redaction constraints.
+- Applied `agents-best-practices` to keep governance proposals approval-gated and
+  typed, approved summaries compact/filtered, raw proposal/chat/rationale excluded from
+  agent context, trainability governed by evidence-backed lifecycle rules, and storage
+  prompts local-only with no server-sync implication.
+
+## [2026-06-05] Wave 5 /spec-improve completed
+- Completed feature-level SDD design for FT-012 and FT-013.
+- Added feature-local tech specs under `.memory-bank/tech-specs/` for Safety Gate
+  routing/approval eligibility and for task/approval/action/follow-up outcome
+  semantics.
+- Updated the two feature frontmatter blocks to `spec_design_status: complete` with
+  `spec_design_links`.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/index.md`,
+  `.memory-bank/features/index.md`, and `.memory-bank/tech-specs/index.md` routing.
+- Applied `agents-best-practices` to keep physical-action advice as typed proposals,
+  split draft/propose from commit/approval, enforce runtime permission decisions,
+  preserve audit traces, require safety evals, and block automated actuation.
+
+## [2026-06-05] Wave 4 /spec-improve completed
+- Completed feature-level SDD design for FT-008, FT-010, and FT-011.
+- Added feature-local tech specs under `.memory-bank/tech-specs/` for permission-aware
+  context and AgentMemoryRecord, real model-backed product-agent profiles, and Plant
+  State trust/Hydroponics Advisor behavior.
+- Updated the three feature frontmatter blocks to `spec_design_status: complete` with
+  `spec_design_links`.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/index.md`,
+  `.memory-bank/features/index.md`, and `.memory-bank/tech-specs/index.md` routing.
+- Applied `agents-best-practices` to lock no-fake-runtime acceptance, context/memory
+  trust boundaries, permission-scoped retrieval, structured observations, traces/evals,
+  budget/stop behavior, prompt-cache-aware context ordering, and provider failure
+  handling.
+
+## [2026-06-05] Wave 3 /spec-improve completed
+- Completed feature-level SDD design for FT-006, FT-007, and FT-009.
+- Added feature-local tech specs under `.memory-bank/tech-specs/` for runtime Plant
+  state/history/timeline audit, shared AgentHarness/AgentProfile runtime, and
+  MessageEnvelope/Agent Chat Bus/UI Feed isolation.
+- Updated the three feature frontmatter blocks to `spec_design_status: complete` with
+  `spec_design_links`.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/index.md`,
+  `.memory-bank/features/index.md`, and `.memory-bank/tech-specs/index.md` routing.
+- Applied `agents-best-practices` to FT-007 and FT-009: model proposes, harness
+  validates/authorizes/executes/records; tools are narrow and typed; runtime
+  permissions, traces, evals, and untrusted-content isolation are explicit.
+
+## [2026-06-05] Wave 2 /spec-improve completed
+- Completed feature-level SDD design for FT-003, FT-004, and FT-005.
+- Added feature-local tech specs under `.memory-bank/tech-specs/` for Boss Admin
+  Surface/admin audit, authorized Plant selector/daily check-in, and photo
+  intake/catalog/capture manifests.
+- Updated the three feature frontmatter blocks to `spec_design_status: complete` with
+  `spec_design_links`.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/index.md`,
+  `.memory-bank/features/index.md`, and `.memory-bank/tech-specs/index.md` routing.
+
+## [2026-06-05] Wave 1 /spec-improve completed
+- Completed feature-level SDD design for FT-001, FT-002, and FT-017.
+- Added feature-local tech specs under `.memory-bank/tech-specs/` for local
+  Accounts/sessions/ActorContext, Farm/Plant lifecycle/access grants, and local privacy
+  deployment/secret redaction.
+- Updated the three feature frontmatter blocks to `spec_design_status: complete` with
+  `spec_design_links`.
+- Updated `.memory-bank/spec-index.md`, `.memory-bank/index.md`,
+  `.memory-bank/features/index.md`, and `.memory-bank/tech-specs/index.md` routing.
+- Recorded FT-017 Wave 1 as the authoritative `/spec-improve` pass if a later wave list
+  repeats FT-017.
+
 ## [2026-06-04] MVP v2 global /spec-design completed
 - Completed the global SDD architecture backbone for MVP v2 with `standard_ai_first`
   mode and `single-file` architecture strategy.

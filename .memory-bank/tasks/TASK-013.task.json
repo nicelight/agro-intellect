@@ -1,0 +1,74 @@
+{
+  "id": "TASK-013",
+  "title": "Implement local_only SyncStatus contract and block server-sync semantics",
+  "status": "ready",
+  "wave": "W1",
+  "feature": "FT-017",
+  "reqs": [
+    "REQ-022",
+    "REQ-024"
+  ],
+  "depends_on": [],
+  "touched_files": [
+    "backend/app/privacy/",
+    "backend/app/config/",
+    "backend/app/db/migrations/",
+    "backend/tests/privacy/",
+    "backend/tests/integration/"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "sync status tests",
+      "command": "pytest backend/tests/privacy backend/tests/integration -k 'sync_status or local_only'",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-013/: sync status tests: pytest backend/tests/privacy backend/tests/integration -k 'sync_status or local_only'; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:privacy.local-only-loopback-lan-controls; test:storage.200mb-local-prompt-no-upload; sync.status remains local_only",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure and record VERDICT: PASS plus SEMANTIC_VERDICT: semantic-pass."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-017.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Tests proving sync.status has only local_only in MVP",
+    "Negative evidence that server_verified, upload status, cloud availability, server copy, or remote backup fields are absent",
+    "Integration evidence that local storage prompts and export/dataset flows do not mutate sync status"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/domains/runtime-data-model.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "sync.status has only local_only in MVP",
+    "server_verified is forbidden until a later server-sync PRD/spec exists",
+    "Upload status, cloud availability, server copy, and remote backup fields are forbidden in MVP"
+  ],
+  "invariants": [
+    "MVP data and artifacts remain local/private by default",
+    "NEVER use server_verified before a real server sync stage exists"
+  ],
+  "verification_targets": [
+    "test:privacy.local-only-loopback-lan-controls",
+    "test:storage.200mb-local-prompt-no-upload",
+    "sync.status remains local_only"
+  ]
+}

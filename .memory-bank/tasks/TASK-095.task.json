@@ -1,0 +1,96 @@
+{
+  "id": "TASK-095",
+  "title": "Implement trainability recomputation and transition guardrails",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021",
+    "REQ-024"
+  ],
+  "depends_on": [
+    "TASK-094"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/*",
+    "backend/app/storage/*",
+    "backend/app/agent_harness/*",
+    "backend/app/privacy/*",
+    "backend/app/photo_intake/*",
+    "backend/app/tasks/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/dataset/*",
+    "backend/tests/storage/*",
+    "backend/tests/privacy/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Every dataset transition recomputes can_train_on.",
+    "Client/agent cannot force can_train_on=true.",
+    "gold requires human, expert, or batch review."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-016.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "trainability transition matrix tests",
+    "direct force denial tests",
+    "gold review source tests",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/tech-specs/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "can_train_on=true requires confirmed/gold, train split, selected curator decision, evidence refs, redaction success, no exclusion, and valid confirmation source."
+  ],
+  "invariants": [
+    "UI Feed, timeline, manifests, raw agent output, AgentMemoryRecord, raw chat, and Bus events alone never grant trainability."
+  ],
+  "verification_targets": [
+    "test:dataset.non-trainable-by-default",
+    "trainability guardrail matrix",
+    "can_train_on direct write denial"
+  ]
+}

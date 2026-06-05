@@ -1,0 +1,102 @@
+{
+  "id": "TASK-082",
+  "title": "Implement Companion IssueStack and HumanAttention typed state",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-014",
+  "reqs": [
+    "REQ-018",
+    "REQ-019"
+  ],
+  "depends_on": [
+    "TASK-002",
+    "TASK-008",
+    "TASK-012",
+    "TASK-041",
+    "TASK-047",
+    "TASK-050"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/*",
+    "backend/app/agent_harness/*",
+    "backend/app/publication/*",
+    "backend/app/access/*",
+    "backend/app/privacy/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/companion/*",
+    "backend/tests/integration/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "IssueStack and HumanAttentionNeeded records are Plant scoped and strict-schema validated.",
+    "Companion state is PostgreSQL/read-model authority, not hidden prompt memory.",
+    "Consultant input cannot satisfy decision-required human attention markers."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-014.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "unit tests for IssueStack/HumanAttention lifecycle",
+    "authorization denial tests",
+    "redaction and trace evidence",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "IssueStack is explicit typed state, not hidden Companion memory.",
+    "HumanAttentionNeeded is a marker only, not approval.",
+    "Raw chat/UI markdown remains non-authoritative."
+  ],
+  "invariants": [
+    "Companion governance state is actor/Farm/Plant scoped.",
+    "Governance state cannot bypass Safety Gate or runtime authority."
+  ],
+  "verification_targets": [
+    "test:companion.typed-plant-scoped-state",
+    "IssueStack current focus and waiting_on semantics",
+    "HumanAttention marker is not approval"
+  ]
+}

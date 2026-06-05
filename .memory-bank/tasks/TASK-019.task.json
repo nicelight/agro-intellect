@@ -1,0 +1,83 @@
+{
+  "id": "TASK-019",
+  "title": "Implement personnel, local account add/invite, and membership role/status workflows",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-006",
+    "REQ-002",
+    "REQ-003",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-001",
+    "TASK-003",
+    "TASK-017",
+    "TASK-018",
+    "TASK-011"
+  ],
+  "touched_files": [
+    "backend/app/admin/*",
+    "backend/app/access/*",
+    "backend/app/api/*",
+    "backend/tests/admin/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "admin and access tests",
+      "command": "pytest backend/tests/admin backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Boss can list personnel and add/invite a local Account",
+    "Role assignment uses only boss, engineer, and consultant presets",
+    "Local account add/invite does not imply hosted identity, email delivery, or recovery"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-019.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-019/TASK-019-S-01-final-report-code-01.md",
+    "Integration tests for local account and membership workflows",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Raw temporary credentials, reset material, tokens, and session data cannot enter audit or forbidden surfaces",
+    "FarmMembership role presets remain fixed to MVP roles",
+    "All workflows stay scoped to the single local Farm"
+  ],
+  "invariants": [
+    "MVP has no enterprise identity, SaaS tenancy, hosted recovery, or email delivery requirement",
+    "Disabled or removed memberships fail closed",
+    "Identity/access changes are privileged admin actions"
+  ],
+  "verification_targets": [
+    "test:admin.audit-and-access-management",
+    "test:auth.local-session-attribution",
+    "test:privacy.secret-redaction-surfaces"
+  ]
+}

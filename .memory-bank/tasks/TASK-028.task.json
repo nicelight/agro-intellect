@@ -1,0 +1,82 @@
+{
+  "id": "TASK-028",
+  "title": "Build daily operations UI and authorized CheckIn integration coverage",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-004",
+  "reqs": [
+    "REQ-007",
+    "REQ-005",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-024",
+    "TASK-025",
+    "TASK-026",
+    "TASK-027"
+  ],
+  "touched_files": [
+    "frontend/src/*",
+    "backend/tests/integration/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "authorized daily flow integration",
+      "command": "pytest backend/tests/plant_operations backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "frontend daily flow smoke",
+      "command": "npm test -- --runInBand",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Boss and authorized Engineer can complete first tomato_001 check-in flow",
+    "Plant card/history, task, approval, and follow-up entrypoints route through authorized refs",
+    "Non-authorized Plant submission fails closed at backend"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-004.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-028.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-028/TASK-028-S-01-final-report-code-01.md",
+    "UI/e2e or smoke evidence for authorized daily Plant flow",
+    "Generated OpenAPI validation evidence",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Frontend selector state is not authority",
+    "Archived Plants are removed from normal operations",
+    "UI cannot publish agent-consumable evidence directly"
+  ],
+  "invariants": [
+    "Backend authorization is mandatory for every Farm/Plant data route",
+    "UI Feed and presentation-only content stay unavailable as agent working context",
+    "Every completed T3 task requires verify, red-verify, human checkpoint, and rollback/recovery evidence"
+  ],
+  "verification_targets": [
+    "test:plant.authorized-daily-flow",
+    "test:auth.plant-access-grants",
+    "test:runtime.authority-vs-timeline"
+  ]
+}

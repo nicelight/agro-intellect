@@ -1,0 +1,96 @@
+{
+  "id": "TASK-085",
+  "title": "Implement allowed governance workflow effects and safe task request handoffs",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-014",
+  "reqs": [
+    "REQ-018",
+    "REQ-019"
+  ],
+  "depends_on": [
+    "TASK-076",
+    "TASK-084"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/*",
+    "backend/app/agent_harness/*",
+    "backend/app/publication/*",
+    "backend/app/access/*",
+    "backend/app/privacy/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/companion/*",
+    "backend/tests/integration/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Approved DecisionRecord can request only allowed workflow effects through backend rules.",
+    "request_check_task/request_measurement_task/request_follow_up_task creates safe requests only where task services allow.",
+    "No action_task or physical-action approval is created by governance workflow effects."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-014.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "workflow effect service tests",
+    "safe task request handoff tests",
+    "no action_task unlock negative test",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "Allowed workflow effects are none, continue_discussion, request_check_task, request_measurement_task, request_follow_up_task.",
+    "Governance effects execute through deterministic backend services."
+  ],
+  "invariants": [
+    "DecisionRecord cannot create action_task or authorize physical action."
+  ],
+  "verification_targets": [
+    "test:companion.proposal-decision-authority",
+    "safe workflow effects only",
+    "no governance-to-action_task bypass"
+  ]
+}

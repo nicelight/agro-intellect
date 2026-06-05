@@ -1,0 +1,80 @@
+{
+  "id": "TASK-015",
+  "title": "Guard local storage prompt copy against upload or server-sync implication",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-017",
+  "reqs": [
+    "REQ-022",
+    "REQ-024"
+  ],
+  "depends_on": [
+    "TASK-013"
+  ],
+  "touched_files": [
+    "backend/app/privacy/",
+    "backend/app/storage/",
+    "frontend/src/",
+    "backend/tests/privacy/",
+    "frontend/tests/"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "storage prompt tests",
+      "command": "pytest backend/tests/privacy -k storage_prompt",
+      "required": true
+    },
+    {
+      "name": "frontend prompt smoke",
+      "command": "npm test -- --runInBand storage-prompt",
+      "required": false
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-015/: storage prompt tests: pytest backend/tests/privacy -k storage_prompt; frontend prompt smoke: npm test -- --runInBand storage-prompt; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:storage.200mb-local-prompt-no-upload; test:privacy.local-only-loopback-lan-controls; Local storage prompt does not mutate sync status",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure and record VERDICT: PASS plus SEMANTIC_VERDICT: semantic-pass."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-017.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Tests or UI smoke evidence that local storage prompt does not imply upload, backup, cloud analysis, server availability, or remote persistence",
+    "Tests proving local storage prompt cannot mutate sync.status",
+    "Copy/screenshot review artifact once UI exists"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Local storage prompt does not imply upload/server availability",
+    "Local storage prompt cannot change sync.status",
+    "UI copy must not imply cloud analysis, upload, backup, remote server persistence, or server availability"
+  ],
+  "invariants": [
+    "MVP data and artifacts remain local/private by default",
+    "SyncStatus remains local_only in MVP"
+  ],
+  "verification_targets": [
+    "test:storage.200mb-local-prompt-no-upload",
+    "test:privacy.local-only-loopback-lan-controls",
+    "Local storage prompt does not mutate sync status"
+  ]
+}

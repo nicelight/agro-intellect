@@ -48,7 +48,7 @@ claim_type: observation | hypothesis | recommendation | safety_block | task_requ
 confidence: low | medium | high | not_applicable
 requires_human_approval: boolean
 safety_gate_required: boolean
-safety_gate_status: not_required | required | blocked | cleared | pending_approval
+safety_gate_status: not_required | required | blocked | cleared_for_approval | pending_approval
 consumable_output: string
 source_refs: []
 evidence_refs: []
@@ -59,6 +59,10 @@ redaction_status: redacted | no_sensitive_fields
 ```
 
 Feature specs own exact payload variants.
+
+`cleared_for_approval` is the only Safety Gate clearance vocabulary for publishable
+schemas. It does not mean human approval; it means the exact proposal may enter the
+approval path owned by Safety Gate and task/approval specs.
 
 ## Validation Rules
 

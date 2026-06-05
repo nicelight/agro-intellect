@@ -1,0 +1,78 @@
+{
+  "id": "TASK-037",
+  "title": "Implement append-only TimelineEvent writer, taxonomy, and idempotency rules",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-006",
+  "reqs": [
+    "REQ-009"
+  ],
+  "depends_on": [
+    "TASK-012",
+    "TASK-018",
+    "TASK-027",
+    "TASK-030"
+  ],
+  "touched_files": [
+    "backend/app/timeline/*",
+    "backend/app/runtime_state/*",
+    "backend/app/publication/*",
+    "backend/tests/runtime_state/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "timeline tests",
+      "command": "pytest backend/tests/runtime_state backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "TimelineEvent lines are appended only after authoritative source records exist or in the same logical command boundary.",
+    "Duplicate and out-of-order events cannot overwrite PostgreSQL/read-model state."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-006.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Append-only timeline tests covering duplicate source refs and event ids.",
+    "Redaction tests proving timeline payloads exclude secrets/auth material and raw UI/model/chat data.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Existing timeline lines are never edited, deleted, reordered, or rewritten.",
+    "Timeline import/replay is audit/export/debug only and never normal runtime mutation."
+  ],
+  "invariants": [
+    "`timeline.jsonl` remains append-only audit/export, not primary mutable state.",
+    "Redaction happens before logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context."
+  ],
+  "verification_targets": [
+    "test:runtime.authority-vs-timeline",
+    "Append-only timeline and no timeline replay authority."
+  ]
+}

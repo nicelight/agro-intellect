@@ -1,0 +1,79 @@
+{
+  "id": "TASK-035",
+  "title": "Implement PlantStateSnapshot projection foundation and evidence-ref update rules",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-006",
+  "reqs": [
+    "REQ-007",
+    "REQ-009"
+  ],
+  "depends_on": [
+    "TASK-023",
+    "TASK-025",
+    "TASK-030",
+    "TASK-011"
+  ],
+  "touched_files": [
+    "backend/app/runtime_state/*",
+    "backend/app/plant_operations/*",
+    "backend/app/db/migrations/*",
+    "backend/tests/runtime_state/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "runtime state tests",
+      "command": "pytest backend/tests/runtime_state",
+      "required": true
+    },
+    {
+      "name": "Memory Bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "PlantStateSnapshot/read-model projection updates from persisted observation, measurement, and photo refs only.",
+    "Missing, stale, conflicting, unauthorized, or untrusted evidence maps to explicit state labels."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-006.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Unit test output for PlantStateSnapshot status/freshness mapping.",
+    "Evidence refs showing runtime state depends on persisted source records, not timeline/photo/UI artifacts."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "PostgreSQL/read model is mutable runtime authority for PlantStateSnapshot values.",
+    "Timeline, photo manifests/files, UI Feed cards, raw chat, and raw provider output are evidence/artifact layers only."
+  ],
+  "invariants": [
+    "Agent hypotheses cannot create confirmed Plant state without owning FT-011 rules and human review or follow-up evidence.",
+    "Photo refs and timeline refs may be evidence refs only."
+  ],
+  "verification_targets": [
+    "test:runtime.authority-vs-timeline",
+    "Missing/stale/conflicting evidence maps to unknown, probable, or conflict rather than confirmation."
+  ]
+}

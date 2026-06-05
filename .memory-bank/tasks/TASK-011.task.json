@@ -1,0 +1,73 @@
+{
+  "id": "TASK-011",
+  "title": "Create shared secret redaction policy and detector foundation",
+  "status": "ready",
+  "wave": "W1",
+  "feature": "FT-017",
+  "reqs": [
+    "REQ-023"
+  ],
+  "depends_on": [],
+  "touched_files": [
+    "backend/app/privacy/",
+    "backend/app/security/",
+    "backend/tests/privacy/",
+    "backend/tests/security/"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "redaction unit tests",
+      "command": "pytest backend/tests/privacy backend/tests/security -k redaction",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-011/: redaction unit tests: pytest backend/tests/privacy backend/tests/security -k redaction; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:privacy.secret-redaction-surfaces; Known secret patterns are redacted; High-risk uncertain payload is rejected or truncated",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure, record VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and include HUMAN_CHECKPOINT: done plus ROLLBACK_RECOVERY_NOTE: present as standalone evidence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-017.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Unit tests for known secret classes and configured secret-like patterns",
+    "Evidence that uncertain high-risk redaction rejects or truncates instead of publishing raw payload",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Secret/auth material includes sessions, cookies, bearer tokens, CSRF tokens, refresh tokens, reset material, .env values, API keys, database credentials, connector credentials, webhook secrets, private keys, and secret-like user text",
+    "Do not store raw secret value plus a separate redacted flag",
+    "Use stable redacted markers or non-reversible redacted refs/hashes where correlation is required"
+  ],
+  "invariants": [
+    "NEVER log or export secrets, API keys, tokens, .env values, credentials, or auth material",
+    "Redaction runs before persistence or publication into forbidden surfaces"
+  ],
+  "verification_targets": [
+    "test:privacy.secret-redaction-surfaces",
+    "Known secret patterns are redacted",
+    "High-risk uncertain payload is rejected or truncated"
+  ]
+}

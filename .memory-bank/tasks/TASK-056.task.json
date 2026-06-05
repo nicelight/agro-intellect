@@ -1,0 +1,88 @@
+{
+  "id": "TASK-056",
+  "title": "Implement context compaction handoff and cache-aware ordering telemetry",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-008",
+  "reqs": [
+    "REQ-011",
+    "REQ-012",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-045",
+    "TASK-053",
+    "TASK-054"
+  ],
+  "touched_files": [
+    "backend/app/context/*",
+    "backend/app/agent_harness/*",
+    "backend/app/memory/*",
+    "backend/tests/context/*",
+    "backend/tests/agent_harness/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "compaction tests",
+      "command": "pytest backend/tests/context backend/tests/agent_harness backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Compaction preserves objective, ActorContext, PlantAccessGrant scope, active plan, approvals, pending proposals, source refs, memory refs, trust/freshness labels, tool observations, trace refs, blockers, and next safe action.",
+    "Compaction does not widen permissions, erase denial/approval state, or upgrade untrusted data to trusted facts.",
+    "Context build trace records size, selected/excluded source counts, redaction status, budget fields, and cache-aware ordering metadata."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-008.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-056/",
+    "compaction retention test output",
+    "prompt-cache/budget telemetry evidence",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Compaction is operational handoff, not conversational prose.",
+    "Stable tool definitions, harness/profile instructions, policies, and reusable refs precede volatile runtime/user data.",
+    "Bulky artifacts are referenced, not embedded."
+  ],
+  "invariants": [
+    "Compaction cannot erase approval state, change authority boundaries, or summarize untrusted content into trusted facts.",
+    "Traces record operational events without hidden reasoning."
+  ],
+  "verification_targets": [
+    "test:harness.context-overflow-compaction-retention",
+    "test:harness.loop-permission-observation-trace",
+    "test:privacy.secret-redaction-surfaces"
+  ]
+}

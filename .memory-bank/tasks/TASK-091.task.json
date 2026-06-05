@@ -1,0 +1,92 @@
+{
+  "id": "TASK-091",
+  "title": "Implement compaction and AgentMemory governance-summary boundaries",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-019",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-054",
+    "TASK-056",
+    "TASK-088",
+    "TASK-089"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/*",
+    "backend/app/agent_context/*",
+    "backend/app/agent_harness/*",
+    "backend/app/publication/*",
+    "backend/app/privacy/*",
+    "backend/tests/companion/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Compaction preserves governance_summary_id, DecisionRecord refs, allowed workflow effect, and safety_gate_authority without raw discussion.",
+    "AgentMemoryRecord may store governance_summary_ref only from approved summary and remains non-authority."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-015.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "compaction tests",
+    "AgentMemoryRecord governance_summary_ref tests",
+    "no raw governance content memory test",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-approved-governance-summary-and-agent-context-isolation.md",
+    ".memory-bank/tech-specs/FT-015-approved-governance-summary-and-agent-context-isolation.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "Compaction cannot upgrade forbidden content into trusted facts.",
+    "Memory remains non-authority and cannot replace summary record."
+  ],
+  "invariants": [
+    "Memory/context paths cannot bypass approved summary source refs."
+  ],
+  "verification_targets": [
+    "test:harness.memory-scope-permission-non-authority",
+    "test:harness.context-injection-boundary",
+    "compaction preserves authority labels"
+  ]
+}

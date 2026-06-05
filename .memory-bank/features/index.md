@@ -1,7 +1,7 @@
 ---
 description: Router for active MVP v2 features derived from the clarified PRD.
-status: draft
-last_updated: 2026-06-04
+status: active
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -44,5 +44,30 @@ source_of_truth:
 - [FT-016 Dataset Governance And Local Storage Prompt](FT-016-dataset-governance-and-local-storage-prompt.md)
 - [FT-017 Local Privacy, Deployment Controls, And Secret Redaction](FT-017-local-privacy-deployment-controls-and-secret-redaction.md)
 
-Global `/spec-design` is complete. Run feature-level `/spec-improve FT-<NNN>` before
-`/prd-to-tasks FT-<NNN>`.
+## Spec-Improve Routing
+
+Global `/spec-design` is complete.
+
+- Wave 1 complete: FT-001, FT-002, and FT-017 have feature-local tech specs in
+  [.memory-bank/tech-specs/index.md](../tech-specs/index.md). `/prd-to-tasks` is
+  complete for these features with TASK-001..TASK-016 indexed in
+  [.memory-bank/tasks/index.json](../tasks/index.json).
+- Wave 2 complete: FT-003, FT-004, and FT-005 have feature-local tech specs in
+  [.memory-bank/tech-specs/index.md](../tech-specs/index.md). `/prd-to-tasks` is
+  complete for these features with TASK-017..TASK-034 indexed in
+  [.memory-bank/tasks/index.json](../tasks/index.json).
+- Wave 3 complete: FT-006, FT-007, and FT-009 have feature-local tech specs in
+  [.memory-bank/tech-specs/index.md](../tech-specs/index.md). `/prd-to-tasks` is
+  complete for these features with TASK-035..TASK-052 indexed.
+- Wave 4 complete: FT-008, FT-010, and FT-011 have feature-local tech specs in
+  [.memory-bank/tech-specs/index.md](../tech-specs/index.md). `/prd-to-tasks` is
+  complete for these features with TASK-053..TASK-069 indexed.
+- Wave 5 complete: FT-012 and FT-013 have feature-local tech specs in
+  [.memory-bank/tech-specs/index.md](../tech-specs/index.md). `/prd-to-tasks` is
+  complete for these features with TASK-070..TASK-081 indexed.
+- Wave 6 complete: FT-014, FT-015, and FT-016 have feature-local tech specs in
+  [.memory-bank/tech-specs/index.md](../tech-specs/index.md). `/prd-to-tasks` is
+  complete for these features with TASK-082..TASK-099 indexed.
+- FT-017 duplicate handling: FT-017 was already completed in Wave 1 and remains the
+  authoritative FT-017 `/spec-improve` pass; do not rewrite it unless a later explicit
+  user decision supersedes that source of truth.

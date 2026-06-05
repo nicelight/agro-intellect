@@ -1,9 +1,10 @@
 ---
 description: Epic EP-005 for Companion IssueStack, proposals, decisions, and approved governance summaries.
-status: draft
+status: active
+owner: product
 lifecycle: planned
 epic_id: EP-005
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md

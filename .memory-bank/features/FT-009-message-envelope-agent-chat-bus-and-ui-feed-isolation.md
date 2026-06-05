@@ -1,14 +1,18 @@
 ---
 description: Feature FT-009 for MessageEnvelope, Agent Chat Bus, UI Feed projection, and context hygiene.
-status: draft
+status: active
+owner: product
 lifecycle: planned
-spec_design_status: needs_spec_improve
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md
 epic: EP-003
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/contracts/boundary-map.md
+  - .memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md
 ---
 # FT-009 MessageEnvelope, Agent Chat Bus, And UI Feed Isolation
 
@@ -48,7 +52,6 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Global `/spec-design` is complete. Before `/prd-to-tasks FT-009`, run
-`/spec-improve FT-009` using the completed backbone docs: [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/states/core-lifecycles.md](../states/core-lifecycles.md), [.memory-bank/contracts/index.md](../contracts/index.md), and [.memory-bank/testing/index.md](../testing/index.md). `/spec-improve` must decide runtime decision states, envelope
-contracts, Bus publication rules, UI Feed projection rules, context filtering, and
-anti-cheat tests.
+Global `/spec-design` and feature-level `/spec-improve FT-009` are complete. Use
+[.memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md](../tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md)
+as the feature-local design hub before `/prd-to-tasks FT-009`.

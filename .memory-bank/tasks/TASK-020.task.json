@@ -1,0 +1,76 @@
+{
+  "id": "TASK-020",
+  "title": "Wire Plant lifecycle admin entrypoints to durable audit",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-006",
+    "REQ-004"
+  ],
+  "depends_on": [
+    "TASK-007",
+    "TASK-017",
+    "TASK-018"
+  ],
+  "touched_files": [
+    "backend/app/admin/*",
+    "backend/app/plants/*",
+    "backend/app/api/*",
+    "backend/tests/admin/*",
+    "backend/tests/plants/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "admin plant lifecycle tests",
+      "command": "pytest backend/tests/admin backend/tests/plants",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Boss can create, archive, and restore Plants through admin entrypoints",
+    "Non-Boss users cannot perform Plant lifecycle admin mutations",
+    "Plant lifecycle mutations create AdminAuditRecord entries"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-020.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-020/TASK-020-S-01-final-report-code-01.md",
+    "Plant lifecycle admin integration test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Plant create/archive/restore uses FT-002 lifecycle rules",
+    "Hard delete remains absent",
+    "Archived Plant audit and evidence refs remain retained"
+  ],
+  "invariants": [
+    "PostgreSQL/read model owns Plant lifecycle state",
+    "Timeline replay cannot overwrite Plant lifecycle authority",
+    "Admin authority cannot bypass Safety Gate"
+  ],
+  "verification_targets": [
+    "test:plant.lifecycle-archive-restore-retention",
+    "test:admin.audit-and-access-management",
+    "Hard delete route or command is absent"
+  ]
+}

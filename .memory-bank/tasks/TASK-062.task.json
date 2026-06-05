@@ -1,0 +1,107 @@
+{
+  "id": "TASK-062",
+  "title": "Run real Vision Observation over accepted uploaded photo refs",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-010",
+  "reqs": [
+    "REQ-008",
+    "REQ-011",
+    "REQ-013",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-029",
+    "TASK-030",
+    "TASK-031",
+    "TASK-032",
+    "TASK-047",
+    "TASK-053",
+    "TASK-060"
+  ],
+  "touched_files": [
+    "backend/app/agent_harness/*",
+    "backend/app/model_adapters/*",
+    "backend/app/photo_artifacts/*",
+    "backend/app/context/*",
+    "backend/app/publication/*",
+    "backend/tests/model_adapters/*",
+    "backend/tests/photo_artifacts/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "real vision tests",
+      "command": "pytest backend/tests/model_adapters backend/tests/photo_artifacts backend/tests/agent_harness backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "harness evals",
+      "command": "pytest backend/tests/model_adapters backend/tests/agent_harness backend/tests/photo_artifacts backend/tests/integration -k 'vision or photo or eval'",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Vision Observation receives authorized accepted photo refs with catalog id, sha256, metadata, and backend-controlled file access.",
+    "Vision model processes actual uploaded photo binary or a real derivative from that photo.",
+    "Vision Observation outputs photo quality and visual observations only, with no diagnosis, physical-action advice, or Plant state mutation."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-010.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-062/",
+    "real uploaded-photo vision run evidence",
+    "vision failure/unauthorized/missing-file evidence",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/tech-specs/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-010.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Vision adapter access is backend-controlled and scoped by ActorContext and PlantAccessGrant.",
+    "Missing file, unauthorized photo, unsupported format, provider failure, or unclear image returns structured failure.",
+    "Photo files/manifests are artifacts, not mutable Plant state authority."
+  ],
+  "invariants": [
+    "Vision Observation cannot diagnose or recommend physical actions.",
+    "Raw vision output is not Plant fact until adapted through harness and owning state rules.",
+    "Secrets/auth material cannot enter manifests, traces, context, MessageEnvelope, Bus, UI Feed, or exports."
+  ],
+  "verification_targets": [
+    "test:agents.real-model-runtime-and-vision",
+    "test:photo.file-catalog-sha256-manifest",
+    "test:harness.loop-permission-observation-trace",
+    "test:agent-output.bus-message-ui-isolation"
+  ]
+}

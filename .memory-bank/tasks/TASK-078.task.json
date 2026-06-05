@@ -1,0 +1,97 @@
+{
+  "id": "TASK-078",
+  "title": "Implement action_task unlock from exact approved proposal with no actuation",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-016",
+    "REQ-017"
+  ],
+  "depends_on": [
+    "TASK-012",
+    "TASK-072",
+    "TASK-073",
+    "TASK-075",
+    "TASK-076",
+    "TASK-077"
+  ],
+  "touched_files": [
+    "backend/app/tasks/*",
+    "backend/app/approvals/*",
+    "backend/app/safety/*",
+    "backend/app/access/*",
+    "backend/app/privacy/*",
+    "backend/app/api/*",
+    "backend/tests/tasks/*",
+    "backend/tests/approvals/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "action task unlock and no-actuation tests",
+      "command": "pytest backend/tests/tasks backend/tests/approvals backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "action_task creation requires active Plant, fresh ActorContext, PlantAccessGrant/role eligibility, valid `cleared_for_approval` SafetyGateDecision, approved exact Approval, source/evidence refs, and unchanged proposal context.",
+    "Rejected, expired, revoked, stale, mismatched, or unauthorized approval creates no action_task.",
+    "action_task records describe human-performed work only and do not call actuators, emit device commands, or imply automatic execution.",
+    "No automated actuation tool, command, external side effect, or device execution path exists."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-013.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "action_task unlock guard tests",
+    "negative tests for invalid approvals and changed proposal context",
+    "no automated actuation command/tool search and regression evidence",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/states/core-lifecycles.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Human approval unlocks only human-performed action_task records.",
+    "No automated device execution, actuator command, pump/dosing/light control, or external side effect may be introduced.",
+    "action_task cannot be created before Safety Gate decision and Approval paths exist."
+  ],
+  "invariants": [
+    "Physical-action advice requires fresh data, Safety Gate pass, authorized human approval, and task/action tracking.",
+    "NEVER make human approval authorize automated device execution in the MVP.",
+    "Approval is exact-proposal scoped and non-replayable."
+  ],
+  "verification_targets": [
+    "test:tasks.approval-action-follow-up-no-actuation",
+    "action_task cannot be created without Safety Gate clearance and authorized human approval",
+    "invalid approval creates no action_task",
+    "Boss and eligible Engineer create human-performed action tasks only",
+    "no automated actuation path"
+  ]
+}

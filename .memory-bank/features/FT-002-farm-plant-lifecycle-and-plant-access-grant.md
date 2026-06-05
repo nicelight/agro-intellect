@@ -1,14 +1,18 @@
 ---
 description: Feature FT-002 for one local Farm, Plant lifecycle, tomato_001 migration, and PlantAccessGrant.
-status: draft
+status: active
+owner: product
 lifecycle: planned
-spec_design_status: needs_spec_improve
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md
 epic: EP-001
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/states/lifecycle-map.md
+  - .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md
 ---
 # FT-002 Farm, Plant Lifecycle, And PlantAccessGrant
 
@@ -49,7 +53,6 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Global `/spec-design` is complete. Before `/prd-to-tasks FT-002`, run
-`/spec-improve FT-002` using the completed backbone docs: [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/states/core-lifecycles.md](../states/core-lifecycles.md), [.memory-bank/contracts/index.md](../contracts/index.md), and [.memory-bank/testing/index.md](../testing/index.md). `/spec-improve` must decide Plant lifecycle states,
-PlantAccessGrant representation, access filtering, archive visibility, and retained
-history semantics.
+Global `/spec-design` and feature-level `/spec-improve FT-002` are complete. Use
+[.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md](../tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md)
+as the feature-local design hub before `/prd-to-tasks FT-002`.

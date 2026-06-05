@@ -20,9 +20,10 @@ status: active
 
 ## Open Design Questions
 - No global `/spec-design` blocker remains.
-- Feature-level `/spec-improve FT-<NNN>` must still decide exact endpoint shapes,
-  schema fields, UI flows, feature-local state transition details, freshness/action
-  taxonomy refinements, eval fixtures, and launch gates.
+- Feature-level `/spec-improve FT-001` through `FT-017` is complete. Remaining endpoint
+  shapes, implementation schema names, UI flow details, eval fixture files, and launch
+  gates belong to the existing feature-local tech specs, implementation plans, and task
+  records.
 
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
@@ -59,7 +60,7 @@ status: active
 - Candidate specs: see .memory-bank/spec-index.md Planned Specs.
 
 ## Handoff To /spec-improve
-- Ready: yes.
+- Status: complete for FT-001..FT-017.
 - Required global reads for each feature:
   [.memory-bank/spec-index.md](spec-index.md),
   [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md),
@@ -71,8 +72,8 @@ status: active
   runtime authority, AgentHarness, UI Feed isolation, Safety Gate, governance
   separation, local privacy, secret redaction, or real model-backed runtime/demo
   requirements.
-- Next route: `/spec-improve FT-<NNN>` for manual feature design, or `/spec-auto --all`
-  before `/prd-to-tasks --all` in autonomous flow.
+- Next route: use `.memory-bank/tasks/index.json` and indexed `TASK-*.task.json`
+  records for `/execute`, or run a formal post-queue `/review` before `/autopilot`.
 
 ## Global Backbone Status
 - Status: complete
@@ -83,4 +84,5 @@ status: active
   - automated_actuation: not_applicable - explicit PRD non-goal; physical actions become human-performed tasks only.
   - multi_farm_tenancy: not_applicable - explicit PRD non-goal; MVP supports exactly one local Farm.
   - full_dataset_registry_and_fine_tuning: not_applicable - explicit PRD non-goal; MVP keeps dataset lifecycle guardrails only.
-- Notes: /spec-design completed the global AI-first architecture guardrails. Feature-local details remain pending `/spec-improve FT-<NNN>`.
+- Notes: /spec-design completed the global AI-first architecture guardrails.
+  Feature-local `/spec-improve` is complete for FT-001..FT-017.

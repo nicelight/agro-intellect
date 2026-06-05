@@ -1,0 +1,96 @@
+{
+  "id": "TASK-071",
+  "title": "Implement Safety Gate input resolver and freshness evidence policy",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-012",
+  "reqs": [
+    "REQ-016"
+  ],
+  "depends_on": [
+    "TASK-008",
+    "TASK-012",
+    "TASK-035",
+    "TASK-036",
+    "TASK-038",
+    "TASK-053",
+    "TASK-064",
+    "TASK-065",
+    "TASK-070"
+  ],
+  "touched_files": [
+    "backend/app/safety/*",
+    "backend/app/runtime_state/*",
+    "backend/app/plant_operations/*",
+    "backend/app/access/*",
+    "backend/app/privacy/*",
+    "backend/tests/safety/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "safety resolver and integration tests",
+      "command": "pytest backend/tests/safety backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Safety Gate resolves ActorContext, Farm/Plant scope, PlantAccessGrant, Plant state, source refs, runtime evidence, pH/EC freshness, and redaction status.",
+    "Missing, stale, conflicting, unauthorized, untrusted, out-of-scope, redaction-failed, or archived-Plant evidence fails closed or routes to missing data.",
+    "pH/EC physical-action approval freshness uses the 2-hour policy while preserving 24-hour advisory analysis separation."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-012.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "resolver unit/integration test output",
+    "freshness policy tests for pH/EC analysis versus physical-action approval",
+    "authorization denial and archived/revoked grant tests",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Fresh evidence is required but never sufficient for physical action.",
+    "Archived Plants, revoked grants, expired ActorContext, stale evidence, and unauthorized refs fail closed.",
+    "Companion DecisionRecord may be workflow context only, never Safety Gate approval or Plant-state evidence."
+  ],
+  "invariants": [
+    "Every protected safety evaluation resolves ActorContext and PlantAccessGrant before reading or mutating state.",
+    "PostgreSQL/read model remains runtime authority; timeline/UI/photo refs do not replace current state.",
+    "Stale or conflicting evidence is explicit, not silently accepted."
+  ],
+  "verification_targets": [
+    "test:safety-gate.fail-closed-approval-boundary",
+    "missing/stale/conflicting/unauthorized evidence fails closed",
+    "fresh pH/EC alone does not unlock approval",
+    "archived Plant or revoked PlantAccessGrant blocks eligibility"
+  ]
+}

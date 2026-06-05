@@ -1,0 +1,102 @@
+{
+  "id": "TASK-063",
+  "title": "Add real-runtime smoke evals, provider failure paths, and launch-gate evidence",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-010",
+  "reqs": [
+    "REQ-011",
+    "REQ-013",
+    "REQ-014",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-016",
+    "TASK-052",
+    "TASK-058",
+    "TASK-061",
+    "TASK-062"
+  ],
+  "touched_files": [
+    "backend/tests/model_adapters/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    "backend/tests/evals/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "FT-010 real-runtime regression suite",
+      "command": "pytest backend/tests/model_adapters backend/tests/agent_harness backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "real-runtime evals",
+      "command": "pytest backend/tests/model_adapters backend/tests/agent_harness backend/tests/integration backend/tests/security -k 'real_runtime or provider_failure or eval'",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "First-demo evidence includes one real text model run over scoped Plant context and one real vision run over an accepted uploaded photo.",
+    "Missing config, timeout, malformed output, rate limit, forbidden action suggestion, provider secret-like output, and budget exhausted paths are covered.",
+    "Anti-cheat gates prove fake/mock/stub/hardcoded runtime outputs cannot satisfy MVP runtime/demo acceptance."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-010.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-063/",
+    "first-demo trace/eval evidence for text and vision profiles",
+    "anti-fake and provider-failure evidence",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/tech-specs/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-010.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Test-only mocks may be used in automated tests but cannot redefine product acceptance.",
+    "Trace events record operational evidence without exposing hidden reasoning.",
+    "Token/cost/latency and cached-token fields are recorded when available."
+  ],
+  "invariants": [
+    "No fake runtime/demo path.",
+    "No provider/model memory authority.",
+    "No raw provider output publication bypass."
+  ],
+  "verification_targets": [
+    "test:agents.real-model-runtime-and-vision",
+    "test:harness.loop-permission-observation-trace",
+    "test:agent-output.bus-message-ui-isolation",
+    "test:privacy.secret-redaction-surfaces"
+  ]
+}

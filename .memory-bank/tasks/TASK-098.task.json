@@ -1,0 +1,102 @@
+{
+  "id": "TASK-098",
+  "title": "Integrate dataset governance with FT-017 local-only privacy and redaction boundaries",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021",
+    "REQ-024"
+  ],
+  "depends_on": [
+    "TASK-011",
+    "TASK-012",
+    "TASK-013",
+    "TASK-016",
+    "TASK-094",
+    "TASK-095",
+    "TASK-097"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/*",
+    "backend/app/storage/*",
+    "backend/app/agent_harness/*",
+    "backend/app/privacy/*",
+    "backend/app/photo_intake/*",
+    "backend/app/tasks/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/dataset/*",
+    "backend/tests/storage/*",
+    "backend/tests/privacy/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Dataset candidates, exports, storage prompt, traces, Bus/UI, and context packages preserve FT-017 local_only/no-upload/redaction constraints.",
+    "server_verified/upload/cloud backup/server copy fields remain absent."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-016.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "privacy integration tests",
+    "secret redaction tests",
+    "no server sync field scan",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/tech-specs/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "No .env, token, credential, API key, or auth material enters dataset candidates, exports, prompts, or context packages.",
+    "Dataset/storage UI must not imply upload or server availability."
+  ],
+  "invariants": [
+    "MVP data and artifacts remain local/private by default."
+  ],
+  "verification_targets": [
+    "test:privacy.local-only-loopback-lan-controls",
+    "test:privacy.secret-redaction-surfaces",
+    "test:storage.200mb-local-prompt-no-upload"
+  ]
+}

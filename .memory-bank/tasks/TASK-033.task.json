@@ -1,0 +1,79 @@
+{
+  "id": "TASK-033",
+  "title": "Build photo upload, catalog, and manifest UI with e2e smoke",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-008",
+    "REQ-007",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-031",
+    "TASK-032"
+  ],
+  "touched_files": [
+    "frontend/src/*",
+    "backend/tests/integration/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "photo integration tests",
+      "command": "pytest backend/tests/photo_artifacts backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "frontend photo smoke",
+      "command": "npm test -- --runInBand",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Authorized user can upload a real Plant photo during check-in",
+    "UI displays stable photo, catalog, manifest, sha256, and timeline/export refs without treating them as runtime authority",
+    "Unauthorized users cannot access unauthorized photo metadata or files"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-033.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-033/TASK-033-S-01-final-report-code-01.md",
+    "UI/e2e or smoke evidence for photo upload/catalog flow",
+    "Screenshot/export redaction evidence where UI capture exists",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Frontend upload controls do not replace backend validation or authorization",
+    "User filenames are display metadata only",
+    "UI copy does not imply upload/server availability or cloud sync"
+  ],
+  "invariants": [
+    "Frontend visibility is not authorization",
+    "MVP data and artifacts remain local/private by default",
+    "Secrets/auth material cannot enter screenshots, exports, UI Feed, or agent context"
+  ],
+  "verification_targets": [
+    "test:photo.file-catalog-sha256-manifest",
+    "test:plant.authorized-daily-flow",
+    "test:privacy.secret-redaction-surfaces"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "TASK-001",
+  "title": "Create local Account, FarmMembership, and session data foundation",
+  "status": "ready",
+  "wave": "W1",
+  "feature": "FT-001",
+  "reqs": [
+    "REQ-001",
+    "REQ-002",
+    "REQ-003",
+    "REQ-023"
+  ],
+  "depends_on": [],
+  "touched_files": [
+    "backend/app/access/",
+    "backend/app/db/migrations/",
+    "backend/app/security/",
+    "backend/tests/access/"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "access unit tests",
+      "command": "pytest backend/tests/access",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-001/: access unit tests: pytest backend/tests/access; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:auth.local-session-attribution; test:privacy.secret-redaction-surfaces; Missing, expired, malformed, revoked, or invalid session cannot authenticate",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure, record VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and include HUMAN_CHECKPOINT: done plus ROLLBACK_RECOVERY_NOTE: present as standalone evidence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-001.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Unit test results for Account, FarmMembership, session lifecycle, and auth-material redaction helpers",
+    "Migration/schema review showing no raw session/token/password/API key values are projected into forbidden surfaces",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "MVP has exactly one local Farm and no multi-Farm membership",
+    "Local sessions use backend-owned opaque auth material",
+    "No hosted identity, email delivery, hosted recovery, OAuth/SAML, SaaS tenancy, or billing",
+    "Raw auth material must not be written to logs, timeline, manifests, Bus, UI Feed, screenshots, exports, traces visible to agents, or agent context"
+  ],
+  "invariants": [
+    "PostgreSQL/read model is runtime authority for Accounts, FarmMembership, and sessions",
+    "Disabled Account or disabled/removed FarmMembership fails closed",
+    "Session provenance may be stored only as redacted refs or hashes for audit"
+  ],
+  "verification_targets": [
+    "test:auth.local-session-attribution",
+    "test:privacy.secret-redaction-surfaces",
+    "Missing, expired, malformed, revoked, or invalid session cannot authenticate"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "id": "TASK-014",
+  "title": "Implement loopback default and fail-closed protected LAN controls",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-017",
+  "reqs": [
+    "REQ-002",
+    "REQ-003",
+    "REQ-022",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-002",
+    "TASK-011"
+  ],
+  "touched_files": [
+    "backend/app/config/",
+    "backend/app/api/",
+    "backend/app/security/",
+    "backend/tests/security/",
+    "backend/tests/integration/"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "LAN and CORS security tests",
+      "command": "pytest backend/tests/security backend/tests/integration -k 'lan or cors or loopback'",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Run required gates and attach output under .tasks/TASK-014/: LAN and CORS security tests: pytest backend/tests/security backend/tests/integration -k 'lan or cors or loopback'; memory bank lint: node scripts/mb-lint.mjs",
+    "Confirm task verification targets are satisfied: test:privacy.local-only-loopback-lan-controls; CORS/origin misconfiguration fails closed; LAN mode does not weaken ActorContext or PlantAccessGrant authorization",
+    "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
+    "Run /verify and /red-verify before closure, record VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and include HUMAN_CHECKPOINT: done plus ROLLBACK_RECOVERY_NOTE: present as standalone evidence.",
+    "Prove loopback and LAN state-changing browser requests are write-protected beyond CORS alone: cross-site simple requests from an untrusted origin cannot mutate state, and same-origin/CSRF-equivalent protection fails closed."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-017.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Tests proving default backend binding/config is loopback/private",
+    "Tests proving LAN mode is explicitly enabled and fails closed with missing, malformed, or broad CORS/origin config",
+    "Tests proving LAN mode requires auth/session and preserves ActorContext/PlantAccessGrant authorization",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "Browser write-protection tests for loopback/LAN state-changing requests, including cross-site simple request denial and same-origin/CSRF-equivalent fail-closed behavior",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Backend binds to loopback by default",
+    "LAN mode must be explicitly enabled by local operator configuration or UI flow",
+    "LAN mode requires local authentication/session, backend authorization, token/session protection, and explicit CORS/origin allowlist",
+    "CORS/origin misconfiguration fails closed",
+    "State-changing loopback/LAN browser requests require same-origin/CSRF-equivalent write protection and cannot rely on CORS alone"
+  ],
+  "invariants": [
+    "LAN mode must not weaken local authorization",
+    "Internal traces, secrets, raw provider output, and auth material must not appear in responses"
+  ],
+  "verification_targets": [
+    "test:privacy.local-only-loopback-lan-controls",
+    "CORS/origin misconfiguration fails closed",
+    "LAN mode does not weaken ActorContext or PlantAccessGrant authorization",
+    "Cross-site simple browser requests cannot perform state-changing loopback/LAN writes"
+  ]
+}

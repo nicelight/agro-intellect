@@ -1,0 +1,96 @@
+{
+  "id": "TASK-065",
+  "title": "Classify pH/EC freshness, missing, stale, and conflict inputs for advisor behavior",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-011",
+  "reqs": [
+    "REQ-007",
+    "REQ-015",
+    "REQ-016",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-024",
+    "TASK-025",
+    "TASK-035",
+    "TASK-053",
+    "TASK-064"
+  ],
+  "touched_files": [
+    "backend/app/advisory/*",
+    "backend/app/runtime_state/*",
+    "backend/app/plant_operations/*",
+    "backend/app/context/*",
+    "backend/tests/advisory/*",
+    "backend/tests/runtime_state/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "advisor input classification tests",
+      "command": "pytest backend/tests/advisory backend/tests/runtime_state backend/tests/plant_operations backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Missing pH or EC creates unknown/missing behavior and clarify or measurement request handoff.",
+    "Stale pH/EC can support cautious historical analysis only when labeled stale and cannot support physical-action wording.",
+    "Conflicting pH/EC or observation evidence creates conflict with refs and asks for re-check or follow-up."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-011.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-065/",
+    "freshness/missing/stale/conflict test output",
+    "Safety Gate freshness-boundary evidence",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-011.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "pH/EC analysis freshness follows Safety Gate default up to 24 hours unless later spec narrows it.",
+    "pH/EC physical-action approval freshness follows Safety Gate default up to 2 hours, but FT-011 only routes and does not approve.",
+    "Fresh data is required but never sufficient by itself for physical action."
+  ],
+  "invariants": [
+    "pH/EC provenance and freshness must follow owning runtime/state/safety specs.",
+    "Stale, missing, conflicting, unauthorized, or untrusted evidence fails closed or routes to missing-data/check/measurement behavior."
+  ],
+  "verification_targets": [
+    "test:plant-state.advisor-trust-missing-data",
+    "test:safety-gate.fail-closed-approval-boundary",
+    "test:plant.authorized-daily-flow"
+  ]
+}

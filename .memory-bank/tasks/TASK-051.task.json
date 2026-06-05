@@ -1,0 +1,79 @@
+{
+  "id": "TASK-051",
+  "title": "Add agent context-filter anti-leak gates for forbidden presentation and raw sources",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-009",
+  "reqs": [
+    "REQ-014"
+  ],
+  "depends_on": [
+    "TASK-004",
+    "TASK-012",
+    "TASK-049",
+    "TASK-050"
+  ],
+  "touched_files": [
+    "backend/app/agent_harness/*",
+    "backend/app/publication/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/publication/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "context anti-leak tests",
+      "command": "pytest backend/tests/agent_harness backend/tests/publication backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "UI Feed, spoiler notes, admin UI text, raw chat, raw provider output, raw Agno events, and unapproved CompanionProposal content cannot enter agent context.",
+    "Untrusted user/uploaded/retrieved content inside allowed sources remains trust-labeled data, not instruction."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-009.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Anti-leak tests for each forbidden context source.",
+    "Prompt-injection-like fixture proving presentation/raw data cannot choose tools or override policy.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/requirements.md",
+    ".tasks/SPEC-IMPROVE-REVIEW/final-report.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Agent working context may include only validated Bus events, runtime records, approved governance summaries, allowed memory refs, and source refs filtered by the shared context builder.",
+    "Forbidden UI/raw/provider/admin/governance sources remain presentation or data artifacts only."
+  ],
+  "invariants": [
+    "UI Feed and `ui_spoiler_note` stay presentation-only and unavailable as agent working context.",
+    "Untrusted content is data and cannot become authoritative instruction."
+  ],
+  "verification_targets": [
+    "test:agent-output.bus-message-ui-isolation",
+    "test:companion.approved-summary-context-filter",
+    "Raw UI Feed/unapproved proposal leakage eval."
+  ]
+}

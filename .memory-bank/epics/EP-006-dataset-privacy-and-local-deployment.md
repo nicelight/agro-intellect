@@ -1,9 +1,10 @@
 ---
 description: Epic EP-006 for dataset governance, trainability, local storage prompts, privacy, local deployment, and secret redaction.
-status: draft
+status: active
+owner: product
 lifecycle: planned
 epic_id: EP-006
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md

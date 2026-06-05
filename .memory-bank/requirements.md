@@ -1,7 +1,8 @@
 ---
 description: Requirements (REQ IDs) and traceability matrix for Agro Intellect MVP v2.
-status: draft
-last_updated: 2026-06-04
+status: active
+owner: product
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/analysis/product-brief.md

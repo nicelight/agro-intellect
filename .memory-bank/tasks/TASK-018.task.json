@@ -1,0 +1,78 @@
+{
+  "id": "TASK-018",
+  "title": "Implement AdminAuditRecord persistence and redacted audit writer",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-006",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-003",
+    "TASK-011"
+  ],
+  "touched_files": [
+    "backend/app/admin/*",
+    "backend/app/db/migrations/*",
+    "backend/tests/admin/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "admin audit tests",
+      "command": "pytest backend/tests/admin",
+      "required": true
+    },
+    {
+      "name": "memory bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Every successful admin mutation can create a durable AdminAuditRecord",
+    "Failed mutations do not create misleading successful audit records",
+    "Audit payloads redact secrets/auth material and exclude UI markdown/raw chat"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-018.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-018/TASK-018-S-01-final-report-code-01.md",
+    "Admin audit persistence and redaction test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "PostgreSQL/read model is mutable authority for AdminAuditRecord",
+    "Before/after summaries contain only bounded non-secret structured fields",
+    "Timeline refs may support export/audit but cannot replace durable admin audit"
+  ],
+  "invariants": [
+    "Every state-changing admin transition is actor-attributed",
+    "Raw credentials, tokens, .env values, hidden reasoning, UI markdown, and raw chat are excluded",
+    "Archived Plants retain related admin audit records"
+  ],
+  "verification_targets": [
+    "test:admin.audit-and-access-management",
+    "test:privacy.secret-redaction-surfaces",
+    "Audit records are retained after Plant archive and visible only to authorized Boss views"
+  ]
+}

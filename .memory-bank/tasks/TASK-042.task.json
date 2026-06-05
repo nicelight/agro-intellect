@@ -1,0 +1,77 @@
+{
+  "id": "TASK-042",
+  "title": "Implement AgentHarnessRun lifecycle, provider-neutral adapter boundary, and budgets",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-007",
+  "reqs": [
+    "REQ-010",
+    "REQ-011"
+  ],
+  "depends_on": [
+    "TASK-041",
+    "TASK-002",
+    "TASK-004",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/agent_harness/*",
+    "backend/app/access/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "agent harness lifecycle tests",
+      "command": "pytest backend/tests/agent_harness backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "AgentHarnessRun resolves ActorContext and Plant/Farm scope before model calls.",
+    "Budget exhaustion stops with clear status and next safe action."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Lifecycle tests for context_built, model_called, proposal_received, finalized, stopped, and failed states.",
+    "Provider unavailable and missing-provider-config tests proving no fake successful output.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "The model never executes tools directly.",
+    "Missing provider configuration fails clearly and cannot silently fall back to fake product-agent output."
+  ],
+  "invariants": [
+    "Harness owns model calls, context updates, traces, evals, budgets, and stop conditions.",
+    "Runtime/demo product agents cannot use fake, mock, hardcoded, or stubbed outputs as MVP acceptance."
+  ],
+  "verification_targets": [
+    "test:harness.loop-permission-observation-trace",
+    "test:harness.step-token-cost-budget",
+    "Provider failure and no-fake-runtime evals."
+  ]
+}

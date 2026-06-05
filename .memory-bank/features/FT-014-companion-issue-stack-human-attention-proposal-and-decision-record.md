@@ -1,14 +1,18 @@
 ---
 description: Feature FT-014 for Companion IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord.
-status: draft
+status: active
+owner: product
 lifecycle: planned
-spec_design_status: needs_spec_improve
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md
 epic: EP-005
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/analysis/companion-issue-stack-decision-governance.md
+  - .memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md
 ---
 # FT-014 Companion IssueStack, HumanAttention, Proposal, And DecisionRecord
 
@@ -48,6 +52,6 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Global `/spec-design` is complete. Before `/prd-to-tasks FT-014`, run
-`/spec-improve FT-014` using the completed backbone docs: [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/states/core-lifecycles.md](../states/core-lifecycles.md), [.memory-bank/contracts/index.md](../contracts/index.md), and [.memory-bank/testing/index.md](../testing/index.md). `/spec-improve` must decide state machine, supersede policy,
-approval roles, DecisionRecord workflow effects, audit refs, and UI controls.
+Global `/spec-design` and feature-level `/spec-improve FT-014` are complete. Use
+[.memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md](../tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md)
+as the feature-local design hub before `/prd-to-tasks FT-014`.

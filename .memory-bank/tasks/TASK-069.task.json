@@ -1,0 +1,119 @@
+{
+  "id": "TASK-069",
+  "title": "Add Plant State and Advisor integration, provider failure, and safety regression suite",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-011",
+  "reqs": [
+    "REQ-011",
+    "REQ-013",
+    "REQ-014",
+    "REQ-015",
+    "REQ-016",
+    "REQ-017",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-016",
+    "TASK-063",
+    "TASK-064",
+    "TASK-065",
+    "TASK-066",
+    "TASK-067",
+    "TASK-068"
+  ],
+  "touched_files": [
+    "backend/tests/advisory/*",
+    "backend/tests/runtime_state/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/safety/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "FT-011 regression suite",
+      "command": "pytest backend/tests/advisory backend/tests/runtime_state backend/tests/agent_harness backend/tests/safety backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "harness evals",
+      "command": "pytest backend/tests/advisory backend/tests/runtime_state backend/tests/agent_harness backend/tests/safety backend/tests/integration backend/tests/security -k 'eval or provider_failure or safety or missing or stale or conflict'",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Regression suite covers no-promotion, missing pH/EC, stale pH/EC, conflicting evidence, ActorContext/PlantAccessGrant scoping, Consultant denial, Safety Gate route/block, governance substitution denial, provider failure, and first-demo UI/API visibility.",
+    "Harness evals include prompt injection, model suggests immediate action, provider failure, no fake advisor success, and missing/stale/conflict behavior.",
+    "Evidence is sufficient for /verify and /red-verify to assess semantic correctness.",
+    "Run the frontend/UI smoke or e2e gate once the frontend test runner exists; until then, record API/UI handoff evidence and the missing-runner reason in /verify."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-011.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-069/",
+    "full FT-011 regression and eval output",
+    "coverage notes for all FT-011 acceptance criteria",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present",
+    "UI/e2e evidence when a frontend test runner exists; if no frontend runner exists yet, /verify must record the no-run reason and API/UI handoff evidence under the task report."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-011.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Tests must prove cautious behavior under missing/stale/conflicting data and provider failure.",
+    "Safety routing tests must not implement FT-012/FT-013 approval/task semantics in FT-011.",
+    "Runtime/demo advisor acceptance cannot rely on fake, mock, hardcoded, or stubbed output."
+  ],
+  "invariants": [
+    "No confirmed Plant state from agent-only evidence.",
+    "No immediate physical-action wording before Safety Gate clearance and authorized approval.",
+    "No automated actuation command exists in MVP."
+  ],
+  "verification_targets": [
+    "test:plant-state.advisor-trust-missing-data",
+    "test:safety-gate.fail-closed-approval-boundary",
+    "test:harness.memory-scope-permission-non-authority",
+    "test:agents.real-model-runtime-and-vision",
+    "test:agent-output.bus-message-ui-isolation",
+    "test:privacy.secret-redaction-surfaces",
+    "UI/e2e smoke evidence or explicit no-runner handoff note"
+  ]
+}

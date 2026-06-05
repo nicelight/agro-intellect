@@ -1,0 +1,92 @@
+{
+  "id": "TASK-090",
+  "title": "Implement governance summary MessageEnvelope, Bus, and UI projection handoff",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-019",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-049",
+    "TASK-050",
+    "TASK-088"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/*",
+    "backend/app/agent_context/*",
+    "backend/app/agent_harness/*",
+    "backend/app/publication/*",
+    "backend/app/privacy/*",
+    "backend/tests/companion/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "governance_summary MessageEnvelope and Bus payload use approved compact fields only.",
+    "UI Feed may display human status but agents later retrieve summary record through context builder.",
+    "Bus/UI publication cannot create tasks, approvals, action_task, Plant state mutation, or trainability changes."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-015.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "MessageEnvelope/Bus contract tests",
+    "UI Feed isolation tests",
+    "no side-effect publication tests",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-approved-governance-summary-and-agent-context-isolation.md",
+    ".memory-bank/tech-specs/FT-015-approved-governance-summary-and-agent-context-isolation.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "Bus payloads use summary refs, not UI projection text.",
+    "safety_gate_authority=not_granted is mandatory in agent-consumable payloads."
+  ],
+  "invariants": [
+    "UI Feed remains presentation-only and unavailable as agent working context."
+  ],
+  "verification_targets": [
+    "test:agent-output.bus-message-ui-isolation",
+    "test:companion.approved-summary-context-filter",
+    "governance summary publication no side effects"
+  ]
+}

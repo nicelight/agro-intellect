@@ -105,6 +105,9 @@ allowed to know.
 - LAN mode may exist only when explicitly enabled and protected by auth/session,
   authorization, token/session protection, and CORS/origin allowlist.
 - CORS/origin misconfiguration must fail closed.
+- State-changing loopback/LAN browser requests must require same-origin,
+  CSRF-equivalent, or stronger write protection; do not rely on CORS alone for browser
+  write protection.
 - LAN mode must not weaken local authorization.
 
 ## Compatibility

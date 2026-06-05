@@ -1,0 +1,75 @@
+{
+  "id": "TASK-039",
+  "title": "Build Plant history/card UI and archived history flow",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-006",
+  "reqs": [
+    "REQ-007",
+    "REQ-009"
+  ],
+  "depends_on": [
+    "TASK-028",
+    "TASK-033",
+    "TASK-036",
+    "TASK-038"
+  ],
+  "touched_files": [
+    "frontend/src/*",
+    "frontend/tests/*",
+    "backend/app/api/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "frontend and integration smoke",
+      "command": "pytest backend/tests/integration && npm test",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Authorized Plant card/history UI displays runtime projections and refs without using UI markdown as Plant facts.",
+    "Archived history flow remains authorized and separate from normal operations."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-006.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "UI/e2e smoke for authorized Plant card/history and archived history view.",
+    "Negative UI/API evidence for unauthorized history and archived normal-operation access.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Frontend visibility cannot replace backend authorization.",
+    "UI markdown and UI Feed cards cannot become Plant facts or agent working context."
+  ],
+  "invariants": [
+    "Plant card/history is actor/Farm/Plant scoped.",
+    "Archived Plants remain excluded from normal operations while retained history is available to authorized actors."
+  ],
+  "verification_targets": [
+    "test:plant.authorized-daily-flow",
+    "Authorized Plant history UI/e2e smoke.",
+    "Unauthorized and archived-normal-operation UI denial."
+  ]
+}

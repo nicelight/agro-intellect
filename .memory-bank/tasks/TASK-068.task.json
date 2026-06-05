@@ -1,0 +1,100 @@
+{
+  "id": "TASK-068",
+  "title": "Expose first-demo Plant State trust and Advisor missing-data behavior in UI/API",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-011",
+  "reqs": [
+    "REQ-007",
+    "REQ-014",
+    "REQ-015",
+    "REQ-016"
+  ],
+  "depends_on": [
+    "TASK-039",
+    "TASK-050",
+    "TASK-066",
+    "TASK-067"
+  ],
+  "touched_files": [
+    "backend/app/api/*",
+    "backend/app/runtime_state/*",
+    "backend/app/advisory/*",
+    "backend/app/publication/*",
+    "frontend/src/*",
+    "backend/tests/advisory/*",
+    "backend/tests/integration/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "advisor UI/API tests",
+      "command": "pytest backend/tests/advisory backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Plant card/history or advisor surface exposes confirmed/probable/unknown/conflict labels or equivalent bounded projection.",
+    "Missing/stale pH/EC produces a visible clarify or measurement prompt.",
+    "Action-implying output appears only as Safety Gate route/block/pending path, not immediate instruction.",
+    "Run the frontend/UI smoke or e2e gate once the frontend test runner exists; until then, record API/UI handoff evidence and the missing-runner reason in /verify."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-011.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-068/",
+    "UI/API smoke or e2e evidence",
+    "UI Feed isolation evidence",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present",
+    "UI/e2e evidence when a frontend test runner exists; if no frontend runner exists yet, /verify must record the no-run reason and API/UI handoff evidence under the task report."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-011.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "UI Feed projection is presentation-only and never agent working context.",
+    "User-visible wording before Safety Gate clearance and approval must not imply immediate physical action.",
+    "API responses expose bounded refs and redacted summaries only."
+  ],
+  "invariants": [
+    "Frontend visibility is not authorization.",
+    "UI Feed content cannot become future agent context.",
+    "Secrets/auth material cannot enter screenshots, UI Feed, Bus, traces, exports, or context."
+  ],
+  "verification_targets": [
+    "test:plant-state.advisor-trust-missing-data",
+    "test:agent-output.bus-message-ui-isolation",
+    "test:safety-gate.fail-closed-approval-boundary",
+    "UI/e2e smoke evidence or explicit no-runner handoff note"
+  ]
+}

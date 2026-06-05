@@ -1,0 +1,100 @@
+{
+  "id": "TASK-096",
+  "title": "Implement Dataset Governance Agent proposal boundary and transition observations",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021",
+    "REQ-024"
+  ],
+  "depends_on": [
+    "TASK-043",
+    "TASK-044",
+    "TASK-053",
+    "TASK-095"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/*",
+    "backend/app/storage/*",
+    "backend/app/agent_harness/*",
+    "backend/app/privacy/*",
+    "backend/app/photo_intake/*",
+    "backend/app/tasks/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/dataset/*",
+    "backend/tests/storage/*",
+    "backend/tests/privacy/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Dataset Governance Agent may inspect authorized candidates and propose transitions only.",
+    "Backend policy commits transitions and returns structured observations.",
+    "Agent cannot set can_train_on directly or use unauthorized/raw/UI/governance content as dataset facts."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-016.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "agent proposal boundary tests",
+    "permission denial tests",
+    "structured observation tests",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/tech-specs/FT-016-dataset-governance-and-local-storage-prompt.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "Transition commits are backend policy actions with strict schemas and trace refs.",
+    "Every proposal receives one structured observation."
+  ],
+  "invariants": [
+    "Model proposes; backend validates, authorizes, records, and observes."
+  ],
+  "verification_targets": [
+    "test:harness.loop-permission-observation-trace",
+    "test:dataset.non-trainable-by-default",
+    "dataset governance proposal not commit"
+  ]
+}

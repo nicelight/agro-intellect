@@ -1,0 +1,85 @@
+{
+  "id": "TASK-034",
+  "title": "Add photo failure, orphan recovery, duplicate, OpenAPI, and security coverage",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-008",
+    "REQ-009",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-030",
+    "TASK-031",
+    "TASK-032",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/photo_artifacts/*",
+    "backend/tests/photo_artifacts/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "photo regression suite",
+      "command": "pytest backend/tests/photo_artifacts backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "memory bank doctor strict",
+      "command": "node scripts/mb-doctor.mjs --strict",
+      "required": true
+    }
+  ],
+  "verify": [
+    "File write/checksum failure leaves no accepted authoritative catalog state",
+    "Duplicate bytes do not overwrite existing photo files or refs",
+    "Generated OpenAPI validation passes after backend schemas exist"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-034.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-034/TASK-034-S-01-final-report-code-01.md",
+    "Photo failure-ordering, duplicate, orphan recovery, OpenAPI, and security test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Crash/orphaned files are non-authoritative orphan_recovery or safely cleaned up",
+    "Duplicate accepted bytes preserve checksum and avoid overwriting existing files",
+    "Runtime/demo Vision Observation later receives only authorized accepted photo refs and actual local photo data"
+  ],
+  "invariants": [
+    "Photo files, manifests, and timeline refs cannot mutate runtime Plant state",
+    "Fake/mock/hardcoded product-agent runtime paths do not satisfy MVP runtime acceptance",
+    "If redaction confidence is uncertain for a high-risk surface, reject or truncate rather than publish raw content"
+  ],
+  "verification_targets": [
+    "test:photo.file-catalog-sha256-manifest",
+    "test:runtime.authority-vs-timeline",
+    "test:privacy.secret-redaction-surfaces",
+    "Generated OpenAPI validation after implementation schemas exist"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "TASK-023",
+  "title": "Create CheckIn persistence, lifecycle, and command schema foundation",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-004",
+  "reqs": [
+    "REQ-007"
+  ],
+  "depends_on": [
+    "TASK-002",
+    "TASK-006",
+    "TASK-007"
+  ],
+  "touched_files": [
+    "backend/app/plant_operations/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/plant_operations/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "plant operations tests",
+      "command": "pytest backend/tests/plant_operations",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "CheckIn supports started, completed, and aborted states",
+    "CheckIn records are actor/Farm/Plant scoped",
+    "Completing requires evidence refs or explicit no-data/empty-check reason"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-004.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-023.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-023/TASK-023-S-01-final-report-code-01.md",
+    "CheckIn lifecycle unit/integration test output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-and-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "PostgreSQL/read model owns CheckIn and current operational refs",
+    "Archived Plants cannot start normal CheckIns",
+    "CheckIn refs are retained for authorized history"
+  ],
+  "invariants": [
+    "Every persisted Farm/Plant record includes scope for Farm, Plant, ActorContext, and PlantAccessGrant filtering",
+    "Timeline refs cannot replace runtime authority",
+    "Authorization checks happen before mutation"
+  ],
+  "verification_targets": [
+    "test:plant.authorized-daily-flow",
+    "CheckIn, observation, measurement, and refs are actor/Farm/Plant scoped",
+    "Archived Plants cannot start normal CheckIns"
+  ]
+}

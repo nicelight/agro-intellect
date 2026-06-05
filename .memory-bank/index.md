@@ -15,8 +15,21 @@ epics, features, SDD specs, contracts, states, domains, runbooks, and testing do
 Active agents must not use archived MVP v1 specs as current source of truth.
 Archived docs are historical reference only. The active MVP v2 PRD has now been
 decomposed into MVP v2 L1-L3 product, requirements, epics, and features. The global SDD
-backbone has completed `/spec-design`; feature-level `/spec-improve FT-<NNN>` is still
-required before task decomposition.
+backbone has completed `/spec-design`; Wave 1 feature-level `/spec-improve` is complete
+for FT-001, FT-002, and FT-017; Wave 2 is complete for FT-003, FT-004, and FT-005; and
+Wave 3 is complete for FT-006, FT-007, and FT-009. Wave 4 is complete for FT-008,
+FT-010, and FT-011; Wave 5 is complete for FT-012 and FT-013; and Wave 6 is complete
+for FT-014, FT-015, and FT-016. FT-017 was completed in Wave 1 and remains the
+authoritative FT-017 `/spec-improve` pass. All active MVP v2 features now have
+feature-level `/spec-improve` complete before task decomposition. Wave 1
+`/prd-to-tasks` is complete for FT-001, FT-002, and FT-017 with TASK-001..TASK-016
+indexed in `.memory-bank/tasks/index.json`. Wave 2 `/prd-to-tasks` is complete for
+FT-003, FT-004, and FT-005 with TASK-017..TASK-034 indexed. Wave 3 `/prd-to-tasks` is
+complete for FT-006, FT-007, and FT-009 with TASK-035..TASK-052 indexed. Wave 4
+`/prd-to-tasks` is complete for FT-008, FT-010, and FT-011 with TASK-053..TASK-069
+indexed. Wave 5 `/prd-to-tasks` is complete for FT-012 and FT-013 with
+TASK-070..TASK-081 indexed. Wave 6 `/prd-to-tasks` is complete for FT-014,
+FT-015, and FT-016 with TASK-082..TASK-099 indexed.
 
 ## Active Governance And Routing
 
@@ -45,6 +58,7 @@ required before task decomposition.
 - [.memory-bank/states/core-lifecycles.md](states/core-lifecycles.md): global lifecycle state guardrails for shared entities.
 - [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md): active lifecycle hints for decomposition.
 - [.memory-bank/testing/index.md](testing/index.md): testing and verification router for the migration stage.
+- [.memory-bank/tech-specs/index.md](tech-specs/index.md): active feature-local SDD tech-spec router.
 - [.memory-bank/changelog.md](changelog.md): Memory Bank changelog.
 
 ## Active Analysis Inputs
@@ -68,13 +82,17 @@ required before task decomposition.
 Next route:
 
 ```text
-/spec-improve FT-<NNN>
--> /prd-to-tasks FT-<NNN>
+/execute TASK-001|TASK-011|TASK-013
+or /autopilot after strict readiness review
 ```
 
 Do not run `/prd-to-tasks` from archived MVP v1 features.
 Do not create TASK records from the PRD output until the relevant feature-level
-`/spec-improve` gates are complete.
+`/spec-improve` gates are complete. Wave 1 through Wave 6 task records now exist for
+all active MVP v2 features; avoid duplicate TASK IDs and use the indexed JSON task
+registry. Orchestration Wave 1..6 labels are batch history only; each task record's
+`wave` field uses the `/prd-to-tasks` workflow slice `W1` foundation, `W2` core logic,
+and `W3` integration/polish.
 
 ## Operational Roots
 

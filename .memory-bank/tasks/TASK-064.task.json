@@ -1,0 +1,98 @@
+{
+  "id": "TASK-064",
+  "title": "Implement Plant State trust mapping and no-promotion rules",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-011",
+  "reqs": [
+    "REQ-009",
+    "REQ-012",
+    "REQ-015",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-035",
+    "TASK-036",
+    "TASK-053",
+    "TASK-061"
+  ],
+  "touched_files": [
+    "backend/app/runtime_state/*",
+    "backend/app/agent_harness/*",
+    "backend/app/context/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/runtime_state/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "plant state trust tests",
+      "command": "pytest backend/tests/runtime_state backend/tests/agent_harness backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "mb lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "mb doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "PlantStateValue supports confirmed_updated, confirmed_unchanged, assumed_unchanged, probable, unknown, and conflict first-demo statuses.",
+    "Agent hypotheses, AgentMemoryRecord, raw provider output, photo manifests, UI Feed, raw chat, and timeline replay cannot create confirmed Plant state.",
+    "Confirmed state requires backend validation and human/review/follow-up evidence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-011.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "T3 full protocol evidence under .tasks/TASK-064/",
+    "trust mapping and no-promotion test output",
+    "Plant state authority regression evidence",
+    "VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, HUMAN_CHECKPOINT: done, ROLLBACK_RECOVERY_NOTE: present",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-011.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/tech-specs/FT-006-runtime-plant-state-history-and-timeline-audit.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-010-real-model-backed-product-agent-profiles.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Raw model output, memory, photo manifests, UI text, and timeline replay are not Plant state authority.",
+    "Valid Vision Observation may support probable, unknown, or conflict only.",
+    "Conflict resolution requires human review, follow-up evidence, or later owning rules."
+  ],
+  "invariants": [
+    "NEVER promote agent-labeled hypotheses to confirmed plant state without human review or follow-up evidence.",
+    "PostgreSQL/read model remains mutable runtime authority.",
+    "AgentMemoryRecord is non-authoritative."
+  ],
+  "verification_targets": [
+    "test:plant-state.advisor-trust-missing-data",
+    "test:harness.memory-scope-permission-non-authority",
+    "test:runtime.authority-vs-timeline"
+  ]
+}

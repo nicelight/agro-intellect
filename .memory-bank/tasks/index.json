@@ -1,4 +1,401 @@
 {
   "version": 1,
-  "tasks": []
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "file": "TASK-001.task.json"
+    },
+    {
+      "id": "TASK-002",
+      "file": "TASK-002.task.json"
+    },
+    {
+      "id": "TASK-003",
+      "file": "TASK-003.task.json"
+    },
+    {
+      "id": "TASK-004",
+      "file": "TASK-004.task.json"
+    },
+    {
+      "id": "TASK-005",
+      "file": "TASK-005.task.json"
+    },
+    {
+      "id": "TASK-006",
+      "file": "TASK-006.task.json"
+    },
+    {
+      "id": "TASK-007",
+      "file": "TASK-007.task.json"
+    },
+    {
+      "id": "TASK-008",
+      "file": "TASK-008.task.json"
+    },
+    {
+      "id": "TASK-009",
+      "file": "TASK-009.task.json"
+    },
+    {
+      "id": "TASK-010",
+      "file": "TASK-010.task.json"
+    },
+    {
+      "id": "TASK-011",
+      "file": "TASK-011.task.json"
+    },
+    {
+      "id": "TASK-012",
+      "file": "TASK-012.task.json"
+    },
+    {
+      "id": "TASK-013",
+      "file": "TASK-013.task.json"
+    },
+    {
+      "id": "TASK-014",
+      "file": "TASK-014.task.json"
+    },
+    {
+      "id": "TASK-015",
+      "file": "TASK-015.task.json"
+    },
+    {
+      "id": "TASK-016",
+      "file": "TASK-016.task.json"
+    },
+    {
+      "id": "TASK-017",
+      "file": "TASK-017.task.json"
+    },
+    {
+      "id": "TASK-018",
+      "file": "TASK-018.task.json"
+    },
+    {
+      "id": "TASK-019",
+      "file": "TASK-019.task.json"
+    },
+    {
+      "id": "TASK-020",
+      "file": "TASK-020.task.json"
+    },
+    {
+      "id": "TASK-021",
+      "file": "TASK-021.task.json"
+    },
+    {
+      "id": "TASK-022",
+      "file": "TASK-022.task.json"
+    },
+    {
+      "id": "TASK-023",
+      "file": "TASK-023.task.json"
+    },
+    {
+      "id": "TASK-024",
+      "file": "TASK-024.task.json"
+    },
+    {
+      "id": "TASK-025",
+      "file": "TASK-025.task.json"
+    },
+    {
+      "id": "TASK-026",
+      "file": "TASK-026.task.json"
+    },
+    {
+      "id": "TASK-027",
+      "file": "TASK-027.task.json"
+    },
+    {
+      "id": "TASK-028",
+      "file": "TASK-028.task.json"
+    },
+    {
+      "id": "TASK-029",
+      "file": "TASK-029.task.json"
+    },
+    {
+      "id": "TASK-030",
+      "file": "TASK-030.task.json"
+    },
+    {
+      "id": "TASK-031",
+      "file": "TASK-031.task.json"
+    },
+    {
+      "id": "TASK-032",
+      "file": "TASK-032.task.json"
+    },
+    {
+      "id": "TASK-033",
+      "file": "TASK-033.task.json"
+    },
+    {
+      "id": "TASK-034",
+      "file": "TASK-034.task.json"
+    },
+    {
+      "id": "TASK-035",
+      "file": "TASK-035.task.json"
+    },
+    {
+      "id": "TASK-036",
+      "file": "TASK-036.task.json"
+    },
+    {
+      "id": "TASK-037",
+      "file": "TASK-037.task.json"
+    },
+    {
+      "id": "TASK-038",
+      "file": "TASK-038.task.json"
+    },
+    {
+      "id": "TASK-039",
+      "file": "TASK-039.task.json"
+    },
+    {
+      "id": "TASK-040",
+      "file": "TASK-040.task.json"
+    },
+    {
+      "id": "TASK-041",
+      "file": "TASK-041.task.json"
+    },
+    {
+      "id": "TASK-042",
+      "file": "TASK-042.task.json"
+    },
+    {
+      "id": "TASK-043",
+      "file": "TASK-043.task.json"
+    },
+    {
+      "id": "TASK-044",
+      "file": "TASK-044.task.json"
+    },
+    {
+      "id": "TASK-045",
+      "file": "TASK-045.task.json"
+    },
+    {
+      "id": "TASK-046",
+      "file": "TASK-046.task.json"
+    },
+    {
+      "id": "TASK-047",
+      "file": "TASK-047.task.json"
+    },
+    {
+      "id": "TASK-048",
+      "file": "TASK-048.task.json"
+    },
+    {
+      "id": "TASK-049",
+      "file": "TASK-049.task.json"
+    },
+    {
+      "id": "TASK-050",
+      "file": "TASK-050.task.json"
+    },
+    {
+      "id": "TASK-051",
+      "file": "TASK-051.task.json"
+    },
+    {
+      "id": "TASK-052",
+      "file": "TASK-052.task.json"
+    },
+    {
+      "id": "TASK-053",
+      "file": "TASK-053.task.json"
+    },
+    {
+      "id": "TASK-054",
+      "file": "TASK-054.task.json"
+    },
+    {
+      "id": "TASK-055",
+      "file": "TASK-055.task.json"
+    },
+    {
+      "id": "TASK-056",
+      "file": "TASK-056.task.json"
+    },
+    {
+      "id": "TASK-057",
+      "file": "TASK-057.task.json"
+    },
+    {
+      "id": "TASK-058",
+      "file": "TASK-058.task.json"
+    },
+    {
+      "id": "TASK-059",
+      "file": "TASK-059.task.json"
+    },
+    {
+      "id": "TASK-060",
+      "file": "TASK-060.task.json"
+    },
+    {
+      "id": "TASK-061",
+      "file": "TASK-061.task.json"
+    },
+    {
+      "id": "TASK-062",
+      "file": "TASK-062.task.json"
+    },
+    {
+      "id": "TASK-063",
+      "file": "TASK-063.task.json"
+    },
+    {
+      "id": "TASK-064",
+      "file": "TASK-064.task.json"
+    },
+    {
+      "id": "TASK-065",
+      "file": "TASK-065.task.json"
+    },
+    {
+      "id": "TASK-066",
+      "file": "TASK-066.task.json"
+    },
+    {
+      "id": "TASK-067",
+      "file": "TASK-067.task.json"
+    },
+    {
+      "id": "TASK-068",
+      "file": "TASK-068.task.json"
+    },
+    {
+      "id": "TASK-069",
+      "file": "TASK-069.task.json"
+    },
+    {
+      "id": "TASK-070",
+      "file": "TASK-070.task.json"
+    },
+    {
+      "id": "TASK-071",
+      "file": "TASK-071.task.json"
+    },
+    {
+      "id": "TASK-072",
+      "file": "TASK-072.task.json"
+    },
+    {
+      "id": "TASK-073",
+      "file": "TASK-073.task.json"
+    },
+    {
+      "id": "TASK-074",
+      "file": "TASK-074.task.json"
+    },
+    {
+      "id": "TASK-075",
+      "file": "TASK-075.task.json"
+    },
+    {
+      "id": "TASK-076",
+      "file": "TASK-076.task.json"
+    },
+    {
+      "id": "TASK-077",
+      "file": "TASK-077.task.json"
+    },
+    {
+      "id": "TASK-078",
+      "file": "TASK-078.task.json"
+    },
+    {
+      "id": "TASK-079",
+      "file": "TASK-079.task.json"
+    },
+    {
+      "id": "TASK-080",
+      "file": "TASK-080.task.json"
+    },
+    {
+      "id": "TASK-081",
+      "file": "TASK-081.task.json"
+    },
+    {
+      "id": "TASK-082",
+      "file": "TASK-082.task.json"
+    },
+    {
+      "id": "TASK-083",
+      "file": "TASK-083.task.json"
+    },
+    {
+      "id": "TASK-084",
+      "file": "TASK-084.task.json"
+    },
+    {
+      "id": "TASK-085",
+      "file": "TASK-085.task.json"
+    },
+    {
+      "id": "TASK-086",
+      "file": "TASK-086.task.json"
+    },
+    {
+      "id": "TASK-087",
+      "file": "TASK-087.task.json"
+    },
+    {
+      "id": "TASK-088",
+      "file": "TASK-088.task.json"
+    },
+    {
+      "id": "TASK-089",
+      "file": "TASK-089.task.json"
+    },
+    {
+      "id": "TASK-090",
+      "file": "TASK-090.task.json"
+    },
+    {
+      "id": "TASK-091",
+      "file": "TASK-091.task.json"
+    },
+    {
+      "id": "TASK-092",
+      "file": "TASK-092.task.json"
+    },
+    {
+      "id": "TASK-093",
+      "file": "TASK-093.task.json"
+    },
+    {
+      "id": "TASK-094",
+      "file": "TASK-094.task.json"
+    },
+    {
+      "id": "TASK-095",
+      "file": "TASK-095.task.json"
+    },
+    {
+      "id": "TASK-096",
+      "file": "TASK-096.task.json"
+    },
+    {
+      "id": "TASK-097",
+      "file": "TASK-097.task.json"
+    },
+    {
+      "id": "TASK-098",
+      "file": "TASK-098.task.json"
+    },
+    {
+      "id": "TASK-099",
+      "file": "TASK-099.task.json"
+    }
+  ]
 }

@@ -1,0 +1,109 @@
+{
+  "id": "TASK-081",
+  "title": "Add task approval follow-up regression eval UI and no-actuation suite",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-007",
+    "REQ-016",
+    "REQ-017"
+  ],
+  "depends_on": [
+    "TASK-016",
+    "TASK-069",
+    "TASK-075",
+    "TASK-076",
+    "TASK-077",
+    "TASK-078",
+    "TASK-079",
+    "TASK-080"
+  ],
+  "touched_files": [
+    "backend/tests/tasks/*",
+    "backend/tests/approvals/*",
+    "backend/tests/outcomes/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "task approval follow-up regression suite",
+      "command": "pytest backend/tests/tasks backend/tests/approvals backend/tests/outcomes backend/tests/agent_harness backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "frontend smoke when UI exists",
+      "command": "npm test",
+      "required": false
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "FT-013 regression suite covers all task, approval, action_task, outcome, publication, and no-actuation verification targets.",
+    "Harness evals cover unknown tool, invalid args, prompt injection, stale approval, mismatched proposal, governance substitution, and false success claims.",
+    "UI/e2e smoke covers pending approval, rejected approval no action_task, approved human-performed action_task, and follow-up outcome capture when UI exists.",
+    "No automated actuation command, tool, external side effect, or device execution path exists."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-013.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "complete task/approval/outcome regression output",
+    "harness eval fixture evidence",
+    "UI/e2e smoke evidence when UI exists",
+    "no automated actuation search/test evidence",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/tech-specs/FT-013-tasks-approvals-and-follow-up-outcomes.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Test-only mocks may be used in automated tests but cannot satisfy runtime/demo acceptance where real model-backed behavior is required.",
+    "Approval-sensitive commits require backend policy checks and approval records.",
+    "No task or approval triggers automated device execution in MVP."
+  ],
+  "invariants": [
+    "T3 closure requires verify PASS, red-verify semantic-pass, human checkpoint, and rollback/recovery note.",
+    "Approved physical actions create only human-performed action_task records.",
+    "Follow-up outcomes preserve evidence and audit trail."
+  ],
+  "verification_targets": [
+    "test:tasks.approval-action-follow-up-no-actuation",
+    "test:safety-gate.fail-closed-approval-boundary",
+    "test:plant.authorized-daily-flow",
+    "rejected approval creates no action_task",
+    "follow-up outcome evidence and no_data semantics",
+    "no automated actuation path"
+  ]
+}

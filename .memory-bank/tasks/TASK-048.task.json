@@ -1,0 +1,72 @@
+{
+  "id": "TASK-048",
+  "title": "Persist speak/silent/clarify/escalate decisions and trace evidence",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-009",
+  "reqs": [
+    "REQ-014"
+  ],
+  "depends_on": [
+    "TASK-045",
+    "TASK-047"
+  ],
+  "touched_files": [
+    "backend/app/publication/*",
+    "backend/app/agent_harness/*",
+    "backend/tests/publication/*",
+    "backend/tests/agent_harness/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "runtime decision tests",
+      "command": "pytest backend/tests/publication backend/tests/agent_harness",
+      "required": true
+    },
+    {
+      "name": "Memory Bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "`silent` creates no MessageEnvelope and no Bus event but records trace/eval evidence.",
+    "`speak`, `clarify`, and `escalate` create only valid, redacted MessageEnvelope records."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-009.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Tests for speak/silent/clarify/escalate persistence paths.",
+    "Trace evidence showing silent provider failure cannot be hidden as success.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "`silent` cannot be used to hide provider failure as successful behavior.",
+    "All decisions preserve trace refs and redaction status."
+  ],
+  "invariants": [
+    "Silent decision creates trace/eval evidence but no Bus publication.",
+    "Final output is grounded in structured observations and allowed context."
+  ],
+  "verification_targets": [
+    "Silent trace/no MessageEnvelope/no Bus behavior.",
+    "Clarify and escalate safe output behavior."
+  ]
+}

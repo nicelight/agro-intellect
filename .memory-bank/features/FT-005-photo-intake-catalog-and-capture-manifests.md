@@ -1,14 +1,18 @@
 ---
 description: Feature FT-005 for photo intake, local files, catalog metadata, sha256, capture manifests, and timeline refs.
-status: draft
+status: active
+owner: product
 lifecycle: planned
-spec_design_status: needs_spec_improve
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md
 epic: EP-002
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/contracts/boundary-map.md
+  - .memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md
 ---
 # FT-005 Photo Intake, Catalog, And Capture Manifests
 
@@ -47,6 +51,6 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Global `/spec-design` is complete. Before `/prd-to-tasks FT-005`, run
-`/spec-improve FT-005` using the completed backbone docs: [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/states/core-lifecycles.md](../states/core-lifecycles.md), [.memory-bank/contracts/index.md](../contracts/index.md), and [.memory-bank/testing/index.md](../testing/index.md). `/spec-improve` must decide upload validation, storage layout,
-manifest fields, refs, timeline event taxonomy, and authorization checks.
+Global `/spec-design` and feature-level `/spec-improve FT-005` are complete. Use
+[.memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md](../tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md)
+as the feature-local design hub before `/prd-to-tasks FT-005`.

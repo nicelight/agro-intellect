@@ -1,0 +1,90 @@
+{
+  "id": "TASK-088",
+  "title": "Implement ApprovedGovernanceSummary derivation schema from DecisionRecord",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-019",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-084"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/*",
+    "backend/app/agent_context/*",
+    "backend/app/agent_harness/*",
+    "backend/app/publication/*",
+    "backend/app/privacy/*",
+    "backend/tests/companion/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "frontend/src/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "feature tests",
+      "command": "pytest backend/tests",
+      "required": true
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "ApprovedGovernanceSummary derives only from valid approved DecisionRecord.",
+    "Rejected, superseded, pending, malformed, unauthorized, or redaction-failed paths create no operative summary.",
+    "Summary includes mandatory safety_gate_authority=not_granted."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-015.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "summary derivation unit tests",
+    "invalid decision negative tests",
+    "redaction evidence",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-approved-governance-summary-and-agent-context-isolation.md",
+    ".memory-bank/tech-specs/FT-015-approved-governance-summary-and-agent-context-isolation.md",
+    ".memory-bank/requirements.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/testing/index.md",
+    "agents-best-practices",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/tech-specs/FT-008-permission-aware-context-builder-and-agent-memory-record.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-014-companion-issue-stack-human-attention-proposal-and-decision-record.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md"
+  ],
+  "constraints": [
+    "Summary contains only compact allowed fields.",
+    "Summary cannot mutate Plant state, create tasks, authorize physical action, replace Safety Gate approval, or grant trainability."
+  ],
+  "invariants": [
+    "Approved governance summary is derived backend state, not raw chat/UI."
+  ],
+  "verification_targets": [
+    "test:companion.approved-summary-context-filter",
+    "approved summary schema allowed fields",
+    "safety_gate_authority not_granted"
+  ]
+}

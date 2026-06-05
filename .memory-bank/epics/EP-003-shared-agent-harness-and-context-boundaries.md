@@ -1,9 +1,10 @@
 ---
 description: Epic EP-003 for shared AgentHarness, AgentProfiles, context builder, memory, Bus, MessageEnvelope, UI Feed isolation, and real model runtime.
-status: draft
+status: active
+owner: product
 lifecycle: planned
 epic_id: EP-003
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md

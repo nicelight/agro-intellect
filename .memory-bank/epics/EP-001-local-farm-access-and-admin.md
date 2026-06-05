@@ -1,9 +1,10 @@
 ---
 description: Epic EP-001 for local Farm access, Accounts, ActorContext, Plant access, Boss Admin, and admin audit.
-status: draft
+status: active
+owner: product
 lifecycle: planned
 epic_id: EP-001
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md

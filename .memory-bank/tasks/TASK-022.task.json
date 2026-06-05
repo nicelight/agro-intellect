@@ -1,0 +1,88 @@
+{
+  "id": "TASK-022",
+  "title": "Build Boss Admin UI, audit view, and admin integration coverage",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-006",
+    "REQ-003",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-019",
+    "TASK-020",
+    "TASK-021",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "frontend/src/*",
+    "backend/tests/integration/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "admin integration tests",
+      "command": "pytest backend/tests/admin backend/tests/integration",
+      "required": true
+    },
+    {
+      "name": "frontend admin smoke",
+      "command": "npm test -- --runInBand",
+      "required": false
+    },
+    {
+      "name": "memory bank doctor strict",
+      "command": "node scripts/mb-doctor.mjs --strict",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Boss Admin Surface supports personnel, role, Plant lifecycle, grant management, and minimal audit view",
+    "Admin UI notices and markdown cannot become agent facts",
+    "Generated OpenAPI validation passes after backend schemas exist"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-022.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-022/TASK-022-S-01-final-report-code-01.md",
+    "UI/e2e or smoke evidence for Boss Admin Surface",
+    "OpenAPI validation evidence",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-and-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Admin UI is presentation only and not domain authority",
+    "Audit view is filtered to Boss authority",
+    "Secrets/auth material and UI markdown cannot enter logs, screenshots, exports, Bus, UI Feed, or agent context"
+  ],
+  "invariants": [
+    "Frontend visibility is not authorization",
+    "UI Feed and presentation-only strings are not agent working context",
+    "Every completed T3 task requires verify, red-verify, human checkpoint, and rollback/recovery evidence"
+  ],
+  "verification_targets": [
+    "test:admin.audit-and-access-management",
+    "test:auth.actor-context-all-boundaries",
+    "test:privacy.secret-redaction-surfaces",
+    "Generated OpenAPI validation after implementation schemas exist"
+  ]
+}

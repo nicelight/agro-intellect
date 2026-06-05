@@ -1,0 +1,75 @@
+{
+  "id": "TASK-030",
+  "title": "Create PhotoCatalogItem, initial capture manifest, and timeline refs",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-008",
+    "REQ-009",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-029"
+  ],
+  "touched_files": [
+    "backend/app/photo_artifacts/*",
+    "backend/app/db/migrations/*",
+    "backend/app/api/*",
+    "backend/tests/photo_artifacts/*",
+    "backend/tests/integration/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "photo catalog manifest tests",
+      "command": "pytest backend/tests/photo_artifacts backend/tests/integration",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Accepted upload creates PhotoCatalogItem with stable refs and sha256",
+    "Initial capture manifest contains bounded redacted metadata and refs only",
+    "Timeline audit/export refs are append-only and cannot replace runtime authority"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-030.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-030/TASK-030-S-01-final-report-code-01.md",
+    "Catalog/manifest/timeline failure-ordering test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/tech-specs/FT-005-photo-intake-catalog-and-capture-manifests.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Photo catalog is authority for accepted metadata and stable refs",
+    "Manifest is created only for accepted photos",
+    "Manifest cannot overwrite runtime Plant state or dataset trainability"
+  ],
+  "invariants": [
+    "Photo files and manifests are local artifacts, not mutable runtime authority",
+    "timeline.jsonl remains append-only audit/export, not primary mutable state",
+    "Dataset trainability remains governed by dataset lifecycle, not manifests or timeline"
+  ],
+  "verification_targets": [
+    "test:photo.file-catalog-sha256-manifest",
+    "test:runtime.authority-vs-timeline",
+    "Manifest and timeline payloads redact secrets/auth material"
+  ]
+}

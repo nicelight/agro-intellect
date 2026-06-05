@@ -1,9 +1,10 @@
 ---
 description: Epic EP-004 for Plant state/advisor behavior, Safety Gate, physical-action approval, tasks, and follow-up.
-status: draft
+status: active
+owner: product
 lifecycle: planned
 epic_id: EP-004
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -46,8 +47,8 @@ follow-up outcomes remain separate from automated actuation and Companion govern
 
 - Fresh data is required but never sufficient by itself for physical action.
 - Human approval does not authorize automated device execution.
-- Safety Gate and task/action unlock semantics must be refined by `/spec-design` and
-  feature-level `/spec-improve` before task decomposition.
+- Safety Gate and task/action unlock semantics are specified by the active FT-012 and
+  FT-013 tech specs and task records.
 
 ## Verification Targets
 

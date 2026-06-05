@@ -1,0 +1,105 @@
+{
+  "id": "TASK-075",
+  "title": "Add Safety Gate regression, harness eval, UI wording, and no-actuation suite",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-012",
+  "reqs": [
+    "REQ-016",
+    "REQ-017"
+  ],
+  "depends_on": [
+    "TASK-016",
+    "TASK-052",
+    "TASK-063",
+    "TASK-069",
+    "TASK-070",
+    "TASK-071",
+    "TASK-072",
+    "TASK-073",
+    "TASK-074"
+  ],
+  "touched_files": [
+    "backend/tests/safety/*",
+    "backend/tests/advisory/*",
+    "backend/tests/agent_harness/*",
+    "backend/tests/integration/*",
+    "backend/tests/security/*",
+    "frontend/tests/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "safety regression suite",
+      "command": "pytest backend/tests/safety backend/tests/advisory backend/tests/agent_harness backend/tests/integration backend/tests/security",
+      "required": true
+    },
+    {
+      "name": "frontend smoke when UI exists",
+      "command": "npm test",
+      "required": false
+    },
+    {
+      "name": "memory bank validation",
+      "command": "node scripts/mb-lint.mjs && node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Safety Gate test suite covers all FT-012 verification targets.",
+    "Harness evals cover approval bypass, prompt injection, malformed tool args, unknown tools, budget stops, provider/tool failures, and false success claims.",
+    "UI wording tests prove physical-action text is blocked or rewritten until Safety Gate clearance and authorized human approval.",
+    "No automated actuation command, tool, external side effect, or device execution path exists."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-012.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "complete Safety Gate regression output",
+    "harness eval fixture evidence",
+    "UI wording smoke/e2e evidence when UI exists",
+    "no automated actuation search/test evidence",
+    "T3 human checkpoint and rollback/recovery note before closure",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/contracts/safety-gate.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/epics/EP-004-safety-gated-advisory-and-task-loop.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/agent-harness.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/tech-specs/FT-007-shared-agent-harness-and-agent-profile-runtime.md",
+    ".memory-bank/tech-specs/FT-009-message-envelope-agent-chat-bus-and-ui-feed-isolation.md",
+    ".memory-bank/tech-specs/FT-011-plant-state-trust-and-hydroponics-advisor.md",
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    "agents-best-practices"
+  ],
+  "constraints": [
+    "Runtime/demo behavior cannot be satisfied by fake, mock, hardcoded, or stubbed product-agent output outside tests.",
+    "Safety-sensitive evals must evaluate harness permission/approval behavior, not only model text.",
+    "No automated physical actuation may be introduced."
+  ],
+  "invariants": [
+    "T3 closure requires verify PASS, red-verify semantic-pass, human checkpoint, and rollback/recovery note.",
+    "Governance DecisionRecord cannot replace Safety Gate approval.",
+    "UI Feed content cannot become Safety Gate evidence by itself."
+  ],
+  "verification_targets": [
+    "test:safety-gate.fail-closed-approval-boundary",
+    "test:tasks.approval-action-follow-up-no-actuation",
+    "test:companion.proposal-decision-authority",
+    "Safety Gate unavailable/malformed/over-budget fail-closed",
+    "no automated actuation path"
+  ]
+}

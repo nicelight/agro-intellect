@@ -1,0 +1,1 @@
+"""Agro Intellect backend package."""

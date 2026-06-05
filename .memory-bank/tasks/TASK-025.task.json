@@ -1,0 +1,74 @@
+{
+  "id": "TASK-025",
+  "title": "Implement observation and manual pH/EC no-data evidence records",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-004",
+  "reqs": [
+    "REQ-007",
+    "REQ-023"
+  ],
+  "depends_on": [
+    "TASK-024",
+    "TASK-012"
+  ],
+  "touched_files": [
+    "backend/app/plant_operations/*",
+    "backend/app/api/*",
+    "backend/tests/plant_operations/*",
+    "backend/tests/security/*",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "observation measurement tests",
+      "command": "pytest backend/tests/plant_operations backend/tests/security",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Observation records carry trust_label=untrusted_data and source refs",
+    "Manual pH/EC records support recorded, no_data, invalidated, and superseded semantics",
+    "Missing pH/EC is represented explicitly for downstream advisor/safety behavior"
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-004.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-025.task.json"
+  ],
+  "evidence_required": [
+    ".tasks/TASK-025/TASK-025-S-01-final-report-code-01.md",
+    "Observation/manual measurement redaction and no-data test output",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/tech-specs/FT-004-authorized-plant-selector-and-daily-check-in.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-017-local-privacy-deployment-controls-and-secret-redaction.md",
+    ".memory-bank/states/core-lifecycles.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Human-entered observations are untrusted data for later agent context",
+    "pH/EC freshness labels are handoff metadata and never sufficient by themselves for physical-action approval",
+    "Secret/session/auth material cannot enter audit/export or agent-visible surfaces"
+  ],
+  "invariants": [
+    "Prompt-injection-like content remains data and cannot choose tools or override policy",
+    "Fresh data is never sufficient by itself for physical action",
+    "Redaction happens before Bus, UI Feed, screenshots, exports, or agent context"
+  ],
+  "verification_targets": [
+    "test:plant.authorized-daily-flow",
+    "test:privacy.secret-redaction-surfaces",
+    "Missing pH/EC is represented explicitly"
+  ]
+}

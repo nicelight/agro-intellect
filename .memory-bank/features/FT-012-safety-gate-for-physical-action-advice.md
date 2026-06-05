@@ -1,14 +1,18 @@
 ---
 description: Feature FT-012 for Safety Gate routing and fail-closed physical-action advice.
-status: draft
+status: active
+owner: product
 lifecycle: planned
-spec_design_status: needs_spec_improve
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md
 epic: EP-004
-last_updated: 2026-06-04
+last_updated: 2026-06-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
+  - .memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md
 ---
 # FT-012 Safety Gate For Physical-Action Advice
 
@@ -47,7 +51,6 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Global `/spec-design` is complete. Before `/prd-to-tasks FT-012`, run
-`/spec-improve FT-012` using the completed backbone docs: [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/states/core-lifecycles.md](../states/core-lifecycles.md), [.memory-bank/contracts/index.md](../contracts/index.md), and [.memory-bank/testing/index.md](../testing/index.md). `/spec-improve` must decide physical-action taxonomy,
-freshness rules, Safety Gate decision states, approval authority checks, display
-rules, and fail-closed tests.
+Global `/spec-design` and feature-level `/spec-improve FT-012` are complete. Use
+[.memory-bank/tech-specs/FT-012-safety-gate-for-physical-action-advice.md](../tech-specs/FT-012-safety-gate-for-physical-action-advice.md)
+as the feature-local design hub before `/prd-to-tasks FT-012`.
