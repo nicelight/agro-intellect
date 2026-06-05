@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
+from backend.app.config import SyncStatus
+
 
 class AccountStatus(str, Enum):
     ACTIVE = "active"
@@ -98,6 +100,7 @@ class Farm:
     farm_id: str
     display_name: str
     status: FarmStatus = FarmStatus.ACTIVE
+    sync_status: SyncStatus = SyncStatus.LOCAL_ONLY
     created_at: datetime = None  # type: ignore[assignment]
     updated_at: datetime = None  # type: ignore[assignment]
 
@@ -119,6 +122,7 @@ class Farm:
             "farm_id": self.farm_id,
             "display_name": self.display_name,
             "status": self.status.value,
+            "sync_status": self.sync_status.value,
             "created_at": _iso(self.created_at),
             "updated_at": _iso(self.updated_at),
         }

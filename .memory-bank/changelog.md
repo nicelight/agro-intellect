@@ -4,6 +4,12 @@ status: active
 ---
 # Changelog
 
+## [2026-06-05] CODE-GEN-BOOTSTRAP — TASK-001, TASK-011, TASK-013 closed
+- TASK-001: T3 closure applied — human checkpoint + rollback note created, status → done
+- TASK-011: verify PASS (8/8), red-verify semantic-pass, T3 closure applied, status → done
+- TASK-013: implemented SyncStatus (config module, migration, Farm field, 12 tests), verify PASS, red-verify semantic-pass, status → done
+- Evidence: `.tasks/TASK-001/`, `.tasks/TASK-011/`, `.tasks/TASK-013/`
+
 ## [2026-06-05] SDD consistency findings fixed
 - Normalized Safety Gate publishable vocabulary to `cleared_for_approval`.
 - Removed FT-016 dataset-specific `StructuredObservation.status=blocked` drift by

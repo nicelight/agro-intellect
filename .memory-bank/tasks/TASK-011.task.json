@@ -1,7 +1,7 @@
 {
   "id": "TASK-011",
   "title": "Create shared secret redaction policy and detector foundation",
-  "status": "ready",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-017",
   "reqs": [

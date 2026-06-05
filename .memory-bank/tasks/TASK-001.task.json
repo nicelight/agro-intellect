@@ -1,7 +1,7 @@
 {
   "id": "TASK-001",
   "title": "Create local Account, FarmMembership, and session data foundation",
-  "status": "ready",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-001",
   "reqs": [

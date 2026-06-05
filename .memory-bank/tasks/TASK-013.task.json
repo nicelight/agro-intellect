@@ -1,7 +1,7 @@
 {
   "id": "TASK-013",
   "title": "Implement local_only SyncStatus contract and block server-sync semantics",
-  "status": "ready",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-017",
   "reqs": [
