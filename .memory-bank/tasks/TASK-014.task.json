@@ -1,7 +1,7 @@
 {
   "id": "TASK-014",
   "title": "Implement loopback default and fail-closed protected LAN controls",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-017",
   "reqs": [

@@ -396,6 +396,10 @@
     {
       "id": "TASK-099",
       "file": "TASK-099.task.json"
+    },
+    {
+      "id": "TASK-100",
+      "file": "TASK-100.task.json"
     }
   ]
 }

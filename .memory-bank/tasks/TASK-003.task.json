@@ -1,7 +1,7 @@
 {
   "id": "TASK-003",
   "title": "Add role preset authorization and redacted audit attribution",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-001",
   "reqs": [

@@ -14,6 +14,7 @@ from backend.app.privacy.redaction import (
     redact_text,
     stable_secret_ref,
 )
+from backend.app.privacy.storage_prompt import StoragePromptValidation, validate_storage_prompt
 
 __all__ = [
     "DEFAULT_REDACTION_POLICY",
@@ -21,8 +22,10 @@ __all__ = [
     "RedactionFinding",
     "RedactionPolicy",
     "RedactionResult",
+    "StoragePromptValidation",
     "UncertainPayloadStrategy",
     "redact_payload",
     "redact_text",
     "stable_secret_ref",
+    "validate_storage_prompt",
 ]

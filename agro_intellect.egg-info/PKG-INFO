@@ -3,5 +3,12 @@ Name: agro-intellect
 Version: 0.1.0
 Summary: Local-first Agro Intellect MVP backend foundation.
 Requires-Python: >=3.12
+Requires-Dist: fastapi<1.0.0,>=0.115.0
+Requires-Dist: uvicorn[standard]<1.0.0,>=0.34.0
+Requires-Dist: sqlalchemy[asyncio]<3.0.0,>=2.0.36
+Requires-Dist: asyncpg<1.0.0,>=0.30.0
+Requires-Dist: alembic<2.0.0,>=1.14.0
+Requires-Dist: pydantic<3.0.0,>=2.0.0
+Requires-Dist: python-dotenv<2.0.0,>=1.0.0
 Provides-Extra: test
 Requires-Dist: pytest<10.0,>=9.0; extra == "test"

@@ -1,7 +1,7 @@
 {
   "id": "TASK-015",
   "title": "Guard local storage prompt copy against upload or server-sync implication",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-017",
   "reqs": [

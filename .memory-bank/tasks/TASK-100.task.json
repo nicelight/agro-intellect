@@ -1,0 +1,81 @@
+{
+  "id": "TASK-100",
+  "title": "Database Foundation — PostgreSQL + SQLAlchemy async",
+  "status": "done",
+  "wave": "W0",
+  "feature": "FT-000",
+  "reqs": [],
+  "depends_on": [],
+  "touched_files": [
+    "pyproject.toml",
+    "docker-compose.yml",
+    ".env",
+    "backend/app/db/",
+    "backend/alembic/"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "import check",
+      "command": "python3 -c \"from backend.app.db.models import Base, Account, Farm, FarmMembership, LocalSession, Plant, PlantAccessGrant, AdminAuditRecord; from backend.app.db.engine import engine; from backend.app.db.seed import seed_initial_data; print('OK')\"",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Verify all 7 ORM models exist and match SQL schema",
+    "Verify engine.py creates async engine + session",
+    "Verify Alembic is configured for async",
+    "Verify seed.py creates Boss/Farm/tomato_001",
+    {
+      "stage": "verify",
+      "completed_at": "2026-06-06",
+      "verdict": "PASS",
+      "mode": "functional verify",
+      "evidence": [
+        ".protocols/TASK-100/verification.md",
+        ".tasks/TASK-100/evidence-*.txt"
+      ]
+    },
+    {
+      "stage": "red-verify",
+      "completed_at": "2026-06-06",
+      "verdict": "semantic-pass",
+      "mode": "adversarial semantic verification",
+      "evidence": [
+        ".protocols/TASK-100/red-verification.md",
+        ".tasks/TASK-100/DB-01-S-RED-VERIFY-final-report-docs-01.md"
+      ]
+    }
+  ],
+  "docs": [
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    ".protocols/TASK-100/",
+    ".tasks/TASK-100/"
+  ],
+  "source_artifacts": [
+    ".memory-bank/accounts/FT-001-local-accounts-sessions-and-actor-context.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "PostgreSQL is runtime authority via asyncpg + SQLAlchemy",
+    "ORM models must match existing SQL migrations identically",
+    "Seed must be idempotent"
+  ],
+  "invariants": [
+    "PostgreSQL/read model is runtime authority for mutable state",
+    "Credentials never hardcoded in source code"
+  ],
+  "verification_targets": [
+    "All 7 ORM models exist with correct columns and constraints",
+    "Async engine + session factory working",
+    "Alembic async migration generated",
+    "Seed script creates initial Farm, Boss, tomato_001",
+    "All imports resolve without database"
+  ]
+}

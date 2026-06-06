@@ -1,7 +1,7 @@
 {
   "id": "TASK-016",
   "title": "Add privacy, LAN, redaction, and prompt-injection regression suite",
-  "status": "planned",
+  "status": "done",
   "wave": "W3",
   "feature": "FT-017",
   "reqs": [

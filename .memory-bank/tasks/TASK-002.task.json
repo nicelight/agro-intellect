@@ -1,7 +1,7 @@
 {
   "id": "TASK-002",
   "title": "Implement ActorContext resolver and protected API boundary",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-001",
   "reqs": [

@@ -7,6 +7,10 @@ from backend.app.privacy import (
     redact_payload,
     redact_text,
 )
+from backend.app.security.cors_origin import (
+    validate_cors_config,
+    validate_cors_origin,
+)
 from backend.app.security.session_refs import (
     AUTH_MATERIAL_REDACTION_MARKER,
     auth_provenance_ref_from_hash,
@@ -33,4 +37,6 @@ __all__ = [
     "redact_secret_text",
     "redacted_request_ref",
     "session_ref_from_hash",
+    "validate_cors_config",
+    "validate_cors_origin",
 ]

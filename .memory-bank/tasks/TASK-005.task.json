@@ -1,7 +1,7 @@
 {
   "id": "TASK-005",
   "title": "Add auth/session API, OpenAPI, and secret-redaction regression coverage",
-  "status": "planned",
+  "status": "done",
   "wave": "W3",
   "feature": "FT-001",
   "reqs": [

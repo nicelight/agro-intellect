@@ -1,5 +1,10 @@
 """Deployment and sync configuration for local-first MVP."""
 
+from backend.app.config.deployment import DeploymentConfig, DeploymentMode
 from backend.app.config.sync_status import SyncStatus
 
-__all__ = ["SyncStatus"]
+__all__ = [
+    "DeploymentConfig",
+    "DeploymentMode",
+    "SyncStatus",
+]

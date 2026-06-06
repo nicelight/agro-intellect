@@ -1,7 +1,7 @@
 {
   "id": "TASK-004",
   "title": "Enforce ActorContext on context-builder and harness permission entrypoints",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-001",
   "reqs": [

@@ -37,7 +37,11 @@
     "Run required gates and attach output under .tasks/TASK-006/: farm seed tests: pytest backend/tests/plants -k 'farm or tomato_001'; memory bank lint: node scripts/mb-lint.mjs",
     "Confirm task verification targets are satisfied: test:farm.single-local-workspace; Only one active local Farm exists and multi-Farm routes are absent; tomato_001 is present as initial Plant seed/migration target",
     "Validate listed constraints and invariants against the implementation and record any exception as a blocker before closure.",
-    "Run /verify and /red-verify before closure and record VERDICT: PASS plus SEMANTIC_VERDICT: semantic-pass."
+    "Run /verify and /red-verify before closure and record VERDICT: PASS plus SEMANTIC_VERDICT: semantic-pass.",
+    "VERDICT: PASS (2026-06-06)",
+    "Gates: pytest backend/tests/plants -k 'farm or tomato_001' = PASS (14 passed); node scripts/mb-lint.mjs = PASS",
+    "Evidence: .tasks/TASK-006/pytest-plants-farm-tomato-001-verify-run.txt, .tasks/TASK-006/mb-lint-verify-run.txt",
+    "Closure: pending /red-verify (T2 manual mode)"
   ],
   "docs": [
     ".memory-bank/tasks/plans/IMPL-FT-002.md",

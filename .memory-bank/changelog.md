@@ -4,6 +4,24 @@ status: active
 ---
 # Changelog
 
+## [2026-06-06] TASK-100 — Database Foundation closed
+- PostgreSQL + SQLAlchemy async engine, ORM models with Farm/Plant/Access/Account entities, Alembic migrations, docker-compose with pgvector, .env config, seed script.
+- Created: `backend/app/db/` (engine, models, seed), `backend/alembic/`, `docker-compose.yml`, `.env`, updated `pyproject.toml`.
+- T2 task: verify PASS + red-verify semantic-pass, status → done.
+- Evidence: `.tasks/TASK-100/`, `.protocols/TASK-100/`
+
+## [2026-06-05] CODE-GEN-BOOTSTRAP Wave 1 — TASK-002..TASK-016 closed (оркестрация)
+- TASK-002: ActorContext resolver + protected API boundary — impl done, verify PASS, status done
+- TASK-003: Role preset authorization + redacted audit attribution — impl done, verify PASS, status done
+- TASK-004: ActorContext on context-builder + harness permission — impl done, verify PASS, status done
+- TASK-014: Loopback default + fail-closed LAN controls — impl done, verify PASS, status done
+- TASK-012: Redaction on logs, traces, exports, Bus, UI Feed, agent context — impl done, verify PASS, status done
+- TASK-015: Guard local storage prompt copy — impl done, verify PASS, status done
+- TASK-005: Auth/session API + OpenAPI + regression — impl done, verify PASS, status done
+- TASK-016: Privacy/LAN/redaction/prompt-injection regression suite — tests done, verify PASS, status done
+- Созданы: api/, context/, audit/, harness/, logging/, timeline/, export/, publication/, storage/, config/deployment, security/cors_origin, security/csrf
+- Полная регрессия: 205/205 тестов PASS
+
 ## [2026-06-05] CODE-GEN-BOOTSTRAP — TASK-001, TASK-011, TASK-013 closed
 - TASK-001: T3 closure applied — human checkpoint + rollback note created, status → done
 - TASK-011: verify PASS (8/8), red-verify semantic-pass, T3 closure applied, status → done
