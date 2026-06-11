@@ -8,7 +8,7 @@ status: active
 <objective>
 Create or maintain `.memory-bank/constitution.md` as the short, top-level governing layer for AI-first project work.
 
-The Constitution captures project governing principles, agent autonomy rules, and non-negotiables before `/write-prd` when possible. It does not replace Product Brief, PRD, `mbb/index.md`, `spec-index.md`, `invariants.md`, contracts, states, testing docs, workflow policies, or the tier policy.
+The Constitution captures project governing principles, agent autonomy rules, and non-negotiables before `/write-prd` when possible. It does not replace Product Brief, PRD, `mbb/index.md`, `spec-backbone.md`, `spec-index.md`, `invariants.md`, contracts, states, testing docs, workflow policies, or the tier policy.
 </objective>
 
 <process>
@@ -30,6 +30,7 @@ Read, when present:
 - `.memory-bank/analysis/product-brief.md`
 - latest relevant `.memory-bank/analysis/brainstorming/BR-*.md`
 - `.memory-bank/mbb/index.md`
+- `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
 - `.memory-bank/invariants.md`, if it exists
 - `.memory-bank/workflows/*`, especially tier policy if present
@@ -121,6 +122,7 @@ Record accepted answers in a compact `## Interview Notes` or `## Governance Deci
 ## 5) Consistency check
 Before saving, check that the Constitution does not contradict:
 - MBB rules
+- `spec-backbone.md` readiness/backbone state
 - `spec-index.md` routing
 - invariants
 - contracts/states/testing docs when relevant

@@ -25,6 +25,7 @@ Read as optional context when present and relevant:
 - `.memory-bank/requirements.md`
 - `.memory-bank/glossary.md`
 - `.memory-bank/invariants.md`
+- `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
 - `.memory-bank/contracts/*`
 - `.memory-bank/states/*`

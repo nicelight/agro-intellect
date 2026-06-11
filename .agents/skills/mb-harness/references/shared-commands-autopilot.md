@@ -24,7 +24,7 @@ status: active
   - `tier: T0|T1|T2|T3`
 - Every task `feature` points to a `.memory-bank/features/FT-<NNN>-*.md` file that is not explicitly marked `clarification_status: pending|blocked`.
 - Every `T2` / `T3` task has relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
-- `.memory-bank/spec-index.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas.
+- `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas.
 - Authoritative routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
 - Нет unresolved blocking questions в `.protocols/AUTONOMOUS-RUN/status.md` или equivalent run protocol.
 - `/mb-doctor --strict` passes before the run starts.

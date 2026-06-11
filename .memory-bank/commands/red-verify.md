@@ -93,7 +93,7 @@ Status ownership:
   - логи, screenshots, traces и другие artifacts в `.tasks/TASK-<ID>/`
 
 Только после этого подтягивай:
-- `.memory-bank/spec-index.md` and linked SDD specs for `T2` / `T3`
+- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and linked SDD specs for `T2` / `T3`
 - релевантные `contracts/*`
 - `states/*`
 - `guides/*` when a guide is normative for frontend/component behavior or operating procedure
@@ -106,7 +106,7 @@ Status ownership:
 - if the task record has no `tier`, stop with an explicit error
 - authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used
 - if `task.tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop with a blocker; semantic verification must not bless serious work against AC alone
-- if the task record, implementation, or verify verdict conflicts with linked SDD specs or the global backbone, stop with `semantic-concern` or `semantic-fail` instead of choosing locally
+- if the task record, implementation, or verify verdict conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with `semantic-concern` or `semantic-fail` instead of choosing locally
 - не начинай с предположения, что task record и verify verdict уже доказывают correctness
 - сначала сформируй независимую hostile модель риска
 - затем сравни её со specs и кодом

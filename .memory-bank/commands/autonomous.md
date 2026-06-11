@@ -75,7 +75,7 @@ Default pre-queue health check:
    - Continue with framework defaults or an explicit skipped/default assumption, and record that marker in `.protocols/AUTONOMOUS-RUN/decision-log.md` and `.protocols/AUTONOMOUS-RUN/status.md`.
    - This is not a hard blocker unless the PRD itself creates a blocking governance conflict.
 3) Если `.memory-bank/prd.md` отсутствует или не имеет `clarification_status: complete` + `constitution_checked: true`, запусти `/write-prd`.
-4) Запусти `/spec-auto --init` after `/write-prd` and before `/prd`.
+4) Запусти `/spec-auto --init` after `/write-prd` and before `/prd`; it must produce `.memory-bank/spec-backbone.md` Pre-PRD Spec Status `ready_for_prd` and keep `.memory-bank/spec-index.md` as a pure registry.
 5) Построй L1–L3 через `/prd`.
 6) Запусти `/spec-design --all`. For simple independent T0/T1-only features it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved decisions it must record blockers and stop downstream.
 7) Запусти `/spec-auto --all` before `/prd-to-tasks --all`.
@@ -94,7 +94,7 @@ Default pre-queue health check:
 ## 5) Feature preflight перед декомпозицией
 Перед `/prd-to-tasks --all` проверь targeted features.
 Missing feature clarification metadata is valid and must not block decomposition by itself.
-`/spec-design --all` must have produced global backbone status `complete` or `minimal` before `/spec-auto --all`.
+`/spec-design --all` must have produced global backbone status `complete` or `minimal` in `.memory-bank/spec-backbone.md` before `/spec-auto --all`.
 `/spec-auto --all` must already have assigned each targeted feature `spec_design_status: complete|not_required|blocked`.
 
 Block `/prd-to-tasks --all` when any targeted feature has:

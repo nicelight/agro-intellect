@@ -14,14 +14,17 @@ Turn an already clarified `.memory-bank/prd.md` into Memory Bank L1-L3 artifacts
 - `.memory-bank/testing/index.md`
 - `.memory-bank/index.md`
 
-`/prd` does not write the PRD, ask Deep Questioning questions, create TASK records, create implementation plans, or require feature-level clarification.
-`/prd` requires `.memory-bank/spec-index.md` as the lightweight SDD route map and reads only relevant existing authoritative specs routed by that index before deriving L1-L3.
+`/prd` does not write the PRD, ask Deep Questioning questions, create TASK records, create implementation plans, run architecture design, or require feature-level clarification.
+`/prd` requires the `/spec-init` output: `.memory-bank/spec-backbone.md` with Pre-PRD Spec Status `ready_for_prd`, plus `.memory-bank/spec-index.md` as a pure spec registry/index. It reads decomposition inputs from the backbone and only relevant existing specs routed by the index before deriving L1-L3.
 </objective>
 
 <process>
 
 ## 0) Required PRD input
-Require `.memory-bank/prd.md` and `.memory-bank/spec-index.md`.
+Require:
+- `.memory-bank/prd.md`
+- `.memory-bank/spec-backbone.md`
+- `.memory-bank/spec-index.md`
 
 Its frontmatter must include:
 
@@ -38,16 +41,21 @@ If the PRD contains unresolved `NEEDS CLARIFICATION` blockers in decomposition-r
 
 Read `.memory-bank/constitution.md` before writing derived docs. If the PRD conflicts with the Constitution, stop and ask for explicit resolution or `/constitution` amendment.
 
-### SDD route map gate
-`.memory-bank/spec-index.md` is a required lightweight SDD route map for `/prd` after `/spec-init`.
+### Pre-PRD spec framing gate
+`.memory-bank/spec-backbone.md` and `.memory-bank/spec-index.md` are required `/spec-init` outputs for `/prd`.
 
 Before writing derived docs:
-- read `.memory-bank/spec-index.md` as a route map, not as a substitute for the specs;
-- stop and run `/spec-init` if `.memory-bank/spec-index.md` is missing, stale, placeholder-only, ambiguous, has broken links, or cannot safely identify relevant existing specs and planned/candidate/unknown/not_applicable areas;
+- read `.memory-bank/spec-backbone.md` first;
+- require `## Pre-PRD Spec Status` with `Status: ready_for_prd`;
+- stop and run `/spec-init` if `.memory-bank/spec-backbone.md` is missing, stale, placeholder-only, blocked, or does not make decomposition inputs explicit enough;
+- read `.memory-bank/spec-index.md` as a pure registry/index, not as a substitute for the specs;
+- stop and run `/spec-init` if `.memory-bank/spec-index.md` is missing, stale, placeholder-only, ambiguous, contains broken links, or still contains old non-index sections such as `Feature Design Status Map`, `Global backbone status`, or Backbone Area Matrix;
+- use `.memory-bank/spec-backbone.md` decomposition inputs before deriving product/requirements/epics/features: user scenarios, domain model, constraints, non-goals, risks, boundary hints, and lifecycle hints;
 - determine relevance from PRD sections, affected product areas, requirements, actors, data/domain model, contracts/APIs, states/lifecycles, security/compliance, runtime/operations, and verification strategy;
 - resolve and read only the relevant authoritative spec files routed by `.memory-bank/spec-index.md`;
 - do not load every SDD spec by default; leave non-relevant authoritative specs closed unless the index routes them into the current PRD/decomposition scope;
 - if a relevant authoritative spec conflicts with the PRD, stop and ask for explicit resolution through a spec or PRD amendment instead of silently overriding either source.
+- do not perform architecture design; unresolved global design questions are passed to `/spec-design` after L1-L3 exists.
 
 ## 1) Protocol
 Создай (если нет):
@@ -87,10 +95,10 @@ Before writing derived docs:
 - edge cases & failure modes
 - test strategy pointers
 - optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
- - `status: draft` по умолчанию
+- `status: draft` по умолчанию
 - write a `## SDD Design Gate` section into every new feature: run `/spec-improve FT-<NNN>` before `/prd-to-tasks FT-<NNN>`; when `/spec-improve` sets `spec_design_status: complete`, linked specs go in `spec_design_links`; `not_required` needs a short rationale; `blocked` must record the blocker
-- if existing SDD specs apply, add `spec_design_links` to those specs and set `spec_design_status: complete` only when the design is already authoritative and sufficient for task decomposition
-- otherwise omit `spec_design_status`; `/spec-improve FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
+- if existing SDD specs apply, add candidate/normative `spec_design_links` or route notes only when grounded in evidence; `/prd` must not set `spec_design_status: complete` before `/spec-design` has produced a global backbone status of `complete` or valid `minimal`
+- otherwise omit `spec_design_status`; in the normal `/prd` flow this means omit status or write route notes only, because after the global `/spec-design` gate `/spec-improve FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
 - add an SDD Design Gate note that `/spec-design` is the mandatory global gate before per-feature `/spec-improve`; if the feature set is simple T0/T1-only, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
 
 Do not set every new feature to `clarification_status: pending`.
@@ -114,8 +122,10 @@ When a feature is already clear enough for task decomposition, omit clarificatio
 Обнови `.memory-bank/index.md`:
 - добавить аннотированные ссылки
 
-## 8) Gate
-Запусти `mb-review` (fresh context).
+## 8) Review gate
+For high-risk, large, or autonomous flows, run `/review` or `mb-review` with fresh context before `/spec-design`.
+
+For small/manual flows, report review as optional/recommended and do not make it a mandatory stop before `/spec-design`.
 
 ## 9) What next
 - interactive: run `/spec-design`; then choose one feature and run `/spec-improve FT-<NNN>`, then `/prd-to-tasks FT-<NNN>`

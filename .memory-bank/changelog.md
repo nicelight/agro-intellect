@@ -4,6 +4,12 @@ status: active
 ---
 # Changelog
 
+## [2026-06-03] /spec-init pre-PRD framing completed
+- Marked `.memory-bank/spec-backbone.md` `Pre-PRD Spec Status` as `ready_for_prd`.
+- Added active pre-PRD framing artifacts for MVP v2: `.memory-bank/user-scenarios.md`, `.memory-bank/domains/core-domain.md`, `.memory-bank/contracts/boundary-map.md`, and `.memory-bank/states/lifecycle-map.md`.
+- Updated `.memory-bank/spec-index.md` as a pure registry and `.memory-bank/index.md` routing so the next command is `/prd`.
+- Kept architecture contracts, state machines, schemas, routes, and verification strategy routed to `/spec-design` after `/prd`.
+
 ## [2026-06-02] MVP v2 PRD completed and source docs synced
 - Created clarified MVP v2 PRD at `.memory-bank/prd.md` with `clarification_status: complete` and Constitution gate passed.
 - Synchronized Product Brief, dossier, glossary, invariants, analysis router, spec-index, and Memory Bank index with PRD decisions.
