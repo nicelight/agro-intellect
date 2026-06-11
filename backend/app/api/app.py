@@ -1,6 +1,6 @@
-"""FastAPI application factory."""
-
 from __future__ import annotations
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -11,7 +11,14 @@ from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.farm import router as farm_router
 from backend.app.api.routes.plants import router as plants_router
 from backend.app.config.deployment import DeploymentConfig, DeploymentMode
+from backend.app.db.engine import dispose_engine
 from backend.app.security.cors_origin import validate_cors_config
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    yield
+    await dispose_engine()
 
 
 def create_app(config: DeploymentConfig | None = None) -> FastAPI:
@@ -20,7 +27,7 @@ def create_app(config: DeploymentConfig | None = None) -> FastAPI:
     if cfg.mode == DeploymentMode.LAN:
         validate_cors_config(cfg.allowed_origins)
 
-    app = FastAPI(title="Agro Intellect API", version="0.1.0")
+    app = FastAPI(title="Agro Intellect API", version="0.1.0", lifespan=lifespan)
 
     if cfg.mode == DeploymentMode.LAN:
         from fastapi.middleware.cors import CORSMiddleware

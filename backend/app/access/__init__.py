@@ -7,6 +7,7 @@ from backend.app.access.authorization import (
     require_engineer_or_boss,
     require_role,
 )
+from backend.app.access.db_repository import DbAccessRepository
 from backend.app.access.models import (
     Account,
     AccountStatus,
@@ -20,7 +21,7 @@ from backend.app.access.models import (
     SessionValidationResult,
     SessionValidationState,
 )
-from backend.app.access.repository import InMemoryAccessRepository, OneFarmViolation
+from backend.app.access.models import OneFarmViolation
 from backend.app.access.session_service import (
     create_local_session,
     revoke_local_session,
@@ -30,10 +31,10 @@ from backend.app.access.session_service import (
 __all__ = [
     "Account",
     "AccountStatus",
+    "DbAccessRepository",
     "Farm",
     "FarmMembership",
     "FarmStatus",
-    "InMemoryAccessRepository",
     "LocalSession",
     "MembershipRole",
     "MembershipStatus",

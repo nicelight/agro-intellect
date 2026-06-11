@@ -12,19 +12,19 @@ from backend.app.access import (
     AccountStatus,
     Farm,
     FarmMembership,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
 )
+from backend.tests.doubles import FakeAccessRepository
 from backend.app.api import create_app
 from backend.app.config.deployment import DeploymentConfig, DeploymentMode
 
 NOW = datetime(2026, 6, 5, 12, 0, tzinfo=UTC)
 
 
-def build_repo() -> InMemoryAccessRepository:
-    repo = InMemoryAccessRepository()
-    repo.add_account(
+async def build_repo() -> FakeAccessRepository:
+    repo = FakeAccessRepository()
+    await repo.add_account(
         Account(
             account_id="acct_boss",
             display_name="Boss",
@@ -34,7 +34,7 @@ def build_repo() -> InMemoryAccessRepository:
             updated_at=NOW,
         )
     )
-    repo.add_farm(
+    await repo.add_farm(
         Farm(
             farm_id="farm_local",
             display_name="Local Farm",
@@ -42,7 +42,7 @@ def build_repo() -> InMemoryAccessRepository:
             updated_at=NOW,
         )
     )
-    repo.add_membership(
+    await repo.add_membership(
         FarmMembership(
             membership_id="mbr_boss",
             account_id="acct_boss",
@@ -64,8 +64,8 @@ def client():
 
 
 class TestLogin:
-    def test_login_success(self, client):
-        repo = build_repo()
+    async def test_login_success(self, client):
+        repo = await build_repo()
 
         import backend.app.api.routes.auth as auth_routes
         original = auth_routes._TEST_REPO
@@ -85,8 +85,8 @@ class TestLogin:
         assert isinstance(data["session_ref"], str)
         assert isinstance(data["expires_at"], str)
 
-    def test_login_invalid_credentials(self, client):
-        repo = build_repo()
+    async def test_login_invalid_credentials(self, client):
+        repo = await build_repo()
 
         import backend.app.api.routes.auth as auth_routes
         original = auth_routes._TEST_REPO
@@ -102,14 +102,14 @@ class TestLogin:
         assert "error" in data
         assert data["error"]["code"] == "invalid_request"
 
-    def test_login_missing_body(self, client):
+    async def test_login_missing_body(self, client):
         resp = client.post("/api/v1/auth/login")
         assert resp.status_code in (400, 422)
 
 
 class TestMe:
-    def test_me_with_valid_session(self, client):
-        repo = build_repo()
+    async def test_me_with_valid_session(self, client):
+        repo = await build_repo()
 
         import backend.app.api.routes.auth as auth_routes
         original = auth_routes._TEST_REPO
@@ -139,14 +139,14 @@ class TestMe:
         assert data["membership_status"] == "active"
         assert data["resolved_at"] is not None
 
-    def test_me_without_token(self, client):
+    async def test_me_without_token(self, client):
         resp = client.get("/api/v1/auth/me")
         assert resp.status_code == 401
         data = resp.json()
         assert "error" in data
         assert data["error"]["code"] == "invalid_session"
 
-    def test_me_with_invalid_token(self, client):
+    async def test_me_with_invalid_token(self, client):
         resp = client.get(
             "/api/v1/auth/me",
             headers={"Authorization": "Bearer invalid_token_1234567890abcdef"},
@@ -157,8 +157,8 @@ class TestMe:
 
 
 class TestLogout:
-    def test_logout_with_valid_session(self, client):
-        repo = build_repo()
+    async def test_logout_with_valid_session(self, client):
+        repo = await build_repo()
 
         import backend.app.api.routes.auth as auth_routes
         original = auth_routes._TEST_REPO
@@ -182,13 +182,13 @@ class TestLogout:
         data = resp.json()
         assert data["status"] == "logged_out"
 
-    def test_logout_without_token(self, client):
+    async def test_logout_without_token(self, client):
         resp = client.post("/api/v1/auth/logout")
         assert resp.status_code == 401
         data = resp.json()
         assert "error" in data
 
-    def test_error_response_format(self, client):
+    async def test_error_response_format(self, client):
         resp = client.get("/api/v1/auth/me")
         data = resp.json()
         assert "error" in data

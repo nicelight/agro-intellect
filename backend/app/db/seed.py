@@ -4,12 +4,13 @@ from datetime import UTC, datetime
 
 from sqlalchemy import select
 
-from backend.app.db.engine import async_session
+from backend.app.db.engine import get_async_sessionmaker
 from backend.app.db.models import Account, Farm, FarmMembership, Plant
 
 
 async def seed_initial_data() -> None:
-    async with async_session() as session:
+    maker = get_async_sessionmaker()
+    async with maker() as session:
         result = await session.execute(
             select(Farm).where(Farm.farm_id == "farm_local"),
         )

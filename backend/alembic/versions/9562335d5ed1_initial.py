@@ -295,7 +295,7 @@ def upgrade() -> None:
         sa.Column("target_account_id", sa.Text(), nullable=True),
         sa.Column("farm_id", sa.Text(), nullable=True),
         sa.Column("membership_id", sa.Text(), nullable=True),
-        sa.Column("details", sa.Text(), nullable=True),
+        sa.Column("details", sa.JSON(), nullable=True),
         sa.Column("auth_provenance_ref", sa.Text(), nullable=True),
         sa.Column("request_ref", sa.Text(), nullable=True),
         sa.Column(

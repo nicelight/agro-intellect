@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from backend.app.access.authorization import get_role_permissions
-from backend.app.api.errors import AppError, ErrorCode
 from backend.app.context.models import ActorContext, ActorContextState
 
 
@@ -28,6 +27,8 @@ class PermissionAwareContextBuilder:
     def build_context(
         self, actor_context: ActorContext, request_ref: str | None = None
     ) -> ContextPackage:
+        from backend.app.api.errors import AppError, ErrorCode
+
         if actor_context.state is not ActorContextState.RESOLVED:
             raise AppError(
                 code=ErrorCode.PERMISSION_DENIED,
@@ -68,6 +69,8 @@ class PermissionAwareContextBuilder:
     def authorize_plant_access(
         self, actor_context: ActorContext, plant_id: str
     ) -> None:
+        from backend.app.api.errors import AppError, ErrorCode
+
         if actor_context.state is not ActorContextState.RESOLVED:
             raise AppError(
                 code=ErrorCode.PERMISSION_DENIED,

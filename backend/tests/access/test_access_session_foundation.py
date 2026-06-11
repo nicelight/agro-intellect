@@ -10,15 +10,14 @@ from backend.app.access import (
     AccountStatus,
     Farm,
     FarmMembership,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
-    OneFarmViolation,
     SessionValidationState,
     create_local_session,
     revoke_local_session,
     validate_local_session,
 )
+from backend.tests.doubles import FakeAccessRepository, OneFarmViolation
 from backend.app.security import (
     AUTH_MATERIAL_REDACTION_MARKER,
     hash_session_secret,
@@ -34,13 +33,13 @@ from backend.app.security.session_refs import (
 NOW = datetime(2026, 6, 5, 12, 0, tzinfo=UTC)
 
 
-def build_repo(
+async def build_repo(
     *,
     account_status: AccountStatus = AccountStatus.ACTIVE,
     membership_status: MembershipStatus = MembershipStatus.ACTIVE,
-) -> InMemoryAccessRepository:
-    repo = InMemoryAccessRepository()
-    repo.add_account(
+) -> FakeAccessRepository:
+    repo = FakeAccessRepository()
+    await repo.add_account(
         Account(
             account_id="acct_boss",
             display_name="Boss",
@@ -50,7 +49,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_farm(
+    await repo.add_farm(
         Farm(
             farm_id="farm_local",
             display_name="Local Farm",
@@ -58,7 +57,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_membership(
+    await repo.add_membership(
         FarmMembership(
             membership_id="mbr_boss",
             account_id="acct_boss",
@@ -72,9 +71,9 @@ def build_repo(
     return repo
 
 
-def test_account_membership_and_session_lifecycle_resolves_with_redacted_refs():
-    repo = build_repo()
-    session, raw_secret = create_local_session(
+async def test_account_membership_and_session_lifecycle_resolves_with_redacted_refs():
+    repo = await build_repo()
+    session, raw_secret = await create_local_session(
         repo,
         account_id="acct_boss",
         now=NOW,
@@ -82,7 +81,7 @@ def test_account_membership_and_session_lifecycle_resolves_with_redacted_refs():
         request_ref="req-bootstrap",
     )
 
-    result = validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
+    result = await validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
 
     assert result.state is SessionValidationState.RESOLVED
     assert result.account_id == "acct_boss"
@@ -96,8 +95,8 @@ def test_account_membership_and_session_lifecycle_resolves_with_redacted_refs():
     assert raw_secret not in str(session.to_safe_dict())
     assert raw_secret not in str(result.to_safe_dict())
 
-    revoked = revoke_local_session(repo, session.session_id, now=NOW + timedelta(hours=1))
-    denied = validate_local_session(repo, raw_secret, now=NOW + timedelta(hours=1))
+    revoked = await revoke_local_session(repo, session.session_id, now=NOW + timedelta(hours=1))
+    denied = await validate_local_session(repo, raw_secret, now=NOW + timedelta(hours=1))
 
     assert revoked.revoked_at == NOW + timedelta(hours=1)
     assert denied.state is SessionValidationState.DENIED
@@ -117,14 +116,14 @@ def test_account_membership_and_session_lifecycle_resolves_with_redacted_refs():
         ),
     ],
 )
-def test_missing_malformed_or_invalid_session_fails_closed(
+async def test_missing_malformed_or_invalid_session_fails_closed(
     raw_secret,
     expected_state,
     expected_reason,
 ):
-    repo = build_repo()
+    repo = await build_repo()
 
-    result = validate_local_session(repo, raw_secret, now=NOW)
+    result = await validate_local_session(repo, raw_secret, now=NOW)
 
     assert result.state is expected_state
     assert result.reason == expected_reason
@@ -134,9 +133,9 @@ def test_missing_malformed_or_invalid_session_fails_closed(
     assert result.membership_id is None
 
 
-def test_expired_session_fails_closed_with_expired_state():
-    repo = build_repo()
-    _session, raw_secret = create_local_session(
+async def test_expired_session_fails_closed_with_expired_state():
+    repo = await build_repo()
+    _session, raw_secret = await create_local_session(
         repo,
         account_id="acct_boss",
         now=NOW,
@@ -144,24 +143,24 @@ def test_expired_session_fails_closed_with_expired_state():
         raw_session_secret=generate_session_secret(),
     )
 
-    result = validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=6))
+    result = await validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=6))
 
     assert result.state is SessionValidationState.EXPIRED
     assert result.reason == "expired_session"
     assert not result.is_resolved
 
 
-def test_disabled_account_fails_closed_even_with_valid_session():
-    repo = build_repo()
-    _session, raw_secret = create_local_session(
+async def test_disabled_account_fails_closed_even_with_valid_session():
+    repo = await build_repo()
+    _session, raw_secret = await create_local_session(
         repo,
         account_id="acct_boss",
         now=NOW,
         raw_session_secret=generate_session_secret(),
     )
-    repo.update_account_status("acct_boss", AccountStatus.DISABLED)
+    await repo.update_account_status("acct_boss", AccountStatus.DISABLED)
 
-    result = validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
+    result = await validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
 
     assert result.state is SessionValidationState.DENIED
     assert result.reason == "inactive_account"
@@ -172,36 +171,36 @@ def test_disabled_account_fails_closed_even_with_valid_session():
     "membership_status",
     [MembershipStatus.DISABLED, MembershipStatus.REMOVED],
 )
-def test_disabled_or_removed_membership_fails_closed(membership_status):
-    repo = build_repo()
-    _session, raw_secret = create_local_session(
+async def test_disabled_or_removed_membership_fails_closed(membership_status):
+    repo = await build_repo()
+    _session, raw_secret = await create_local_session(
         repo,
         account_id="acct_boss",
         now=NOW,
         raw_session_secret=generate_session_secret(),
     )
-    repo.update_membership_status("mbr_boss", membership_status)
+    await repo.update_membership_status("mbr_boss", membership_status)
 
-    result = validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
+    result = await validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
 
     assert result.state is SessionValidationState.DENIED
     assert result.reason == "inactive_membership"
     assert not result.is_resolved
 
 
-def test_one_farm_assumption_blocks_second_local_farm():
-    repo = build_repo()
+async def test_one_farm_assumption_blocks_second_local_farm():
+    repo = await build_repo()
 
     with pytest.raises(OneFarmViolation):
-        repo.add_farm(Farm(farm_id="farm_second", display_name="Second Farm"))
+        await repo.add_farm(Farm(farm_id="farm_second", display_name="Second Farm"))
 
 
-def test_multi_farm_membership_is_forbidden_even_if_repository_is_corrupted():
-    repo = build_repo()
+async def test_multi_farm_membership_is_forbidden_even_if_repository_is_corrupted():
+    repo = await build_repo()
     repo.farms["farm_second"] = Farm(farm_id="farm_second", display_name="Second Farm")
 
     with pytest.raises(OneFarmViolation):
-        repo.add_membership(
+        await repo.add_membership(
             FarmMembership(
                 membership_id="mbr_second",
                 account_id="acct_boss",
@@ -244,9 +243,9 @@ def test_redaction_helper_removes_auth_material_from_foundation_surfaces():
     assert redacted["nested"]["safe_ref"] == "sess_ref_1234567890abcdef"
 
 
-def test_validate_fails_closed_when_session_membership_link_is_invalid():
-    repo = build_repo()
-    session, raw_secret = create_local_session(
+async def test_validate_fails_closed_when_session_membership_link_is_invalid():
+    repo = await build_repo()
+    session, raw_secret = await create_local_session(
         repo,
         account_id="acct_boss",
         now=NOW,
@@ -256,7 +255,7 @@ def test_validate_fails_closed_when_session_membership_link_is_invalid():
     repo.sessions_by_id[session.session_id] = corrupted
     repo.sessions_by_hash[session.session_hash] = corrupted
 
-    result = validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
+    result = await validate_local_session(repo, raw_secret, now=NOW + timedelta(minutes=1))
 
     assert result.state is SessionValidationState.DENIED
     assert result.reason == "inactive_membership"

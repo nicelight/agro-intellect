@@ -1,48 +1,48 @@
-"""Farm API routes — single local workspace read.
-
-@docs .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md
-"""
-
 from __future__ import annotations
 
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.access import InMemoryAccessRepository
+from backend.app.access.db_repository import DbAccessRepository
+from backend.app.api.deps import get_db
 from backend.app.api.errors import AppError, ErrorCode
 from backend.app.api.schemas.farm import FarmResponse
-from backend.app.context import ActorContext
+from backend.app.context.models import ActorContext
 from backend.app.context.resolver import require_actor_context
 from backend.app.farm import require_single_farm
 
 router = APIRouter(prefix="/api/v1/farm")
 
-_TEST_REPO: InMemoryAccessRepository | None = None
+_TEST_REPO = None
 
 
-def _get_repo() -> InMemoryAccessRepository:
+def _get_repo(session: AsyncSession) -> Any:
     if _TEST_REPO is not None:
         return _TEST_REPO
-    from backend.app.access.repository import InMemoryAccessRepository
-
-    return InMemoryAccessRepository()
+    return DbAccessRepository(session)
 
 
-def _resolve_session(
+async def _resolve_session(
     authorization: str = Header(None, alias="Authorization"),
+    session: AsyncSession = Depends(get_db),
 ) -> ActorContext:
-    repo = _get_repo()
+    repo = _get_repo(session)
     session_secret = None
     if authorization and authorization.startswith("Bearer "):
         session_secret = authorization[len("Bearer "):]
-    return require_actor_context(repo, session_secret, request_ref=f"req_{uuid4().hex}")
+    return await require_actor_context(repo, session_secret, request_ref=f"req_{uuid4().hex}")
 
 
 @router.get("", response_model=FarmResponse)
-def read_farm(ctx: ActorContext = Depends(_resolve_session)):
-    repo = _get_repo()
-    farm = require_single_farm(repo)
+async def read_farm(
+    ctx: ActorContext = Depends(_resolve_session),
+    session: AsyncSession = Depends(get_db),
+):
+    repo = _get_repo(session)
+    farm = await require_single_farm(repo)
     return FarmResponse(
         farm_id=farm.farm_id,
         display_name=farm.display_name,

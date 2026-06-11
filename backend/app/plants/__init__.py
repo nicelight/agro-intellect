@@ -9,14 +9,10 @@ from backend.app.plants.models import (
     PlantAccessGrantStatus,
     PlantStatus,
 )
-from backend.app.plants.repository import (
-    InMemoryPlantRepository,
-    TOMATO_001_FARM_ID,
-    TOMATO_001_PLANT_ID,
-)
+TOMATO_001_FARM_ID = "farm_local"
+TOMATO_001_PLANT_ID = "tomato_001"
 
 __all__ = [
-    "InMemoryPlantRepository",
     "Plant",
     "PlantAccessGrant",
     "PlantAccessGrantStatus",

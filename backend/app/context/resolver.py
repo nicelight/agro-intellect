@@ -1,24 +1,21 @@
-"""ActorContext resolver — resolves session to ActorContext at the API boundary."""
-
 from __future__ import annotations
 
 from backend.app.access import (
-    InMemoryAccessRepository,
+    DbAccessRepository,
     SessionValidationState,
     validate_local_session,
 )
-from backend.app.api.errors import AppError, ErrorCode
 from backend.app.context.models import ActorContext, ActorContextState
 
 
-def resolve_actor_context(
-    repo: InMemoryAccessRepository,
+async def resolve_actor_context(
+    repo: DbAccessRepository,
     session_secret: str | None,
     *,
     request_ref: str | None = None,
     now=None,
 ) -> ActorContext:
-    result = validate_local_session(repo, session_secret, now=now, request_ref=request_ref)
+    result = await validate_local_session(repo, session_secret, now=now, request_ref=request_ref)
 
     if result.state is SessionValidationState.DENIED:
         return ActorContext(
@@ -52,14 +49,16 @@ def resolve_actor_context(
     )
 
 
-def require_actor_context(
-    repo: InMemoryAccessRepository,
+async def require_actor_context(
+    repo: DbAccessRepository,
     session_secret: str | None,
     *,
     request_ref: str | None = None,
     now=None,
 ) -> ActorContext:
-    ctx = resolve_actor_context(repo, session_secret, request_ref=request_ref, now=now)
+    from backend.app.api.errors import AppError, ErrorCode
+
+    ctx = await resolve_actor_context(repo, session_secret, request_ref=request_ref, now=now)
 
     if ctx.state is ActorContextState.RESOLVED:
         return ctx

@@ -1,10 +1,9 @@
 """Database artifacts for backend modules."""
 
 from backend.app.db.engine import (
-    async_session,
     dispose_engine,
-    engine,
     get_async_session,
+    get_async_sessionmaker,
 )
 from backend.app.db.models import (
     Account,
@@ -26,8 +25,7 @@ __all__ = [
     "LocalSession",
     "Plant",
     "PlantAccessGrant",
-    "async_session",
     "dispose_engine",
-    "engine",
     "get_async_session",
+    "get_async_sessionmaker",
 ]

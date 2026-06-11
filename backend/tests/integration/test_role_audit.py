@@ -11,7 +11,6 @@ from backend.app.access import (
     AccountStatus,
     Farm,
     FarmMembership,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
     create_local_session,
@@ -25,21 +24,22 @@ from backend.app.access.authorization import (
     require_role,
 )
 from backend.app.api.errors import AppError, ErrorCode
-from backend.app.audit import AdminAuditAction, AdminAuditRecord, InMemoryAuditRepository
+from backend.app.audit import AdminAuditAction, AdminAuditRecord
+from backend.tests.doubles import FakeAccessRepository, FakeAuditRepository
 from backend.app.context import ActorContext, ActorContextState
 from backend.app.security import generate_session_secret
 
 NOW = datetime(2026, 6, 5, 12, 0, tzinfo=UTC)
 
 
-def build_repo(
+async def build_repo(
     *,
     account_status: AccountStatus = AccountStatus.ACTIVE,
     membership_status: MembershipStatus = MembershipStatus.ACTIVE,
     role: MembershipRole = MembershipRole.BOSS,
-) -> InMemoryAccessRepository:
-    repo = InMemoryAccessRepository()
-    repo.add_account(
+) -> FakeAccessRepository:
+    repo = FakeAccessRepository()
+    await repo.add_account(
         Account(
             account_id="acct_boss",
             display_name="Boss",
@@ -49,7 +49,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_account(
+    await repo.add_account(
         Account(
             account_id="acct_admin",
             display_name="Admin",
@@ -59,7 +59,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_farm(
+    await repo.add_farm(
         Farm(
             farm_id="farm_local",
             display_name="Local Farm",
@@ -67,7 +67,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_membership(
+    await repo.add_membership(
         FarmMembership(
             membership_id="mbr_boss",
             account_id="acct_boss",
@@ -103,8 +103,8 @@ def _resolved_ctx(
 
 
 class TestAccountCreationAudit:
-    def test_account_creation_creates_admin_audit_record(self):
-        audit = InMemoryAuditRepository()
+    async def test_account_creation_creates_admin_audit_record(self):
+        audit = FakeAuditRepository()
         record = AdminAuditRecord(
             audit_id="audit_acct_create_001",
             action=AdminAuditAction.ACCOUNT_CREATED,
@@ -116,15 +116,15 @@ class TestAccountCreationAudit:
             request_ref="req_create_account",
             created_at=NOW,
         )
-        audit.add_record(record)
+        await audit.add_record(record)
 
-        records = audit.list_records(account_id="acct_boss")
+        records = await audit.list_records(account_id="acct_boss")
         assert len(records) == 1
         assert records[0].action is AdminAuditAction.ACCOUNT_CREATED
         assert records[0].target_account_id == "acct_new"
 
-    def test_audit_records_do_not_contain_raw_auth_material(self):
-        audit = InMemoryAuditRepository()
+    async def test_audit_records_do_not_contain_raw_auth_material(self):
+        audit = FakeAuditRepository()
         record = AdminAuditRecord(
             audit_id="audit_safe_001",
             action=AdminAuditAction.ACCOUNT_CREATED,
@@ -135,17 +135,17 @@ class TestAccountCreationAudit:
             request_ref="req_safe",
             created_at=NOW,
         )
-        audit.add_record(record)
+        await audit.add_record(record)
 
-        r = audit.list_records()[0]
+        r = (await audit.list_records())[0]
         raw = repr(r)
         # No raw session/token/auth material
         assert "raw_secret" not in raw
         assert "Bearer" not in raw
         assert "token" not in raw.lower() or "auth_ref_" in raw
 
-    def test_audit_record_has_redacted_refs(self):
-        audit = InMemoryAuditRepository()
+    async def test_audit_record_has_redacted_refs(self):
+        audit = FakeAuditRepository()
         record = AdminAuditRecord(
             audit_id="audit_refs_001",
             action=AdminAuditAction.MEMBERSHIP_ROLE_CHANGED,
@@ -156,9 +156,9 @@ class TestAccountCreationAudit:
             request_ref="req_ref_xyz789",
             created_at=NOW,
         )
-        audit.add_record(record)
+        await audit.add_record(record)
 
-        r = audit.list_records()[0]
+        r = (await audit.list_records())[0]
         assert r.auth_provenance_ref is not None
         assert r.auth_provenance_ref.startswith("auth_ref_")
         assert r.request_ref is not None
@@ -166,8 +166,8 @@ class TestAccountCreationAudit:
 
 
 class TestRoleChangeAudit:
-    def test_role_change_creates_admin_audit_record(self):
-        audit = InMemoryAuditRepository()
+    async def test_role_change_creates_admin_audit_record(self):
+        audit = FakeAuditRepository()
         record = AdminAuditRecord(
             audit_id="audit_role_001",
             action=AdminAuditAction.MEMBERSHIP_ROLE_CHANGED,
@@ -180,76 +180,76 @@ class TestRoleChangeAudit:
             request_ref="req_change_role",
             created_at=NOW,
         )
-        audit.add_record(record)
+        await audit.add_record(record)
 
-        records = audit.list_records(action=AdminAuditAction.MEMBERSHIP_ROLE_CHANGED)
+        records = await audit.list_records(action=AdminAuditAction.MEMBERSHIP_ROLE_CHANGED)
         assert len(records) == 1
         assert records[0].details["new_role"] == "consultant"
 
 
 class TestAuditRepository:
-    def test_list_records_filters_by_account_id(self):
-        audit = InMemoryAuditRepository()
-        audit.add_record(
+    async def test_list_records_filters_by_account_id(self):
+        audit = FakeAuditRepository()
+        await audit.add_record(
             AdminAuditRecord(
                 audit_id="a1", action=AdminAuditAction.ACCOUNT_CREATED,
                 actor_account_id="acct_a", created_at=NOW,
             )
         )
-        audit.add_record(
+        await audit.add_record(
             AdminAuditRecord(
                 audit_id="a2", action=AdminAuditAction.ACCOUNT_DISABLED,
                 actor_account_id="acct_b", created_at=NOW,
             )
         )
-        assert len(audit.list_records(account_id="acct_a")) == 1
-        assert len(audit.list_records(account_id="acct_b")) == 1
-        assert len(audit.list_records(account_id="acct_c")) == 0
+        assert len(await audit.list_records(account_id="acct_a")) == 1
+        assert len(await audit.list_records(account_id="acct_b")) == 1
+        assert len(await audit.list_records(account_id="acct_c")) == 0
 
-    def test_list_records_filters_by_action(self):
-        audit = InMemoryAuditRepository()
-        audit.add_record(
+    async def test_list_records_filters_by_action(self):
+        audit = FakeAuditRepository()
+        await audit.add_record(
             AdminAuditRecord(
                 audit_id="a1", action=AdminAuditAction.ACCOUNT_CREATED,
                 actor_account_id="acct_boss", created_at=NOW,
             )
         )
-        audit.add_record(
+        await audit.add_record(
             AdminAuditRecord(
                 audit_id="a2", action=AdminAuditAction.ACCOUNT_DISABLED,
                 actor_account_id="acct_boss", created_at=NOW,
             )
         )
-        assert len(audit.list_records(action=AdminAuditAction.ACCOUNT_CREATED)) == 1
+        assert len(await audit.list_records(action=AdminAuditAction.ACCOUNT_CREATED)) == 1
 
-    def test_list_records_respects_limit(self):
-        audit = InMemoryAuditRepository()
+    async def test_list_records_respects_limit(self):
+        audit = FakeAuditRepository()
         for i in range(10):
-            audit.add_record(
+            await audit.add_record(
                 AdminAuditRecord(
                     audit_id=f"a{i}", action=AdminAuditAction.ACCOUNT_CREATED,
                     actor_account_id="acct_boss", created_at=NOW,
                 )
             )
-        assert len(audit.list_records(limit=3)) == 3
-        assert len(audit.list_records(limit=100)) == 10
+        assert len(await audit.list_records(limit=3)) == 3
+        assert len(await audit.list_records(limit=100)) == 10
 
-    def test_get_records_for_farm(self):
-        audit = InMemoryAuditRepository()
-        audit.add_record(
+    async def test_get_records_for_farm(self):
+        audit = FakeAuditRepository()
+        await audit.add_record(
             AdminAuditRecord(
                 audit_id="f1", action=AdminAuditAction.ACCOUNT_CREATED,
                 actor_account_id="acct_boss", farm_id="farm_a", created_at=NOW,
             )
         )
-        audit.add_record(
+        await audit.add_record(
             AdminAuditRecord(
                 audit_id="f2", action=AdminAuditAction.ACCOUNT_DISABLED,
                 actor_account_id="acct_boss", farm_id="farm_b", created_at=NOW,
             )
         )
-        assert len(audit.get_records_for_farm("farm_a")) == 1
-        assert len(audit.get_records_for_farm("farm_c")) == 0
+        assert len(await audit.get_records_for_farm("farm_a")) == 1
+        assert len(await audit.get_records_for_farm("farm_c")) == 0
 
 
 class TestAuthorizationWithActorContext:

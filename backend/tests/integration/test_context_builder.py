@@ -11,11 +11,11 @@ from backend.app.access import (
     AccountStatus,
     Farm,
     FarmMembership,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
     create_local_session,
 )
+from backend.tests.doubles import FakeAccessRepository
 from backend.app.api.errors import AppError, ErrorCode
 from backend.app.context import (
     ActorContext,
@@ -29,9 +29,9 @@ from backend.app.security import generate_session_secret
 NOW = datetime(2026, 6, 5, 12, 0, tzinfo=UTC)
 
 
-def build_repo() -> InMemoryAccessRepository:
-    repo = InMemoryAccessRepository()
-    repo.add_account(
+async def build_repo() -> FakeAccessRepository:
+    repo = FakeAccessRepository()
+    await repo.add_account(
         Account(
             account_id="acct_boss",
             display_name="Boss",
@@ -41,7 +41,7 @@ def build_repo() -> InMemoryAccessRepository:
             updated_at=NOW,
         )
     )
-    repo.add_farm(
+    await repo.add_farm(
         Farm(
             farm_id="farm_local",
             display_name="Local Farm",
@@ -49,7 +49,7 @@ def build_repo() -> InMemoryAccessRepository:
             updated_at=NOW,
         )
     )
-    repo.add_membership(
+    await repo.add_membership(
         FarmMembership(
             membership_id="mbr_boss",
             account_id="acct_boss",
@@ -63,17 +63,17 @@ def build_repo() -> InMemoryAccessRepository:
     return repo
 
 
-def build_resolved_boss_context(repo: InMemoryAccessRepository) -> ActorContext:
-    _session, raw_secret = create_local_session(
+async def build_resolved_boss_context(repo: FakeAccessRepository) -> ActorContext:
+    _session, raw_secret = await create_local_session(
         repo, account_id="acct_boss", now=NOW, raw_session_secret=generate_session_secret(),
     )
-    return resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
+    return await resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
 
 
 class TestContextBuilder:
-    def test_build_context_resolved_returns_package(self):
-        repo = build_repo()
-        ctx = build_resolved_boss_context(repo)
+    async def test_build_context_resolved_returns_package(self):
+        repo = await build_repo()
+        ctx = await build_resolved_boss_context(repo)
         builder = PermissionAwareContextBuilder(repo)
 
         pkg = builder.build_context(ctx, request_ref="req_test")
@@ -85,8 +85,8 @@ class TestContextBuilder:
         assert pkg.permissions["manage_accounts"] is True
         assert pkg.built_at is not None
 
-    def test_build_context_with_plant_permissions(self):
-        repo = build_repo()
+    async def test_build_context_with_plant_permissions(self):
+        repo = await build_repo()
         ctx = ActorContext(
             state=ActorContextState.RESOLVED,
             account_id="acct_boss",
@@ -123,8 +123,8 @@ class TestContextBuilder:
         assert "plant_b" in pkg.plant_ids
         assert pkg.permissions["plant_approve_actions"] is True
 
-    def test_build_context_without_grants_empty_plants(self):
-        repo = build_repo()
+    async def test_build_context_without_grants_empty_plants(self):
+        repo = await build_repo()
         ctx = ActorContext(
             state=ActorContextState.RESOLVED,
             account_id="acct_boss",
@@ -144,8 +144,8 @@ class TestContextBuilder:
         assert pkg.plant_ids == []
         assert pkg.permissions["plant_approve_actions"] is False
 
-    def test_build_context_denied_raises_permission_denied(self):
-        repo = build_repo()
+    async def test_build_context_denied_raises_permission_denied(self):
+        repo = await build_repo()
         denied_ctx = ActorContext(
             state=ActorContextState.DENIED,
             session_ref="sess_ref_redacted",
@@ -160,8 +160,8 @@ class TestContextBuilder:
 
         assert excinfo.value.code is ErrorCode.PERMISSION_DENIED
 
-    def test_build_context_expired_raises_permission_denied(self):
-        repo = build_repo()
+    async def test_build_context_expired_raises_permission_denied(self):
+        repo = await build_repo()
         expired_ctx = ActorContext(
             state=ActorContextState.EXPIRED,
             session_ref="sess_ref_redacted",
@@ -176,8 +176,8 @@ class TestContextBuilder:
 
         assert excinfo.value.code is ErrorCode.PERMISSION_DENIED
 
-    def test_authorize_plant_access_authorized_passes(self):
-        repo = build_repo()
+    async def test_authorize_plant_access_authorized_passes(self):
+        repo = await build_repo()
         ctx = ActorContext(
             state=ActorContextState.RESOLVED,
             account_id="acct_boss",
@@ -203,8 +203,8 @@ class TestContextBuilder:
 
         builder.authorize_plant_access(ctx, "plant_a")
 
-    def test_authorize_plant_access_unauthorized_raises(self):
-        repo = build_repo()
+    async def test_authorize_plant_access_unauthorized_raises(self):
+        repo = await build_repo()
         ctx = ActorContext(
             state=ActorContextState.RESOLVED,
             account_id="acct_boss",
@@ -233,8 +233,8 @@ class TestContextBuilder:
 
         assert excinfo.value.code is ErrorCode.PERMISSION_DENIED
 
-    def test_authorize_plant_access_revoked_raises(self):
-        repo = build_repo()
+    async def test_authorize_plant_access_revoked_raises(self):
+        repo = await build_repo()
         ctx = ActorContext(
             state=ActorContextState.RESOLVED,
             account_id="acct_boss",
@@ -263,8 +263,8 @@ class TestContextBuilder:
 
         assert excinfo.value.code is ErrorCode.PERMISSION_DENIED
 
-    def test_authorize_plant_access_denied_context_raises(self):
-        repo = build_repo()
+    async def test_authorize_plant_access_denied_context_raises(self):
+        repo = await build_repo()
         denied_ctx = ActorContext(
             state=ActorContextState.DENIED,
             session_ref="sess_ref_redacted",

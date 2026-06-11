@@ -1,51 +1,48 @@
-"""Authentication routes: login, logout, me."""
-
 from __future__ import annotations
 
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.access import (
-    InMemoryAccessRepository,
-    create_local_session,
-    revoke_local_session,
-)
+from backend.app.access import create_local_session, revoke_local_session
+from backend.app.access.db_repository import DbAccessRepository
+from backend.app.api.deps import get_db
 from backend.app.api.errors import AppError, ErrorCode
 from backend.app.api.schemas.auth import LoginRequest, LoginResponse, LogoutResponse, MeResponse
-from backend.app.context import ActorContext, resolve_actor_context
+from backend.app.context.models import ActorContext
 from backend.app.context.resolver import require_actor_context
 
 router = APIRouter(prefix="/api/v1/auth")
 
-# Testability hook: set to override repo creation (used by integration tests)
-_TEST_REPO: InMemoryAccessRepository | None = None
+_TEST_REPO = None
 
 
-def _get_repo() -> InMemoryAccessRepository:
+def _get_repo(session: AsyncSession) -> Any:
     if _TEST_REPO is not None:
         return _TEST_REPO
-    from backend.app.access.repository import InMemoryAccessRepository
-
-    return InMemoryAccessRepository()
+    return DbAccessRepository(session)
 
 
-def _resolve_session(
+async def _resolve_session(
     authorization: str = Header(None, alias="Authorization"),
+    session: AsyncSession = Depends(get_db),
 ) -> ActorContext:
-    repo = _get_repo()
+    repo = _get_repo(session)
     session_secret = None
     if authorization and authorization.startswith("Bearer "):
         session_secret = authorization[len("Bearer "):]
-    return require_actor_context(repo, session_secret, request_ref=f"req_{uuid4().hex}")
+    return await require_actor_context(repo, session_secret, request_ref=f"req_{uuid4().hex}")
 
 
 @router.post("/login", response_model=LoginResponse)
-def login(
+async def login(
     body: LoginRequest,
-    repo: InMemoryAccessRepository = Depends(_get_repo),
+    session: AsyncSession = Depends(get_db),
 ):
-    account_id = _resolve_account_id(repo, body.login_identifier)
+    repo = _get_repo(session)
+    account_id = await _resolve_account_id(repo, body.login_identifier)
     if account_id is None:
         raise AppError(
             code=ErrorCode.INVALID_REQUEST,
@@ -53,7 +50,7 @@ def login(
             next_actions=["check_credentials"],
         )
     try:
-        session, raw_secret = create_local_session(
+        sess, raw_secret = await create_local_session(
             repo,
             account_id=account_id,
             request_ref=f"req_{uuid4().hex}",
@@ -66,30 +63,32 @@ def login(
         )
     return LoginResponse(
         session_token=raw_secret,
-        session_ref=session.session_ref,
-        expires_at=session.expires_at.isoformat(),
+        session_ref=sess.session_ref,
+        expires_at=sess.expires_at.isoformat(),
     )
 
 
 @router.post("/logout", response_model=LogoutResponse)
-def logout(
+async def logout(
     ctx: ActorContext = Depends(_resolve_session),
     authorization: str = Header(None, alias="Authorization"),
+    session: AsyncSession = Depends(get_db),
 ):
-    repo = _get_repo()
+    repo = _get_repo(session)
     session_secret = None
     if authorization and authorization.startswith("Bearer "):
         session_secret = authorization[len("Bearer "):]
     if ctx.session_ref:
-        for sid, sess in repo.sessions_by_id.items():
+        sessions = await repo.get_sessions_iter()
+        for sess in sessions:
             if sess.session_ref == ctx.session_ref:
-                revoke_local_session(repo, sid, request_ref=f"req_{uuid4().hex}")
+                await revoke_local_session(repo, sess.session_id, request_ref=f"req_{uuid4().hex}")
                 return LogoutResponse(status="logged_out")
     return LogoutResponse(status="logged_out")
 
 
 @router.get("/me", response_model=MeResponse)
-def me(ctx: ActorContext = Depends(_resolve_session)):
+async def me(ctx: ActorContext = Depends(_resolve_session)):
     return MeResponse(
         state=ctx.state.value,
         account_id=ctx.account_id,
@@ -101,8 +100,9 @@ def me(ctx: ActorContext = Depends(_resolve_session)):
     )
 
 
-def _resolve_account_id(repo: InMemoryAccessRepository, login_identifier: str) -> str | None:
-    for account in repo.accounts.values():
+async def _resolve_account_id(repo, login_identifier: str) -> str | None:
+    accounts = await repo.get_accounts_iter()
+    for account in accounts:
         if account.login_identifier == login_identifier:
             return account.account_id
     return None

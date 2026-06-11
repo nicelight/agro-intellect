@@ -9,11 +9,11 @@ from backend.app.access import (
     AccountStatus,
     Farm,
     FarmMembership,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
     create_local_session,
 )
+from backend.tests.doubles import FakeAccessRepository
 from backend.app.privacy.redaction import redact_payload
 from backend.app.security import generate_session_secret
 
@@ -27,9 +27,9 @@ SECRET_PATTERNS = [
 ]
 
 
-def build_repo() -> InMemoryAccessRepository:
-    repo = InMemoryAccessRepository()
-    repo.add_account(
+async def build_repo() -> FakeAccessRepository:
+    repo = FakeAccessRepository()
+    await repo.add_account(
         Account(
             account_id="acct_boss",
             display_name="Boss",
@@ -39,7 +39,7 @@ def build_repo() -> InMemoryAccessRepository:
             updated_at=NOW,
         )
     )
-    repo.add_farm(
+    await repo.add_farm(
         Farm(
             farm_id="farm_local",
             display_name="Local Farm",
@@ -47,7 +47,7 @@ def build_repo() -> InMemoryAccessRepository:
             updated_at=NOW,
         )
     )
-    repo.add_membership(
+    await repo.add_membership(
         FarmMembership(
             membership_id="mbr_boss",
             account_id="acct_boss",
@@ -62,9 +62,9 @@ def build_repo() -> InMemoryAccessRepository:
 
 
 class TestLoginResponseRedaction:
-    def test_login_response_does_not_contain_secrets(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_login_response_does_not_contain_secrets(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo,
             account_id="acct_boss",
             now=NOW,
@@ -83,9 +83,9 @@ class TestLoginResponseRedaction:
 
 
 class TestMeResponseRedaction:
-    def test_me_response_does_not_leak_session_secret(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_me_response_does_not_leak_session_secret(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo,
             account_id="acct_boss",
             now=NOW,
@@ -108,9 +108,9 @@ class TestMeResponseRedaction:
                 f"Me response contains secret pattern: {secret}"
             )
 
-    def test_me_response_session_ref_is_redacted(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_me_response_session_ref_is_redacted(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo,
             account_id="acct_boss",
             now=NOW,
@@ -119,9 +119,9 @@ class TestMeResponseRedaction:
         assert _session.session_ref.startswith("sess_ref_")
         assert raw_secret not in (_session.session_ref, _session.auth_provenance_ref)
 
-    def test_me_response_auth_provenance_ref_is_redacted(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_me_response_auth_provenance_ref_is_redacted(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo,
             account_id="acct_boss",
             now=NOW,
@@ -148,9 +148,9 @@ class TestErrorResponseRedaction:
                 f"Error response contains secret pattern: {secret}"
             )
 
-    def test_redaction_policy_markers_in_me_response(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_redaction_policy_markers_in_me_response(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo,
             account_id="acct_boss",
             now=NOW,
@@ -172,9 +172,9 @@ class TestErrorResponseRedaction:
             "Simulated secret leaked into response serialization"
         )
 
-    def test_response_not_marked_redacted_by_redact_payload(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_response_not_marked_redacted_by_redact_payload(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo,
             account_id="acct_boss",
             now=NOW,

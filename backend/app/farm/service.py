@@ -1,21 +1,15 @@
-"""Farm read service — single local Farm workspace.
-
-@docs .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-and-plant-access-grant.md
-"""
-
 from __future__ import annotations
 
-from backend.app.access import Farm, InMemoryAccessRepository
+from backend.app.access import Farm
+from backend.app.access.db_repository import DbAccessRepository
 
 
-def get_single_farm(repo: InMemoryAccessRepository) -> Farm | None:
-    """Return the single active Farm or None."""
-    return repo.get_single_farm()
+async def get_single_farm(repo: DbAccessRepository) -> Farm | None:
+    return await repo.get_single_farm()
 
 
-def require_single_farm(repo: InMemoryAccessRepository) -> Farm:
-    """Return the single active Farm or raise."""
-    farm = repo.get_single_farm()
+async def require_single_farm(repo: DbAccessRepository) -> Farm:
+    farm = await repo.get_single_farm()
     if farm is None:
         from backend.app.api.errors import AppError, ErrorCode
 

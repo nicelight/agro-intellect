@@ -299,6 +299,10 @@ def denied_session_result(
     )
 
 
+class OneFarmViolation(ValueError):
+    """MVP enforces exactly one local Farm and one membership per account."""
+
+
 def _require_text(value: str, field_name: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field_name} must be a non-empty string")

@@ -16,26 +16,25 @@ from backend.app.access import (
     Farm,
     FarmMembership,
     FarmStatus,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
 )
 from backend.app.plants import (
-    InMemoryPlantRepository,
     Plant,
     PlantStatus,
     TOMATO_001_FARM_ID,
     TOMATO_001_PLANT_ID,
 )
+from backend.tests.doubles import FakePlantRepository
 
 
 NOW = datetime(2026, 6, 5, 12, 0, tzinfo=UTC)
 
 
 class TestTomato001Seed:
-    def test_tomato_001_present_after_seed(self):
-        repo = InMemoryPlantRepository(auto_seed=True)
-        plant = repo.get_plant(TOMATO_001_PLANT_ID)
+    async def test_tomato_001_present_after_seed(self):
+        repo = FakePlantRepository(auto_seed=True)
+        plant = await repo.get_plant(TOMATO_001_PLANT_ID)
         assert plant is not None
         assert plant.plant_id == "tomato_001"
         assert plant.canonical_label == "Tomato 001"
@@ -43,24 +42,25 @@ class TestTomato001Seed:
         assert plant.state is PlantStatus.ACTIVE
         assert plant.farm_id == "farm_local"
 
-    def test_tomato_001_absent_when_auto_seed_false(self):
-        repo = InMemoryPlantRepository(auto_seed=False)
-        assert repo.get_plant(TOMATO_001_PLANT_ID) is None
+    async def test_tomato_001_absent_when_auto_seed_false(self):
+        repo = FakePlantRepository(auto_seed=False)
+        assert await repo.get_plant(TOMATO_001_PLANT_ID) is None
 
-    def test_plant_count_includes_tomato_001(self):
-        repo = InMemoryPlantRepository(auto_seed=True)
-        assert repo.get_plant_count() == 1
-        assert repo.get_active_plants_by_farm("farm_local")[0].plant_id == "tomato_001"
+    async def test_plant_count_includes_tomato_001(self):
+        repo = FakePlantRepository(auto_seed=True)
+        assert await repo.get_plant_count() == 1
+        plants = await repo.get_active_plants_by_farm("farm_local")
+        assert plants[0].plant_id == "tomato_001"
 
-    def test_tomato_001_is_active(self):
-        repo = InMemoryPlantRepository(auto_seed=True)
-        plant = repo.get_plant(TOMATO_001_PLANT_ID)
+    async def test_tomato_001_is_active(self):
+        repo = FakePlantRepository(auto_seed=True)
+        plant = await repo.get_plant(TOMATO_001_PLANT_ID)
         assert plant is not None
         assert plant.is_active
 
-    def test_tomato_001_created_by_system_seed(self):
-        repo = InMemoryPlantRepository(auto_seed=True)
-        plant = repo.get_plant(TOMATO_001_PLANT_ID)
+    async def test_tomato_001_created_by_system_seed(self):
+        repo = FakePlantRepository(auto_seed=True)
+        plant = await repo.get_plant(TOMATO_001_PLANT_ID)
         assert plant is not None
         assert plant.created_by_actor_ref == "system_seed"
 
@@ -72,8 +72,8 @@ class TestTomato001Seed:
         assert "INSERT INTO plants" in content
         assert "-- Seed tomato_001" in content
 
-    def test_can_add_second_plant_besides_tomato_001(self):
-        repo = InMemoryPlantRepository(auto_seed=True)
+    async def test_can_add_second_plant_besides_tomato_001(self):
+        repo = FakePlantRepository(auto_seed=True)
         plant2 = Plant(
             plant_id="plant_002",
             farm_id="farm_local",
@@ -83,7 +83,7 @@ class TestTomato001Seed:
             created_by_actor_ref="acct_boss",
             created_at=NOW,
         )
-        repo.add_plant(plant2)
-        assert repo.get_plant_count() == 2
-        assert repo.get_plant("plant_002") is plant2
-        assert repo.get_plant("tomato_001") is not None
+        await repo.add_plant(plant2)
+        assert await repo.get_plant_count() == 2
+        assert await repo.get_plant("plant_002") is plant2
+        assert await repo.get_plant("tomato_001") is not None

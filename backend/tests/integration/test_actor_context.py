@@ -11,11 +11,11 @@ from backend.app.access import (
     AccountStatus,
     Farm,
     FarmMembership,
-    InMemoryAccessRepository,
     MembershipRole,
     MembershipStatus,
     create_local_session,
 )
+from backend.tests.doubles import FakeAccessRepository
 from backend.app.api.errors import AppError, ErrorCode, error_response
 from backend.app.context import ActorContext, ActorContextState, resolve_actor_context
 from backend.app.context.resolver import require_actor_context
@@ -24,13 +24,13 @@ from backend.app.security import generate_session_secret
 NOW = datetime(2026, 6, 5, 12, 0, tzinfo=UTC)
 
 
-def build_repo(
+async def build_repo(
     *,
     account_status: AccountStatus = AccountStatus.ACTIVE,
     membership_status: MembershipStatus = MembershipStatus.ACTIVE,
-) -> InMemoryAccessRepository:
-    repo = InMemoryAccessRepository()
-    repo.add_account(
+) -> FakeAccessRepository:
+    repo = FakeAccessRepository()
+    await repo.add_account(
         Account(
             account_id="acct_boss",
             display_name="Boss",
@@ -40,7 +40,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_farm(
+    await repo.add_farm(
         Farm(
             farm_id="farm_local",
             display_name="Local Farm",
@@ -48,7 +48,7 @@ def build_repo(
             updated_at=NOW,
         )
     )
-    repo.add_membership(
+    await repo.add_membership(
         FarmMembership(
             membership_id="mbr_boss",
             account_id="acct_boss",
@@ -63,9 +63,9 @@ def build_repo(
 
 
 class TestResolveActorContext:
-    def test_missing_session_returns_denied(self):
-        repo = build_repo()
-        ctx = resolve_actor_context(repo, None, request_ref="req_test", now=NOW)
+    async def test_missing_session_returns_denied(self):
+        repo = await build_repo()
+        ctx = await resolve_actor_context(repo, None, request_ref="req_test", now=NOW)
 
         assert ctx.state is ActorContextState.DENIED
         assert ctx.account_id is None
@@ -74,20 +74,20 @@ class TestResolveActorContext:
         assert ctx.role is None
         assert ctx.membership_status is None
 
-    def test_invalid_long_enough_session_returns_denied(self):
-        repo = build_repo()
-        ctx = resolve_actor_context(repo, "fake-long-enough-secret-for-testing-1234567890", request_ref="req_test", now=NOW)
+    async def test_invalid_long_enough_session_returns_denied(self):
+        repo = await build_repo()
+        ctx = await resolve_actor_context(repo, "fake-long-enough-secret-for-testing-1234567890", request_ref="req_test", now=NOW)
 
         assert ctx.state is ActorContextState.DENIED
         assert ctx.account_id is None
 
-    def test_valid_session_returns_resolved(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_valid_session_returns_resolved(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, raw_session_secret=generate_session_secret(),
         )
 
-        ctx = resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
+        ctx = await resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
 
         assert ctx.state is ActorContextState.RESOLVED
         assert ctx.account_id == "acct_boss"
@@ -97,34 +97,34 @@ class TestResolveActorContext:
         assert ctx.membership_status == "active"
         assert ctx.resolved_at is not None
 
-    def test_expired_session_returns_expired(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_expired_session_returns_expired(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, ttl=timedelta(minutes=5),
             raw_session_secret=generate_session_secret(),
         )
 
-        ctx = resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=10))
+        ctx = await resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=10))
 
         assert ctx.state is ActorContextState.EXPIRED
 
-    def test_expired_session_carries_safe_refs_only(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_expired_session_carries_safe_refs_only(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, ttl=timedelta(minutes=5),
             raw_session_secret=generate_session_secret(),
         )
 
-        ctx = resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=10))
+        ctx = await resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=10))
 
         assert ctx.account_id is None
         assert ctx.farm_id is None
         assert ctx.membership_id is None
         assert ctx.role is None
 
-    def test_denied_context_carries_safe_refs_only(self):
-        repo = build_repo()
-        ctx = resolve_actor_context(repo, None, request_ref="req_test", now=NOW)
+    async def test_denied_context_carries_safe_refs_only(self):
+        repo = await build_repo()
+        ctx = await resolve_actor_context(repo, None, request_ref="req_test", now=NOW)
 
         assert ctx.account_id is None
         assert ctx.farm_id is None
@@ -133,67 +133,67 @@ class TestResolveActorContext:
         assert ctx.membership_status is None
         assert ctx.plant_permissions == ()
 
-    def test_resolved_context_includes_empty_plant_permissions(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_resolved_context_includes_empty_plant_permissions(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, raw_session_secret=generate_session_secret(),
         )
 
-        ctx = resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
+        ctx = await resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
 
         assert ctx.state is ActorContextState.RESOLVED
         assert ctx.plant_permissions == ()
 
-    def test_resolved_context_has_redacted_refs(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_resolved_context_has_redacted_refs(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, raw_session_secret=generate_session_secret(),
         )
 
-        ctx = resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
+        ctx = await resolve_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
 
         assert ctx.session_ref is not None
         assert ctx.session_ref.startswith("sess_ref_")
         assert ctx.auth_provenance_ref is not None
         assert ctx.auth_provenance_ref.startswith("auth_ref_")
 
-    def test_empty_session_string_returns_denied(self):
-        repo = build_repo()
-        ctx = resolve_actor_context(repo, "", request_ref="req_test", now=NOW)
+    async def test_empty_session_string_returns_denied(self):
+        repo = await build_repo()
+        ctx = await resolve_actor_context(repo, "", request_ref="req_test", now=NOW)
 
         assert ctx.state is ActorContextState.DENIED
         assert ctx.account_id is None
 
 
 class TestRequireActorContext:
-    def test_denied_session_raises_app_error(self):
-        repo = build_repo()
+    async def test_denied_session_raises_app_error(self):
+        repo = await build_repo()
 
         with pytest.raises(AppError) as excinfo:
-            require_actor_context(repo, None, request_ref="req_test", now=NOW)
+            await require_actor_context(repo, None, request_ref="req_test", now=NOW)
 
         assert excinfo.value.code is ErrorCode.INVALID_SESSION
 
-    def test_resolved_session_returns_context(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_resolved_session_returns_context(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, raw_session_secret=generate_session_secret(),
         )
 
-        ctx = require_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
+        ctx = await require_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=1))
 
         assert ctx.state is ActorContextState.RESOLVED
         assert ctx.account_id == "acct_boss"
 
-    def test_expired_session_raises_app_error(self):
-        repo = build_repo()
-        _session, raw_secret = create_local_session(
+    async def test_expired_session_raises_app_error(self):
+        repo = await build_repo()
+        _session, raw_secret = await create_local_session(
             repo, account_id="acct_boss", now=NOW, ttl=timedelta(minutes=5),
             raw_session_secret=generate_session_secret(),
         )
 
         with pytest.raises(AppError) as excinfo:
-            require_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=10))
+            await require_actor_context(repo, raw_secret, request_ref="req_test", now=NOW + timedelta(minutes=10))
 
         assert excinfo.value.code is ErrorCode.INVALID_SESSION
 

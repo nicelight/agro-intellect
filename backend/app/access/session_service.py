@@ -1,10 +1,9 @@
-"""Local session lifecycle and fail-closed validation."""
-
 from __future__ import annotations
 
 from datetime import timedelta
 from uuid import uuid4
 
+from backend.app.access.db_repository import DbAccessRepository
 from backend.app.access.models import (
     LocalSession,
     SessionStatus,
@@ -13,7 +12,7 @@ from backend.app.access.models import (
     denied_session_result,
     utc_now,
 )
-from backend.app.access.repository import InMemoryAccessRepository, OneFarmViolation
+from backend.app.access.db_repository import OneFarmViolation
 from backend.app.security.session_refs import (
     auth_provenance_ref_from_hash,
     generate_session_secret,
@@ -26,8 +25,8 @@ from backend.app.security.session_refs import (
 DEFAULT_SESSION_TTL = timedelta(hours=12)
 
 
-def create_local_session(
-    repo: InMemoryAccessRepository,
+async def create_local_session(
+    repo: DbAccessRepository,
     *,
     account_id: str,
     now=None,
@@ -35,20 +34,14 @@ def create_local_session(
     raw_session_secret: str | None = None,
     request_ref: str | None = None,
 ) -> tuple[LocalSession, str]:
-    """Create a backend-owned opaque local session.
-
-    Returns the persisted session and the one-time raw secret for caller delivery.
-    The repository stores only the hash and redacted refs.
-    """
-
     issued_at = now or utc_now()
-    account = repo.get_account(account_id)
+    account = await repo.get_account(account_id)
     if account is None or not account.is_active:
         raise PermissionError("active account is required to create a session")
-    membership = repo.get_membership_for_account(account_id)
+    membership = await repo.get_membership_for_account(account_id)
     if membership is None or not membership.is_active:
         raise PermissionError("active FarmMembership is required to create a session")
-    farm = repo.get_farm(membership.farm_id)
+    farm = await repo.get_farm(membership.farm_id)
     if farm is None or not farm.is_active:
         raise PermissionError("active Farm is required to create a session")
 
@@ -69,26 +62,26 @@ def create_local_session(
         expires_at=issued_at + ttl,
         created_request_ref=redacted_request_ref(request_ref or session_hash),
     )
-    return repo.add_session(session), raw_secret
+    return await repo.add_session(session), raw_secret
 
 
-def revoke_local_session(
-    repo: InMemoryAccessRepository,
+async def revoke_local_session(
+    repo: DbAccessRepository,
     session_id: str,
     *,
     now=None,
     request_ref: str | None = None,
 ) -> LocalSession:
     revoked_at = now or utc_now()
-    return repo.revoke_session(
+    return await repo.revoke_session(
         session_id,
         revoked_at=revoked_at,
         request_ref=redacted_request_ref(request_ref or session_id),
     )
 
 
-def validate_local_session(
-    repo: InMemoryAccessRepository,
+async def validate_local_session(
+    repo: DbAccessRepository,
     raw_session_secret: str | None,
     *,
     now=None,
@@ -111,7 +104,7 @@ def validate_local_session(
         )
 
     session_hash = hash_session_secret(raw_session_secret)
-    session = repo.get_session_by_hash(session_hash)
+    session = await repo.get_session_by_hash(session_hash)
     if session is None:
         return denied_session_result(
             "invalid_session",
@@ -140,7 +133,7 @@ def validate_local_session(
         )
 
     try:
-        farm = repo.get_single_farm()
+        farm = await repo.get_single_farm()
     except OneFarmViolation:
         return denied_session_result(
             "farm_scope_invalid",
@@ -150,8 +143,8 @@ def validate_local_session(
             now=checked_at,
         )
 
-    account = repo.get_account(session.account_id)
-    membership = repo.get_membership(session.membership_id)
+    account = await repo.get_account(session.account_id)
+    membership = await repo.get_membership(session.membership_id)
     if farm is None or farm.farm_id != session.farm_id:
         return denied_session_result(
             "farm_scope_invalid",

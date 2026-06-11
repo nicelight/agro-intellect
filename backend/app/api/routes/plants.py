@@ -8,45 +8,39 @@ from __future__ import annotations
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.access import InMemoryAccessRepository
+from backend.app.access.db_repository import DbAccessRepository
+from backend.app.api.deps import get_db
 from backend.app.api.schemas.plants import PlantListResponse, PlantResponse
 from backend.app.context import ActorContext
 from backend.app.context.resolver import require_actor_context
-from backend.app.plants import InMemoryPlantRepository
-
 router = APIRouter(prefix="/api/v1/plants")
 
-_ACCESS_REPO: InMemoryAccessRepository | None = None
-_PLANT_REPO: InMemoryPlantRepository | None = None
+_PLANT_REPO = None
 
 
-def _get_access_repo() -> InMemoryAccessRepository:
-    if _ACCESS_REPO is not None:
-        return _ACCESS_REPO
-    from backend.app.access.repository import InMemoryAccessRepository
-
-    return InMemoryAccessRepository()
-
-
-def _get_plant_repo() -> InMemoryPlantRepository:
+def _get_plant_repo():
     if _PLANT_REPO is not None:
         return _PLANT_REPO
-    return InMemoryPlantRepository()
+    from backend.tests.doubles import FakePlantRepository
+    return FakePlantRepository()
 
 
-def _resolve_session(
+async def _resolve_session(
     authorization: str = Header(None, alias="Authorization"),
+    session: AsyncSession = Depends(get_db),
 ) -> ActorContext:
-    repo = _get_access_repo()
+    repo = DbAccessRepository(session)
     session_secret = None
     if authorization and authorization.startswith("Bearer "):
         session_secret = authorization[len("Bearer "):]
-    return require_actor_context(repo, session_secret, request_ref=f"req_{uuid4().hex}")
+    return await require_actor_context(repo, session_secret, request_ref=f"req_{uuid4().hex}")
 
 
 @router.get("", response_model=PlantListResponse)
-def list_plants(ctx: ActorContext = Depends(_resolve_session)):
+async def list_plants(ctx: ActorContext = Depends(_resolve_session),
+    session: AsyncSession = Depends(get_db)):
     if ctx.farm_id is None:
         from backend.app.api.errors import AppError, ErrorCode
 
@@ -57,7 +51,7 @@ def list_plants(ctx: ActorContext = Depends(_resolve_session)):
         )
 
     plant_repo = _get_plant_repo()
-    plants = plant_repo.get_active_plants_by_farm(ctx.farm_id)
+    plants = await plant_repo.get_active_plants_by_farm(ctx.farm_id)
 
     return PlantListResponse(
         plants=[
