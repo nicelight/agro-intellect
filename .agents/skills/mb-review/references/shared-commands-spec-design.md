@@ -17,7 +17,7 @@ The gate is mandatory by workflow, but adaptive by depth:
 - projects with shared/T2/T3 concerns get staged architecture decisions and normal backbone specs;
 - unresolved key decisions are recorded as blockers and downstream commands must stop.
 
-`/spec-design` does not create TASK records, implementation plans, or feature-local tech specs, and it does not replace `/spec-improve`.
+`/spec-design` does not create normal feature TASK records, implementation plans, or feature-local tech specs, and it does not replace `/spec-improve`. Exception: it may create one foundation task when a project needs a minimum executable baseline before business features.
 </objective>
 
 <process>
@@ -285,18 +285,42 @@ Write or update only relevant backbone artifacts:
 - `.memory-bank/invariants.md`
 - `.memory-bank/testing/*`
 - `.memory-bank/adrs/*` for stable architecture decisions
+- `.memory-bank/tasks/index.json` and one `.memory-bank/tasks/TASK-*.task.json` only when the foundation task exception below applies
 
 Keep output conservative. Prefer updating an existing authoritative spec over creating a new one.
 Prefer fewer architecture files for faster priming; split only when it removes real complexity or matches the selected artifact strategy.
 Keep architecture docs global: if the content is an API schema, lifecycle state machine, message/event contract, or feature-local behavior, create or update the relevant contract/state/domain/tech-spec instead of expanding `architecture/*`.
 
 Do not create:
-- `.memory-bank/tasks/*.task.json`
+- `.memory-bank/tasks/*.task.json` except the one foundation task allowed below
 - `.memory-bank/tasks/plans/*`
 - feature-local `.memory-bank/tech-specs/FT-*.md`
 - implementation plans
 - separate diagrams folders; diagrams belong as Mermaid sections in `.memory-bank/architecture/system-architecture.md`
 - extra architecture files just because a standard filename exists in this command
+
+## 11.1) Optional foundation task exception
+If the project cannot safely start business-feature implementation without a minimum executable baseline, `/spec-design` may create exactly one foundation task.
+
+Use this only for baseline execution plumbing:
+- app skeleton and package scripts
+- env/config
+- DB/storage/migration baseline when required by PRD/specs
+- test harness
+- lint/typecheck/build gates
+- minimal CI/dev commands
+- seed/demo data only when required by PRD/specs
+
+Rules:
+- create no task when the existing codebase or skeleton is already executable enough for feature tasks
+- create no normal feature tasks and no implementation plans
+- prefer `TASK-000`; otherwise use the next safe `TASK-*` ID without renumbering existing tasks
+- put it first in `.memory-bank/tasks/index.json` using the normal `id`/`file` index entry
+- set `feature: "FOUNDATION"`, `wave: "W0"`, and `status: "ready"`
+- choose `tier` by the existing tier policy; do not add new status fields or foundation-specific lifecycle fields
+- fill the normal task schema fields; use empty arrays where evidence is not applicable
+- if storage or migrations are included, include a verification target that exercises the baseline path
+- keep scope to the minimum executable baseline; feature behavior still belongs to `/spec-improve` and `/prd-to-tasks`
 
 ## 12) Verifiable contracts routing
 For AI-first architecture, route concrete contracts to verifiable artifacts when relevant:
@@ -361,6 +385,7 @@ Report:
 - Backbone Area Matrix summary
 - not_applicable areas and rationale for simple projects
 - affected features and normative links
+- foundation task: created `TASK-*` or `none`
 - blockers/open questions
 - next command routing:
   - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas: `/spec-improve FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow

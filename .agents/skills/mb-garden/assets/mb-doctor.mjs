@@ -232,6 +232,7 @@ function checkBackboneReadiness() {
   const text = fs.readFileSync(specBackboneAbs, 'utf8').replace(/\r\n/g, '\n');
   const section = extractBackboneStatusSection(text);
   const status = extractBackboneStatusFromSection(section);
+  const prePrdStatus = extractPrePrdStatus(text);
   if (status === 'complete') {
     const matrix = analyzeBackboneAreaMatrix(text);
     if (matrix.ready) return;
@@ -252,7 +253,25 @@ function checkBackboneReadiness() {
   if (status === 'minimal' && hasExplicitBackboneNotApplicableAreas(section)) return;
 
   const details = { status: status ?? 'missing' };
+  if (prePrdStatus) details.pre_prd_status = prePrdStatus;
   if (status === 'minimal') details.issue = 'minimal backbone must record not_applicable areas';
+  if (prePrdStatus === 'ready_for_prd' && !options.strict) {
+    details.phase = 'post_spec_init_pre_prd';
+    details.downstream_task_readiness = false;
+
+    addFinding(
+      severity,
+      'SPEC_BACKBONE_NOT_READY',
+      `${SPEC_BACKBONE_REL}: pre-PRD framing is prepared for /prd; Global Backbone Status is intentionally pending until /spec-design.`,
+      {
+        path: SPEC_BACKBONE_REL,
+        details,
+        suggested_fix:
+          'Continue with /prd, then run /spec-design before /spec-improve, /prd-to-tasks, /autopilot, or autonomous scheduler mode.',
+      }
+    );
+    return;
+  }
 
   addFinding(
     severity,
@@ -299,6 +318,12 @@ function extractBackboneStatusSection(text) {
 
 function extractBackboneStatusFromSection(section) {
   const statusMatch = section.match(/(?:^|\n)\s*[-*]?\s*Status\s*:\s*(complete|minimal|blocked|unknown)\b/i);
+  return statusMatch?.[1]?.toLowerCase();
+}
+
+function extractPrePrdStatus(text) {
+  const section = text.match(/^##\s+Pre-PRD Spec Status\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1] ?? '';
+  const statusMatch = section.match(/(?:^|\n)\s*[-*]?\s*Status\s*:\s*(ready_for_prd|blocked)\b/i);
   return statusMatch?.[1]?.toLowerCase();
 }
 

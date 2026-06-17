@@ -7,7 +7,7 @@ status: active
 ## Pre-PRD Spec Status
 - Status: ready_for_prd
 - Last updated: 2026-06-03
-- Notes: /spec-init completed. Active PRD has enough actor, scenario, domain, constraint, non-goal, boundary, lifecycle, and risk evidence for /prd decomposition. Architecture/backbone design is still owned by /spec-design after /prd.
+- Notes: /spec-init completed. Active PRD has enough actor, scenario, domain, constraint, non-goal, boundary, lifecycle, and risk evidence for /prd decomposition. Global architecture/backbone design was completed by /spec-design on 2026-06-14; see Global Backbone Status.
 
 ## Decomposition Inputs
 - User scenarios: [.memory-bank/user-scenarios.md](user-scenarios.md) captures Boss setup, Engineer Plant operations, Safety Gate/action task flow, and Companion governance scenarios.
@@ -19,29 +19,29 @@ status: active
 - Lifecycle hints: [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md) captures Account/FarmMembership/Plant/PlantAccessGrant, daily check-in, photo artifact, agent output, physical-action proposal, CompanionProposal, DecisionRecord, and dataset candidate lifecycles.
 
 ## Open Design Questions
-- No blocker for /prd decomposition.
-- /spec-design must later decide exact auth/session lifecycle, route/module grouping, event/envelope contracts, storage layout, state machines, freshness/action taxonomy, and verification strategy.
+- No global blocker remains after /spec-design.
+- Feature-local specs must still define exact auth/session lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope fields, Bus/UI projections, photo storage layout, state machines, freshness windows, action taxonomy, provider configuration, and UI route/view details before task decomposition.
 
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
 |---|---|---|---|
-| architecture_style | blocked | - | Decide in /spec-design after /prd. |
-| source_of_truth | blocked | - | Decide in /spec-design after /prd. |
-| module_boundaries | blocked | - | Decide in /spec-design after /prd. |
-| user_scenarios | pre_prd_ready | .memory-bank/user-scenarios.md | Ready for /prd; refine architecture implications in /spec-design. |
-| constraints | pre_prd_ready | .memory-bank/prd.md, .memory-bank/invariants.md | Ready for /prd; refine architecture implications in /spec-design. |
-| non_goals | pre_prd_ready | .memory-bank/prd.md, .memory-bank/user-scenarios.md | Ready for /prd; refine architecture implications in /spec-design. |
-| domain_model | pre_prd_ready | .memory-bank/domains/core-domain.md | Ready for /prd; refine shared design in /spec-design. |
-| data_flow | blocked | - | Decide in /spec-design after /prd. |
-| storage | blocked | - | Decide in /spec-design after /prd. |
-| api_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
-| event_message_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
-| agent_io_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
-| security_safety | blocked | - | Decide in /spec-design after /prd. |
-| testing_strategy | blocked | .memory-bank/testing/index.md | Decide in /spec-design after /prd. |
-| deployment | blocked | - | Decide in /spec-design after /prd. |
-| risks | pre_prd_ready | .memory-bank/prd.md, .memory-bank/analysis/product-brief.md | Ready for /prd; refine risk controls in /spec-design. |
-| open_questions | pre_prd_ready | .memory-bank/spec-backbone.md | No /prd blocker; /spec-design questions remain. |
+| architecture_style | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/constitution.md](constitution.md) | Local modular monolith; standard AI-first guardrails. |
+| source_of_truth | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/invariants.md](invariants.md) | Design precedence and runtime authority layers defined. |
+| module_boundaries | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Bounded modules defined inside one deployable monolith. |
+| user_scenarios | authoritative | [.memory-bank/user-scenarios.md](user-scenarios.md), [.memory-bank/requirements.md](requirements.md) | Boss setup, Engineer operations, Safety Gate flow, and Companion governance covered. |
+| constraints | authoritative | [.memory-bank/constitution.md](constitution.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local-first, low-maintenance, safety, data authority, context hygiene, and no automated actuation. |
+| non_goals | authoritative | [.memory-bank/prd.md](prd.md), [.memory-bank/requirements.md](requirements.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | SaaS, hosted sync, enterprise identity, multi-Farm, microservices, full dataset registry, and actuation excluded. |
+| domain_model | authoritative | [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md) | Global entities and runtime authority ownership defined; field detail routed to feature specs. |
+| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | ActorContext -> state/artifacts/audit -> Bus/agents -> Safety/UI/tasks flow defined. |
+| storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md) | PostgreSQL/read model, local filesystem artifacts, and JSONL audit/export separated. |
+| api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | HTTP/API style, ActorContext, authz, errors, upload, CORS, and OpenAPI-generation guardrails defined. |
+| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | BusEventEnvelope and MessageEnvelope minimum boundaries defined; payload detail routed to feature specs. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Runtime decision, adapter, consumability, and no-raw-output rules defined. |
+| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | Backend authz, loopback/LAN controls, secret redaction, Safety Gate, and no automated actuation defined. |
+| testing_strategy | authoritative | [.memory-bank/testing/index.md](testing/index.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Unit/integration/e2e and anti-cheat test areas defined. |
+| deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local loopback first demo; optional protected LAN; no SaaS/server sync. |
+| risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md), [.memory-bank/analysis/product-brief.md](analysis/product-brief.md) | Key architecture risks recorded. |
+| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | No global blocker; feature-local details routed to /spec-improve. |
 
 ## Handoff To /prd
 - Ready: yes
@@ -49,13 +49,23 @@ status: active
 - Stop conditions: PRD scope changes; Pre-PRD Spec Status becomes stale/blocked; new ambiguity appears around actors, Farm/Plant boundaries, Safety Gate authority, Companion governance authority, or real agent-runtime/demo requirements.
 
 ## Handoff To /spec-design
-- Backbone areas to revisit: architecture_style, source_of_truth, module_boundaries, ActorContext/authz, Farm/Plant data authority, photo artifact storage, timeline audit/export, Agent Chat Bus, MessageEnvelope, UI Feed, Safety Gate, Companion governance, dataset governance, testing, deployment.
-- Candidate specs: see .memory-bank/spec-index.md Planned Specs.
+- Completed: yes, on 2026-06-14.
+- Backbone areas decided: architecture_style, source_of_truth, module_boundaries, ActorContext/authz, Farm/Plant data authority, photo artifact storage, timeline audit/export, Agent Chat Bus, MessageEnvelope, UI Feed, Safety Gate, Companion governance, dataset governance, testing, deployment.
+- Authoritative specs: see .memory-bank/spec-index.md Spec Registry.
+- L1-L3 context: `/prd` completed active MVP v2 product, requirements, epics, and features on 2026-06-14; use [.memory-bank/requirements.md](requirements.md), [.memory-bank/epics/index.md](epics/index.md), and [.memory-bank/features/index.md](features/index.md) as decomposition inputs.
+
+## Handoff To /spec-improve
+- Ready: yes.
+- Required reads: [.memory-bank/spec-index.md](spec-index.md), this file, [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/testing/index.md](testing/index.md), and the target feature file.
+- Stop conditions: PRD scope changes; a feature requires a global/shared decision not covered here; concrete feature design cannot truthfully define auth/session, route schemas, DB migrations, state machines, event payloads, freshness/action policy, provider configuration, or UI routes.
 
 ## Global Backbone Status
-- Status: blocked
+- Status: complete
 - Mode: standard_ai_first
 - Architecture artifact strategy: single-file
 - Not applicable areas:
-  - TBD
-- Notes: /spec-design has not completed the global AI-first architecture guardrails yet.
+  - separate_handwritten_openapi_yaml: not_applicable - generated OpenAPI should come from backend FastAPI/Pydantic-style schemas after implementation exists.
+  - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
+  - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
+  - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
+- Notes: Global AI-first architecture guardrails are complete for MVP v2 feature-level design. Feature-local specs still own detailed schemas, state machines, API endpoints, and task-ready verification evidence.

@@ -6,10 +6,13 @@ status: active
 
 ## Current State
 
-- The project has moved into MVP v2 migration planning.
+- The project has moved into MVP v2 post-PRD-decomposition planning.
 - The previous MVP v1 spec-layer is archived under [.memory-bank/archive/mvp-v1/](../archive/mvp-v1/).
 - Active MVP v2 PRD exists at [.memory-bank/prd.md](../prd.md) with `clarification_status: complete`.
-- Active MVP v2 requirements, epics, features, global architecture backbone, and feature-local SDD specs do not exist yet.
+- Active MVP v2 product, requirements, epics, and features exist as draft L1-L3 artifacts derived by `/prd`.
+- Active MVP v2 global architecture backbone exists and is complete.
+- First-wave feature-local SDD specs exist and are complete for FT-001, FT-002, and FT-003; they are registered in [.memory-bank/spec-index.md](../spec-index.md).
+- First-wave `/prd-to-tasks` decomposition and task-artifact verification are complete for FT-001, FT-002, and FT-003; implementation plans and TASK-001..TASK-015 records live under [.memory-bank/tasks/](../tasks/).
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -17,7 +20,17 @@ status: active
 ## Active Artifact Links
 
 - [project_dossier_v2.md](../../project_dossier_v2.md): upstream MVP v2 product and architecture dossier context.
-- [.memory-bank/prd.md](../prd.md): clarified MVP v2 PRD; current source of truth for downstream `/spec-init` and `/prd`.
+- [.memory-bank/prd.md](../prd.md): clarified MVP v2 PRD; current source of truth for downstream `/spec-design` and feature design.
+- [.memory-bank/product.md](../product.md): active L1 product summary.
+- [.memory-bank/requirements.md](../requirements.md): active MVP v2 REQ list and RTM.
+- [.memory-bank/epics/index.md](../epics/index.md): active MVP v2 epic router.
+- [.memory-bank/features/index.md](../features/index.md): active MVP v2 feature router.
+- [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): active global architecture backbone.
+- [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): active runtime authority model.
+- [.memory-bank/contracts/index.md](../contracts/index.md): active contract router.
+- [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md): current normative feature design for local accounts, sessions, and ActorContext.
+- [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md): current normative feature design for Farm, Plant lifecycle, and PlantAccessGrant.
+- [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md): current normative feature design for Boss admin surface and admin audit.
 - [.memory-bank/analysis/product-brief.md](product-brief.md): Product Brief input contract, now clarified by the active PRD.
 - [.memory-bank/analysis/companion-issue-stack-decision-governance.md](companion-issue-stack-decision-governance.md): draft analysis for Companion-driven `IssueStack`, `CompanionProposal`, and human `DecisionRecord` governance.
 - [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](accounts-farm-access-admin-analysis.md): draft analysis for Accounts, Farm access, Boss admin, personnel, Plants, and per-Plant access control.
@@ -38,10 +51,10 @@ status: active
 
 ## Recommended Next Step
 
-After explicit user instruction, continue from the completed PRD:
+After explicit user instruction, execute the first ready task:
 
 ```text
-/spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>
+/execute TASK-001
 ```
 
 ## Closed PRD Clarifications

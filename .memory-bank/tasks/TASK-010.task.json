@@ -1,0 +1,72 @@
+{
+  "id": "TASK-010",
+  "title": "Verify FT-002 Plant lifecycle access and retained-history behavior",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-002",
+  "reqs": ["REQ-001", "REQ-003", "REQ-004", "REQ-006", "REQ-007", "REQ-008"],
+  "depends_on": ["TASK-009", "TASK-012"],
+  "touched_files": [
+    "tests/backend/plants/**",
+    "tests/backend/agent_context/**",
+    "tests/e2e/**",
+    ".tasks/TASK-010/**",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "backend and e2e tests",
+      "command": "pytest tests/backend tests/e2e -q",
+      "required": true
+    },
+    {
+      "name": "memory bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Boss grants Engineer access to tomato_001; Engineer sees it.",
+    "Archived Plant leaves normal operations and agent context but retained history remains authorized through explicit route.",
+    "Revoked Engineer grant removes tomato_001 from Engineer selector and context-builder access.",
+    "Unauthorized Plant/grant failures do not reveal existence."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Functional verification PASS artifact under .tasks/TASK-010/.",
+    "Red-verify semantic-pass artifact because this is T3.",
+    "Human checkpoint and rollback/recovery note required before closure because this is T3."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Verification must exercise runtime API/repository paths, not only isolated policy functions.",
+    "Archived Plant must not be selectable for normal daily operations.",
+    "Do not mark complete without T3 verify, red-verify, human checkpoint, and rollback/recovery evidence."
+  ],
+  "invariants": [
+    ".memory-bank/domains/runtime-data-model.md: Plant archive removes normal operations but does not delete retained history.",
+    ".memory-bank/contracts/api-guidelines.md: authorization failures fail closed without leaking unauthorized Plant existence."
+  ],
+  "verification_targets": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md: Verification section.",
+    ".memory-bank/testing/index.md: Boss grants Engineer access, archive/restore, and access risk surfaces.",
+    ".memory-bank/workflows/tier-policy.md: T3 verify/red-verify/human checkpoint/rollback requirements."
+  ]
+}

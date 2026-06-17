@@ -203,6 +203,11 @@ Tier assignment:
 - If uncertain between two tiers, choose the higher tier.
 - If scope grows during planning, update `tier` before handing the task to execution.
 
+Persistence rule:
+- If the feature includes mutable runtime state, storage, persistence, read-model authority, seed data, or migrations, create at least one task that explicitly names the DB-backed storage path, not only schema or migration files.
+- That task must include a runtime smoke or repository integration verification target that exercises read/write through the persistence boundary.
+- If persistence is truly not needed, mark the storage/persistence area `not_applicable` in the relevant spec instead of creating a fake DB task.
+
 Эти ключи обязательны в task records; когда есть достаточно evidence и это реально помогает downstream deterministic execution, заполняй их содержимым:
 - `source_artifacts`
 - `normative_inputs`

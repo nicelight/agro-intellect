@@ -2,7 +2,7 @@
 description: Pure SDD spec registry and planned-spec index.
 status: active
 owner: architecture
-last_updated: 2026-06-03
+last_updated: 2026-06-14
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -26,16 +26,25 @@ source_of_truth:
 | Core Domain | domain | [.memory-bank/domains/core-domain.md](domains/core-domain.md) | active | /spec-init | Main entities, roles, business rules, lifecycle hints, and decomposition constraints. |
 | Boundary Map | boundary_hints | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | active | /spec-init | Preliminary boundary hints only; no endpoints, schemas, or OpenAPI details. |
 | Lifecycle Map | lifecycle_hints | [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md) | active | /spec-init | Lifecycle hints that affect epic/feature cuts. |
-| Testing Index | testing | [.memory-bank/testing/index.md](testing/index.md) | planned | /prd or /spec-design | Verification strategy and quality gates. |
+| Testing Index | testing | [.memory-bank/testing/index.md](testing/index.md) | active | /prd or /spec-design | Verification strategy and quality gates. |
+| System Architecture | architecture | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | active | /spec-design | Global MVP v2 architecture style, source-of-truth hierarchy, module boundaries, data flow, storage, security/safety, testing, deployment, and open-question routing. |
+| Runtime Data Model | domain | [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md) | active | /spec-design | Global runtime authority layers, shared entities, invariants, and feature-local data-detail routing. |
+| Contracts Index | contracts_index | [.memory-bank/contracts/index.md](contracts/index.md) | active | /spec-design | Router for active global contract documents. |
+| API Guidelines | contract | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | active | /spec-design | Global HTTP/API, ActorContext, authz, error, upload, CORS, and OpenAPI-generation guardrails. |
+| Agent Chat Bus | contract | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md) | active | /spec-design | Domain-owned agent-consumable event boundary and context hygiene rules. |
+| MessageEnvelope | contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | /spec-design | Structured publishable agent-output boundary after runtime decision handling. |
+| FT-001 Local Accounts Sessions And ActorContext | feature_design | [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md) | active | /spec-improve | Current normative feature design for local identity, session lifecycle, ActorContext, role policy, auth errors, route contracts, and verification before `/prd-to-tasks FT-001`. |
+| FT-002 Farm Plant Lifecycle And Access Grants | feature_design | [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](tech-specs/FT-002-farm-plant-lifecycle-access-grants.md) | active | /spec-improve | Current normative feature design for single Farm seed, Plant lifecycle, PlantAccessGrant lifecycle, retained-history authorization, route contracts, audit handoff, and verification before `/prd-to-tasks FT-002`. |
+| FT-003 Boss Admin Surface And Admin Audit | feature_design | [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](tech-specs/FT-003-boss-admin-surface-admin-audit.md) | active | /spec-improve | Current normative feature design for Boss admin workflows, local invite semantics, AdminAuditRecord, admin route contracts, UI boundary, and verification before `/prd-to-tasks FT-003`. |
 
 ## Planned Specs
 | Area | Expected path | Needed by | Notes |
 |---|---|---|---|
-| system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Default global architecture hub after /prd. |
-| feature_design | .memory-bank/tech-specs/FT-<NNN>-<slug>.md | /spec-improve | Feature-local specs only when needed before task decomposition. |
+| feature_design | .memory-bank/tech-specs/FT-<NNN>-<slug>.md | /spec-improve | Feature-local specs for features not yet registered above, only when needed before task decomposition. |
+| generated_openapi | generated from backend schemas | implementation task / CI | Generated from FastAPI/Pydantic-style schemas after backend exists; no hand-written OpenAPI source during global backbone. |
 
 ## Broken / Missing Links
-- TBD
+- None detected as of 2026-06-14.
 
 ## Update Rules
 - Keep this file as index/registry only: names, paths, statuses, owners, scopes, and broken links.

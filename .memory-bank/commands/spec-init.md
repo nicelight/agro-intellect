@@ -174,11 +174,18 @@ Update `.memory-bank/spec-backbone.md` with concise route/state summary:
 - Stop conditions:
 
 ## Handoff To /spec-design
+- Global Backbone Status: intentionally pending until `/spec-design`
+- Downstream readiness: `/prd-to-tasks`, `/autopilot`, and autonomous scheduler mode must wait for `/spec-design`
 - Backbone areas to revisit:
 - Candidate specs:
 ```
 
 If blocking ambiguity remains, set `Status: blocked`, explain the blocker, and stop before `/prd`.
+
+On PASS, do not present the pending global backbone as a current defect. The correct user-facing state is:
+- Pre-PRD framing is prepared for the next step: `/prd`
+- Global Backbone Status is intentionally pending until `/spec-design`
+- Downstream task/autonomous readiness still requires `/spec-design` to record `complete`, or valid `minimal` with explicit `not_applicable` areas
 
 ## 7) PASS criteria
 `/spec-init PASS = PRD can be decomposed into meaningful epics/features.`
@@ -213,6 +220,9 @@ Report:
 - decomposition inputs captured
 - blocking gaps, if any
 - expected next command: `/prd` only when status is `ready_for_prd`
+- when status is `ready_for_prd`, say the Memory Bank is prepared for `/prd`
+- Global Backbone Status: intentionally pending until `/spec-design`
 - note that `/spec-design` owns global architecture/backbone after `/prd`
+- if `mb-doctor` reports internal `SPEC_BACKBONE_NOT_READY` at this point, frame it as expected downstream readiness gating for `/prd-to-tasks`/autonomous execution, not as a `/spec-init` problem to fix now
 
 </process>

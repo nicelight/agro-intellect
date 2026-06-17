@@ -26,6 +26,7 @@ const SHARED_DIR = path.resolve(__dirname, '..');
 const REFERENCES_DIR = path.join(SHARED_DIR, 'references');
 const COMMAND_TEMPLATES_DIR = path.join(REFERENCES_DIR, 'commands');
 const WORKFLOW_REFERENCES_DIR = path.join(REFERENCES_DIR, 'workflows');
+const ROLE_REFERENCES_DIR = path.join(REFERENCES_DIR, 'roles');
 const FLAT_COMMAND_PREFIX = 'shared-commands-';
 const RUNTIME_SCRIPT_ASSETS = [
   { asset: 'mb-lint.mjs', target: 'scripts/mb-lint.mjs' },
@@ -243,6 +244,17 @@ function copyWorkflowReference(filename) {
   }
 
   writeFile(`${MB}/workflows/${filename}`, readUtf8(absPath), { overwrite: SYNC_MODE });
+}
+
+function copyRoleReference(filename) {
+  const absPath = resolveReferenceFile('roles', filename);
+  if (!absPath) {
+    console.error(`\nERROR: Role reference not found: ${path.join(ROLE_REFERENCES_DIR, filename)} or flattened shared-roles-${filename}.`);
+    console.error('Run init-mb.js from the memobank_BMAD_SDD package (do not copy it standalone).');
+    process.exit(1);
+  }
+
+  writeFile(`${MB}/roles/${filename}`, addGeneratedMarker(readUtf8(absPath)), { overwrite: SYNC_MODE });
 }
 
 function extractFrontmatterDescription(markdown) {
@@ -476,6 +488,7 @@ console.log('\n[1/5] Creating directories...');
   `${MB}/states`,
   `${MB}/runbooks`,
   `${MB}/workflows`,
+  `${MB}/roles`,
   `${MB}/quality`,
   `${MB}/testing`,
   `${MB}/skills`,
@@ -505,7 +518,9 @@ ${GENERATED_MARKER}
 4. Read \`.memory-bank/spec-backbone.md\` (spec readiness/backbone state)
 5. Read \`.memory-bank/spec-index.md\` (normative spec registry)
 6. Read \`.memory-bank/index.md\` (table of contents)
-7. Read task/feature-specific docs
+7. If ROLE: ORCHESTRATOR, read \`.memory-bank/roles/orchestrator.md\`.
+8. If delegated worker, read \`.memory-bank/roles/worker.md\`.
+9. Read task/feature-specific docs
 
 ## Orchestrator Mode
 
@@ -518,40 +533,9 @@ The role is fixed and cannot be changed.
 Every ORCHESTRATOR response must start with:
 \`Роль: Оркестратор\`
 
-### Core Rules
-- ORCHESTRATOR is responsible for strategy, scope, planning, coordination, risk control, consultation with user and final judgment.
-- ORCHESTRATOR must follow Spec Before Code.
-- Before any non-trivial code/workflow/CI/test/docs/package/config/skill change, ORCHESTRATOR must identify affected specs/source-of-truth, check match, report conflicts/gaps/unclear requirements/risks, and propose spec/source-of-truth changes before implementation if needed.
-- If there is no spec layer, identify closest source of truth first: README, docs, existing code, tests, config, or project conventions.
-- Keep the Project Constitution early in priming, but do not turn AGENTS.md into Constitution.
-- Use the current JSON task registry: \`.memory-bank/tasks/index.json\` and indexed \`.memory-bank/tasks/TASK-*.task.json\` records.
-- Route work by \`task.tier: T0|T1|T2|T3\`.
-- Do not use legacy task models.
-- Run \`node scripts/mb-lint.mjs\` and \`/mb-doctor\` where task records or Memory Bank routing change.
-- Run \`/mb-doctor --strict\` before autonomous/autopilot task selection.
-
-### Delegation
-- ORCHESTRATOR delegates implementation, tests, verification, and review to subagents.
-- ORCHESTRATOR may delegate research, inspection, and context gathering to preserve context window.
-- Each delegated task must have clear role, task, scope, and expected result.
-- Each delegated task must instruct the subagent to stop and report blockers, scope conflicts, risky side effects, unclear requirements, or contradictions with specs/source-of-truth artifacts.
-- Do not run parallel subagents when their scopes, files, or responsibilities may overlap.
-- ORCHESTRATOR waits for required subagent results before continuing.
-- Receive subagent reports, detect conflicts, gaps, and risks, then decide next steps.
-
-### Allowed
-- Read key documents for task understanding.
-- Create plans, decomposition, risk notes, and scope boundaries.
-- Create or update planning artifacts when the task permits them.
-- Run read-only checks needed for judgment.
-- Launch subagents for search, analysis, implementation, tests, and review.
-- Report status, decisions, blockers, and required user input.
-
-### Forbidden
-- Do not directly modify code, tests, CI, scripts, docs, workflow, skills, package files, or configs unless the user explicitly permits ORCHESTRATOR implementation.
-- Do not perform implementation work.
-- Do not silently fix reviewed work; delegate fixes back to an appropriate subagent.
-- Do not skip Spec Before Code for non-trivial changes.
+Full role contracts live in:
+- \`.memory-bank/roles/orchestrator.md\`
+- \`.memory-bank/roles/worker.md\`
 
 ## Preferred context routing
 - Start with \`.memory-bank/architecture/*\` and \`.memory-bank/guides/*\` for concept priming.
@@ -576,23 +560,9 @@ After finishing a meaningful unit of work:
 - Claude Code reads project skills from \`.claude/skills/<name>/SKILL.md\`.
 - \`.codex/\` is only for project configuration (e.g. \`.codex/config.toml\`).
 
-## Subagents
-- Orchestrator → workers only (max depth = 2)
-- Workers write details into \`.tasks/TASK-XXX/\`
-- Orchestrator reads only short summaries
-
-## Worker execution guardrails
-- Workers read assigned protocol files and relevant specs before acting.
-- Workers stay inside scope from \`.protocols/TASK-<ID>/context.md\` and \`.protocols/TASK-<ID>/plan.md\`.
-- Workers keep \`.protocols/TASK-<ID>/progress.md\` updated.
-- Workers report blockers, scope conflicts, and spec contradictions instead of expanding scope.
-- Workers do not make product, spec, architecture, safety, or public-contract decisions.
-- Detailed reports go to \`.tasks/TASK-<ID>/\`.
-- Report names follow \`TASK-<ID>-S-<STAGE>-final-report-<code|docs>-<NN>.md\`.
-- Apply KISS and Spec Before Code.
-
 ## Clean context (recommended)
 - Route each \`TASK-XXX\` by \`task.tier\` and \`.memory-bank/workflows/tier-policy.md\`.
+- Delegation and worker reports follow \`.memory-bank/roles/orchestrator.md\` and \`.memory-bank/roles/worker.md\`.
 - T0/T1 may use compact \`.protocols/TASK-XXX/run.md\`; compact evidence can be enough.
 - Scheduler mode: T2/T3 require full protocol state plus \`/verify\` PASS and \`/red-verify\` semantic-pass before scheduler marks done.
 - Manual mode: \`/verify\` PASS may close; \`/red-verify\` may run later and reopen/block/fail.
@@ -608,8 +578,8 @@ Claude (fresh session):
 - \`claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123. Read AGENTS.md + task record + tier-policy. Use tier-appropriate .protocols/TASK-123/ state. Implement. Record evidence. Report → .tasks/TASK-123/…'\`
 
 ## Two modes (interactive vs autonomous)
-- **Interactive**: target chain is \`/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-001 -> /prd-to-tasks FT-001 -> /execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T2/T3 -> /mb-sync\`.
-- \`/spec-design\` is mandatory after \`/prd\`, but simple T0/T1 projects may record a minimal backbone with irrelevant areas \`not_applicable\`; it does not replace per-feature \`/spec-improve FT-001\`.
+- **Interactive**: target chain is \`/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-001 -> /prd-to-tasks FT-001 -> /prd-to-tasks FT-002 -> ... -> /prd-to-tasks FT-N -> /verify task cards/artifacts -> /execute first indexed TASK -> /verify same TASK -> /red-verify same TASK for T2/T3 -> /mb-sync\` (start execution only after every FT-* has been decomposed and the generated task artifacts have passed the pre-execution verify gate).
+- \`/spec-design\` is mandatory after \`/prd\`, but simple T0/T1 projects may record a minimal backbone with irrelevant areas \`not_applicable\`; it may also create one first foundation task when a minimum executable baseline is needed. It does not replace per-feature \`/spec-improve FT-001\`.
 - Use \`/brainstorm\` before \`/brief\` only when the idea is raw.
 - Use \`/clarify-feature FT-001\` only for explicit feature blockers before \`/prd-to-tasks\`.
 - **Autonomous (batch)**: use \`/autonomous\` for full \`PRD → done\`; it runs \`/spec-auto --init\` after \`/write-prd\`, \`/spec-design --all\` after \`/prd\`, and \`/spec-auto --all\` after the backbone gate. Use \`/autopilot\` only if JSON task records and required SDD spec links already exist. See: \`.memory-bank/workflows/execute-loop.md\` and \`.memory-bank/workflows/autonomy-policy.md\`.
@@ -665,6 +635,8 @@ status: active
 
 - [.memory-bank/constitution.md](constitution.md): Project Constitution — top governing policy for agents.
 - [.memory-bank/mbb/index.md](mbb/index.md): Правила ведения Memory Bank (MBB).
+- [.memory-bank/roles/orchestrator.md](roles/orchestrator.md): Orchestrator role contract.
+- [.memory-bank/roles/worker.md](roles/worker.md): Worker role contracts.
 - [.memory-bank/product.md](product.md): Продукт (C4 L1).
 - [.memory-bank/requirements.md](requirements.md): Требования + RTM.
 - [.memory-bank/epics/](epics/): Эпики (C4 L2).
@@ -820,6 +792,8 @@ status: active
 - Stop conditions: Pre-PRD Spec Status is missing, stale, or blocked.
 
 ## Handoff To /spec-design
+- Global Backbone Status: intentionally pending until /spec-design
+- Downstream readiness: /prd-to-tasks, /autopilot, and autonomous scheduler mode must wait for /spec-design.
 - Backbone areas to revisit: all
 - Candidate specs: see .memory-bank/spec-index.md Planned Specs.
 
@@ -1045,6 +1019,8 @@ status: active
 `);
 
 copyWorkflowReference('tier-policy.md');
+copyRoleReference('orchestrator.md');
+copyRoleReference('worker.md');
 
 writeFile(`${MB}/workflows/autonomy-policy.md`, `---
 description: Guardrails and terminal states for unattended autonomous runs.
@@ -1105,9 +1081,9 @@ status: active
 - \`/prd\` creates L1–L3 only (product/requirements/epics/features/testing/index).
 - \`/write-prd\` = PRD-level ambiguity closure. \`/clarify-feature\` = optional feature-level ambiguity pass.
 - \`/spec-init\` creates the lightweight SDD route map after \`/write-prd\` and before \`/prd\`.
-- \`/spec-design\` is mandatory after \`/prd\`; it records a minimal backbone for simple T0/T1 projects or full shared backbone for shared/T2/T3 concerns, and it does not replace per-feature \`/spec-improve\`.
+- \`/spec-design\` is mandatory after \`/prd\`; it records a minimal backbone for simple T0/T1 projects or full shared backbone for shared/T2/T3 concerns, may create one first foundation task when a minimum executable baseline is needed, and does not replace per-feature \`/spec-improve\`.
 - \`/spec-improve FT-<NNN>\` completes or marks unnecessary feature-level design before task decomposition.
-- Tasks are created **per feature** via \`/prd-to-tasks FT-<NNN>\` after \`/prd\` creates clear feature docs and SDD design status is ready.
+- Feature tasks are created via \`/prd-to-tasks FT-<NNN>\` after \`/prd\` creates clear feature docs and SDD design status is ready. The only earlier task exception is a first foundation task from \`/spec-design\` when a minimum executable baseline is needed. After the full FT-* set is decomposed, run \`/verify\` on the generated task cards/artifacts, then start \`/execute\`.
 
 ## Interactive mode (you stay)
 1) \`/analysis -> /brief\` when idea discovery is needed; use \`/brainstorm\` before \`/brief\` only for raw ideas
@@ -1121,7 +1097,8 @@ status: active
 9) \`/prd-to-tasks FT-001\` (creates IMPL plan + TASK-* for this feature)
 10) Run \`/mb-doctor\` when task records change; use \`/mb-doctor --strict\` before autonomous handoff
 11) Execute tasks from \`.memory-bank/tasks/index.json\` and indexed \`*.task.json\` records one-by-one:
-   - \`/execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T2/T3 -> /mb-sync\`
+   - \`/verify task cards/artifacts -> /execute first indexed TASK -> /verify same TASK -> /red-verify same TASK for T2/T3 -> /mb-sync\`
+   - start \`/execute\` only after all targeted FT-* have been decomposed and the pre-execution \`/verify\` gate has passed
 12) After each wave: \`/review\` (fresh context)
 
 ## Autonomous end-to-end mode (start and leave)

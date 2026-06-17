@@ -77,7 +77,7 @@ Default pre-queue health check:
 3) Если `.memory-bank/prd.md` отсутствует или не имеет `clarification_status: complete` + `constitution_checked: true`, запусти `/write-prd`.
 4) Запусти `/spec-auto --init` after `/write-prd` and before `/prd`; it must produce `.memory-bank/spec-backbone.md` Pre-PRD Spec Status `ready_for_prd` and keep `.memory-bank/spec-index.md` as a pure registry.
 5) Построй L1–L3 через `/prd`.
-6) Запусти `/spec-design --all`. For simple independent T0/T1-only features it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved decisions it must record blockers and stop downstream.
+6) Запусти `/spec-design --all`. For simple independent T0/T1-only features it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved decisions it must record blockers and stop downstream. If a minimum executable baseline is needed before business features, it may create the one allowed first foundation task.
 7) Запусти `/spec-auto --all` before `/prd-to-tasks --all`.
 8) Если есть пробелы:
    - **non-blocking** → зафиксируй в `.protocols/AUTONOMOUS-RUN/decision-log.md` как `Assumption`
@@ -120,6 +120,7 @@ Block `/prd-to-tasks --all` when any targeted feature has:
 
 Требование:
 - `.memory-bank/tasks/index.json` must list schema-backed task records
+- if `/spec-design --all` created a foundation task, keep it first and append normal feature tasks after it
 - each indexed `.memory-bank/tasks/TASK-<NNN>.task.json` must contain:
   - `id`
   - `title`

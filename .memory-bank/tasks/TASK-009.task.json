@@ -1,0 +1,69 @@
+{
+  "id": "TASK-009",
+  "title": "Integrate FT-002 Plant mutations with AdminAuditRecord writer",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-002",
+  "reqs": ["REQ-003", "REQ-005", "REQ-007"],
+  "depends_on": ["TASK-007", "TASK-008", "TASK-011"],
+  "touched_files": [
+    "backend/app/plants/service.py",
+    "backend/app/plants/access_service.py",
+    "backend/app/access_admin/audit_writer.py",
+    "tests/backend/plants/**",
+    "tests/backend/access_admin/**",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "backend plant audit integration tests",
+      "command": "pytest tests/backend/plants tests/backend/access_admin -q",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Successful create/archive/restore/grant/update/revoke writes exactly one safe AdminAuditRecord.",
+    "Failed validation, failed authorization, and failed persistence do not create misleading success audit.",
+    "Audit summaries contain safe identifiers and deltas only."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-002.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Integration test output for each audited FT-002 mutation.",
+    "Audit fixture proving no session tokens, auth headers, credentials, invite codes, or secrets are stored."
+  ],
+  "source_artifacts": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/domains/runtime-data-model.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Audit write occurs only after successful mutation and in the same database transaction where feasible.",
+    "FT-002 must call the FT-003 audit writer rather than redefining AdminAuditRecord semantics.",
+    "Audit summaries must be structured safe data, not UI copy."
+  ],
+  "invariants": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md: successful admin mutations write exactly one AdminAuditRecord.",
+    ".memory-bank/invariants.md: NEVER log or export secrets or auth material."
+  ],
+  "verification_targets": [
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md: Audit And Event Decisions.",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md: AdminAuditRecord and Audit write semantics.",
+    "Runtime repository integration target: persisted audit row is read back after each Plant/grant mutation."
+  ]
+}

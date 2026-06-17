@@ -4,6 +4,54 @@ status: active
 ---
 # Changelog
 
+## [2026-06-17] Task registry cleanup
+- Removed the obsolete standalone foundation task from the active task registry and project navigation.
+- Kept the executable backend scaffold as part of the active TASK-001 implementation evidence.
+- Updated current routing and verification notes so Memory Bank doctor no longer trips on the retired foundation task shape.
+
+## [2026-06-17] TASK-001 DB/test scaffold implemented
+- Extended the backend baseline with a minimal database settings primitive, a SQLAlchemy-backed engine/session/test harness, and a migration entrypoint package under `backend/migrations`.
+- Added backend fixtures/tests that prove the app imports, can be created with an explicit test database handle, and can open a clean rollback-safe test session boundary.
+- Updated `.env.example`, `pyproject.toml`, and the `backend/app` package exports to surface the new reusable scaffold without implementing FT-001 auth/session behavior.
+- Captured T2 protocol notes and evidence under `.protocols/TASK-001/` and `.tasks/TASK-001/evidence/`.
+
+## [2026-06-16] First-wave task artifacts verified
+- Verified generated `/prd-to-tasks` artifacts for FT-001, FT-002, and FT-003: implementation plans, TASK-001..TASK-015 records, task index, dependencies, tiers, SDD links, requirement coverage, and T3 closure evidence requirements.
+- Added verification evidence at `.tasks/TASK-ARTIFACT-VERIFY/FT-001-003-task-artifacts-verification.md`.
+- Fixed stale per-feature routing text that still pointed to `/prd-to-tasks` after task generation.
+- Updated Memory Bank routing so the next route is `/execute TASK-001`.
+- No application code was implemented.
+
+## [2026-06-14] /prd-to-tasks first wave completed
+- Created feature protocols for FT-001, FT-002, and FT-003 under `.protocols/FT-001/`, `.protocols/FT-002/`, and `.protocols/FT-003/`.
+- Added implementation plans `.memory-bank/tasks/plans/IMPL-FT-001.md`, `.memory-bank/tasks/plans/IMPL-FT-002.md`, and `.memory-bank/tasks/plans/IMPL-FT-003.md`.
+- Created schema-backed TASK-001..TASK-015 records for FT-001..FT-003 and indexed them in `.memory-bank/tasks/index.json`.
+- Marked only TASK-001 `ready`; dependent tasks remain `planned` with explicit dependencies.
+- Updated Memory Bank routing in `.memory-bank/index.md`, `.memory-bank/features/index.md`, `.memory-bank/analysis/index.md`, and `.memory-bank/epics/EP-001-local-farm-access-admin.md`.
+- Did not implement application code or create task records for FT-004..FT-016.
+
+## [2026-06-14] /spec-improve first wave integrated
+- Registered active/current normative `feature_design` specs for FT-001, FT-002, and FT-003 in `.memory-bank/spec-index.md`.
+- Updated shared navigation for EP-001, features, analysis, and main Memory Bank routing to show first-wave `/spec-improve` completion.
+- Recorded that TASK records and task decomposition have not been created yet; next route is `/prd-to-tasks FT-001`, `/prd-to-tasks FT-002`, and `/prd-to-tasks FT-003`.
+- Did not edit feature docs, feature-local tech specs, TASK records, implementation plans, generated OpenAPI, DB migrations, or code.
+
+## [2026-06-14] /spec-design global backbone completed
+- Added global architecture backbone at `.memory-bank/architecture/system-architecture.md` with local modular monolith, source-of-truth hierarchy, module boundaries, data flow, storage, API/contract, security/safety, testing, deployment, risks, and open-question routing.
+- Added `.memory-bank/domains/runtime-data-model.md` for runtime authority layers and shared entity ownership.
+- Added active contract router and global contracts: `.memory-bank/contracts/index.md`, `.memory-bank/contracts/api-guidelines.md`, `.memory-bank/contracts/agent-chat-bus.md`, and `.memory-bank/contracts/message-envelope.md`.
+- Updated `.memory-bank/spec-backbone.md` to `Global Backbone Status: complete`, `Mode: standard_ai_first`, `Architecture artifact strategy: single-file`, with all required backbone matrix areas authoritative.
+- Updated `.memory-bank/spec-index.md`, feature SDD gate notes, epic open-question routing, testing router, Memory Bank index, and analysis router for the post-`/spec-design` state.
+- Did not create TASK records, implementation plans, generated OpenAPI, DB migrations, or feature-local tech specs.
+
+## [2026-06-14] /prd MVP v2 decomposition completed
+- Filled active `.memory-bank/product.md` from the clarified MVP v2 PRD.
+- Rebuilt `.memory-bank/requirements.md` with REQ-001..REQ-022 and an MVP v2 traceability matrix.
+- Added active MVP v2 L2/L3 decomposition: 6 epics under `.memory-bank/epics/` and 16 features under `.memory-bank/features/`.
+- Added feature SDD Design Gate notes that require global `/spec-design`, then per-feature `/spec-improve FT-<NNN>`, before `/prd-to-tasks FT-<NNN>`.
+- Updated `.memory-bank/testing/index.md`, `.memory-bank/index.md`, `.memory-bank/analysis/index.md`, `.memory-bank/spec-backbone.md`, and `.protocols/PRD-BOOTSTRAP/` routing for the post-`/prd` state.
+- Did not create TASK records, implementation plans, global architecture specs, or feature-local tech specs.
+
 ## [2026-06-03] /spec-init pre-PRD framing completed
 - Marked `.memory-bank/spec-backbone.md` `Pre-PRD Spec Status` as `ready_for_prd`.
 - Added active pre-PRD framing artifacts for MVP v2: `.memory-bank/user-scenarios.md`, `.memory-bank/domains/core-domain.md`, `.memory-bank/contracts/boundary-map.md`, and `.memory-bank/states/lifecycle-map.md`.

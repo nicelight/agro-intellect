@@ -37,9 +37,9 @@
       "computedHash": "74f3dee5e748e9cd22a500bb4d448f89b3866f4cd62b39e1d17373342027a8de"
     },
     "cold-start": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "5f8e13c0a79281217d5236ba7b4262939c39c536bbfea3c6397ea385e598b991"
+      "computedHash": "d72e9bb6fe9f4f0d135ff4a067bf6a85f792f83156d0e51b8cf0798ed0d1e5eb"
     },
     "constitution": {
       "source": "/tmp/memobank-skills-GgWV7C/repo",
@@ -72,9 +72,9 @@
       "computedHash": "df9aba8ac69658b95636964817e58e0955dbfc41c1a36b33df563b6ca138e113"
     },
     "mb-analysis": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "194ada37a0d868981cbc2e95c82d758ae25cfc6230d4adc1983afa1cbcc61d34"
+      "computedHash": "f88962584bbc866d9edde56a63aab93235bd8294a843d849ce1022a6f6bc3687"
     },
     "mb-doctor": {
       "source": "/tmp/memobank-skills-GgWV7C/repo",
@@ -82,44 +82,44 @@
       "computedHash": "73af4da1cf029bf385808b911364ae471990ecf9759804da6f5bdf4f99900d33"
     },
     "mb-execute": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "1b2988c01e38fe1d8da8cf719be8d5a60677ee311dd4f173835217eb4782abfe"
+      "computedHash": "586d6738aa4d4bc1ec0f5e1831d1cbaf1551b3693b4de78a07e2f5b3474c19bc"
     },
     "mb-from-prd": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "60933aac6397dbfad528e70be56ab3cfbfeece7901f1a7361eb11d06c8dea375"
+      "computedHash": "91a629d1ae3c37dfb2921f9a16200692ed56786e75819e0b0b04a1de508d0d53"
     },
     "mb-garden": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "f2daaaa36677b7cd02f6c4f9d63c8e3c2556c37e7dc3bb9b2b6764048fef8244"
+      "computedHash": "60bb3bca42b1b2d521c0928ad33401d84c3bfb0248c913700ae81c93a131e78d"
     },
     "mb-harness": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "3cdac4e63cfbab33f2b715591d1852babebaf103d5d618a85d0100d60bb55515"
+      "computedHash": "10ee8b8e606b2c2d85b75339127db6fc0e1d8190a59ceae704f071bff5dafa6d"
     },
     "mb-init": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "235c5f3b3641f9178135a2bef1385414cf8b65fa976418cad915dda8905fb411"
+      "computedHash": "9d5d16c2bf3e6527b9ae669c7bdf4c849a2e10bde472fd11131d29c7c19ad790"
     },
     "mb-map-codebase": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "bf76cfe7ce2f30b5421aa43299ad83ef5f98e5d40fa2ef173aa176d3041ca5bd"
+      "computedHash": "ea2aa83c760cedf757545489d4eca68da7ae736a1b50f9208ae0001358a030ad"
     },
     "mb-red-verify": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "e7bf943c3e05edd164d77ddf8a8f18894eb94cbf3afd05c1d2b5ecc7f2a9d134"
+      "computedHash": "7b07620c5a93c78820a2ba409136846090dd51888ec6e624edbb17e2e931852e"
     },
     "mb-review": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "e9c2c25cd80f9c8f89506998ac8a4ca4f8d1116d08c109a2199ce8561873adba"
+      "computedHash": "08a5a6c7b19638c8f28eedfb29daf1de46c07be15bb804e8fe8ef5ceef92ecc3"
     },
     "mb-sync": {
       "source": "/tmp/memobank-skills-GgWV7C/repo",
@@ -127,9 +127,9 @@
       "computedHash": "614c9cec903e278946cc4d702fd2e69c9896f75e586950202deb929b966eeb19"
     },
     "mb-verify": {
-      "source": "/tmp/memobank-skills-RdCStk/repo",
+      "source": "/tmp/memobank-skills-Nqtz8K/repo",
       "sourceType": "local",
-      "computedHash": "b7482f2ac1bca3383374bf5fbade30311036684ef1ca0ec6124a608b82068c69"
+      "computedHash": "490f7ecf62ce969c93651306fb7d2fd6c8bdae961cd7d58ee3c5bca0e6332dd0"
     },
     "prd": {
       "source": "/tmp/memobank-skills-GgWV7C/repo",

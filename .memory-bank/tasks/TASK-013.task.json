@@ -1,0 +1,73 @@
+{
+  "id": "TASK-013",
+  "title": "Implement Boss Plant access admin wrappers and audit integration",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-003",
+  "reqs": ["REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007"],
+  "depends_on": ["TASK-007", "TASK-008", "TASK-011", "TASK-012"],
+  "touched_files": [
+    "backend/app/access_admin/admin_plant_service.py",
+    "backend/app/api/admin/plants.py",
+    "backend/app/api/plants.py",
+    "backend/app/plants/access_service.py",
+    "tests/backend/access_admin/**",
+    "tests/backend/plants/**",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "backend admin plant tests",
+      "command": "pytest tests/backend/access_admin tests/backend/plants -q",
+      "required": true
+    },
+    {
+      "name": "memory bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Boss admin route surface can list Plants, include archived Plants, and manage Plant access through FT-002 services.",
+    "Plant/access mutations write AdminAuditRecord using the FT-003 audit writer and FT-002 action types.",
+    "plant_approve_actions toggle affects ActorContext permission resolver and never bypasses Safety Gate."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Integration test output for admin Plant/access wrappers and audit writes.",
+    "Fixture showing Engineer/Consultant cannot access admin Plant/access mutation routes.",
+    "Verification note that FT-003 uses FT-002 contracts instead of redefining PlantAccessGrant semantics.",
+    "Functional verification PASS artifact under .tasks/TASK-013/.",
+    "Red-verify semantic-pass artifact because this is T3.",
+    "Human checkpoint and rollback/recovery note required before closure because this is T3."
+  ],
+  "source_artifacts": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/contracts/api-guidelines.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Backend authz and audit writes are authoritative; frontend hide/show is presentation only.",
+    "Plant lifecycle and PlantAccessGrant semantics remain owned by FT-002.",
+    "Admin audit display text must not become agent facts."
+  ],
+  "invariants": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md: non-Boss actors cannot access admin mutation routes.",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md: PlantAccessGrant grant/update/revoke rules."
+  ],
+  "verification_targets": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md: Admin Scope, API Surface, Authorization Policy.",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md: PlantAccessGrant Lifecycle and Audit And Event Decisions."
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "TASK-011",
+  "title": "Implement DB-backed LocalInviteCredential and AdminAuditRecord persistence",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-003",
+  "reqs": ["REQ-003", "REQ-005"],
+  "depends_on": ["TASK-002"],
+  "touched_files": [
+    "backend/app/access_admin/invite_models.py",
+    "backend/app/access_admin/audit_models.py",
+    "backend/app/access_admin/invite_repository.py",
+    "backend/app/access_admin/audit_writer.py",
+    "backend/migrations/**",
+    "tests/backend/access_admin/**",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "backend admin persistence tests",
+      "command": "pytest tests/backend/access_admin -q",
+      "required": true
+    },
+    {
+      "name": "memory bank lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "LocalInviteCredential stores only activation_secret_hash and status fields.",
+    "Plaintext activation secret is returned only by creation service and cannot be retrieved later.",
+    "AdminAuditRecord is persisted as durable runtime state with safe structured summaries.",
+    "Repository integration test exercises DB-backed invite and audit read/write paths."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-003.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Migration artifact for LocalInviteCredential and AdminAuditRecord.",
+    "Repository integration test output for invite/audit persistence.",
+    "Redaction fixture proving passwords, invite codes, token hashes, auth headers, and secrets are absent from audit rows.",
+    "Functional verification PASS artifact under .tasks/TASK-011/.",
+    "Red-verify semantic-pass artifact because this is T3.",
+    "Human checkpoint and rollback/recovery note required before closure because this is T3."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/domains/runtime-data-model.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Plaintext activation secret is shown only once to Boss at creation.",
+    "Admin audit summaries must be compact structured JSON, not UI copy.",
+    "AdminAuditRecord is PostgreSQL/read-model authority; timeline/export may only reference it later."
+  ],
+  "invariants": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md: secrets must be redacted from admin audit and error surfaces.",
+    ".memory-bank/invariants.md: MVP data and artifacts remain local/private by default."
+  ],
+  "verification_targets": [
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md: Data Model Additions and AdminAuditRecord.",
+    "Runtime repository integration target: persisted invite/audit rows are read back through repositories."
+  ]
+}

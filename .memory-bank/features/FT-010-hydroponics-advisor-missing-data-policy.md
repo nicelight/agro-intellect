@@ -1,0 +1,51 @@
+---
+description: FT-010 Hydroponics Advisor Missing Data Policy.
+status: draft
+type: feature
+feature_id: FT-010
+epic: EP-003
+lifecycle: planned
+last_updated: 2026-06-14
+source_of_truth:
+  - .memory-bank/prd.md
+  - .memory-bank/requirements.md
+  - .memory-bank/invariants.md
+---
+# FT-010 Hydroponics Advisor Missing Data Policy
+
+## Use Cases
+
+- Hydroponics Advisor reviews authorized Plant observations, photo-derived observations, and manual pH/EC.
+- Advisor asks for missing or stale critical measurements.
+- Advisor provides cautious recommendations only within evidence boundaries.
+- Advisor output that implies a physical action is routed to Safety Gate.
+
+## Acceptance Criteria
+
+- Advisor cannot invent pH/EC or other missing critical evidence.
+- Missing/stale data produces clarification, measurement task request, or safe non-action advice.
+- Physical-action wording cannot bypass Safety Gate.
+- Output remains permission-aware and concise.
+
+## Edge Cases & Failure Modes
+
+- Fresh data alone is not enough for physical action.
+- Stale pH/EC blocks action approval path and should request measurement/follow-up as appropriate.
+- Unauthorized Plant context cannot enter Advisor input.
+- Advisor cannot create direct action_task without Safety Gate and approval path.
+
+## Verification Targets
+
+- Unit: stale/missing data policy after spec defines freshness windows.
+- Integration: Advisor to Safety Gate handoff.
+- E2E: missing pH/EC produces measurement request, not corrective dosing instruction.
+
+## Normative Backbone Links
+
+- [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Hydroponics Advisor, Safety Gate, and task-loop boundaries.
+- [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): recommendation, clarification, and safety route fields.
+- [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): Advisor input context rules.
+
+## SDD Design Gate
+
+Run global `/spec-design` before this feature is task-decomposed. Then run `/spec-improve FT-010` to define exact advisor inputs, freshness policy, output contract, task handoff, Safety Gate handoff, and tests before `/prd-to-tasks FT-010`.

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agro-intellect"
+version = "0.1.0"
+description = "Agro Intellect local modular monolith baseline"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "sqlalchemy>=2.0,<3",
+  "pydantic>=2,<3",
+  "alembic>=1.13,<2",
+  "psycopg[binary]>=3.2,<4",
+]
+
+[project.optional-dependencies]
+test = [
+  "httpx>=0.28,<1",
+  "pytest>=9,<10",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra"

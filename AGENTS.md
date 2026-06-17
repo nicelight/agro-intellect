@@ -5,9 +5,12 @@
 1. Read `AGENTS.md` (this guide)
 2. Read `.memory-bank/constitution.md` (top governing policy)
 3. Read `.memory-bank/mbb/index.md` (Memory Bank rules)
-4. Read `.memory-bank/spec-index.md` (normative routing)
-5. Read `.memory-bank/index.md` (table of contents)
-6. Read task/feature-specific docs
+4. Read `.memory-bank/spec-backbone.md` (spec readiness/backbone state)
+5. Read `.memory-bank/spec-index.md` (normative spec registry)
+6. Read `.memory-bank/index.md` (table of contents)
+7. If ROLE: ORCHESTRATOR, read `.memory-bank/roles/orchestrator.md`.
+8. If delegated worker, read `.memory-bank/roles/worker.md`.
+9. Read task/feature-specific docs
 
 ## Orchestrator Mode
 
@@ -20,50 +23,15 @@ The role is fixed and cannot be changed.
 Every ORCHESTRATOR response must start with:
 `Роль: Оркестратор`
 
-### Core Rules
-- ORCHESTRATOR is responsible for strategy, scope, planning, coordination, risk control, consultation with user and final judgment.
-- ORCHESTRATOR must follow Spec Before Code.
-- Before any non-trivial code/workflow/CI/test/docs/package/config/skill change, ORCHESTRATOR must identify affected specs/source-of-truth, check match, report conflicts/gaps/unclear requirements/risks, and propose spec/source-of-truth changes before implementation if needed.
-- If there is no spec layer, identify closest source of truth first: README, docs, existing code, tests, config, or project conventions.
-- Keep the Project Constitution early in priming, but do not turn AGENTS.md into Constitution.
-- Use the current JSON task registry: `.memory-bank/tasks/index.json` and indexed `.memory-bank/tasks/TASK-*.task.json` records.
-- Route work by `task.tier: T0|T1|T2|T3`.
-- Do not use legacy task models.
-- Run `node scripts/mb-lint.mjs` and `/mb-doctor` where task records or Memory Bank routing change.
-- Run `/mb-doctor --strict` before autonomous/autopilot task selection.
-
-### Engineering Discipline
-- Разработку ведём по KISS: выбираем самое простое решение, которое удовлетворяет текущим specs, acceptance criteria и constraints.
-- Do not overengineering: не добавлять speculative abstractions, лишние слои, premature generalization или broad rewrites вне текущего scope.
-
-### Delegation
-- ORCHESTRATOR delegates implementation, tests, verification, and review to subagents.
-- ORCHESTRATOR may delegate research, inspection, and context gathering to preserve context window.
-- Each delegated task must have clear role, task, scope, and expected result.
-- Each delegated task must instruct the subagent to stop and report blockers, scope conflicts, risky side effects, unclear requirements, or contradictions with specs/source-of-truth artifacts.
-- Do not run parallel subagents when their scopes, files, or responsibilities may overlap.
-- ORCHESTRATOR waits for required subagent results before continuing.
-- Receive subagent reports, detect conflicts, gaps, and risks, then decide next steps.
-
-### Allowed
-- Read key documents for task understanding.
-- Create plans, decomposition, risk notes, and scope boundaries.
-- Create or update planning artifacts when the task permits them.
-- Run read-only checks needed for judgment.
-- Launch subagents for search, analysis, implementation, tests, and review.
-- Report status, decisions, blockers, and required user input.
-
-### Forbidden
-- Do not directly modify code, tests, CI, scripts, docs, workflow, skills, package files, or configs unless the user explicitly permits ORCHESTRATOR implementation.
-- Do not perform implementation work.
-- Do not silently fix reviewed work; delegate fixes back to an appropriate subagent.
-- Do not skip Spec Before Code for non-trivial changes.
+Full role contracts live in:
+- `.memory-bank/roles/orchestrator.md`
+- `.memory-bank/roles/worker.md`
 
 ## Preferred context routing
 - Start with `.memory-bank/architecture/*` and `.memory-bank/guides/*` for concept priming.
-- If present, prefer explicit normative docs such as `.memory-bank/constitution.md`, `.memory-bank/spec-index.md`, `.memory-bank/invariants.md`, `.memory-bank/glossary.md`, `.memory-bank/contracts/*`, `.memory-bank/states/*`, `.memory-bank/runbooks/*`, and `.memory-bank/testing/*`.
+- If present, prefer explicit normative docs such as `.memory-bank/constitution.md`, `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, `.memory-bank/invariants.md`, `.memory-bank/glossary.md`, `.memory-bank/contracts/*`, `.memory-bank/states/*`, `.memory-bank/runbooks/*`, and `.memory-bank/testing/*`.
 - Normative docs enrich the Memory Bank; they do not invalidate valid duo docs.
-- Before serious work, read `.memory-bank/spec-index.md` and follow linked SDD specs.
+- Before serious work, read `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and follow linked SDD specs.
 - Do not create a new spec before checking existing specs through `.memory-bank/spec-index.md`.
 - For `T2` / `T3` tasks, linked SDD specs are normative inputs; missing linked specs are a blocker for serious work.
 
@@ -82,23 +50,9 @@ After finishing a meaningful unit of work:
 - Claude Code reads project skills from `.claude/skills/<name>/SKILL.md`.
 - `.codex/` is only for project configuration (e.g. `.codex/config.toml`).
 
-## Subagents
-- Orchestrator → workers only (max depth = 2)
-- Workers write details into `.tasks/TASK-XXX/`
-- Orchestrator reads only short summaries
-
-## Worker execution guardrails
-- Workers read assigned protocol files and relevant specs before acting.
-- Workers stay inside scope from `.protocols/TASK-<ID>/context.md` and `.protocols/TASK-<ID>/plan.md`.
-- Workers keep `.protocols/TASK-<ID>/progress.md` updated.
-- Workers report blockers, scope conflicts, and spec contradictions instead of expanding scope.
-- Workers do not make product, spec, architecture, safety, or public-contract decisions.
-- Detailed reports go to `.tasks/TASK-<ID>/`.
-- Report names follow `TASK-<ID>-S-<STAGE>-final-report-<code|docs>-<NN>.md`.
-- Apply KISS and Spec Before Code.
-
 ## Clean context (recommended)
 - Route each `TASK-XXX` by `task.tier` and `.memory-bank/workflows/tier-policy.md`.
+- Delegation and worker reports follow `.memory-bank/roles/orchestrator.md` and `.memory-bank/roles/worker.md`.
 - T0/T1 may use compact `.protocols/TASK-XXX/run.md`; compact evidence can be enough.
 - Scheduler mode: T2/T3 require full protocol state plus `/verify` PASS and `/red-verify` semantic-pass before scheduler marks done.
 - Manual mode: `/verify` PASS may close; `/red-verify` may run later and reopen/block/fail.
@@ -114,12 +68,11 @@ Claude (fresh session):
 - `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123. Read AGENTS.md + task record + tier-policy. Use tier-appropriate .protocols/TASK-123/ state. Implement. Record evidence. Report → .tasks/TASK-123/…'`
 
 ## Two modes (interactive vs autonomous)
-- **Interactive**: target chain is `/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-001 -> /prd-to-tasks FT-001 -> /execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T2/T3 -> /mb-sync`.
-- Feature-level route template: `/write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>`.
-- Run `/spec-design` after `/prd` as the mandatory global/backbone SDD gate; it precedes and does not replace feature-level `/spec-improve FT-001`.
+- **Interactive**: target chain is `/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-001 -> /prd-to-tasks FT-001 -> /prd-to-tasks FT-002 -> ... -> /prd-to-tasks FT-N -> /verify task cards/artifacts -> /execute first indexed TASK -> /verify same TASK -> /red-verify same TASK for T2/T3 -> /mb-sync` (start execution only after every FT-* has been decomposed and the generated task artifacts have passed the pre-execution verify gate).
+- `/spec-design` is mandatory after `/prd`, but simple T0/T1 projects may record a minimal backbone with irrelevant areas `not_applicable`; it may also create one first foundation task when a minimum executable baseline is needed. It does not replace per-feature `/spec-improve FT-001`.
 - Use `/brainstorm` before `/brief` only when the idea is raw.
 - Use `/clarify-feature FT-001` only for explicit feature blockers before `/prd-to-tasks`.
-- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init` after `/write-prd`, then global `/spec-design --all` after `/prd`, then `/spec-auto --all` before `/prd-to-tasks --all`. Use `/autopilot` only if JSON task records and required SDD spec links already exist. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
+- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init` after `/write-prd`, `/spec-design --all` after `/prd`, and `/spec-auto --all` after the backbone gate. Use `/autopilot` only if JSON task records and required SDD spec links already exist. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
 
 Naming:
 - Folder: `.tasks/TASK-<ID>/`
@@ -142,7 +95,8 @@ Naming:
 - /write-prd → .memory-bank/commands/write-prd.md
 - /spec-init → .memory-bank/commands/spec-init.md
 - /prd → .memory-bank/commands/prd.md
-- /spec-design → .memory-bank/commands/spec-design.md
+- /spec-design → .memory-bank/commands/spec-design.md (mandatory adaptive global SDD backbone after /prd)
+- /spec-improve → .memory-bank/commands/spec-improve.md
 - /spec-auto → .memory-bank/commands/spec-auto.md
 - /clarify-feature → .memory-bank/commands/clarify-feature.md
 - /prd-to-tasks → .memory-bank/commands/prd-to-tasks.md

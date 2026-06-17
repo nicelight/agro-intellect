@@ -1,0 +1,77 @@
+{
+  "id": "TASK-004",
+  "title": "Implement ActorContext role policy and PlantPermissionContext interface",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-001",
+  "reqs": ["REQ-003", "REQ-004", "REQ-022"],
+  "depends_on": ["TASK-003"],
+  "touched_files": [
+    "backend/app/access_admin/actor_context.py",
+    "backend/app/access_admin/roles.py",
+    "backend/app/access_admin/plant_permissions.py",
+    "backend/app/api/dependencies.py",
+    "backend/app/agent_context/**",
+    "tests/backend/access_admin/**",
+    "tests/backend/agent_context/**",
+    ".memory-bank/tasks/plans/IMPL-FT-001.md",
+    ".memory-bank/changelog.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "backend access and context tests",
+      "command": "pytest tests/backend/access_admin tests/backend/agent_context -q",
+      "required": true
+    },
+    {
+      "name": "memory bank doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Every protected dependency path resolves ActorContext before business logic.",
+    "Role preset matrix produces Boss, Engineer, and Consultant authority exactly as specified.",
+    "Context builder fixtures exclude session IDs, tokens, hashes, cookies, auth headers, and unauthorized Plants.",
+    "PlantPermissionContext interface is ready for FT-002 resolver without duplicating FT-002 domain rules."
+  ],
+  "docs": [
+    ".memory-bank/tasks/plans/IMPL-FT-001.md",
+    ".memory-bank/changelog.md"
+  ],
+  "evidence_required": [
+    "Unit test output for role preset and permission derivation.",
+    "Integration test output proving ActorContext is present before protected route/context-builder business logic.",
+    "Context hygiene fixture proving auth material is excluded.",
+    "Functional verification PASS artifact under .tasks/TASK-004/.",
+    "Red-verify semantic-pass artifact because this is T3.",
+    "Human checkpoint and rollback/recovery note required before closure because this is T3."
+  ],
+  "source_artifacts": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/invariants.md"
+  ],
+  "constraints": [
+    "Frontend visibility is presentation only; backend authorization is authoritative.",
+    "Consultant cannot create domain task/recommendation records or approve physical actions.",
+    "Do not duplicate FT-002 PlantAccessGrant mutation/lifecycle rules."
+  ],
+  "invariants": [
+    ".memory-bank/architecture/system-architecture.md: every Farm/Plant route and context builder resolves ActorContext.",
+    ".memory-bank/contracts/agent-chat-bus.md: context builders must resolve ActorContext and PlantAccessGrant before returning events."
+  ],
+  "verification_targets": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md: ActorContext, Context Builder Rules, Role Presets, Verification.",
+    ".memory-bank/testing/index.md: ActorContext propagation and context filtering integration areas."
+  ]
+}
