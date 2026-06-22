@@ -47,10 +47,6 @@ Establish the local Farm authority boundary so every human action and agent cont
 ## Spec Design Status
 
 - First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003.
-- First-wave `/prd-to-tasks` and task-artifact verification are complete for FT-001, FT-002, and FT-003.
-- Implementation plans:
-  - [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md)
-  - [.memory-bank/tasks/plans/IMPL-FT-002.md](../tasks/plans/IMPL-FT-002.md)
-  - [.memory-bank/tasks/plans/IMPL-FT-003.md](../tasks/plans/IMPL-FT-003.md)
-- TASK records: TASK-001..TASK-015 in [.memory-bank/tasks/index.json](../tasks/index.json).
-- Next route: execute TASK-001 first.
+- Current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
+- Generated task-decomposition artifacts for FT-001, FT-002, and FT-003 have been intentionally removed.
+- [.memory-bank/tasks/index.json](../tasks/index.json) is empty; no `TASK-*` execution route is active.

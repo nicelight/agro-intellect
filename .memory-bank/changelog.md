@@ -4,6 +4,13 @@ status: active
 ---
 # Changelog
 
+## [2026-06-22] Generated task artifacts removed after rollback
+- Reset the active task queue to an empty [.memory-bank/tasks/index.json](tasks/index.json).
+- Removed generated first-wave task records and implementation plans for FT-001, FT-002, and FT-003.
+- Removed local ignored `.tasks/` task evidence/review artifacts and task/feature protocol state tied to old task generation.
+- Updated active routing docs so the Memory Bank no longer points to `/execute TASK-001` or stale `TASK-*` records.
+- Kept PRD, product, requirements, epics, features, global SDD backbone, and FT-001..FT-003 feature-local specs.
+
 ## [2026-06-17] Task registry cleanup
 - Removed the obsolete standalone foundation task from the active task registry and project navigation.
 - Kept the executable backend scaffold as part of the active TASK-001 implementation evidence.

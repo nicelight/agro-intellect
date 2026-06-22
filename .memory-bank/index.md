@@ -6,10 +6,9 @@ status: active
 
 ## Current State
 
-The active Memory Bank is in MVP v2 post-PRD-decomposition,
-post-global-SDD-backbone, first-wave task-decomposition, and task-artifact
-verification state. TASK-001 is the first active implementation task and has
-execute, verify, and red-verify evidence recorded.
+The active Memory Bank is in MVP v2 post-PRD-decomposition and
+post-global-SDD-backbone state. Generated first-wave task artifacts have been
+intentionally removed; no executable task queue is active.
 
 The MVP v1 spec-layer has been hard-archived under
 [.memory-bank/archive/mvp-v1/](archive/mvp-v1/): historical PRD, requirements,
@@ -19,15 +18,11 @@ Active agents must not use archived MVP v1 specs as current source of truth.
 Archived docs are historical reference only. The active MVP v2 PRD now promotes the
 first product decisions back into the active Memory Bank. Active MVP v2 product,
 requirements, epics, and features exist as draft L1-L3 artifacts. The global SDD
-architecture backbone is complete. First-wave feature-level `/spec-improve` is
-complete for FT-001, FT-002, and FT-003; their current normative feature designs
-are registered in [.memory-bank/spec-index.md](spec-index.md). `/prd-to-tasks`
-decomposition and task-artifact verification are complete for FT-001, FT-002,
-and FT-003 with implementation plans and schema-backed TASK-001..TASK-015
-records under [.memory-bank/tasks/](tasks/). TASK-001 has implementation and
-verification evidence; dependent tasks remain `planned` until TASK-001 is closed
-and the scheduler promotes them. Other features still require feature-level
-`/spec-improve FT-<NNN>` before task decomposition.
+architecture backbone is complete. Feature-level `/spec-improve` is complete for
+FT-001, FT-002, and FT-003; their current normative feature designs are
+registered in [.memory-bank/spec-index.md](spec-index.md). The active task index
+is intentionally empty. Other features still require feature-level
+`/spec-improve FT-<NNN>` before any future implementation planning.
 
 ## Active Governance And Routing
 
@@ -76,19 +71,16 @@ and the scheduler promotes them. Other features still require feature-level
 Next route:
 
 ```text
-/execute TASK-001
+No task execution route is active.
+Choose the next implementation-planning workflow explicitly.
 ```
 
 For features outside FT-001..FT-003, run `/spec-improve FT-<NNN>` before
-`/prd-to-tasks FT-<NNN>`. Do not run `/prd-to-tasks` from archived MVP v1 features
-or before the active MVP v2 relevant feature `/spec-improve FT-<NNN>` gate.
+task decomposition. Do not use archived MVP v1 features as current source of truth.
 
 ## Operational Roots
 
 - [.memory-bank/tasks/index.json](tasks/index.json): authoritative JSON task record index.
-- [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md): implementation plan for FT-001.
-- [.memory-bank/tasks/plans/IMPL-FT-002.md](tasks/plans/IMPL-FT-002.md): implementation plan for FT-002.
-- [.memory-bank/tasks/plans/IMPL-FT-003.md](tasks/plans/IMPL-FT-003.md): implementation plan for FT-003.
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
 - [.memory-bank/workflows/index.md](workflows/index.md): workflow policies and execution-loop router.
 - [.memory-bank/skills/index.md](skills/index.md): skill registry.

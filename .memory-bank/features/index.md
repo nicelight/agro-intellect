@@ -11,17 +11,17 @@ source_of_truth:
 
 Active MVP v2 features are draft L3 decomposition artifacts. Global `/spec-design` is complete.
 
-First-wave `/spec-improve`, `/prd-to-tasks`, and task-artifact verification are complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md), implementation plans live under [.memory-bank/tasks/plans/](../tasks/plans/), and schema-backed TASK records live under [.memory-bank/tasks/](../tasks/).
+First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
 
-Only TASK-001 is `ready`. TASK-002..TASK-015 remain `planned` behind explicit dependencies and must not be executed until their prerequisites and verification gates are satisfied. The next execution route is `/execute TASK-001`.
+Generated task-decomposition artifacts for FT-001, FT-002, and FT-003 have been intentionally removed. The active [.memory-bank/tasks/index.json](../tasks/index.json) queue is empty; no `TASK-*` execution route is active.
 
-All other features still require their own `/spec-improve FT-<NNN>` gate before `/prd-to-tasks FT-<NNN>`.
+All other features still require their own `/spec-improve FT-<NNN>` gate before any future implementation planning.
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/prd-to-tasks` complete; plan [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md); tasks TASK-001..TASK-005.
-- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): `/prd-to-tasks` complete; plan [.memory-bank/tasks/plans/IMPL-FT-002.md](../tasks/plans/IMPL-FT-002.md); tasks TASK-006..TASK-010.
-- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): `/prd-to-tasks` complete; plan [.memory-bank/tasks/plans/IMPL-FT-003.md](../tasks/plans/IMPL-FT-003.md); tasks TASK-011..TASK-015.
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md).
+- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md).
+- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md).
 
 ## EP-002 Plant Operations Evidence Authority
 

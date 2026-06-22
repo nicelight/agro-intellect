@@ -52,4 +52,8 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Feature-local `/spec-improve FT-001` and `/prd-to-tasks FT-001` are complete. Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md) and [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md): exact auth/session lifecycle, ActorContext shape, permission checks, route contracts, error handling, migration/indexing targets, TASK-001..TASK-005, and verification evidence before execution.
+Status: feature-local `/spec-improve FT-001` is complete.
+
+Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md) as the current normative feature design for exact auth/session lifecycle, ActorContext shape, permission checks, route contracts, error handling, migration/indexing targets, and verification targets.
+
+Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-001 implementation plan or `TASK-*` record is active.

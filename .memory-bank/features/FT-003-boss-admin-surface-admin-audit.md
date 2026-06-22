@@ -52,4 +52,8 @@ spec_design_links:
 
 ## SDD Design Gate
 
-Feature-local `/spec-improve FT-003` and `/prd-to-tasks FT-003` are complete. Use [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md) and [.memory-bank/tasks/plans/IMPL-FT-003.md](../tasks/plans/IMPL-FT-003.md) for admin routes/services, audit record shape, local invite semantics, authorization checks, TASK-011..TASK-015, and verification targets before execution.
+Status: feature-local `/spec-improve FT-003` is complete.
+
+Use [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md) as the current normative feature design for admin routes/services, audit record shape, local invite semantics, authorization checks, and verification targets.
+
+Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-003 implementation plan or `TASK-*` record is active.

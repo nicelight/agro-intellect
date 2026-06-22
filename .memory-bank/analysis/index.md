@@ -12,7 +12,7 @@ status: active
 - Active MVP v2 product, requirements, epics, and features exist as draft L1-L3 artifacts derived by `/prd`.
 - Active MVP v2 global architecture backbone exists and is complete.
 - First-wave feature-local SDD specs exist and are complete for FT-001, FT-002, and FT-003; they are registered in [.memory-bank/spec-index.md](../spec-index.md).
-- First-wave `/prd-to-tasks` decomposition and task-artifact verification are complete for FT-001, FT-002, and FT-003; implementation plans and TASK-001..TASK-015 records live under [.memory-bank/tasks/](../tasks/).
+- Generated first-wave task-decomposition artifacts have been intentionally removed; [.memory-bank/tasks/index.json](../tasks/index.json) is empty and no `TASK-*` execution route is active.
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -51,10 +51,10 @@ status: active
 
 ## Recommended Next Step
 
-After explicit user instruction, execute the first ready task:
+After explicit user instruction, choose the next implementation-planning workflow:
 
 ```text
-/execute TASK-001
+No ready task exists.
 ```
 
 ## Closed PRD Clarifications

@@ -60,4 +60,4 @@ Feature-local `/spec-improve FT-002` produced the authoritative feature hub:
 
 - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md): Farm seed, `tomato_001` seed, Plant lifecycle, PlantAccessGrant lifecycle, PlantPermissionContext resolver, route schemas, retained-history authorization, audit/event decisions, failure rules, and verification targets.
 
-`/prd-to-tasks FT-002` is complete. Next route: verify generated task artifacts, then execute FT-002 tasks only after their dependencies are satisfied.
+Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-002 implementation plan or `TASK-*` record is active.
