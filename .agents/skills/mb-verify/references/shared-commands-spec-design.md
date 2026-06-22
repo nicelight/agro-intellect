@@ -1,11 +1,11 @@
 ---
-description: Mandatory global SDD architecture backbone gate after PRD decomposition and before feature design.
+description: Mandatory global SDD architecture backbone gate after PRD decomposition and before feature task design.
 status: active
 ---
 # /spec-design - Global SDD backbone gate
 
 <objective>
-Create or update the mandatory global architecture/design backbone after `/prd` has created the FT set and before `/spec-improve FT-<NNN>`, `/spec-auto --all`, or `/prd-to-tasks`.
+Create or update the mandatory global architecture/design backbone after `/prd` has created the FT set and before `/prd-to-tasks FT-<NNN>` or `/spec-auto --all`.
 
 The first result is AI-first implementation guardrails: technical decisions, boundaries, and contracts that constrain agents/developers so they do not damage the project. It is not an architecture essay.
 
@@ -17,7 +17,7 @@ The gate is mandatory by workflow, but adaptive by depth:
 - projects with shared/T2/T3 concerns get staged architecture decisions and normal backbone specs;
 - unresolved key decisions are recorded as blockers and downstream commands must stop.
 
-`/spec-design` does not create normal feature TASK records, implementation plans, or feature-local tech specs, and it does not replace `/spec-improve`. Exception: it may create one foundation task when a project needs a minimum executable baseline before business features.
+`/spec-design` does not create TASK records, implementation plans, or feature-local tech specs. Feature-local design is handled inside `/prd-to-tasks`; standalone `/spec-improve` is for repair/refresh. When a project needs a minimum executable baseline before business features, `/spec-design` records the Foundation Dev Path decision and Feature Pressure Map in `.memory-bank/foundation.md`; executable foundation work is generated later by `/foundation-to-tasks`.
 </objective>
 
 <process>
@@ -102,7 +102,7 @@ After reading PRD/requirements/features and current specs, ask one initial archi
 - **Standard AI-first architecture backbone (recommended when shared behavior exists)**: normal guardrails for modules, source-of-truth, contracts, data, testing, and deployment.
 - **Strict T2/T3 backbone**: for public contracts, security/safety, migrations, distributed/runtime boundaries, cross-team ownership, or irreversible decisions.
 
-Recommend the mode from evidence; the user may override. Preserve the rule that `/prd-to-tasks` may route back to `/spec-design` or `/spec-improve` if T2/T3 indicators appear during task slicing.
+Recommend the mode from evidence; the user may override. Preserve the rule that `/prd-to-tasks` may route back to `/spec-design` for shared/global gaps or use its own feature-level design phase for feature-local gaps if T2/T3 indicators appear during task slicing.
 
 ## 5) Backbone status gate
 Update `.memory-bank/spec-backbone.md` with this exact contract:
@@ -226,6 +226,7 @@ Recommended `system-architecture.md` sections for Single-file KISS:
 - `## System goal`
 - `## Main constraints`
 - `## Non-goals`
+- `## Architecture Spine` when T2/T3 or shared-boundary decisions need compact executable rules
 - `## Architecture style`
 - `## Main modules / bounded contexts`
 - `## Data flow`
@@ -243,12 +244,45 @@ Architecture docs content boundary:
 - do not put detailed API schemas, endpoint contracts, lifecycle state machines, message/event envelope contracts, or feature-local implementation design in `architecture/*`
 - route those details to `.memory-bank/contracts/`, `.memory-bank/states/`, `.memory-bank/domains/`, or feature-level `.memory-bank/tech-specs/`
 
+### Architecture Spine KISS rule
+
+For T2/T3 or shared-boundary pressure, update
+`.memory-bank/architecture/system-architecture.md#Architecture Spine`.
+
+Keep the spine short and executable. It is not a full architecture essay.
+
+Use stable `AD-*` blocks:
+
+```markdown
+#### AD-001 — <short decision>
+- Binds:
+- Prevents:
+- Rule:
+- Verification:
+- Source:
+```
+
+Rules:
+- create `AD-*` only for decisions that constrain T2/T3 or shared-boundary work
+- do not create `AD-*` for local T0/T1 implementation details
+- do not renumber existing `AD-*`
+- retire/replace decisions explicitly; do not silently delete them
+- every active `AD-*` must include `Binds`, `Prevents`, and `Rule`
+- `Rule` must be actionable for `/execute` and checkable by `/verify`
+- put detailed rationale in ADRs or decision logs only when it is worth preserving
+
+ADR routing remains optional. Create/update an ADR only when a decision has
+durable trade-off rationale, changes source of truth, changes public
+contract/schema/message envelope, introduces irreversible
+storage/state/deployment/security behavior, or will be reused by more than one
+feature.
+
 ## 10) Domain Spec routing
 Route domain model work through the Backbone Area Matrix as `domain_model` with status `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`.
 
 Domain Spec is not a mandatory heavy phase for every project:
 - If the scope is simple T0/T1 and PRD/requirements/features already define the needed vocabulary and rules clearly enough, set `domain_model: not_applicable` with a short rationale, or link the authoritative PRD/requirements/features source.
-- If domain logic is feature-local, route it to `/spec-improve FT-<NNN>` and the feature tech-spec instead of creating a global Domain Spec.
+- If domain logic is feature-local, route it to the `/prd-to-tasks FT-<NNN>` feature-level design phase and the feature tech-spec instead of creating a global Domain Spec.
 - If the domain model affects modules, contracts, storage, states, security/safety, or likely T2/T3 tasks, `/spec-design` creates or updates a minimal `.memory-bank/domains/<domain>.md` or `.memory-bank/domains/runtime-data-model.md` as the global/shared authoritative source.
 
 Minimal Domain Spec sections:
@@ -270,7 +304,7 @@ Write or update only relevant backbone artifacts:
 - `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
 - `.memory-bank/user-scenarios.md` when scenario evidence exists or a scenario gap must be explicit
-- `.memory-bank/architecture/system-architecture.md` as the default architecture hub, using the Single-file KISS sections above and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
+- `.memory-bank/architecture/system-architecture.md` as the default architecture hub, using the Single-file KISS sections above, Architecture Spine for T2/T3/shared-boundary executable rules, and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
 - `.memory-bank/architecture/source-of-truth.md` only when Split core docs or Split by boundary/topic was selected, or when source-of-truth rules are too large/reused to keep in `system-architecture.md`
 - `.memory-bank/architecture/module-boundaries.md` only when Split core docs or Split by boundary/topic was selected, or when boundary rules are too large/reused to keep in `system-architecture.md`
 - `.memory-bank/architecture/<boundary>.md` only for a complex dedicated architecture boundary that cannot stay readable inside `system-architecture.md`
@@ -285,42 +319,83 @@ Write or update only relevant backbone artifacts:
 - `.memory-bank/invariants.md`
 - `.memory-bank/testing/*`
 - `.memory-bank/adrs/*` for stable architecture decisions
-- `.memory-bank/tasks/index.json` and one `.memory-bank/tasks/TASK-*.task.json` only when the foundation task exception below applies
+- `.memory-bank/foundation.md` only when a Foundation Dev Path decision or explicit non-requirement must be recorded
 
 Keep output conservative. Prefer updating an existing authoritative spec over creating a new one.
 Prefer fewer architecture files for faster priming; split only when it removes real complexity or matches the selected artifact strategy.
 Keep architecture docs global: if the content is an API schema, lifecycle state machine, message/event contract, or feature-local behavior, create or update the relevant contract/state/domain/tech-spec instead of expanding `architecture/*`.
 
 Do not create:
-- `.memory-bank/tasks/*.task.json` except the one foundation task allowed below
+- `.memory-bank/tasks/*.task.json`
 - `.memory-bank/tasks/plans/*`
 - feature-local `.memory-bank/tech-specs/FT-*.md`
 - implementation plans
 - separate diagrams folders; diagrams belong as Mermaid sections in `.memory-bank/architecture/system-architecture.md`
 - extra architecture files just because a standard filename exists in this command
 
-## 11.1) Optional foundation task exception
-If the project cannot safely start business-feature implementation without a minimum executable baseline, `/spec-design` may create exactly one foundation task.
+## 11.1) Foundation Dev Path decision
+After the FT set and global backbone evidence exist, decide whether the project
+needs a verified executable baseline before product feature implementation.
 
-Use this only for baseline execution plumbing:
-- app skeleton and package scripts
-- env/config
-- DB/storage/migration baseline when required by PRD/specs
-- test harness
-- lint/typecheck/build gates
-- minimal CI/dev commands
-- seed/demo data only when required by PRD/specs
+Create or update `.memory-bank/foundation.md` when either:
+- foundation is required; or
+- foundation is explicitly not required and downstream commands need a recorded
+  rationale.
+
+Minimal required shape:
+
+```markdown
+---
+description: Foundation Dev Path evidence and feature pressure map.
+status: active
+---
+# Foundation Dev Path
+
+## Gate Anchors
+- Foundation Required: true|false
+- Foundation Requirement: REQ-000
+- Foundation Pseudo-Feature: FT-000
+- Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required
+
+## Minimal Work Path
+- Build command:
+- Start command:
+- Primary entrypoint:
+- Smoke path:
+- Test command:
+- Evidence:
+
+## Feature Pressure Map
+| Feature | Pressure | Foundation Response | Probe | Status |
+|---|---|---|---|---|
+
+## Deferred Decisions
+| Decision | Why deferred | Trigger to revisit |
+|---|---|---|
+
+## Foundation Exit Criteria
+- minimal path passes
+- compatibility probes pass
+- no P0/P1 design pressure unresolved
+- feature dev path allowed
+```
 
 Rules:
-- create no task when the existing codebase or skeleton is already executable enough for feature tasks
-- create no normal feature tasks and no implementation plans
-- prefer `TASK-000`; otherwise use the next safe `TASK-*` ID without renumbering existing tasks
-- put it first in `.memory-bank/tasks/index.json` using the normal `id`/`file` index entry
-- set `feature: "FOUNDATION"`, `wave: "W0"`, and `status: "ready"`
-- choose `tier` by the existing tier policy; do not add new status fields or foundation-specific lifecycle fields
-- fill the normal task schema fields; use empty arrays where evidence is not applicable
-- if storage or migrations are included, include a verification target that exercises the baseline path
-- keep scope to the minimum executable baseline; feature behavior still belongs to `/spec-improve` and `/prd-to-tasks`
+- set `Foundation Required: true` when planned features cannot safely start
+  without a walking skeleton, runtime path, test harness, entrypoint, storage
+  baseline, contract boundary, or compatibility probe
+- set `Foundation Required: false` only when existing code/baseline or project
+  simplicity makes a separate foundation queue unnecessary; set
+  `Foundation Gate Task: not_required` and record rationale
+- in brownfield, default to `Foundation Required: false` when the existing
+  executable baseline is already evidenced well enough for the planned delta;
+  use `/foundation-to-tasks --verify-existing` only when baseline proof is
+  still needed before product feature work
+- keep the Feature Pressure Map grounded in current PRD/features/specs; do not
+  convert product behavior into foundation work
+- do not create `REQ-000`, `FT-000`, task records, packets, protocols, or
+  implementation plans in `/spec-design`
+- route required executable work to `/foundation-to-tasks`
 
 ## 12) Verifiable contracts routing
 For AI-first architecture, route concrete contracts to verifiable artifacts when relevant:
@@ -363,7 +438,7 @@ Update `.memory-bank/spec-backbone.md`:
 - global backbone blockers and next command routing
 - architecture artifact strategy and baseline backbone specs with their scope
 - short backbone decision labels only, never decision body/rationale/rules
-- handoff to `/spec-improve` or `/spec-auto`
+- handoff to `/prd-to-tasks` or `/spec-auto`
 
 Update `.memory-bank/spec-index.md` only as a pure registry:
 - add or update authoritative spec rows
@@ -373,7 +448,7 @@ Update `.memory-bank/spec-index.md` only as a pure registry:
 
 For affected feature docs:
 - add SDD Design Gate notes with normative backbone links where evidence exists
-- do not set `spec_design_status: complete` unless feature-local `/spec-improve` criteria are already fully satisfied
+- do not set `spec_design_status: complete` unless feature-local design criteria are already fully satisfied
 - do not mark `not_required` for features that still depend on shared T2/T3 backbone decisions
 
 ## 15) Handoff
@@ -385,10 +460,13 @@ Report:
 - Backbone Area Matrix summary
 - not_applicable areas and rationale for simple projects
 - affected features and normative links
-- foundation task: created `TASK-*` or `none`
+- foundation decision: `required`, `not_required`, or `blocked`
+- foundation next step: `/foundation-to-tasks`, or `none` when
+  `Foundation Gate Task: not_required`
 - blockers/open questions
 - next command routing:
-  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas: `/spec-improve FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow
+  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is required: `/foundation-to-tasks`, then `/mb-doctor` at the foundation/task-queue boundary
+  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is not required: `/prd-to-tasks FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow
   - if status is `blocked`: no downstream command; resolve the blocker, user decision, or spec gap, then rerun `/spec-design`
 
 </process>

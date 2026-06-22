@@ -2,7 +2,7 @@
 description: Testing and verification router for MVP v2 migration.
 status: active
 owner: quality
-last_updated: 2026-06-14
+last_updated: 2026-06-23
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -13,6 +13,7 @@ source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/agent-chat-bus.md
   - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/contracts/foundation-critical-path.md
 ---
 # Testing Index
 
@@ -42,9 +43,24 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Memory Bank docs must pass `node scripts/mb-lint.mjs`.
 - Readiness before autonomous/task selection must pass `node scripts/mb-doctor.mjs`.
 - Diffs must pass `git diff --check`.
-- Feature task decomposition must not start before global `/spec-design` and the relevant `/spec-improve FT-<NNN>`.
-- Global `/spec-design` is complete; current pre-task gate is the relevant feature-level `/spec-improve FT-<NNN>`.
+- Product feature task decomposition must not start before global `/spec-design`, required Foundation closure, and the relevant `/spec-improve FT-<NNN>`.
+- Global `/spec-design` is complete; current pre-product-task gate is `/foundation-to-tasks`, foundation `/mb-doctor`, and final `FT-000` gate closure.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
+
+## Foundation Critical Path Gate
+
+Before product feature tasking, the required [.memory-bank/foundation.md](../foundation.md) path must be generated through `/foundation-to-tasks` and verified through the final `FT-000` gate task. The executable contract is [.memory-bank/contracts/foundation-critical-path.md](../contracts/foundation-critical-path.md).
+
+Foundation evidence must prove:
+
+- Photo/User input creates authorized source refs and a valid BusEventEnvelope.
+- Agent invocation goes through a project-owned adapter and runtime decision boundary.
+- MessageEnvelope and UIFeedEvent projection are separate; UI Feed projection is not consumed by agents.
+- Safety/State/Task transitions fail closed for physical-action implication.
+- PostgreSQL/read model, `timeline.jsonl`, and photo JSON export are produced as separate authority/audit/export artifacts.
+- Secret/auth material and raw provider output do not appear in logs, Bus, UI Feed, timeline, screenshots, or export artifacts.
+- Test-only stubs remain scoped to tests and cannot satisfy MVP runtime/demo acceptance.
+- `C-FND-001` through `C-FND-009` in the Foundation Critical Path contract are satisfied by linked task evidence.
 
 ## Unit Test Areas
 

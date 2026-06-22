@@ -7,8 +7,8 @@ status: active
 Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 
 ## Core Rules
-- If no explicit role is given to the top-level agent, act as `ROLE: ORCHESTRATOR`.
-- Delegated agents are not ORCHESTRATOR by default.
+- ORCHESTRATOR is a top-level coordination role.
+- Delegated agents are not ORCHESTRATOR or GENERAL by default.
 - Role is fixed and cannot be changed.
 - ORCHESTRATOR owns strategy, scope, planning, coordination, risk control, user consultation, and final judgment.
 - ORCHESTRATOR does not directly modify code, tests, CI, scripts, docs, workflow, skills, package files, or configs unless the user explicitly permits ORCHESTRATOR implementation.
@@ -17,12 +17,22 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 - Use the existing task lifecycle only: `planned|ready|in_progress|blocked|done|failed`.
 
 ## Delegation Rules
-- Mandatory: when spawning any subagent, ORCHESTRATOR must explicitly assign one role: `Explorer`, `Implementer`, `Reviewer`, or `General subagent`.
+- Mandatory: when spawning any subagent, ORCHESTRATOR must explicitly assign one role: `Explorer`, `Implementer`, or `Reviewer`.
 - Mandatory: the spawn prompt must include: `Read .memory-bank/roles/worker.md`.
 - Every delegation must include role, intent, constraints, boundary, expected output, and where to report.
 - ORCHESTRATOR defines intent and boundary; exact touched files are confirmed by worker preflight, not assumed upfront by ORCHESTRATOR.
 - Do not run parallel subagents when their file scope, responsibility, or decisions may overlap.
 - Do not create worker ping-pong. If a worker reports a blocker or conflict, decide the next step or escalate to the operator instead of bouncing the same ambiguity between workers.
+
+## Codex Reasoning Matrix
+
+| Task tier / situation                    | Codex reasoning                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------- |
+| `T0`, `T1`, `T2`                         | `medium`                                                          |
+| `T3` 								       | `high`                                                            |
+| Failed verification / complex debugging  | `high`                                                            |
+| Red-verification / semantic review       | `high`; use `xhigh` only for unusually complex or high-risk cases |
+
 
 ## Decision Flow
 1. Read the smallest sufficient governing context: `AGENTS.md`, `.memory-bank/constitution.md` if present, `.memory-bank/index.md`, relevant specs, task records, and role docs.

@@ -7,6 +7,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -18,7 +19,11 @@ const CONSTITUTION_REL = '.memory-bank/constitution.md';
 const MB_INDEX_REL = '.memory-bank/index.md';
 const SPEC_INDEX_REL = '.memory-bank/spec-index.md';
 const SPEC_BACKBONE_REL = '.memory-bank/spec-backbone.md';
-const TASK_ID_RE = /^TASK-[0-9]{3,}$/;
+const FOUNDATION_REL = '.memory-bank/foundation.md';
+const TASK_ID_FORMAT = 'TASK-NNN-FT-NNN-W-N';
+const TASK_ID_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$/;
+const FOUNDATION_TASK_ID_FORMAT = 'TASK-NNN-FT-000-W-N';
+const FOUNDATION_TASK_ID_RE = /^TASK-[0-9]{3}-FT-000-W-[0-9]+$/;
 const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
@@ -28,12 +33,18 @@ const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const TERMINAL_STATUSES = new Set(['done', 'failed']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const SDD_SPEC_REQUIRED_TIERS = new Set(['T2', 'T3']);
+const PACKET_REQUIRED_TIERS = new Set(['T2', 'T3']);
+const VALID_PACKET_STATUSES = new Set(['ready', 'ready_with_gaps', 'blocked', 'stale']);
+const BLOCKING_PACKET_STATUSES = new Set(['blocked', 'stale']);
+const USABLE_PACKET_STATUSES = new Set(['ready', 'ready_with_gaps']);
 const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const REQ_ID_RE = /^REQ-[0-9]{3,}$/;
 const FT_ID_RE = /^FT-[0-9]{3,}$/;
+const SOURCE_TASK_HASH_RE = /^sha256:[0-9a-f]{64}$/;
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
 const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
+const ARCHITECTURE_CONTRACT_ADR_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`]+/i;
 const EVIDENCE_WORD_RE = /\b(evidence|result|fail|failed|error|output|log|artifact|report)\b/i;
 const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
 const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
@@ -465,8 +476,10 @@ function checkTaskReadiness() {
   const orderedRecords = [...records.values()];
 
   checkTasksFromUnclarifiedFeatures(orderedRecords);
+  checkFoundationReadiness(orderedRecords, records);
 
   for (const record of orderedRecords) {
+    checkFoundationWave(record);
     checkReadyDependencies(record, records);
     checkInProgressProtocol(record);
     checkFullProtocolTask(record);
@@ -474,9 +487,12 @@ function checkTaskReadiness() {
     checkTerminalEvidence(record);
     checkReqFeatureLinkage(record);
     checkSddSpecLinkage(record);
+    checkArchitectureReferencePresence(record);
+    checkRequiredExecutionPacket(record);
   }
 
   checkFailedTaskClosure(orderedRecords);
+  checkT2FeatureSemanticCompletion(orderedRecords);
   checkFailedDependentsBlocked(orderedRecords);
   checkQueueState(orderedRecords, records, invalidEntries);
   addQueueSummary(orderedRecords, invalidEntries);
@@ -567,6 +583,141 @@ function loadTaskRecords(entries) {
   return { records, invalidEntries };
 }
 
+function checkFoundationWave(record) {
+  const { id, rel, task } = record;
+  if (task.wave !== 'W0') return;
+  if (task.feature === 'FT-000') return;
+
+  const severity = options.strict ? 'error' : 'warning';
+  addFinding(severity, 'TASK_W0_NON_FOUNDATION', `${rel}: W0 is reserved for FT-000 foundation tasks.`, {
+    path: rel,
+    task_id: id,
+    details: { feature: task.feature, wave: task.wave },
+    suggested_fix: 'Move product task work to W1/W2/W3, or create a real FT-000 foundation-extension task through /foundation-to-tasks.',
+  });
+}
+
+function checkFoundationReadiness(orderedRecords, records) {
+  const foundationAbs = path.join(ROOT, FOUNDATION_REL);
+  if (!isFile(foundationAbs)) return;
+
+  const severity = options.strict ? 'error' : 'warning';
+  const text = fs.readFileSync(foundationAbs, 'utf8').replace(/\r\n/g, '\n');
+  const anchors = parseFoundationAnchors(text);
+  const issues = validateFoundationAnchors(anchors);
+
+  if (issues.length) {
+    addFinding(severity, 'FOUNDATION_ANCHORS_INVALID', `${FOUNDATION_REL}: Gate Anchors are missing or invalid.`, {
+      path: FOUNDATION_REL,
+      details: { anchors, issues },
+      suggested_fix:
+        `Record Gate Anchors with Foundation Required true|false, Foundation Requirement REQ-000, Foundation Pseudo-Feature FT-000, and Foundation Gate Task ${FOUNDATION_TASK_ID_FORMAT}|not_required.`,
+    });
+    return;
+  }
+
+  if (anchors.required !== true) return;
+
+  const gate = records.get(anchors.gateTask);
+  if (!gate || gate.task.feature !== 'FT-000') {
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: foundation gate task is missing, unindexed, or not FT-000.`, {
+      path: FOUNDATION_REL,
+      task_id: anchors.gateTask,
+      details: {
+        gate_task: anchors.gateTask,
+        indexed: Boolean(gate),
+        feature: gate?.task?.feature,
+        status: gate?.task?.status,
+      },
+      suggested_fix: 'Run /foundation-to-tasks, then execute/verify the FT-000 queue until the final foundation gate task is done.',
+    });
+    return;
+  }
+
+  const productRecords = orderedRecords.filter((record) => record.task.feature !== 'FT-000');
+
+  if (productRecords.length && gate.task.status !== 'done') {
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${gate.rel}: foundation gate task is not done.`, {
+      path: gate.rel,
+      task_id: anchors.gateTask,
+      details: { status: gate.task.status },
+      suggested_fix: 'Finish /execute, /verify, and /mb-sync for the foundation gate task before product feature execution.',
+    });
+  }
+
+  const missing = productRecords
+    .filter((record) => !taskDependsOn(record.id, anchors.gateTask, records))
+    .map((record) => ({ id: record.id, path: record.rel, feature: record.task.feature }));
+
+  if (!missing.length) return;
+
+  addFinding(severity, 'FOUNDATION_GATE_DEP_MISSING', `${FOUNDATION_REL}: product tasks are missing the required foundation gate dependency.`, {
+    path: FOUNDATION_REL,
+    task_id: anchors.gateTask,
+    details: { gate_task: anchors.gateTask, tasks: missing },
+    suggested_fix:
+      'Update product task depends_on so every non-FT-000 task depends directly or transitively on the final foundation gate task.',
+  });
+}
+
+function parseFoundationAnchors(text) {
+  const section = text.match(/^##\s+Gate Anchors\b([\s\S]*?)(?=^##\s+|(?![\s\S]))/im)?.[1] ?? '';
+  const value = (label) => {
+    const match = section.match(new RegExp(`(?:^|\\n)\\s*[-*]\\s*${escapeRegExp(label)}\\s*:\\s*([^\\n]+)`, 'i'));
+    return match?.[1]?.trim();
+  };
+
+  const requiredRaw = value('Foundation Required');
+  const required = /^true$/i.test(requiredRaw ?? '')
+    ? true
+    : /^false$/i.test(requiredRaw ?? '')
+      ? false
+      : undefined;
+
+  return {
+    required,
+    requirement: value('Foundation Requirement'),
+    pseudoFeature: value('Foundation Pseudo-Feature'),
+    gateTask: value('Foundation Gate Task'),
+  };
+}
+
+function validateFoundationAnchors(anchors) {
+  const issues = [];
+
+  if (anchors.required !== true && anchors.required !== false) {
+    issues.push('Foundation Required must be true or false');
+  }
+  if (anchors.requirement !== 'REQ-000') {
+    issues.push('Foundation Requirement must be REQ-000');
+  }
+  if (anchors.pseudoFeature !== 'FT-000') {
+    issues.push('Foundation Pseudo-Feature must be FT-000');
+  }
+
+  if (anchors.required === true) {
+    if (!FOUNDATION_TASK_ID_RE.test(anchors.gateTask ?? '')) {
+      issues.push(`Foundation Gate Task must be ${FOUNDATION_TASK_ID_FORMAT} when foundation is required`);
+    }
+  } else if (anchors.required === false && anchors.gateTask !== 'not_required') {
+    issues.push('Foundation Gate Task must be not_required when foundation is not required');
+  }
+
+  return issues;
+}
+
+function taskDependsOn(taskId, dependencyId, records, seen = new Set()) {
+  if (taskId === dependencyId) return true;
+  if (seen.has(taskId)) return false;
+  seen.add(taskId);
+
+  const record = records.get(taskId);
+  const deps = Array.isArray(record?.task?.depends_on) ? record.task.depends_on : [];
+  if (deps.includes(dependencyId)) return true;
+
+  return deps.some((depId) => records.has(depId) && taskDependsOn(depId, dependencyId, records, seen));
+}
+
 function checkReadyDependencies(record, records) {
   const { id, rel, task } = record;
   if (task.status !== 'ready') return;
@@ -640,7 +791,7 @@ function checkFullProtocolTask(record) {
     });
   }
 
-  if (task.status === 'done') {
+  if (task.status === 'done' && task.tier === 'T3') {
     const redFiles = redVerificationFiles(id);
     if (!redFiles.length) {
       addFinding(severity, 'TASK_RED_VERIFY_EVIDENCE_MISSING', `${rel}: ${task.tier} done task has no red-verify evidence.`, {
@@ -662,22 +813,20 @@ function checkFullProtocolTask(record) {
       );
     }
 
-    if (task.tier === 'T3') {
-      const text = protocolAndArtifactText(id);
-      if (!hasExactMarker(text, T3_HUMAN_CHECKPOINT_MARKER)) {
-        addFinding(severity, 'TASK_T3_CHECKPOINT_MISSING', `${rel}: T3 done task has no exact ${T3_HUMAN_CHECKPOINT_MARKER} marker.`, {
-          path: rel,
-          task_id: id,
-          suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
-        });
-      }
-      if (!hasExactMarker(text, T3_ROLLBACK_RECOVERY_MARKER)) {
-        addFinding(severity, 'TASK_T3_ROLLBACK_MISSING', `${rel}: T3 done task has no exact ${T3_ROLLBACK_RECOVERY_MARKER} marker.`, {
-          path: rel,
-          task_id: id,
-          suggested_fix: `Record ${T3_ROLLBACK_RECOVERY_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
-        });
-      }
+    const text = protocolAndArtifactText(id);
+    if (!hasExactMarker(text, T3_HUMAN_CHECKPOINT_MARKER)) {
+      addFinding(severity, 'TASK_T3_CHECKPOINT_MISSING', `${rel}: T3 done task has no exact ${T3_HUMAN_CHECKPOINT_MARKER} marker.`, {
+        path: rel,
+        task_id: id,
+        suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
+      });
+    }
+    if (!hasExactMarker(text, T3_ROLLBACK_RECOVERY_MARKER)) {
+      addFinding(severity, 'TASK_T3_ROLLBACK_MISSING', `${rel}: T3 done task has no exact ${T3_ROLLBACK_RECOVERY_MARKER} marker.`, {
+        path: rel,
+        task_id: id,
+        suggested_fix: `Record ${T3_ROLLBACK_RECOVERY_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
+      });
     }
   }
 }
@@ -839,6 +988,201 @@ function checkSddSpecLinkage(record) {
   });
 }
 
+function checkArchitectureReferencePresence(record) {
+  const { id, rel, task } = record;
+  if (!options.strict) return;
+  if (!SDD_SPEC_REQUIRED_TIERS.has(task.tier)) return;
+  if (hasArchitectureContractAdrReference(task)) return;
+
+  addFinding('warning', 'TASK_ARCH_SPINE_LINK_ABSENT', `${rel}: ${task.tier} task has no architecture/contract/ADR reference in richer task fields.`, {
+    path: rel,
+    task_id: id,
+    suggested_fix:
+      'If this task touches shared boundaries, add relevant Architecture Spine, boundary-map, contract, or ADR links to normative_inputs/constraints/invariants/verification_targets. If it is feature-local, no action is required.',
+  });
+}
+
+function checkRequiredExecutionPacket(record) {
+  const { id, rel, task } = record;
+  const runtimeContext = isPlainObject(task.runtime_context) ? task.runtime_context : null;
+  const tierRequiresPacket = PACKET_REQUIRED_TIERS.has(task.tier);
+  const explicitPacketRequired = runtimeContext?.packet_required === true;
+  if (!tierRequiresPacket && !explicitPacketRequired) return;
+
+  const severity = options.strict ? 'error' : 'warning';
+  const canonicalRef = canonicalPacketRef(id);
+
+  if (tierRequiresPacket && !explicitPacketRequired) {
+    addFinding(severity, 'TASK_PACKET_REQUIRED_POLICY', `${rel}: ${task.tier} task must require a canonical execution packet.`, {
+      path: rel,
+      task_id: id,
+      details: {
+        tier: task.tier,
+        packet_required: runtimeContext?.packet_required,
+        expected_packet_ref: canonicalRef,
+      },
+      suggested_fix: `Set runtime_context.packet_required to true, set runtime_context.packet_ref to ${canonicalRef}, and run /mb-packet ${id}.`,
+    });
+  }
+
+  const hasPacketRef = typeof runtimeContext?.packet_ref === 'string' && runtimeContext.packet_ref.trim();
+  if (!hasPacketRef) {
+    addFinding(severity, 'TASK_PACKET_REF_MISSING', `${rel}: required execution packet has no packet_ref.`, {
+      path: rel,
+      task_id: id,
+      suggested_fix: `Set runtime_context.packet_ref to ${canonicalRef} and run /mb-packet ${id}.`,
+    });
+  }
+
+  const packetRef = hasPacketRef ? normalizePacketRef(runtimeContext.packet_ref) : canonicalRef;
+  if (!isSafePacketRef(packetRef) || packetRef !== canonicalRef) {
+    addFinding(severity, 'TASK_PACKET_REF_INVALID', `${rel}: required execution packet_ref is invalid.`, {
+      path: rel,
+      task_id: id,
+      details: { packet_ref: runtimeContext?.packet_ref, expected_packet_ref: canonicalRef },
+      suggested_fix: `Use ${canonicalRef} and rerun /mb-packet ${id}.`,
+    });
+    return;
+  }
+
+  if (!isFile(path.join(ROOT, packetRef))) {
+    addFinding(severity, 'TASK_PACKET_MISSING', `${packetRef} not found for required execution packet.`, {
+      path: packetRef,
+      task_id: id,
+      suggested_fix: `Run /mb-packet ${id} before /execute.`,
+    });
+    return;
+  }
+
+  const packetRead = readJson(packetRef);
+  if (!packetRead.ok || !packetRead.value || typeof packetRead.value !== 'object' || Array.isArray(packetRead.value)) {
+    addFinding(severity, 'TASK_PACKET_INVALID', `${packetRef}: execution packet JSON is invalid.`, {
+      path: packetRef,
+      task_id: id,
+      details: { error: packetRead.message },
+      suggested_fix: `Refresh the packet with /mb-packet ${id}.`,
+    });
+    return;
+  }
+
+  const packet = packetRead.value;
+  if (packet.task_id !== id) {
+    addFinding(severity, 'TASK_PACKET_INVALID', `${packetRef}: execution packet task_id does not match ${id}.`, {
+      path: packetRef,
+      task_id: id,
+      details: { packet_task_id: packet.task_id },
+      suggested_fix: `Refresh the packet with /mb-packet ${id}.`,
+    });
+  }
+
+  if (!VALID_PACKET_STATUSES.has(packet.status)) {
+    addFinding(severity, 'TASK_PACKET_INVALID', `${packetRef}: execution packet status is invalid.`, {
+      path: packetRef,
+      task_id: id,
+      details: { status: packet.status, allowed: [...VALID_PACKET_STATUSES] },
+      suggested_fix: `Refresh the packet with /mb-packet ${id}.`,
+    });
+    return;
+  }
+
+  if (!checkPacketMinimalShape({ id, packet, packetRef, severity })) return;
+
+  if (BLOCKING_PACKET_STATUSES.has(packet.status)) {
+    addFinding(severity, 'TASK_PACKET_NOT_READY', `${packetRef}: execution packet is ${packet.status}.`, {
+      path: packetRef,
+      task_id: id,
+      details: { status: packet.status },
+      suggested_fix: packet.status === 'stale'
+        ? `Refresh the packet with /mb-packet ${id}.`
+        : 'Resolve packet blockers before /execute.',
+    });
+    return;
+  }
+
+  if (USABLE_PACKET_STATUSES.has(packet.status)) {
+    checkPacketSourceTaskHash({ id, rel, packet, packetRef, severity });
+  }
+}
+
+function checkPacketMinimalShape({ id, packet, packetRef, severity }) {
+  const issues = [];
+
+  if (!isPlainObject(packet.source_refs)) {
+    issues.push('source_refs must be an object');
+  } else {
+    if (!nonEmptyString(packet.source_refs.task)) issues.push('source_refs.task must be a non-empty string');
+    if (typeof packet.source_refs.feature !== 'string') issues.push('source_refs.feature must be a string');
+    for (const key of ['specs', 'guides', 'protocols']) {
+      if (!isStringArray(packet.source_refs[key])) issues.push(`source_refs.${key} must be an array of strings`);
+    }
+  }
+
+  if (!isPlainObject(packet.scope)) {
+    issues.push('scope must be an object');
+  } else {
+    for (const key of ['allowed_write_scope', 'forbidden_scope']) {
+      if (!isStringArray(packet.scope[key])) issues.push(`scope.${key} must be an array of strings`);
+    }
+  }
+
+  if (!isPlainObject(packet.verification)) {
+    issues.push('verification must be an object');
+  } else {
+    for (const key of ['commands', 'success_checks', 'evidence_required']) {
+      if (!isStringArray(packet.verification[key])) issues.push(`verification.${key} must be an array of strings`);
+    }
+  }
+
+  if (!isStringArray(packet.stop_conditions)) issues.push('stop_conditions must be an array of strings');
+  if (!isStringArray(packet.required_handoff) || packet.required_handoff.length === 0) {
+    issues.push('required_handoff must be a non-empty array of strings');
+  }
+
+  if (!issues.length) return true;
+
+  addFinding(severity, 'TASK_PACKET_INVALID', `${packetRef}: execution packet is missing required structure.`, {
+    path: packetRef,
+    task_id: id,
+    details: { issues },
+    suggested_fix: `Refresh the packet with /mb-packet ${id}.`,
+  });
+  return false;
+}
+
+function checkPacketSourceTaskHash({ id, rel, packet, packetRef, severity }) {
+  const actualHash = hashRawFile(rel);
+  if (!actualHash) {
+    addFinding(severity, 'TASK_PACKET_STALE', `${packetRef}: cannot verify source_task_hash because task record could not be read.`, {
+      path: packetRef,
+      task_id: id,
+      details: { source_task: rel },
+      suggested_fix: `Refresh the packet with /mb-packet ${id}.`,
+    });
+    return;
+  }
+
+  const packetHash = typeof packet.source_task_hash === 'string' ? packet.source_task_hash : '';
+  if (packetHash && SOURCE_TASK_HASH_RE.test(packetHash) && packetHash === actualHash) return;
+
+  const issue = !packetHash
+    ? 'missing'
+    : SOURCE_TASK_HASH_RE.test(packetHash)
+      ? 'mismatched'
+      : 'malformed';
+
+  addFinding(severity, 'TASK_PACKET_STALE', `${packetRef}: execution packet source_task_hash is ${issue}.`, {
+    path: packetRef,
+    task_id: id,
+    details: {
+      issue,
+      source_task: rel,
+      expected: actualHash,
+      actual: packetHash || undefined,
+    },
+    suggested_fix: `Refresh the packet with /mb-packet ${id}.`,
+  });
+}
+
 function checkFeatureClarificationReadiness() {
   const severity = options.strict ? 'error' : 'warning';
   const { features } = getFeatureClarificationIndex();
@@ -949,6 +1293,46 @@ function checkFailedTaskClosure(records) {
         path: failed.rel,
         task_id: failed.id,
         suggested_fix: `Create a .memory-bank/bugs/ bug note mentioning ${failed.id} or add an indexed follow-up task that references it.`,
+      }
+    );
+  }
+}
+
+function checkT2FeatureSemanticCompletion(records) {
+  if (!records.length) return;
+
+  const groups = new Map();
+  for (const record of records) {
+    const featureId = typeof record.task.feature === 'string' ? record.task.feature.trim() : '';
+    if (!FT_ID_RE.test(featureId) || featureId === 'FT-000') continue;
+
+    if (!groups.has(featureId)) {
+      groups.set(featureId, { featureId, records: [], hasT2: false });
+    }
+    const group = groups.get(featureId);
+    group.records.push(record);
+    if (record.task.tier === 'T2') group.hasT2 = true;
+  }
+
+  const severity = options.strict ? 'error' : 'warning';
+  for (const group of groups.values()) {
+    if (!group.hasT2) continue;
+    if (!group.records.every((record) => record.task.status === 'done')) continue;
+
+    const passFiles = featureSemanticPassFiles(group.featureId);
+    if (passFiles.length) continue;
+
+    addFinding(
+      severity,
+      'FEATURE_RED_VERIFY_VERDICT_MISSING',
+      `${group.featureId}: completed T2 feature has no feature-doc semantic-pass verdict.`,
+      {
+        path: '.memory-bank/features/',
+        details: {
+          feature: group.featureId,
+          tasks: group.records.map((record) => ({ id: record.id, path: record.rel, tier: record.task.tier })),
+        },
+        suggested_fix: `Run /red-verify --feature ${group.featureId} and record SEMANTIC_VERDICT: semantic-pass in the matching .memory-bank/features/${group.featureId}-*.md file.`,
       }
     );
   }
@@ -1199,6 +1583,17 @@ function sddSpecLinksFromTask(task) {
   return collectSddSpecLinks(fields);
 }
 
+function hasArchitectureContractAdrReference(task) {
+  const fields = [
+    task.source_artifacts,
+    task.normative_inputs,
+    task.constraints,
+    task.invariants,
+    task.verification_targets,
+  ];
+  return fields.some((field) => ARCHITECTURE_CONTRACT_ADR_PATH_RE.test(JSON.stringify(field ?? '')));
+}
+
 function sddSpecLinkStatusFromTask(task) {
   return classifySddSpecLinks(sddSpecLinksFromTask(task));
 }
@@ -1296,6 +1691,18 @@ function featureMarkdownFiles() {
 function featureFileMatches(file, featureId) {
   const base = path.basename(file, path.extname(file));
   return base === featureId || base.startsWith(`${featureId}-`) || base.startsWith(`${featureId}_`);
+}
+
+function featureSemanticPassFiles(featureId) {
+  return featureMarkdownFiles()
+    .filter((file) => featureFileMatches(file, featureId))
+    .filter((file) => {
+      try {
+        return RED_VERIFY_PASS_RE.test(fs.readFileSync(file, 'utf8'));
+      } catch {
+        return false;
+      }
+    });
 }
 
 function getFeatureClarificationIndex() {
@@ -1515,6 +1922,15 @@ function readJson(rel) {
   }
 }
 
+function hashRawFile(rel) {
+  const abs = path.join(ROOT, rel);
+  try {
+    return `sha256:${createHash('sha256').update(fs.readFileSync(abs)).digest('hex')}`;
+  } catch {
+    return null;
+  }
+}
+
 function isFile(absPath) {
   try {
     return fs.statSync(absPath).isFile();
@@ -1552,8 +1968,38 @@ function splitLines(text) {
     .filter((line) => line.length > 0);
 }
 
+function isPlainObject(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function normalizePacketRef(value) {
+  return normalizeRel(String(value ?? '').trim()).replace(/^\.\//, '');
+}
+
+function canonicalPacketRef(taskId) {
+  return `.memory-bank/packets/${taskId}.packet.json`;
+}
+
+function isSafePacketRef(value) {
+  const rel = normalizeRel(value);
+  if (path.isAbsolute(rel) || rel.includes('..')) return false;
+  return rel.startsWith('.memory-bank/packets/') && rel.endsWith('.packet.json');
+}
+
 function normalizeRel(p) {
   return p.replace(/\\/g, '/');
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function addFinding(severity, code, message, extra = {}) {

@@ -1,11 +1,22 @@
+---
+description: Чеклист синхронизации Memory Bank после wave/изменений.
+status: active
+---
 # MB-SYNC — Memory Bank synchronization workflow
 
 ## Когда запускать
 - После scheduler записал closure/failure/blocking decision, final task status, and evidence links в authoritative indexed `.memory-bank/tasks/TASK-*.task.json` (`/autopilot` / `/autonomous`) и выполнения required `/verify` / `/red-verify` gates.
 - После manual `/verify`, если он изменил durable task/docs state.
 - После `/red-verify`, если выполнялась семантическая adversarial-проверка и она изменила или требует reconcile task/docs state.
+- После task run с Execution Packet, если task record/protocol/evidence уже
+  содержит `runtime_context.packet_ref` или packet-related evidence links.
+- После changes that materially affect responsibility boundaries or HOW docs,
+  reconcile existing `.memory-bank/contracts/boundary-map.md`, related
+  `.memory-bank/contracts/*`, or `.memory-bank/guides/*` as normal Memory Bank
+  docs; do not introduce a new boundary lifecycle.
 - После значимых рефакторингов или архитектурных изменений.
-- Перед `/review` (чтобы reviewer видел актуальное состояние).
+- Перед `/review-feat-plan` или `/review-tasks-plan` (чтобы reviewer видел
+  актуальное состояние нужной поверхности).
 - При ощущении drift между кодом и документацией.
 
 ## Status Transition Modes
@@ -17,11 +28,14 @@ Scheduler mode:
 - Scheduler decides closure/failure/blocking eligibility.
 - `/execute` returns scoped implementation handoff; it does not close tasks.
 - `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for T2/T3; in scheduler mode it does not close/fail/block/promote.
+- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2/T3 scheduler closure requires `VERDICT: PASS` plus `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
+- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
+- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
@@ -30,7 +44,8 @@ Manual mode:
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` / `T3` manual closure requires `/red-verify` `SEMANTIC_VERDICT: semantic-pass` after `/verify PASS`; if semantic issues are found, the scheduler or explicit owner may reopen/block/fail or create follow-up work.
+- `T2` manual task closure requires full protocol, required packet/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
+- `T3` manual task closure requires `/red-verify` `SEMANTIC_VERDICT: semantic-pass` after `/verify PASS`; if semantic issues are found, the scheduler or explicit owner may reopen/block/fail or create follow-up work.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
 - No persisted `mode` field is used.
@@ -41,6 +56,9 @@ Manual mode:
 - [ ] Если используется классическая duo-модель, каждый `architecture/<concept>.md` имеет парный `guides/<concept>.md` (и наоборот).
 - [ ] Взаимные ссылки между duo docs актуальны, если используется классическая пара.
 - [ ] Если используются spec-driven support docs, они явно маршрутизированы через `spec-index.md` и не противоречат `architecture/*`, `guides/*`, `contracts/*`, `states/*`, `runbooks/*`, `testing/*`.
+- [ ] If responsibility/scope boundaries changed, existing
+  `contracts/boundary-map.md` or related contracts are updated/recommended;
+  task records still use existing link fields plus `runtime_context`.
 
 ### 2) RTM (traceability)
 - [ ] `requirements.md` RTM таблица отражает реальный `Lifecycle` (planned/implemented/verified).
@@ -58,6 +76,10 @@ Manual mode:
 - [ ] Новые задачи (из багов, из новых требований) добавлены как schema-backed task records.
 - [ ] В scheduler mode closure/failure/blocking decision уже записан в indexed `.task.json`; если нет, report consistency gap and stop for explicit scheduler or standalone owner decision.
 - [ ] В manual mode manual closure sync имеет already-recorded explicit owner decision в task record или direct instruction for this sync; иначе report consistency gap and do not infer closure.
+- [ ] Если использовался Execution Packet, reconcile только уже записанные
+  `runtime_context.packet_ref`, protocol links и evidence paths. Не строить
+  packet, не обновлять его статус и не выводить closure/promotion decision из
+  packet status.
 - [ ] Promotion/dependent block/unblock не выполняется внутри `/mb-sync`; это отдельный scheduler pass после sync + strict doctor.
 
 ### 5) Changelog

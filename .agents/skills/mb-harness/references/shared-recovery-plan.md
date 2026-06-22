@@ -25,7 +25,7 @@
 3. Сравни отчёты с текущим MB — найди расхождения.
 4. Обнови MB: architecture, guides, spec-index, glossary, invariants, contracts, states, runbooks, features, requirements, RTM — только те слои, которые реально используются и подтверждаются evidence.
 5. Запусти MB-SYNC чеклист.
-6. Запусти `mb-review` для валидации.
+6. Запусти `/review-feat-plan` или `/review-tasks-plan` для нужной поверхности.
 
 **Время**: 1–3 часа.
 
@@ -39,7 +39,7 @@
 3. Для brownfield: запусти `mb-map-codebase`.
 4. Для greenfield: запусти `mb-from-prd`.
 5. Перенеси salvageable контент из archive (ADRs, decision logs).
-6. Запусти полный `mb-review`.
+6. Запусти `/review-feat-plan`, затем `/review-tasks-plan` после task planning.
 
 **Время**: 3–8 часов.
 

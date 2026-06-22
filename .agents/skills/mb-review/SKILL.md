@@ -1,18 +1,29 @@
 ---
 name: mb-review
 description: >
-  Review a Memory Bank with fresh-context specialists and produce a prioritized fix list.
+  Review a Memory Bank planning surface with fresh-context specialists: feature plan before SDD design or task queue before execution.
 ---
 
-# mb-review — Multi-expert Memory Bank review
+# mb-review — Explicit Memory Bank review gates
 
-- **What it does:** runs independent reviewers over architecture, scope, task planning, security, and Memory Bank discipline.
-- **Use it when:** you need a clean review gate before execution, after bootstrap, or before trusting the docs.
+- **What it does:** runs independent reviewers over one explicit surface: feature plan or task queue plan.
+- **Use it when:** you need `/review-feat-plan` before `/spec-design`, or `/review-tasks-plan` after `/prd-to-tasks` and before execution.
 - **Input:** an existing `.memory-bank/`.
-- **Output:** reviewer reports in `.tasks/TASK-MB-REVIEW/` plus a synthesized list of fixes and review verdicts.
+- **Output:** reviewer reports under `.tasks/TASK-MB-REVIEW-FEAT-PLAN/` or `.tasks/TASK-MB-REVIEW-TASKS-PLAN/` plus a synthesized fix list and verdict.
 
 ## Goal
-Detect gaps, contradictions, broken traceability, and non-compliance early.
+Detect gaps, contradictions, broken traceability, and non-compliance at the
+right gate.
+
+Use:
+- `/review-feat-plan` to check PRD -> REQ/EP/FT decomposition before
+  `/spec-design`
+- `/review-tasks-plan` to check JSON task records, waves, dependencies,
+  packets, tier routing, and Foundation Dev Path dependencies before execution
+
+For foundation migration, explicitly check that `FT-000` is used only as the
+reserved Foundation Dev Path pseudo-feature, product tasks do not use `W0`, and
+required product tasks depend on the final foundation gate.
 
 This is **not** the same as per-task semantic verification.
 Use `mb-red-verify` when the question is “did this task solve the right problem in substance?”
@@ -22,22 +33,34 @@ Use `mb-red-verify` when the question is “did this task solve the right proble
 
 ## Process
 
-### 1) Create review task folder
-Create:
-- `.tasks/TASK-MB-REVIEW/`
+### 1) Pick the review gate
+Do not run a combined generic review by default.
+
+- Feature plan gate: create `.tasks/TASK-MB-REVIEW-FEAT-PLAN/`
+- Task queue plan gate: create `.tasks/TASK-MB-REVIEW-TASKS-PLAN/`
 
 ### 2) Spawn reviewers (fresh contexts)
-Spawn these subagents in parallel (max 5–7):
+Spawn only reviewers relevant to the selected gate.
 
-1) Architect — `./agents/shared-review-architect.md`
-2) Scope/RTM — `./agents/shared-review-scope.md`
-3) Task planning — `./agents/shared-review-plan.md`
-4) Security — `./agents/shared-review-security.md`
-5) MBB compliance — `./agents/shared-mb-reviewer.md`
-6) Code quality (conditional: if repo has code) — `./agents/shared-review-code.md`
+For `/review-feat-plan`:
+- Scope/RTM
+- MBB compliance
+- Security/Constitution when risk requires it
+
+For `/review-tasks-plan`:
+- Task planning
+- Architect/spec linkage for T2/T3
+- Security/Constitution when risk requires it
+
+Shared prompts may still be reused:
+- Architect — `./agents/shared-review-architect.md`
+- Scope/RTM — `./agents/shared-review-scope.md`
+- Task planning — `./agents/shared-review-plan.md`
+- Security — `./agents/shared-review-security.md`
+- MBB compliance — `./agents/shared-mb-reviewer.md`
 
 Each reviewer must:
-- write a detailed report to `.tasks/TASK-MB-REVIEW/`
+- write a detailed report to the selected `.tasks/TASK-MB-REVIEW-*` folder
 - return only a short summary + verdict to the orchestrator
 
 ### 3) Synthesize and decide
@@ -48,15 +71,16 @@ As orchestrator:
 - produce a concrete fix plan
 
 If the repo is preparing for `/autonomous`:
-- treat unresolved P0/P1 issues as **blocking**
+- treat any `REJECT` as **blocking**
+- keep non-blocking findings as notes under `APPROVE`
 - do not allow batch execution until the final verdict is `APPROVE`
 
 ### 4) Gate
 If any reviewer returns `REJECT`:
 - fix MB
-- re-run mb-review
+- re-run the same explicit review command
 
 ## Definition of done
-- `.tasks/TASK-MB-REVIEW/` contains the reviewer reports.
+- The selected `.tasks/TASK-MB-REVIEW-*` folder contains reviewer reports.
 - Orchestrator produced an actionable prioritized fix list.
 - Final verdict: APPROVE.

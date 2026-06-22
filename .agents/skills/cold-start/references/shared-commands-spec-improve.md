@@ -1,13 +1,19 @@
 ---
-description: Improve one feature's SDD design against the Design Specs Index before task decomposition.
+description: Standalone repair/advanced command for one feature's SDD design.
 status: active
 ---
 # /spec-improve - Feature-level SDD design improvement
 
 <objective>
-Improve the minimum necessary spec surface for one feature before `/prd-to-tasks`.
+Repair or rerun the minimum necessary spec surface for one feature without task
+decomposition.
 
 `/spec-improve FT-<NNN>` checks existing specs first, finds gaps/contradictions, asks focused questions when needed, updates only necessary design artifacts, and marks the target feature with `spec_design_status`.
+
+Normal manual flow does not require a separate `/spec-improve` step:
+`/prd-to-tasks FT-<NNN>` includes the full feature-level SDD design phase before
+task slicing. Use standalone `/spec-improve` when you need to repair, refresh,
+or review feature design without creating/updating task records.
 </objective>
 
 <process>
@@ -16,7 +22,10 @@ Improve the minimum necessary spec surface for one feature before `/prd-to-tasks
 Expected `$ARGUMENTS`:
 - `FT-<NNN>`
 
-Run after `/prd` and mandatory `/spec-design`, before `/prd-to-tasks FT-<NNN>`.
+Run after `/prd` and mandatory `/spec-design` when feature design needs a
+standalone repair/refresh pass. In the happy path, run `/foundation-to-tasks`
+first when foundation is required, then `/prd-to-tasks FT-<NNN>`; it performs
+this design work before task slicing.
 Consume backbone specs as normative inputs instead of duplicating them.
 
 If the argument is missing, ask the user to choose one feature.
@@ -25,8 +34,12 @@ Examples:
 - `/spec-improve FT-001`
 - `/spec-improve FT-012`
 
-Canonical route:
-`/write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>`.
+Normal route:
+`/write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN>`.
+
+Standalone repair route:
+`/spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>` when decomposition is still
+needed after the repair.
 
 ## 1) Read existing design surface first
 Before creating any new spec:
@@ -40,6 +53,10 @@ Before creating any new spec:
 Rule: do not create a new spec before checking existing specs through the index.
 If several features need the same missing domain/contract/state/API/security/data/runtime/testing decision, stop and route to `/spec-design` instead of creating duplicate feature-local specs.
 If a task/feature interpretation conflicts with a backbone spec, stop with a blocker instead of choosing locally.
+If the missing decision is a compact T2/T3 or shared-boundary rule, prefer updating
+`.memory-bank/architecture/system-architecture.md#Architecture Spine` through the
+same KISS `AD-*` format used by `/spec-design`; do not create a separate
+architecture workflow or local feature-only duplicate.
 
 ## 2) Decide required design depth
 Classify what the feature needs:
@@ -94,6 +111,9 @@ Keep KISS:
 - do not add schema, migration, hook, or governance machinery just for design routing
 - write decisions, constraints, invariants, and verification targets only when grounded in PRD/user/spec evidence
 - use backbone specs from `/spec-design` as primary normative inputs
+- for T2/T3 or shared-boundary work, keep Architecture Spine `AD-*` rules short,
+  stable, and linked from downstream task fields instead of duplicating long
+  rationale in feature specs
 
 ## 6) Update routes and feature metadata
 Update `.memory-bank/spec-index.md`:
@@ -131,7 +151,8 @@ Report:
 - gaps/open questions
 - complexity or contradiction notes
 - expected next command routing:
-  - if `spec_design_status` is `complete` or `not_required`: `/prd-to-tasks FT-<NNN>`
+  - if `spec_design_status` is `complete` or `not_required`: rerun
+    `/prd-to-tasks FT-<NNN>` when task decomposition or packet refresh is needed
   - if `spec_design_status` is `blocked`: no `/prd-to-tasks`; resolve the blocker and rerun `/spec-improve FT-<NNN>`, or route back to `/spec-design` when the gap is shared/global
 
 </process>

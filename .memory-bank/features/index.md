@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-06-16
+last_updated: 2026-06-23
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -14,6 +14,8 @@ Active MVP v2 features are draft L3 decomposition artifacts. Global `/spec-desig
 First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
 
 Generated task-decomposition artifacts for FT-001, FT-002, and FT-003 have been intentionally removed. The active [.memory-bank/tasks/index.json](../tasks/index.json) queue is empty; no `TASK-*` execution route is active.
+
+Foundation Dev Path is required before product feature tasking. Run `/foundation-to-tasks`, then close the final `FT-000` gate task named in [.memory-bank/foundation.md](../foundation.md), before running `/prd-to-tasks` for any product feature.
 
 All other features still require their own `/spec-improve FT-<NNN>` gate before any future implementation planning.
 

@@ -13,7 +13,7 @@ Main question:
 
 `/spec-init` is pre-PRD framing, not full architecture. It may create small evidence-backed domain/scenario/framing specs and must stop before `/prd` when blocking ambiguity remains.
 
-Real global architecture/backbone design belongs to `/spec-design` after `/prd`. Feature-level design belongs to `/spec-improve FT-<NNN>`.
+Real global architecture/backbone and foundation decisions belong to `/spec-design` after `/prd`. Feature-level design belongs to `/prd-to-tasks FT-<NNN>` before task slicing.
 </objective>
 
 <process>
@@ -22,7 +22,7 @@ Real global architecture/backbone design belongs to `/spec-design` after `/prd`.
 Run after clarified `/write-prd` and before `/prd`.
 
 Canonical manual chain:
-`/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-001 -> /prd-to-tasks FT-001`.
+`/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-001`.
 
 Stage model:
 1. Read PRD and existing framing/spec context.
@@ -91,7 +91,7 @@ Omit sections that do not affect decomposition, or mark them `Not applicable` wi
 - Domain Constraints
 - Links To Contracts/States/Storage
 
-`contracts/boundary-map.md`:
+`contracts/boundary-map.md` (seeded skeleton file; update only with evidence):
 - Boundary
 - Purpose
 - Direction
@@ -129,7 +129,7 @@ Do not create:
 
 If a real architecture decision is needed, record it as an open design question in `.memory-bank/spec-backbone.md` and route it to `/spec-design` after `/prd`, unless it blocks truthful PRD decomposition.
 
-`/spec-init` must not set `spec_design_status`, create feature-local design links, or create feature files. `/prd` creates features, `/spec-design` establishes the global backbone after features exist, and `/spec-improve` owns feature design status.
+`/spec-init` must not set `spec_design_status`, create feature-local design links, or create feature files. `/prd` creates features, `/spec-design` establishes the global backbone after features exist, and `/prd-to-tasks` owns feature design status before task slicing.
 
 ## 5) spec-index.md boundary
 Keep `.memory-bank/spec-index.md` as a pure index/registry with this shape:
@@ -175,7 +175,7 @@ Update `.memory-bank/spec-backbone.md` with concise route/state summary:
 
 ## Handoff To /spec-design
 - Global Backbone Status: intentionally pending until `/spec-design`
-- Downstream readiness: `/prd-to-tasks`, `/autopilot`, and autonomous scheduler mode must wait for `/spec-design`
+- Downstream readiness: `/foundation-to-tasks` when required, `/prd-to-tasks`, `/autopilot`, and autonomous scheduler mode must wait for `/spec-design`
 - Backbone areas to revisit:
 - Candidate specs:
 ```

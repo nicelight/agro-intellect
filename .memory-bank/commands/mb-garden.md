@@ -35,5 +35,6 @@ status: active
 - Если Constitution устарела или конфликтует с routed docs, flag это как blocking garden finding и предложи `/constitution`; не выдумывай новые domain principles.
 
 ## 5) Review (периодически)
-Запусти `/review` fresh-context (например, раз в неделю или после большой волны изменений).
+Запусти `/review-feat-plan` или `/review-tasks-plan` fresh-context по нужной
+поверхности (например, раз в неделю или после большой волны изменений).
 </process>

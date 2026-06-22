@@ -88,9 +88,17 @@ In overview docs, explicitly separate:
 Once baseline MB exists:
 - ask the user for a `prd.md` describing what to change/add.
 - then run `mb-from-prd` to plan the delta on top of baseline.
+- after `/prd`, run `/review-feat-plan` for high-risk/large work before
+  `/spec-design`.
+- if `/spec-design` determines that foundation must still be proven from the
+  existing codebase, route through `/foundation-to-tasks --verify-existing`
+  before product feature tasking.
+- if the existing baseline is already verified, keep `Foundation Required:
+  false` / `Foundation Gate Task: not_required` and do not create `FT-000`.
 
 ### 6) Review gate
-Run `mb-review` in fresh context.
+After a PRD/delta is decomposed with `/prd`, run `/review-feat-plan` in fresh
+context for high-risk, large, or autonomous flows before `/spec-design`.
 
 ### 7) MB-SYNC
 Follow `.memory-bank/workflows/mb-sync.md` and append a changelog entry.

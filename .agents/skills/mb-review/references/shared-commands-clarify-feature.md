@@ -124,4 +124,10 @@ Set `clarification_status: pending` when more questions are needed.
 Set `clarification_status: blocked` when a required product decision cannot be resolved in this pass.
 
 If the feature has no unresolved decomposition ambiguity, the command may leave clarification metadata absent and simply report that no feature-level clarification is needed.
+
+## 7) Downstream routing
+After clarification, do not bypass the normal design/task route: `/spec-design`
+must be complete or minimal, required `/foundation-to-tasks` must have run, and
+the final `FT-000` foundation gate task must be `done` before `/prd-to-tasks`
+creates product feature tasks.
 </process>

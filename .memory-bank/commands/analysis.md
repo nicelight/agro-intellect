@@ -79,9 +79,9 @@ Use this table:
 | `.memory-bank/prd.md` exists with `clarification_status: complete` and `constitution_checked: true`, but feature docs are not created | `/spec-init`, then `/prd` |
 | `.memory-bank/prd.md` exists with `clarification_status: pending|blocked` | `/write-prd` |
 | Feature docs exist with `clarification_status: pending|blocked` | `/clarify-feature FT-<NNN>` |
-| Feature docs exist without blocking clarification metadata | `/spec-design`, then `/spec-improve FT-<NNN>`, then `/prd-to-tasks FT-<NNN>` |
-| Approved product brief exists | `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>`, and `/prd-to-tasks FT-<NNN>` |
-| Draft product brief exists | finish `/brief`, then `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>`, and `/prd-to-tasks FT-<NNN>` |
+| Feature docs exist without blocking clarification metadata | `/spec-design`, then `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>` |
+| Approved product brief exists | `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, and `/prd-to-tasks FT-<NNN>` |
+| Draft product brief exists | finish `/brief`, then `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, and `/prd-to-tasks FT-<NNN>` |
 | Brainstorming report exists, but no brief exists | `/brief` |
 | Idea is raw or vague | `/brainstorm` |
 | Concept is understandable and no PRD exists | `/brief` |
@@ -99,7 +99,7 @@ Do not recommend `/prd-to-tasks` for a feature when the feature has `clarificati
 
 Missing clarification metadata does not block task decomposition.
 
-Always recommend `/spec-design` after `/prd`. Simple independent T0/T1-only features record a minimal backbone status with explicit `not_applicable` areas instead of skipping the gate.
+Always recommend `/spec-design` after `/prd`. Simple independent T0/T1-only features record a minimal backbone status with explicit `not_applicable` areas instead of skipping the gate. If `/spec-design` records required foundation, route through `/foundation-to-tasks` and the foundation gate before product feature tasking.
 
 If feature-level clarification is explicitly pending or blocked, recommend:
 

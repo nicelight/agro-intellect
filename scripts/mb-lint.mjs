@@ -38,13 +38,25 @@ const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
 const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';
 const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const ALLOWED_TASK_TIER = new Set(['T0', 'T1', 'T2', 'T3']);
-const TASK_ID_RE = /^TASK-[0-9]{3,}$/;
-const TASK_FILE_RE = /^TASK-[0-9]{3,}\.task\.json$/;
+const TASK_ID_FORMAT = 'TASK-NNN-FT-NNN-W-N';
+const TASK_ID_RE = /^TASK-[0-9]{3}-(FT-[0-9]{3})-W-([0-9]+)$/;
+const TASK_FILE_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\.task\.json$/;
 const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
+const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md';
+const ARCHITECTURE_REF_PATH_RE =
+  /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`),\]}]+/gi;
 const INDEX_TOP_LEVEL_KEYS = new Set(['version', 'tasks']);
 const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const GATE_KEYS = new Set(['name', 'command', 'required']);
+const RUNTIME_CONTEXT_KEYS = new Set([
+  'packet_required',
+  'packet_ref',
+  'allowed_write_scope',
+  'forbidden_scope',
+  'stop_conditions',
+]);
+const RUNTIME_CONTEXT_ARRAY_FIELDS = ['allowed_write_scope', 'forbidden_scope', 'stop_conditions'];
 const LEGACY_TASK_RISK_KEYS = new Set(['risk', 'risk.level', 'risk_level', 'riskLevel']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
@@ -72,6 +84,13 @@ const REQUIRED_TASK_FIELDS = [
   'invariants',
   'verification_targets',
 ];
+const OPTIONAL_TASK_FIELDS = [
+  'purpose',
+  'success_outcome',
+  'anti_goals',
+  'runtime_context',
+];
+const TASK_TOP_LEVEL_KEYS = new Set([...REQUIRED_TASK_FIELDS, ...OPTIONAL_TASK_FIELDS]);
 
 const errors = [];
 const warnings = [];
@@ -559,6 +578,98 @@ function checkArrayField(rel, task, field) {
   }
 }
 
+function checkOptionalStringField(rel, object, field) {
+  if (!hasOwn(object, field)) return;
+  if (typeof object[field] !== 'string') {
+    errors.push(`${rel}: '${field}' must be a string when present`);
+  }
+}
+
+function checkOptionalStringArrayField(rel, object, field, label = field) {
+  if (!hasOwn(object, field)) return;
+  if (!Array.isArray(object[field])) {
+    errors.push(`${rel}: '${label}' must be an array when present`);
+    return;
+  }
+
+  object[field].forEach((item, index) => {
+    if (typeof item !== 'string') {
+      errors.push(`${rel}: '${label}[${index}]' must be a string`);
+    }
+  });
+}
+
+function normalizePacketRef(value) {
+  return normalizeRel(String(value ?? '').trim()).replace(/^\.\//, '');
+}
+
+function canonicalPacketRef(taskId) {
+  return `.memory-bank/packets/${taskId}.packet.json`;
+}
+
+function taskIdParts(taskId) {
+  const match = TASK_ID_RE.exec(taskId);
+  if (!match) return null;
+  return {
+    feature: match[1],
+    wave: `W${match[2]}`,
+  };
+}
+
+function checkTaskIdMatchesRecord(rel, task) {
+  if (typeof task.id !== 'string' || !TASK_ID_RE.test(task.id)) return;
+
+  const parts = taskIdParts(task.id);
+  if (!parts) return;
+
+  if (task.feature !== parts.feature) {
+    errors.push(`${rel}: task id feature segment '${parts.feature}' must match feature '${task.feature}'`);
+  }
+  if (task.wave !== parts.wave) {
+    errors.push(`${rel}: task id wave segment 'W-${parts.wave.slice(1)}' must match wave '${task.wave}'`);
+  }
+}
+
+function checkOptionalTaskRuntimeContext(rel, task) {
+  checkOptionalStringField(rel, task, 'purpose');
+  checkOptionalStringField(rel, task, 'success_outcome');
+  checkOptionalStringArrayField(rel, task, 'anti_goals');
+
+  if (!hasOwn(task, 'runtime_context')) return;
+
+  const runtimeContext = task.runtime_context;
+  if (!runtimeContext || typeof runtimeContext !== 'object' || Array.isArray(runtimeContext)) {
+    errors.push(`${rel}: 'runtime_context' must be an object when present`);
+    return;
+  }
+
+  checkExactKeys(rel, runtimeContext, RUNTIME_CONTEXT_KEYS, 'runtime_context');
+
+  if (hasOwn(runtimeContext, 'packet_required') && typeof runtimeContext.packet_required !== 'boolean') {
+    errors.push(`${rel}: 'runtime_context.packet_required' must be a boolean when present`);
+  }
+  if (hasOwn(runtimeContext, 'packet_ref') && typeof runtimeContext.packet_ref !== 'string') {
+    errors.push(`${rel}: 'runtime_context.packet_ref' must be a string when present`);
+  }
+  for (const field of RUNTIME_CONTEXT_ARRAY_FIELDS) {
+    checkOptionalStringArrayField(rel, runtimeContext, field, `runtime_context.${field}`);
+  }
+
+  if (runtimeContext.packet_required !== true) return;
+
+  if (typeof runtimeContext.packet_ref !== 'string' || !runtimeContext.packet_ref.trim()) {
+    errors.push(`${rel}: runtime_context.packet_required true requires non-empty runtime_context.packet_ref`);
+    return;
+  }
+
+  const packetRef = normalizePacketRef(runtimeContext.packet_ref);
+  if (packetRef !== canonicalPacketRef(task.id)) {
+    errors.push(
+      `${rel}: runtime_context.packet_ref for required packet must be ${canonicalPacketRef(task.id)}`
+    );
+  }
+}
+
 function checkExactKeys(rel, object, allowedKeys, label) {
   const keys = Object.keys(object);
   const extraKeys = keys.filter((key) => !allowedKeys.has(key));
@@ -632,6 +743,99 @@ function checkTaskFeatureClarification(rel, task, featuresById) {
     errors.push(
       `${rel}: indexed task '${task.id}' must not be generated from ${feature.status} clarification feature ${featureId} (${feature.rel})`
     );
+  }
+}
+
+function extractArchitectureReferencePaths(value, out = []) {
+  if (typeof value === 'string') {
+    for (const match of value.matchAll(ARCHITECTURE_REF_PATH_RE)) {
+      const normalized = normalizeArchitectureReferencePath(match[0]);
+      if (normalized) out.push(normalized);
+    }
+    return out;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) extractArchitectureReferencePaths(item, out);
+    return out;
+  }
+
+  if (value && typeof value === 'object') {
+    for (const child of Object.values(value)) extractArchitectureReferencePaths(child, out);
+  }
+
+  return out;
+}
+
+function normalizeArchitectureReferencePath(value) {
+  const withoutAnchor = normalizeRel(String(value ?? '').trim())
+    .replace(/^\.\//, '')
+    .replace(/[.,:;]+$/g, '')
+    .split('#')[0];
+
+  if (!withoutAnchor.startsWith('.memory-bank/')) return null;
+  return withoutAnchor;
+}
+
+function checkTaskArchitectureReferences(rel, task) {
+  const fields = [
+    task.source_artifacts,
+    task.normative_inputs,
+    task.constraints,
+    task.invariants,
+    task.verification_targets,
+  ];
+  const refs = [...new Set(extractArchitectureReferencePaths(fields))];
+
+  for (const ref of refs) {
+    if (!fs.existsSync(path.join(ROOT, ref))) {
+      errors.push(`${rel}: references missing architecture/contract/ADR path '${ref}'`);
+    }
+  }
+}
+
+function isRetiredArchitectureDecision(headingTail, block) {
+  return /\b(retired|replaced|superseded|deprecated)\b/i.test(`${headingTail}\n${block}`);
+}
+
+function hasNonEmptyDecisionLabel(block, label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = block.match(new RegExp(`^\\s*-\\s*${escaped}\\s*:\\s*(.*)$`, 'im'));
+  if (!match) return false;
+  const value = String(match[1] ?? '').trim();
+  return value.length > 0 && !/^(TBD|TODO|none|n\/a)$/i.test(value);
+}
+
+function checkArchitectureSpine() {
+  const abs = path.join(ROOT, ARCHITECTURE_SPINE_REL);
+  if (!fs.existsSync(abs)) return;
+
+  const text = readText(abs).replace(/\r\n/g, '\n');
+  const matches = [...text.matchAll(/^####\s+(AD-[0-9]{3,})\b(.*)$/gm)];
+  const activeIds = new Map();
+
+  for (let i = 0; i < matches.length; i += 1) {
+    const match = matches[i];
+    const id = match[1];
+    const headingTail = match[2] ?? '';
+    const start = match.index + match[0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const block = text.slice(start, end);
+    const line = text.slice(0, match.index).split('\n').length;
+
+    if (isRetiredArchitectureDecision(headingTail, block)) continue;
+
+    if (activeIds.has(id)) {
+      errors.push(`${ARCHITECTURE_SPINE_REL}:${line}: duplicate active Architecture Spine decision '${id}'`);
+    } else {
+      activeIds.set(id, line);
+    }
+
+    for (const label of ['Binds', 'Prevents', 'Rule']) {
+      if (!hasNonEmptyDecisionLabel(block, label)) {
+        errors.push(`${ARCHITECTURE_SPINE_REL}:${line}: active Architecture Spine decision '${id}' must include non-empty '${label}:'`);
+      }
+    }
   }
 }
 
@@ -812,7 +1016,7 @@ function checkTaskRecords() {
       continue;
     }
     if (!TASK_ID_RE.test(id)) {
-      errors.push(`${indexRel}: task id '${id}' must match TASK-[0-9]{3,}`);
+      errors.push(`${indexRel}: task id '${id}' must match ${TASK_ID_FORMAT}`);
       continue;
     }
     if (records.has(id)) {
@@ -828,7 +1032,7 @@ function checkTaskRecords() {
       continue;
     }
     if (!TASK_FILE_RE.test(file)) {
-      errors.push(`${indexRel}: task '${id}' file '${file}' must match TASK-[0-9]{3,}.task.json`);
+      errors.push(`${indexRel}: task '${id}' file '${file}' must match ${TASK_ID_FORMAT}.task.json`);
       continue;
     }
     if (file !== `${id}.task.json`) {
@@ -859,13 +1063,15 @@ function checkTaskRecords() {
         errors.push(`${rel}: missing required field '${field}'`);
       }
     }
+    checkExactKeys(rel, task, TASK_TOP_LEVEL_KEYS, 'top-level task record');
 
     if (task.id !== id) {
       errors.push(`${rel}: task id '${task.id}' does not match index id '${id}'`);
     }
     if (typeof task.id !== 'string' || !TASK_ID_RE.test(task.id)) {
-      errors.push(`${rel}: task id '${task.id}' must match TASK-[0-9]{3,}`);
+      errors.push(`${rel}: task id '${task.id}' must match ${TASK_ID_FORMAT}`);
     }
+    checkTaskIdMatchesRecord(rel, task);
     if (!ALLOWED_TASK_STATUS.has(task.status)) {
       errors.push(
         `${rel}: invalid task status '${task.status}' (allowed: planned|ready|in_progress|blocked|done|failed)`
@@ -875,6 +1081,7 @@ function checkTaskRecords() {
       errors.push(`${rel}: invalid tier '${task.tier}' (allowed: T0|T1|T2|T3)`);
     }
     checkLegacyTaskRiskKeys(rel, task);
+    checkOptionalTaskRuntimeContext(rel, task);
 
     for (const field of [
       'reqs',
@@ -892,6 +1099,7 @@ function checkTaskRecords() {
     ]) {
       checkArrayField(rel, task, field);
     }
+    checkTaskArchitectureReferences(rel, task);
     checkGateItems(rel, task);
 
     checkDoneEvidence(rel, task);
@@ -905,7 +1113,7 @@ function checkTaskRecords() {
     const rel = records.get(id)?.rel ?? indexRel;
     for (const dep of deps) {
       if (typeof dep !== 'string' || !TASK_ID_RE.test(dep)) {
-        errors.push(`${rel}: depends_on value '${dep}' must match TASK-[0-9]{3,}`);
+        errors.push(`${rel}: depends_on value '${dep}' must match ${TASK_ID_FORMAT}`);
         continue;
       }
       if (!records.has(dep)) {
@@ -947,6 +1155,7 @@ for (const f of files) {
 
 checkIndexRouters();
 checkAnalysisStructure();
+checkArchitectureSpine();
 checkTaskRecords();
 
 if (warnings.length) {

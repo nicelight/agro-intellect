@@ -46,7 +46,7 @@ Perform `/spec-init` behavior:
 - read Constitution, Product Brief, PRD, existing spec-backbone, existing spec-index, and existing specs
 - update `.memory-bank/spec-index.md` as a pure spec registry/index
 - update `.memory-bank/spec-backbone.md` with pre-PRD decomposition inputs and `Pre-PRD Spec Status: ready_for_prd|blocked`
-- create/update small pre-PRD artifacts only when evidence exists or a blocking question must be explicit: `user-scenarios.md`, `domains/<domain>.md`, `invariants.md`, optional `contracts/boundary-map.md`, optional `states/lifecycle-map.md`
+- create/update small pre-PRD artifacts only when evidence exists or a blocking question must be explicit: `user-scenarios.md`, `domains/<domain>.md`, `invariants.md`, seeded `contracts/boundary-map.md`, optional `states/lifecycle-map.md`
 - record assumptions and open questions in `.memory-bank/spec-backbone.md`
 - do not run architecture design, set post-PRD Global Backbone Status, create diagrams, define source-of-truth hierarchy, or create authoritative design specs unless existing evidence already contains the decision
 
@@ -78,12 +78,20 @@ Autonomous decision rules:
 - record assumptions in the feature design hub or linked authoritative spec; keep `.memory-bank/spec-index.md` to registry rows, planned specs, and broken/missing links
 - for global architecture docs, prefer one `.memory-bank/architecture/system-architecture.md` by default; split `architecture/*` only when existing docs, project size, or boundary complexity makes the split clearly useful
 - keep `architecture/*` to global architecture invariants; put detailed API schemas/contracts in `contracts/*`, lifecycle state machines in `states/*`, domain schemas in `domains/*`, and feature-local design in `tech-specs/*`
+- for T2/T3 or shared-boundary pressure, update `.memory-bank/architecture/system-architecture.md#Architecture Spine` with compact executable `AD-*` rules using the same KISS format as `/spec-design`
+- do not create `AD-*` for local T0/T1 implementation details, and do not invent `AD-*` entries when evidence is absent
+- if a required T2/T3 shared-boundary architecture decision is missing, contradictory, or not checkable, record a blocker instead of completing feature design
+- when T2/T3 or shared-boundary feature design is complete, include relevant
+  Architecture Spine, ADR, contract, and boundary-map links in the feature
+  `spec_design_links` or linked authoritative specs so `/prd-to-tasks` can route
+  them into existing task fields
 - do not invent external contracts, security posture, migrations, or irreversible data behavior
 - set `spec_design_status: complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
 - do not set `complete` while any feature-relevant design area remains planned, candidate, unknown, conflicting, or otherwise unresolved; instead set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in the feature doc or linked spec; use `.memory-bank/spec-backbone.md` for shared/global gaps
 - if blocking ambiguity affects security/compliance/payments/external contracts/data loss, set `spec_design_status: blocked`, record the reason, and halt the autonomous run with `HALT_BLOCKING_QUESTIONS` or `HALT_CLARIFICATION_REQUIRED`
 
 For simple T0/T1-like features, `not_required` is valid with a concise rationale.
+Exclude `FT-000` from feature design targets; it is reserved for `/foundation-to-tasks`.
 
 ## 4) Required outputs
 For `--init`:
@@ -96,7 +104,7 @@ For feature design:
 - `.memory-bank/spec-index.md` updated
 
 For `--all`:
-- all targeted features have `spec_design_status: complete|not_required|blocked`
+- all targeted product features, excluding `FT-000`, have `spec_design_status: complete|not_required|blocked`
 - global backbone status in `.memory-bank/spec-backbone.md` is `complete`, or `minimal` with explicit `not_applicable` areas
 - no `/prd-to-tasks --all` handoff if any targeted feature is `blocked`
 
@@ -106,6 +114,6 @@ Report:
 - specs created/updated
 - assumptions
 - blockers
-- whether the next command is `/prd`, `/prd-to-tasks FT-<NNN>`, or `/prd-to-tasks --all`
+- whether the next command is `/prd`, `/foundation-to-tasks`, `/prd-to-tasks FT-<NNN>`, or `/prd-to-tasks --all`
 
 </process>

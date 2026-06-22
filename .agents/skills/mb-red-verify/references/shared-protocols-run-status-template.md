@@ -10,8 +10,9 @@ status: active
 - started at: YYYY-MM-DD HH:MM
 - last update: YYYY-MM-DD HH:MM
 
-## Review gate
-- latest review verdict: PENDING | APPROVE | REJECT
+## Review gates
+- latest feature-plan review verdict: PENDING | APPROVE | REJECT | NOT_RUN
+- latest task-plan review verdict: PENDING | APPROVE | REJECT | NOT_RUN
 - blocking review issues:
   - ...
 

@@ -95,10 +95,10 @@ Before writing derived docs:
 - test strategy pointers
 - optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
 - `status: draft` по умолчанию
-- write a `## SDD Design Gate` section into every new feature: run `/spec-improve FT-<NNN>` before `/prd-to-tasks FT-<NNN>`; when `/spec-improve` sets `spec_design_status: complete`, linked specs go in `spec_design_links`; `not_required` needs a short rationale; `blocked` must record the blocker
+- write a `## SDD Design Gate` section into every new feature: run mandatory `/spec-design`, then `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>`; `/prd-to-tasks` sets `spec_design_status: complete|not_required|blocked` before task slicing, with linked specs in `spec_design_links` when complete, concise rationale when not required, and blocker notes when blocked
 - if existing SDD specs apply, add candidate/normative `spec_design_links` or route notes only when grounded in evidence; `/prd` must not set `spec_design_status: complete` before `/spec-design` has produced a global backbone status of `complete` or valid `minimal`
-- otherwise omit `spec_design_status`; in the normal `/prd` flow this means omit status or write route notes only, because after the global `/spec-design` gate `/spec-improve FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
-- add an SDD Design Gate note that `/spec-design` is the mandatory global gate before per-feature `/spec-improve`; if the feature set is simple T0/T1-only, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
+- otherwise omit `spec_design_status`; in the normal `/prd` flow this means omit status or write route notes only, because after the global `/spec-design` gate `/prd-to-tasks FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
+- add an SDD Design Gate note that `/spec-design` is the mandatory global gate before foundation gating and feature-level design inside `/prd-to-tasks`; if the feature set is simple T0/T1-only, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
 
 Do not set every new feature to `clarification_status: pending`.
 Only add feature clarification metadata when the PRD explicitly leaves a feature-level decomposition blocker:
@@ -121,15 +121,15 @@ When a feature is already clear enough for task decomposition, omit clarificatio
 Обнови `.memory-bank/index.md`:
 - добавить аннотированные ссылки
 
-## 8) Review gate
-For high-risk, large, or autonomous flows, run `/review` or `mb-review` with fresh context before `/spec-design`.
+## 8) Feature-plan review gate
+For high-risk, large, or autonomous flows, run `/review-feat-plan` with fresh context before `/spec-design`.
 
 For small/manual flows, report review as optional/recommended and do not make it a mandatory stop before `/spec-design`.
 
 ## 9) What next
-- interactive: run `/spec-design`; then choose one feature and run `/spec-improve FT-<NNN>`, then `/prd-to-tasks FT-<NNN>`
+- interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks` and close the foundation gate; then choose one feature and run `/prd-to-tasks FT-<NNN>`
 - optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
-- autonomous end-to-end: запусти `/autonomous`; it will run/require `/spec-design --all`, then `/spec-auto --all` before `/prd-to-tasks --all`
+- autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan`
 
 Do not create TASK records from `/prd`.
 </process>

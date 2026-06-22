@@ -118,7 +118,7 @@ If the user explicitly overrides a blocked brief, `/write-prd` may continue, but
 The next planning chain is:
 
 ```text
-/brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /spec-design -> /spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>
+/brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN>
 ```
 
 Check `.memory-bank/constitution.md` before recommending the next command. If `project_principles: ratified|partial`, continue directly to `/write-prd`. If `project_principles: framework-default|skipped|missing`, recommend `/constitution`; it should read `.memory-bank/analysis/product-brief.md` and run the governing-principles interview before `/write-prd`. If the user explicitly skips `/constitution`, continue to `/write-prd` with framework-default/skipped principles and recommend revisiting `/constitution` later.
@@ -134,7 +134,7 @@ Update `.memory-bank/analysis/index.md` with:
 - recommended next step
 
 Recommended next step:
-- if `Decision: proceed` and `project_principles: ratified|partial`: `/write-prd`, then `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>`, and `/prd-to-tasks FT-<NNN>`
-- if `Decision: proceed` and `project_principles: framework-default|skipped|missing`: `/constitution`, then `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, `/spec-improve FT-<NNN>`, and `/prd-to-tasks FT-<NNN>`
+- if `Decision: proceed` and `project_principles: ratified|partial`: `/write-prd`, then `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, and `/prd-to-tasks FT-<NNN>`
+- if `Decision: proceed` and `project_principles: framework-default|skipped|missing`: `/constitution`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, and `/prd-to-tasks FT-<NNN>`
 - if `Decision: blocked`: answer blocking questions, then rerun `/brief`
 </process>

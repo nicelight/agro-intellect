@@ -4,6 +4,18 @@ status: active
 ---
 # Changelog
 
+## [2026-06-23] Foundation critical path contract added
+- Added [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md) with `C-FND-001` through `C-FND-009` covering `FoundationInput`, BusEventEnvelope, AgentInvocationRecord, MessageEnvelope/UIFeedEvent split, SafetyRouteResult, PostgreSQL evidence, `timeline.jsonl`, photo JSON export, and redaction/context hygiene.
+- Updated contract/spec/foundation/testing routing so `/foundation-to-tasks` has a normative executable contract input before creating `FT-000` task records.
+- Kept `Foundation Gate Task: pending_/foundation-to-tasks`; did not create `REQ-000`, `FT-000`, task records, packets, protocols, implementation plans, or a guessed final gate task id.
+
+## [2026-06-23] /spec-design foundation critical path recorded
+- Added [.memory-bank/foundation.md](foundation.md) with `Foundation Required: true`, `REQ-000`, reserved `FT-000`, and gate assignment pending for `/foundation-to-tasks`.
+- Defined the required Foundation Critical Path: Photo/User input -> BusEventEnvelope -> Agent invocation -> Adapter -> MessageEnvelope/UIFeedEvent split -> Safety/State/Task transitions -> PostgreSQL + `timeline.jsonl` -> photo JSON export.
+- Updated [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) with Architecture Spine decisions that bind foundation gating, agent context split, runtime/audit/export authority, and Safety/task fail-closed behavior.
+- Updated spec routing in [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/spec-index.md](spec-index.md), [.memory-bank/index.md](index.md), [.memory-bank/features/index.md](features/index.md), [.memory-bank/analysis/index.md](analysis/index.md), and [.memory-bank/testing/index.md](testing/index.md).
+- Did not create `REQ-000`, `FT-000`, task records, packets, protocols, implementation plans, or a guessed final gate task id; next route is `/foundation-to-tasks`.
+
 ## [2026-06-22] Generated task artifacts removed after rollback
 - Reset the active task queue to an empty [.memory-bank/tasks/index.json](tasks/index.json).
 - Removed generated first-wave task records and implementation plans for FT-001, FT-002, and FT-003.

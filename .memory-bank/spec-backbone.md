@@ -1,5 +1,5 @@
 ---
-description: Pre-PRD spec framing and global SDD backbone state.
+description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
 ---
 # SDD Spec Backbone
@@ -7,7 +7,7 @@ status: active
 ## Pre-PRD Spec Status
 - Status: ready_for_prd
 - Last updated: 2026-06-03
-- Notes: /spec-init completed. Active PRD has enough actor, scenario, domain, constraint, non-goal, boundary, lifecycle, and risk evidence for /prd decomposition. Global architecture/backbone design was completed by /spec-design on 2026-06-14; see Global Backbone Status.
+- Notes: Historical `/spec-init` state. Active PRD had enough actor, scenario, domain, constraint, non-goal, boundary, lifecycle, and risk evidence for `/prd` decomposition. Global architecture/backbone design was completed by `/spec-design` on 2026-06-14 and refreshed for Foundation Dev Path routing on 2026-06-23; see Global Backbone Status.
 
 ## Decomposition Inputs
 - User scenarios: [.memory-bank/user-scenarios.md](user-scenarios.md) captures Boss setup, Engineer Plant operations, Safety Gate/action task flow, and Companion governance scenarios.
@@ -19,8 +19,9 @@ status: active
 - Lifecycle hints: [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md) captures Account/FarmMembership/Plant/PlantAccessGrant, daily check-in, photo artifact, agent output, physical-action proposal, CompanionProposal, DecisionRecord, and dataset candidate lifecycles.
 
 ## Open Design Questions
-- No global blocker remains after /spec-design.
-- Feature-local specs must still define exact auth/session lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope fields, Bus/UI projections, photo storage layout, state machines, freshness windows, action taxonomy, provider configuration, and UI route/view details before task decomposition.
+- No global blocker remains after `/spec-design`.
+- Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](foundation.md).
+- Feature-local specs must still define exact auth/session lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope fields, Bus/UI projections, photo storage layout, state machines, freshness windows, action taxonomy, provider configuration, and UI route/view details before product task decomposition.
 
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
@@ -32,16 +33,16 @@ status: active
 | constraints | authoritative | [.memory-bank/constitution.md](constitution.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local-first, low-maintenance, safety, data authority, context hygiene, and no automated actuation. |
 | non_goals | authoritative | [.memory-bank/prd.md](prd.md), [.memory-bank/requirements.md](requirements.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | SaaS, hosted sync, enterprise identity, multi-Farm, microservices, full dataset registry, and actuation excluded. |
 | domain_model | authoritative | [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md) | Global entities and runtime authority ownership defined; field detail routed to feature specs. |
-| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | ActorContext -> state/artifacts/audit -> Bus/agents -> Safety/UI/tasks flow defined. |
+| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md), [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md) | ActorContext -> state/artifacts/audit -> Bus/agents -> Safety/UI/tasks flow defined; Foundation Critical Path contract makes the smoke path executable before task slicing. |
 | storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md) | PostgreSQL/read model, local filesystem artifacts, and JSONL audit/export separated. |
 | api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | HTTP/API style, ActorContext, authz, errors, upload, CORS, and OpenAPI-generation guardrails defined. |
-| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | BusEventEnvelope and MessageEnvelope minimum boundaries defined; payload detail routed to feature specs. |
-| agent_io_contracts | authoritative | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Runtime decision, adapter, consumability, and no-raw-output rules defined. |
+| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md), [.memory-bank/foundation.md](foundation.md) | BusEventEnvelope, MessageEnvelope, and UIFeedEvent split must be proven by Foundation Critical Path; product payload detail routed to feature specs. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | Runtime decision, adapter, AgentInvocationRecord, consumability, no-raw-output rules, and foundation adapter probe defined. |
 | security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | Backend authz, loopback/LAN controls, secret redaction, Safety Gate, and no automated actuation defined. |
 | testing_strategy | authoritative | [.memory-bank/testing/index.md](testing/index.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Unit/integration/e2e and anti-cheat test areas defined. |
 | deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local loopback first demo; optional protected LAN; no SaaS/server sync. |
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md), [.memory-bank/analysis/product-brief.md](analysis/product-brief.md) | Key architecture risks recorded. |
-| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | No global blocker; feature-local details routed to /spec-improve. |
+| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | No global blocker; required foundation routed to /foundation-to-tasks; feature-local details routed to /prd-to-tasks or repair /spec-improve. |
 
 ## Handoff To /prd
 - Ready: yes
@@ -49,10 +50,18 @@ status: active
 - Stop conditions: PRD scope changes; Pre-PRD Spec Status becomes stale/blocked; new ambiguity appears around actors, Farm/Plant boundaries, Safety Gate authority, Companion governance authority, or real agent-runtime/demo requirements.
 
 ## Handoff To /spec-design
-- Completed: yes, on 2026-06-14.
+- Completed: yes, on 2026-06-14; refreshed on 2026-06-23 for Foundation Dev Path routing.
 - Backbone areas decided: architecture_style, source_of_truth, module_boundaries, ActorContext/authz, Farm/Plant data authority, photo artifact storage, timeline audit/export, Agent Chat Bus, MessageEnvelope, UI Feed, Safety Gate, Companion governance, dataset governance, testing, deployment.
 - Authoritative specs: see .memory-bank/spec-index.md Spec Registry.
 - L1-L3 context: `/prd` completed active MVP v2 product, requirements, epics, and features on 2026-06-14; use [.memory-bank/requirements.md](requirements.md), [.memory-bank/epics/index.md](epics/index.md), and [.memory-bank/features/index.md](features/index.md) as decomposition inputs.
+
+## Handoff To /foundation-to-tasks
+- Required: yes.
+- Foundation decision: [.memory-bank/foundation.md](foundation.md) records `Foundation Required: true`, `Foundation Requirement: REQ-000`, `Foundation Pseudo-Feature: FT-000`, and `Foundation Gate Task: pending_/foundation-to-tasks`.
+- Critical path: Photo/User input -> BusEventEnvelope -> Agent invocation -> Adapter -> MessageEnvelope/UIFeedEvent split -> Safety/State/Task transitions -> PostgreSQL + `timeline.jsonl` -> photo JSON export.
+- Required contract: [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md) defines the foundation-scoped executable contract records for `/foundation-to-tasks`.
+- Next command: `/foundation-to-tasks`, then `node scripts/mb-doctor.mjs` at the foundation/task-queue boundary, then execute/verify `FT-000` until final gate task is `done`.
+- Stop conditions: Foundation gate task missing, not indexed, not `done`, or product tasks without direct/transitive dependency on the final foundation gate.
 
 ## Handoff To /spec-improve
 - Ready: yes.
@@ -68,4 +77,4 @@ status: active
   - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
-- Notes: Global AI-first architecture guardrails are complete for MVP v2 feature-level design. Feature-local specs still own detailed schemas, state machines, API endpoints, and task-ready verification evidence.
+- Notes: Global AI-first architecture guardrails are complete for MVP v2 feature-level design. Foundation Dev Path is required before product feature tasking. Feature-local specs still own detailed schemas, state machines, API endpoints, and task-ready verification evidence.
