@@ -22,8 +22,11 @@ requirements, epics, and features exist as draft L1-L3 artifacts. The global SDD
 architecture backbone is complete. Feature-level `/spec-improve` is complete for
 FT-001, FT-002, and FT-003; their current normative feature designs are
 registered in [.memory-bank/spec-index.md](spec-index.md). The active task index
-contains `FT-000` foundation tasks only. The next route is `node scripts/mb-doctor.mjs`,
-then execute/verify `FT-000` tasks until `TASK-004-FT-000-W-0` is `done`.
+contains `FT-000` foundation tasks only. `TASK-000-T1-FT-000-W0` and
+`TASK-001-T2-FT-000-W0` are done. `TASK-002-T2-FT-000-W0` remains `planned`
+with all direct dependencies done and is eligible for a separate scheduler/owner
+promotion pass. Continue execute/verify on `FT-000` until
+`TASK-004-T2-FT-000-W0` is `done`.
 Other features still require feature-level `/spec-improve FT-<NNN>` before any
 future implementation planning.
 
@@ -75,8 +78,8 @@ future implementation planning.
 Next route:
 
 ```text
-node scripts/mb-doctor.mjs
-then execute/verify FT-000 until TASK-004-FT-000-W-0 is done
+run the scheduler/owner promotion pass for TASK-002-T2-FT-000-W0
+then execute/verify FT-000 until TASK-004-T2-FT-000-W0 is done
 ```
 
 Do not run `/prd-to-tasks` for product features until the final foundation gate

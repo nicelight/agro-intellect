@@ -27,7 +27,7 @@ status: active
 - [.memory-bank/epics/index.md](../epics/index.md): active MVP v2 epic router.
 - [.memory-bank/features/index.md](../features/index.md): active MVP v2 feature router.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): active global architecture backbone.
-- [.memory-bank/foundation.md](../foundation.md): compact Foundation Dev Path for task schema/protocol alignment, backend scaffold anchors, Windows bootstrap, local PostgreSQL init, migration baseline, local runtime roots, and redaction baseline.
+- [.memory-bank/foundation.md](../foundation.md): compact Foundation Dev Path for task schema/protocol alignment, backend scaffold anchors, Linux Mint bootstrap, local PostgreSQL init, migration baseline, local runtime roots, and redaction baseline.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): active runtime authority model.
 - [.memory-bank/contracts/index.md](../contracts/index.md): active contract router.
 - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md): current normative feature design for local accounts, sessions, and ActorContext.
@@ -56,7 +56,7 @@ status: active
 After explicit user instruction, choose the next implementation-planning workflow:
 
 ```text
-node scripts/mb-doctor.mjs, then execute/verify FT-000 until TASK-004-FT-000-W-0 is done
+node scripts/mb-doctor.mjs, then execute/verify FT-000 until TASK-004-T2-FT-000-W0 is done
 ```
 
 ## Closed PRD Clarifications

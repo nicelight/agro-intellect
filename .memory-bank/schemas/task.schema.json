@@ -26,7 +26,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$"
+      "pattern": "^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$"
     },
     "title": {
       "type": "string"
@@ -61,7 +61,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$"
+        "pattern": "^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$"
       }
     },
     "touched_files": {
@@ -179,7 +179,7 @@
         },
         "packet_ref": {
           "type": "string",
-          "pattern": "^\\.memory-bank/packets/TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\\.packet\\.json$"
+          "pattern": "^\\.memory-bank/packets/TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+\\.packet\\.json$"
         },
         "allowed_write_scope": {
           "type": "array",

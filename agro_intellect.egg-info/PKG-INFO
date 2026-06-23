@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: agro-intellect
+Version: 0.1.0
+Summary: Agro Intellect local modular monolith baseline
+Requires-Python: >=3.11
+Requires-Dist: fastapi<1,>=0.115
+Requires-Dist: sqlalchemy<3,>=2.0
+Requires-Dist: pydantic<3,>=2
+Requires-Dist: alembic<2,>=1.13
+Requires-Dist: psycopg[binary]<4,>=3.2
+Provides-Extra: test
+Requires-Dist: httpx<1,>=0.28; extra == "test"
+Requires-Dist: pytest<10,>=9; extra == "test"

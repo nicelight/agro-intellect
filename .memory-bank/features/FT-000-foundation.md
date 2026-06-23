@@ -23,7 +23,7 @@ semantics.
 
 ## Use Cases
 
-- Developer can bootstrap the local backend environment on Windows 10.
+- Developer can bootstrap the local backend environment on Linux Mint.
 - Developer can initialize or verify the local PostgreSQL database.
 - Developer can run migrations, start the FastAPI app, and verify `/health` and
   `/ready`.
@@ -33,11 +33,11 @@ semantics.
 
 ## Acceptance Criteria
 
-- Task schema/protocol tooling accepts `TASK-<NNN>-FT-<NNN>-W-<N>` records,
+- Task schema/protocol tooling accepts `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` records,
   `tier`, optional `runtime_context`, and `FT-000/W0` semantics.
 - Backend scaffold anchors exist for app factory, settings, route inclusion,
   bounded-context package layout, and tests.
-- Windows local bootstrap and PostgreSQL init paths are documented,
+- Linux Mint local bootstrap and PostgreSQL init paths are documented,
   idempotent, and redact secrets.
 - Alembic migration baseline and DB readiness checks are executable.
 - Local data/artifact roots exist with `local_only` defaults.
@@ -47,7 +47,7 @@ semantics.
 
 ## Edge Cases & Failure Modes
 
-- Missing PostgreSQL tooling on Windows 10 must fail with actionable safe output.
+- Missing PostgreSQL tooling on Linux Mint must fail with actionable safe output.
 - Bootstrap scripts must not print passwords, tokens, `.env` contents, or DB URLs
   with credentials.
 - Foundation must not implement product auth/session, Plant lifecycle, admin
@@ -58,9 +58,9 @@ semantics.
 ## Verification Targets
 
 - `python -m pip install -e ".[test]"`
-- `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-local.ps1`
-- `powershell -ExecutionPolicy Bypass -File scripts/db-init-local.ps1`
-- `powershell -ExecutionPolicy Bypass -File scripts/db-migrate-local.ps1`
+- `bash scripts/bootstrap-local.sh`
+- `bash scripts/db-init-local.sh`
+- `bash scripts/db-migrate-local.sh`
 - `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`
 - `/health`, `/ready`, DB ping, migration status, rollback-safe test session,
   local data root availability.

@@ -11,7 +11,7 @@ source_of_truth:
 
 Active MVP v2 features are draft L3 decomposition artifacts. Global `/spec-design` is complete.
 
-Compact Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](../foundation.md). Product `/prd-to-tasks` must wait until the final `FT-000` foundation gate task `TASK-004-FT-000-W-0` is `done`.
+Compact Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](../foundation.md). Product `/prd-to-tasks` must wait until the final `FT-000` foundation gate task `TASK-004-T2-FT-000-W0` is `done`.
 
 First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
 
@@ -21,7 +21,7 @@ All other features still require their own `/spec-improve FT-<NNN>` gate before 
 
 ## Foundation Pseudo-Feature
 
-- [FT-000 Foundation Dev Path](FT-000-foundation.md): reserved pseudo-feature for `/foundation-to-tasks`; current final gate is `TASK-004-FT-000-W-0`; not a product feature and not a valid `/prd-to-tasks FT-000` target.
+- [FT-000 Foundation Dev Path](FT-000-foundation.md): reserved pseudo-feature for `/foundation-to-tasks`; current final gate is `TASK-004-T2-FT-000-W0`; not a product feature and not a valid `/prd-to-tasks FT-000` target.
 
 ## EP-001 Local Farm Access And Admin
 

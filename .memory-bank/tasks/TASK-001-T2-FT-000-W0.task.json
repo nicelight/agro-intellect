@@ -1,0 +1,125 @@
+{
+  "id": "TASK-001-T2-FT-000-W0",
+  "title": "Implement Linux Mint local bootstrap and runtime roots",
+  "status": "done",
+  "wave": "W0",
+  "feature": "FT-000",
+  "reqs": [
+    "REQ-000"
+  ],
+  "depends_on": [
+    "TASK-000-T1-FT-000-W0"
+  ],
+  "touched_files": [
+    "scripts/bootstrap-local.sh",
+    ".env.example",
+    "backend/app/config.py",
+    "tests/backend/test_baseline.py",
+    "tests/backend/test_foundation_bootstrap_contract.py"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "bootstrap-contract-tests",
+      "command": "python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
+      "required": true
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Bash bootstrap creates or reuses .venv, installs project/test dependencies, and prepares .env from .env.example without printing secrets.",
+    "Settings expose local runtime roots for data/artifacts, timeline placeholder, temp/smoke paths, and local_only defaults.",
+    "Bootstrap gives actionable safe errors when Python or PostgreSQL tooling is missing on Linux Mint.",
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "manual_closure_owner": "ROLE GENERAL",
+      "verdict": "VERDICT: PASS",
+      "verified_at": "2026-06-24T00:16:44+05:00",
+      "evidence": [
+        ".protocols/TASK-001-T2-FT-000-W0/verification.md",
+        ".tasks/TASK-001-T2-FT-000-W0/TASK-001-T2-FT-000-W0-S-VERIFY-final-report-code-01.md",
+        ".tasks/TASK-001-T2-FT-000-W0/TASK-001-T2-FT-000-W0-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        "psql --version",
+        "pg_isready --version",
+        "bash scripts/bootstrap-local.sh --dry-run",
+        "bash scripts/bootstrap-local.sh",
+        "python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
+        "python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs",
+        "git diff --check"
+      ],
+      "summary": "PostgreSQL client tooling is installed and detected; dry-run and full Linux Mint bootstrap passed without printing .env contents or credential-bearing DB URLs; bootstrap contract tests passed with 5 tests; baseline/database harness tests passed with 10 tests; mb-lint, mb-doctor, and git diff --check passed. Full T2 protocol and required packet/spec gates are satisfied."
+    }
+  ],
+  "docs": [
+    ".memory-bank/foundation.md",
+    ".memory-bank/features/FT-000-foundation.md",
+    ".memory-bank/tasks/plans/IMPL-FT-000.md"
+  ],
+  "evidence_required": [
+    "bootstrap contract test output",
+    "bootstrap command transcript or documented dry-run evidence with secrets redacted",
+    "settings/runtime root test evidence"
+  ],
+  "source_artifacts": [
+    ".memory-bank/foundation.md",
+    ".memory-bank/testing/index.md",
+    ".env.example"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Target Linux Mint local setup.",
+    "Do not require Docker or hosted services.",
+    "Do not print .env contents, passwords, tokens, or DB URLs with credentials.",
+    "Do not implement product domain behavior."
+  ],
+  "invariants": [
+    "MVP remains local-first and private by default.",
+    "sync.status remains local_only until a future server-sync spec exists.",
+    "Secrets/auth material must not enter logs, exports, screenshots, Bus, UI Feed, or agent context."
+  ],
+  "verification_targets": [
+    "bash scripts/bootstrap-local.sh",
+    "python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
+    "node scripts/mb-lint.mjs"
+  ],
+  "purpose": "Provide a repeatable Linux Mint local setup and runtime-root baseline for later backend feature tasks.",
+  "success_outcome": "A Linux Mint operator can bootstrap the local backend environment and product tasks can rely on shared local runtime settings.",
+  "anti_goals": [
+    "No Docker requirement.",
+    "No product auth/session or UI implementation."
+  ],
+  "runtime_context": {
+    "packet_required": true,
+    "packet_ref": ".memory-bank/packets/TASK-001-T2-FT-000-W0.packet.json",
+    "allowed_write_scope": [
+      "scripts/bootstrap-local.sh",
+      ".env.example",
+      "backend/app/config.py",
+      "tests/backend/test_foundation_bootstrap_contract.py",
+      "tests/backend/test_baseline.py"
+    ],
+    "forbidden_scope": [
+      "product auth/session behavior",
+      "Plant lifecycle or seed implementation",
+      "agent runtime, Safety Gate, photo catalog, timeline taxonomy, dataset governance, PWA UI"
+    ],
+    "stop_conditions": [
+      "Linux Mint bootstrap cannot be specified without leaking secrets.",
+      "Required local PostgreSQL assumptions are unclear or contradict .env.example.",
+      "Implementation would require hosted/cloud services."
+    ]
+  }
+}

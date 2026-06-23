@@ -40,7 +40,7 @@ status: active
 | agent_io_contracts | authoritative | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Runtime decision, adapter, consumability, and no-raw-output rules defined. |
 | security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | Backend authz, loopback/LAN controls, secret redaction, Safety Gate, and no automated actuation defined. |
 | testing_strategy | authoritative | [.memory-bank/testing/index.md](testing/index.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | Unit/integration/e2e, anti-cheat test areas, and Foundation build/start/db/migration gates defined. |
-| deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | Local loopback first demo; Windows 10 local bootstrap/PostgreSQL path; optional protected LAN later; no SaaS/server sync. |
+| deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | Local loopback first demo; Linux Mint local bootstrap/PostgreSQL path; optional protected LAN later; no SaaS/server sync. |
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md), [.memory-bank/analysis/product-brief.md](analysis/product-brief.md) | Key architecture risks recorded. |
 | open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | No global blocker; Foundation routed to /foundation-to-tasks; feature-local details routed to /spec-improve or /prd-to-tasks. |
 
@@ -57,10 +57,10 @@ status: active
 
 ## Handoff To /foundation-to-tasks
 - Required: yes.
-- Foundation decision: [.memory-bank/foundation.md](foundation.md) records `Foundation Required: true`, `Foundation Requirement: REQ-000`, `Foundation Pseudo-Feature: FT-000`, and `Foundation Gate Task: TASK-004-FT-000-W-0`.
-- Foundation scope: task schema/protocol alignment, backend scaffold anchors, Windows 10 local bootstrap, local PostgreSQL init, Alembic migration baseline, DB session/UoW baseline, local runtime roots, redaction baseline, and final foundation gate.
+- Foundation decision: [.memory-bank/foundation.md](foundation.md) records `Foundation Required: true`, `Foundation Requirement: REQ-000`, `Foundation Pseudo-Feature: FT-000`, and `Foundation Gate Task: TASK-004-T2-FT-000-W0`.
+- Foundation scope: task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, local PostgreSQL init, Alembic migration baseline, DB session/UoW baseline, local runtime roots, redaction baseline, and final foundation gate.
 - Explicit non-scope: the old Bus -> Agent -> Message/UI -> Safety -> timeline/photo export critical path is not restored; those product boundaries remain in global contracts and feature-local specs.
-- Next command: `node scripts/mb-doctor.mjs` at the foundation/task-queue boundary, then execute/verify `FT-000` until `TASK-004-FT-000-W-0` is `done`.
+- Next command: `node scripts/mb-doctor.mjs` at the foundation/task-queue boundary, then execute/verify `FT-000` until `TASK-004-T2-FT-000-W0` is `done`.
 - Stop conditions: Foundation gate task missing, not indexed, not `done`, or product tasks without direct/transitive dependency on the final foundation gate.
 
 ## Handoff To /spec-improve

@@ -1,5 +1,6 @@
-from typing import Mapping
 from os import environ as os_environ
+from pathlib import Path
+from typing import Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,6 +15,12 @@ class AppSettings(BaseModel):
     )
     database_echo: bool = Field(default=False)
     database_pool_pre_ping: bool = Field(default=True)
+    local_data_root: Path = Field(default=Path("data"))
+    local_artifact_root: Path = Field(default=Path("data/artifacts"))
+    local_timeline_root: Path = Field(default=Path("data/timeline"))
+    local_temp_root: Path = Field(default=Path("data/tmp"))
+    local_smoke_root: Path = Field(default=Path("data/smoke"))
+    sync_status: str = Field(default="local_only")
 
     @classmethod
     def from_env(
@@ -30,4 +37,10 @@ class AppSettings(BaseModel):
             ),
             database_echo=source.get("DATABASE_ECHO", "false"),
             database_pool_pre_ping=source.get("DATABASE_POOL_PRE_PING", "true"),
+            local_data_root=source.get("LOCAL_DATA_ROOT", "data"),
+            local_artifact_root=source.get("LOCAL_ARTIFACT_ROOT", "data/artifacts"),
+            local_timeline_root=source.get("LOCAL_TIMELINE_ROOT", "data/timeline"),
+            local_temp_root=source.get("LOCAL_TEMP_ROOT", "data/tmp"),
+            local_smoke_root=source.get("LOCAL_SMOKE_ROOT", "data/smoke"),
+            sync_status=source.get("SYNC_STATUS", "local_only"),
         )

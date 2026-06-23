@@ -20,11 +20,11 @@ const MB_INDEX_REL = '.memory-bank/index.md';
 const SPEC_INDEX_REL = '.memory-bank/spec-index.md';
 const SPEC_BACKBONE_REL = '.memory-bank/spec-backbone.md';
 const FOUNDATION_REL = '.memory-bank/foundation.md';
-const TASK_ID_FORMAT = 'TASK-NNN-FT-NNN-W-N';
-const TASK_ID_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$/;
-const FOUNDATION_TASK_ID_FORMAT = 'TASK-NNN-FT-000-W-N';
-const FOUNDATION_TASK_ID_RE = /^TASK-[0-9]{3}-FT-000-W-[0-9]+$/;
-const FOUNDATION_GATE_PENDING = 'pending_/foundation-to-tasks';
+const TASK_ID_FORMAT = 'TASK-NNN-TN-FT-NNN-WN';
+const TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$/;
+const FOUNDATION_TASK_ID_FORMAT = 'TASK-NNN-TN-FT-000-WN';
+const FOUNDATION_TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-000-W[0-9]+$/;
+const FOUNDATION_GATE_PENDING = 'pending_foundation_to_tasks';
 const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
@@ -618,22 +618,7 @@ function checkFoundationReadiness(orderedRecords, records) {
   }
 
   if (anchors.required !== true) return;
-
-  if (anchors.gateTask === FOUNDATION_GATE_PENDING) {
-    const pendingSeverity = options.strict || orderedRecords.length ? 'error' : 'info';
-    addFinding(
-      pendingSeverity,
-      'FOUNDATION_GATE_TASK_PENDING',
-      `${FOUNDATION_REL}: foundation is required but the final gate task has not been assigned yet.`,
-      {
-        path: FOUNDATION_REL,
-        details: { gate_task: anchors.gateTask, indexed_task_count: orderedRecords.length },
-        suggested_fix:
-          'Run /foundation-to-tasks to create the FT-000 queue and replace pending_/foundation-to-tasks with the concrete final gate task id.',
-      }
-    );
-    return;
-  }
+  if (anchors.gateTask === FOUNDATION_GATE_PENDING) return;
 
   const gate = records.get(anchors.gateTask);
   if (!gate || gate.task.feature !== 'FT-000') {

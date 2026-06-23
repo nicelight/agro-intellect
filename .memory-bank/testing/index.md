@@ -55,9 +55,9 @@ final `FT-000` gate task.
 
 Foundation evidence must prove:
 
-- `task.schema.json`, `mb-lint`, and `mb-doctor` agree on `TASK-<NNN>-FT-<NNN>-W-<N>`, `tier`, optional `runtime_context`, and `FT-000/W0` semantics.
+- `task.schema.json`, `mb-lint`, and `mb-doctor` agree on `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`, `tier`, optional `runtime_context`, and `FT-000/W0` semantics.
 - Backend scaffold anchors exist for app factory, settings, route inclusion, bounded-context package layout, and tests.
-- Windows 10 local bootstrap can create/use `.venv`, install project/test deps, prepare `.env` from `.env.example`, and verify Python/PostgreSQL tooling without printing secrets.
+- Linux Mint local bootstrap can create/use `.venv`, install project/test deps, prepare `.env` from `.env.example`, and verify Python/PostgreSQL tooling without printing secrets.
 - Local PostgreSQL init is idempotent and produces actionable redacted failures when local prerequisites are missing.
 - Alembic migration path can run against the configured local PostgreSQL database and is inspectable.
 - `/health` and `/ready` pass; `/ready` proves configured DB connectivity when DB readiness is enabled.

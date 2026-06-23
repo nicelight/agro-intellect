@@ -1,0 +1,14 @@
+pyproject.toml
+agro_intellect.egg-info/PKG-INFO
+agro_intellect.egg-info/SOURCES.txt
+agro_intellect.egg-info/dependency_links.txt
+agro_intellect.egg-info/requires.txt
+agro_intellect.egg-info/top_level.txt
+backend/__init__.py
+backend/app/__init__.py
+backend/app/config.py
+backend/app/database.py
+backend/app/main.py
+backend/migrations/__init__.py
+backend/migrations/env.py
+backend/migrations/versions/__init__.py

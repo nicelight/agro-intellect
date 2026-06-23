@@ -4,16 +4,28 @@ status: active
 ---
 # Changelog
 
+## [2026-06-24] Wave W0 - TASK-001 verified and synced
+- Updated [.memory-bank/tasks/plans/IMPL-FT-000.md](tasks/plans/IMPL-FT-000.md) to reflect `TASK-000-T1-FT-000-W0` and `TASK-001-T2-FT-000-W0` as `done`.
+- Recorded current routing in [.memory-bank/index.md](index.md): `TASK-002-T2-FT-000-W0` remains `planned` but has all direct dependencies done and is eligible for a separate scheduler/owner promotion pass.
+- Left `REQ-000` and `FT-000` lifecycle as planned because the final Foundation gate `TASK-004-T2-FT-000-W0` is not done yet.
+- Did not promote dependent tasks from `/mb-sync`; promotion remains a separate scheduler/owner action.
+
+## [2026-06-23] Foundation retargeted to Linux Mint local
+- Updated the active `FT-000` Foundation Dev Path from Windows 10/PowerShell to Linux Mint/Bash local setup.
+- Replaced planned bootstrap, DB init, and migration commands with `bash scripts/bootstrap-local.sh`, `bash scripts/db-init-local.sh`, and `bash scripts/db-migrate-local.sh`.
+- Updated `TASK-001-T2-FT-000-W0` through `TASK-004-T2-FT-000-W0` and their packets so the next Foundation implementation task targets Linux Mint.
+- Left product feature scope unchanged; product tasking still waits for final `FT-000` gate closure.
+
 ## [2026-06-23] /foundation-to-tasks queue created
 - Added `REQ-000` and reserved pseudo-feature [.memory-bank/features/FT-000-foundation.md](features/FT-000-foundation.md).
-- Added Foundation implementation plan [.memory-bank/tasks/plans/IMPL-FT-000.md](tasks/plans/IMPL-FT-000.md), `.protocols/FT-000/` planning notes, and schema-backed `TASK-000-FT-000-W-0` through `TASK-004-FT-000-W-0`.
-- Set [.memory-bank/foundation.md](foundation.md) final gate to `TASK-004-FT-000-W-0`.
+- Added Foundation implementation plan [.memory-bank/tasks/plans/IMPL-FT-000.md](tasks/plans/IMPL-FT-000.md), `.protocols/FT-000/` planning notes, and schema-backed `TASK-000-T1-FT-000-W0` through `TASK-004-T2-FT-000-W0`.
+- Set [.memory-bank/foundation.md](foundation.md) final gate to `TASK-004-T2-FT-000-W0`.
 - Added required packets for T2/T3 Foundation tasks under `.memory-bank/packets/`.
 - Updated routing so the next gate is `node scripts/mb-doctor.mjs`, then execute/verify `FT-000` until the final gate is done.
 
 ## [2026-06-23] Compact Foundation Dev Path restored
 - Added a new compact [.memory-bank/foundation.md](foundation.md) focused on task schema/protocol alignment, backend scaffold anchors, Windows 10 local bootstrap, PostgreSQL init, migration baseline, DB readiness, local runtime roots, and redaction baseline.
-- Updated [.memory-bank/schemas/task.schema.json](schemas/task.schema.json) to match the current `TASK-<NNN>-FT-<NNN>-W-<N>` task protocol, optional `runtime_context`, and FT-000/W0 flow.
+- Updated [.memory-bank/schemas/task.schema.json](schemas/task.schema.json) to match the current `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` task protocol, optional `runtime_context`, and FT-000/W0 flow.
 - Updated routing in spec backbone, spec index, Memory Bank index, analysis/features routers, and testing so product tasking waits for `/foundation-to-tasks` and the final `FT-000` gate.
 - Kept the old broad Bus -> Agent -> Message/UI -> Safety -> timeline/photo export Foundation Critical Path out of active routing; those concerns remain global or feature-local specs.
 

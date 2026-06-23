@@ -1,0 +1,110 @@
+{
+  "id": "TASK-003-T3-FT-000-W0",
+  "title": "Implement secret redaction baseline",
+  "status": "planned",
+  "wave": "W0",
+  "feature": "FT-000",
+  "reqs": [
+    "REQ-000",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-001-T2-FT-000-W0",
+    "TASK-002-T2-FT-000-W0"
+  ],
+  "touched_files": [
+    "backend/app/core/redaction.py",
+    "backend/app/config.py",
+    "scripts/bootstrap-local.sh",
+    "scripts/db-init-local.sh",
+    "scripts/db-migrate-local.sh",
+    "tests/backend/test_foundation_redaction.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "redaction-tests",
+      "command": "python -m pytest tests/backend/test_foundation_redaction.py",
+      "required": true
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Redaction helper masks .env values, tokens, passwords, DB URLs with credentials, and auth material.",
+    "Bootstrap and DB scripts use safe output paths and do not print secret material.",
+    "Errors/log-like strings used by Foundation tests are redacted.",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "docs": [
+    ".memory-bank/foundation.md",
+    ".memory-bank/features/FT-000-foundation.md",
+    ".memory-bank/tasks/plans/IMPL-FT-000.md"
+  ],
+  "evidence_required": [
+    "redaction pytest output",
+    "sample redacted bootstrap/db output",
+    "semantic red-verify report",
+    "HUMAN_CHECKPOINT: done",
+    "ROLLBACK_RECOVERY_NOTE: present"
+  ],
+  "source_artifacts": [
+    ".memory-bank/foundation.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/constitution.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Do not log or export secrets, API keys, tokens, .env values, credentials, or auth material.",
+    "Do not weaken local auth/authz assumptions.",
+    "Do not invent provider secrets or hosted recovery behavior."
+  ],
+  "invariants": [
+    "Secrets/auth material must not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.",
+    "MVP data and artifacts remain local/private by default."
+  ],
+  "verification_targets": [
+    "python -m pytest tests/backend/test_foundation_redaction.py",
+    "node scripts/mb-lint.mjs",
+    "/verify PASS",
+    "/red-verify semantic-pass"
+  ],
+  "purpose": "Provide a security-sensitive redaction baseline for local bootstrap, settings, DB scripts, and future feature evidence.",
+  "success_outcome": "Future feature tasks can call a shared redaction primitive and Foundation evidence cannot leak auth or secret material.",
+  "anti_goals": [
+    "No production secrets management.",
+    "No hosted identity or recovery.",
+    "No provider configuration."
+  ],
+  "runtime_context": {
+    "packet_required": true,
+    "packet_ref": ".memory-bank/packets/TASK-003-T3-FT-000-W0.packet.json",
+    "allowed_write_scope": [
+      "backend/app/core/redaction.py",
+      "backend/app/config.py",
+      "scripts/bootstrap-local.sh",
+      "scripts/db-init-local.sh",
+      "scripts/db-migrate-local.sh",
+      "tests/backend/test_foundation_redaction.py"
+    ],
+    "forbidden_scope": [
+      "real production secret storage",
+      "provider/API key setup",
+      "hosted identity or password recovery",
+      "product auth/session implementation"
+    ],
+    "stop_conditions": [
+      "A required test or script would print unredacted credentials.",
+      "Redaction policy conflicts with API Guidelines or Invariants.",
+      "The task requires reading or exposing real secrets."
+    ]
+  }
+}

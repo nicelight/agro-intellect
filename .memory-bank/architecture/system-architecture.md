@@ -49,7 +49,7 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 #### AD-002 - Foundation implements platform anchors, not product behavior
 - Binds: FT-000 Foundation tasks and later FT-001..FT-016 task slicing.
 - Prevents: broad upfront implementation of auth, Plant lifecycle, admin, photo, agent, safety, UI Feed, dataset, or first-demo product behavior inside Foundation.
-- Rule: Foundation may implement task schema/protocol alignment, backend scaffold anchors, Windows local bootstrap, PostgreSQL init, migration baseline, DB readiness/session helpers, local runtime roots, and redaction baseline; product schemas and state machines stay in their owning feature tasks.
+- Rule: Foundation may implement task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, PostgreSQL init, migration baseline, DB readiness/session helpers, local runtime roots, and redaction baseline; product schemas and state machines stay in their owning feature tasks.
 - Verification: final Foundation evidence proves scaffold/bootstrap/DB gates and does not claim product acceptance for FT-001..FT-016.
 - Source: [.memory-bank/foundation.md](../foundation.md), [.memory-bank/features/index.md](../features/index.md).
 
