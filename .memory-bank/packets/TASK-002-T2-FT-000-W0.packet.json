@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-002-T2-FT-000-W0-R2",
+  "packet_id": "PACKET-TASK-002-T2-FT-000-W0-R3",
   "task_id": "TASK-002-T2-FT-000-W0",
-  "created_at": "2026-06-23T23:52:31+05:00",
-  "source_task_hash": "sha256:e100e3aa3d36228fc2a145ced5e569ffd2eb7f657698ab852b536dc0dd4add76",
+  "created_at": "2026-06-24T00:31:33+05:00",
+  "source_task_hash": "sha256:b8cb8fca858ec980a7c3be6ca88078491f80e340e9aea22e916eb70aad90676a",
   "status": "ready",
   "tier": "T2",
   "purpose": "Make the local database and migration path executable before product tables and routes are implemented.",

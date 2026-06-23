@@ -12,6 +12,10 @@ from sqlalchemy.pool import StaticPool
 from .config import AppSettings
 
 
+def redacted_database_url(database_url: str) -> str:
+    return make_url(database_url).render_as_string(hide_password=True)
+
+
 @dataclass(slots=True)
 class DatabaseHandle:
     settings: AppSettings
@@ -83,4 +87,4 @@ def build_database(settings: AppSettings | None = None) -> DatabaseHandle:
     return DatabaseHandle(settings or AppSettings.from_env())
 
 
-__all__ = ["DatabaseHandle", "build_database"]
+__all__ = ["DatabaseHandle", "build_database", "redacted_database_url"]

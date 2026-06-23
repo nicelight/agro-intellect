@@ -1,7 +1,7 @@
 {
   "id": "TASK-002-T2-FT-000-W0",
   "title": "Implement local PostgreSQL init, migrations, and readiness",
-  "status": "planned",
+  "status": "in_progress",
   "wave": "W0",
   "feature": "FT-000",
   "reqs": [
