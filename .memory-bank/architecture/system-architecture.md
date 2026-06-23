@@ -39,33 +39,19 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 
 ## Architecture Spine
 
-#### AD-001 - Foundation critical path gates product tasking
-- Binds: FT-004 through FT-016 product feature task generation and execution.
-- Prevents: isolated feature implementation before the shared event, agent, safety, state, audit, and export path is executable.
-- Rule: when [.memory-bank/foundation.md](../foundation.md) says `Foundation Required: true`, no non-`FT-000` product task may be generated or executed until the final `FT-000` foundation gate task is indexed and `done`.
-- Verification: `node scripts/mb-doctor.mjs` checks the foundation gate task and product-task dependencies; the final foundation gate smoke must prove the path in `.memory-bank/foundation.md`.
+#### AD-001 - Compact Foundation gates product tasking
+- Binds: product `/prd-to-tasks` and all non-`FT-000` task generation/execution.
+- Prevents: feature tasks inventing incompatible scaffold, bootstrap, task-record, database, migration, or local runtime-root conventions.
+- Rule: when [.memory-bank/foundation.md](../foundation.md) says `Foundation Required: true`, no product task may be generated or executed until `/foundation-to-tasks` creates a final `FT-000` gate task and that task is `done`.
+- Verification: `node scripts/mb-doctor.mjs` checks the Foundation anchors, final gate task, and product task dependencies.
 - Source: [.memory-bank/foundation.md](../foundation.md), [.memory-bank/workflows/tier-policy.md](../workflows/tier-policy.md).
 
-#### AD-002 - Agent context split stays explicit
-- Binds: BusEventEnvelope, agent invocation, runtime adapter, MessageEnvelope, and UIFeedEvent projection.
-- Prevents: raw model/provider output, UI Feed text, raw chat, or presentation markdown becoming agent working context.
-- Rule: Foundation and product tasks must keep BusEventEnvelope, MessageEnvelope, and UIFeedEvent as separate artifacts or records with explicit refs and consumability flags.
-- Verification: contract/integration tests prove UI Feed projection is not accepted by agent context builders and raw provider output cannot publish directly to the Bus.
-- Source: [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md).
-
-#### AD-003 - Runtime authority, audit, and export remain separate
-- Binds: PostgreSQL/read model, `timeline.jsonl`, local photo files/manifests, and photo JSON export.
-- Prevents: timeline replay, photo JSON export, UI Feed, or raw agent output overriding mutable runtime state.
-- Rule: mutable operational state is written through PostgreSQL/read-model services; `timeline.jsonl` is append-only audit/export; photo JSON export is an export artifact with refs back to runtime evidence.
-- Verification: foundation and product integration tests assert state rows, timeline events, and photo JSON export refs are consistent but not mutually authoritative.
-- Source: [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md), [.memory-bank/invariants.md](../invariants.md).
-
-#### AD-004 - Safety and task transitions fail closed
-- Binds: physical-action wording, Safety Gate routing, task creation, follow-up, and state updates.
-- Prevents: immediate physical-action instructions, automated actuation, or governance approval being treated as Safety Gate approval.
-- Rule: any physical-action implication in the foundation path must route through Safety Gate and create only blocked/pending/safe task state; no automated device execution or action task unlock is allowed without the full future approval conditions.
-- Verification: foundation smoke includes one safe/non-action message and one physical-action implication that is blocked or routed without creating an executable action.
-- Source: [.memory-bank/testing/index.md](../testing/index.md), [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md).
+#### AD-002 - Foundation implements platform anchors, not product behavior
+- Binds: FT-000 Foundation tasks and later FT-001..FT-016 task slicing.
+- Prevents: broad upfront implementation of auth, Plant lifecycle, admin, photo, agent, safety, UI Feed, dataset, or first-demo product behavior inside Foundation.
+- Rule: Foundation may implement task schema/protocol alignment, backend scaffold anchors, Windows local bootstrap, PostgreSQL init, migration baseline, DB readiness/session helpers, local runtime roots, and redaction baseline; product schemas and state machines stay in their owning feature tasks.
+- Verification: final Foundation evidence proves scaffold/bootstrap/DB gates and does not claim product acceptance for FT-001..FT-016.
+- Source: [.memory-bank/foundation.md](../foundation.md), [.memory-bank/features/index.md](../features/index.md).
 
 ## Architecture Style
 
@@ -173,7 +159,6 @@ Global contract docs:
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md)
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md)
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md)
-- [.memory-bank/contracts/foundation-critical-path.md](../contracts/foundation-critical-path.md)
 
 ## Security / Safety Constraints
 

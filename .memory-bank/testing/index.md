@@ -13,7 +13,7 @@ source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/agent-chat-bus.md
   - .memory-bank/contracts/message-envelope.md
-  - .memory-bank/contracts/foundation-critical-path.md
+  - .memory-bank/foundation.md
 ---
 # Testing Index
 
@@ -47,20 +47,24 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Global `/spec-design` is complete; current pre-product-task gate is `/foundation-to-tasks`, foundation `/mb-doctor`, and final `FT-000` gate closure.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
 
-## Foundation Critical Path Gate
+## Foundation Gate
 
-Before product feature tasking, the required [.memory-bank/foundation.md](../foundation.md) path must be generated through `/foundation-to-tasks` and verified through the final `FT-000` gate task. The executable contract is [.memory-bank/contracts/foundation-critical-path.md](../contracts/foundation-critical-path.md).
+Before product feature tasking, the required [.memory-bank/foundation.md](../foundation.md)
+path must be generated through `/foundation-to-tasks` and verified through the
+final `FT-000` gate task.
 
 Foundation evidence must prove:
 
-- Photo/User input creates authorized source refs and a valid BusEventEnvelope.
-- Agent invocation goes through a project-owned adapter and runtime decision boundary.
-- MessageEnvelope and UIFeedEvent projection are separate; UI Feed projection is not consumed by agents.
-- Safety/State/Task transitions fail closed for physical-action implication.
-- PostgreSQL/read model, `timeline.jsonl`, and photo JSON export are produced as separate authority/audit/export artifacts.
-- Secret/auth material and raw provider output do not appear in logs, Bus, UI Feed, timeline, screenshots, or export artifacts.
-- Test-only stubs remain scoped to tests and cannot satisfy MVP runtime/demo acceptance.
-- `C-FND-001` through `C-FND-009` in the Foundation Critical Path contract are satisfied by linked task evidence.
+- `task.schema.json`, `mb-lint`, and `mb-doctor` agree on `TASK-<NNN>-FT-<NNN>-W-<N>`, `tier`, optional `runtime_context`, and `FT-000/W0` semantics.
+- Backend scaffold anchors exist for app factory, settings, route inclusion, bounded-context package layout, and tests.
+- Windows 10 local bootstrap can create/use `.venv`, install project/test deps, prepare `.env` from `.env.example`, and verify Python/PostgreSQL tooling without printing secrets.
+- Local PostgreSQL init is idempotent and produces actionable redacted failures when local prerequisites are missing.
+- Alembic migration path can run against the configured local PostgreSQL database and is inspectable.
+- `/health` and `/ready` pass; `/ready` proves configured DB connectivity when DB readiness is enabled.
+- DB session and rollback-safe test session are verified.
+- Local data/artifact root settings exist with `local_only` default semantics.
+- Redaction tests cover `.env`, tokens, passwords, DB URLs with credentials, and auth material.
+- `python -m pytest tests`, `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`, and `git diff --check` pass.
 
 ## Unit Test Areas
 

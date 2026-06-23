@@ -4,17 +4,23 @@ status: active
 ---
 # Changelog
 
-## [2026-06-23] Foundation critical path contract added
-- Added [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md) with `C-FND-001` through `C-FND-009` covering `FoundationInput`, BusEventEnvelope, AgentInvocationRecord, MessageEnvelope/UIFeedEvent split, SafetyRouteResult, PostgreSQL evidence, `timeline.jsonl`, photo JSON export, and redaction/context hygiene.
-- Updated contract/spec/foundation/testing routing so `/foundation-to-tasks` has a normative executable contract input before creating `FT-000` task records.
-- Kept `Foundation Gate Task: pending_/foundation-to-tasks`; did not create `REQ-000`, `FT-000`, task records, packets, protocols, implementation plans, or a guessed final gate task id.
+## [2026-06-23] /foundation-to-tasks queue created
+- Added `REQ-000` and reserved pseudo-feature [.memory-bank/features/FT-000-foundation.md](features/FT-000-foundation.md).
+- Added Foundation implementation plan [.memory-bank/tasks/plans/IMPL-FT-000.md](tasks/plans/IMPL-FT-000.md), `.protocols/FT-000/` planning notes, and schema-backed `TASK-000-FT-000-W-0` through `TASK-004-FT-000-W-0`.
+- Set [.memory-bank/foundation.md](foundation.md) final gate to `TASK-004-FT-000-W-0`.
+- Added required packets for T2/T3 Foundation tasks under `.memory-bank/packets/`.
+- Updated routing so the next gate is `node scripts/mb-doctor.mjs`, then execute/verify `FT-000` until the final gate is done.
 
-## [2026-06-23] /spec-design foundation critical path recorded
-- Added [.memory-bank/foundation.md](foundation.md) with `Foundation Required: true`, `REQ-000`, reserved `FT-000`, and gate assignment pending for `/foundation-to-tasks`.
-- Defined the required Foundation Critical Path: Photo/User input -> BusEventEnvelope -> Agent invocation -> Adapter -> MessageEnvelope/UIFeedEvent split -> Safety/State/Task transitions -> PostgreSQL + `timeline.jsonl` -> photo JSON export.
-- Updated [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) with Architecture Spine decisions that bind foundation gating, agent context split, runtime/audit/export authority, and Safety/task fail-closed behavior.
-- Updated spec routing in [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/spec-index.md](spec-index.md), [.memory-bank/index.md](index.md), [.memory-bank/features/index.md](features/index.md), [.memory-bank/analysis/index.md](analysis/index.md), and [.memory-bank/testing/index.md](testing/index.md).
-- Did not create `REQ-000`, `FT-000`, task records, packets, protocols, implementation plans, or a guessed final gate task id; next route is `/foundation-to-tasks`.
+## [2026-06-23] Compact Foundation Dev Path restored
+- Added a new compact [.memory-bank/foundation.md](foundation.md) focused on task schema/protocol alignment, backend scaffold anchors, Windows 10 local bootstrap, PostgreSQL init, migration baseline, DB readiness, local runtime roots, and redaction baseline.
+- Updated [.memory-bank/schemas/task.schema.json](schemas/task.schema.json) to match the current `TASK-<NNN>-FT-<NNN>-W-<N>` task protocol, optional `runtime_context`, and FT-000/W0 flow.
+- Updated routing in spec backbone, spec index, Memory Bank index, analysis/features routers, and testing so product tasking waits for `/foundation-to-tasks` and the final `FT-000` gate.
+- Kept the old broad Bus -> Agent -> Message/UI -> Safety -> timeline/photo export Foundation Critical Path out of active routing; those concerns remain global or feature-local specs.
+
+## [2026-06-23] Foundation artifacts removed
+- Removed project-specific Foundation Dev Path artifacts: `.memory-bank/foundation.md`, `.memory-bank/contracts/foundation-critical-path.md`, `.protocols/FT-000/`, and the Foundation-only root `todo.md`.
+- Restored active routing to the pre-Foundation state: task queue empty, no `REQ-000`, no `FT-000`, and no final Foundation gate requirement.
+- Kept generic task/workflow tooling intact; no product runtime code was changed.
 
 ## [2026-06-22] Generated task artifacts removed after rollback
 - Reset the active task queue to an empty [.memory-bank/tasks/index.json](tasks/index.json).

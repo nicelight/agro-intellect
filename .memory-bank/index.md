@@ -7,9 +7,9 @@ status: active
 ## Current State
 
 The active Memory Bank is in MVP v2 post-PRD-decomposition and
-post-global-SDD-backbone state. Generated first-wave task artifacts have been
-intentionally removed; no executable task queue is active.
-Foundation Dev Path is now required before product feature tasking.
+post-global-SDD-backbone state. Generated first-wave product task artifacts have
+been intentionally removed. A compact `FT-000` Foundation task queue is active.
+Compact Foundation Dev Path is now required before product feature tasking.
 
 The MVP v1 spec-layer has been hard-archived under
 [.memory-bank/archive/mvp-v1/](archive/mvp-v1/): historical PRD, requirements,
@@ -22,11 +22,10 @@ requirements, epics, and features exist as draft L1-L3 artifacts. The global SDD
 architecture backbone is complete. Feature-level `/spec-improve` is complete for
 FT-001, FT-002, and FT-003; their current normative feature designs are
 registered in [.memory-bank/spec-index.md](spec-index.md). The active task index
-is intentionally empty. The next route is `/foundation-to-tasks` to generate and
-close the `FT-000` foundation queue for the critical Photo/User input -> Bus ->
-Agent -> Message/UI -> Safety/State/Task -> PostgreSQL/timeline/photo export path.
-Other features still require feature-level
-`/spec-improve FT-<NNN>` before any future implementation planning.
+contains `FT-000` foundation tasks only. The next route is `node scripts/mb-doctor.mjs`,
+then execute/verify `FT-000` tasks until `TASK-004-FT-000-W-0` is `done`.
+Other features still require feature-level `/spec-improve FT-<NNN>` before any
+future implementation planning.
 
 ## Active Governance And Routing
 
@@ -42,13 +41,12 @@ Other features still require feature-level
 - [.memory-bank/spec-index.md](spec-index.md): active MVP v2 migration route map.
 - [.memory-bank/spec-backbone.md](spec-backbone.md): pre-PRD spec framing status, global backbone status, and /spec-improve handoff.
 - [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md): global MVP v2 architecture backbone.
-- [.memory-bank/foundation.md](foundation.md): required Foundation Dev Path and Feature Pressure Map before product tasking.
+- [.memory-bank/foundation.md](foundation.md): required compact Foundation Dev Path and Feature Pressure Map before product tasking.
 - [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md): global runtime authority and data ownership model.
 - [.memory-bank/contracts/index.md](contracts/index.md): active contract router.
 - [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md): HTTP/API, ActorContext, authz, error, upload, CORS, and OpenAPI-generation guardrails.
 - [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md): agent-consumable event boundary and context hygiene.
 - [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md): structured agent-output boundary.
-- [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md): foundation-scoped executable contract set for the critical smoke path before `/foundation-to-tasks`.
 - [.memory-bank/user-scenarios.md](user-scenarios.md): active pre-PRD user scenarios and decomposition implications.
 - [.memory-bank/domains/core-domain.md](domains/core-domain.md): active pre-PRD core domain framing.
 - [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): active preliminary boundary hints for decomposition.
@@ -77,13 +75,12 @@ Other features still require feature-level
 Next route:
 
 ```text
-/foundation-to-tasks
-then node scripts/mb-doctor.mjs at the foundation/task-queue boundary
-then execute/verify FT-000 until the final foundation gate task is done
+node scripts/mb-doctor.mjs
+then execute/verify FT-000 until TASK-004-FT-000-W-0 is done
 ```
 
 Do not run `/prd-to-tasks` for product features until the final foundation gate
-task named in [.memory-bank/foundation.md](foundation.md) is indexed and done.
+task named in [.memory-bank/foundation.md](foundation.md) is done.
 For features outside FT-001..FT-003, run `/spec-improve FT-<NNN>` before task
 decomposition after the foundation gate is closed. Do not use archived MVP v1
 features as current source of truth.

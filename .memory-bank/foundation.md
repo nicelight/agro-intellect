@@ -6,10 +6,11 @@ last_updated: 2026-06-23
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
-  - .memory-bank/contracts/foundation-critical-path.md
-  - .memory-bank/contracts/agent-chat-bus.md
-  - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/domains/runtime-data-model.md
+  - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/testing/index.md
+  - .memory-bank/workflows/tier-policy.md
+  - .memory-bank/schemas/task.schema.json
 ---
 # Foundation Dev Path
 
@@ -17,92 +18,101 @@ source_of_truth:
 - Foundation Required: true
 - Foundation Requirement: REQ-000
 - Foundation Pseudo-Feature: FT-000
-- Foundation Gate Task: pending_/foundation-to-tasks
+- Foundation Gate Task: TASK-004-FT-000-W-0
 
 ## Decision
 
 Foundation is required before product feature tasking.
 
-Reason: the first useful MVP path crosses too many shared authority boundaries to implement feature-by-feature safely without a verified walking skeleton. The existing backend scaffold proves only FastAPI app creation, settings, database handle, Alembic entrypoint, and pytest harness. It does not yet prove the critical event/agent/safety/state/export chain.
+Reason: the current backend scaffold proves basic FastAPI app creation, settings,
+SQLAlchemy handle, Alembic config construction, and pytest fixtures. Product
+feature work still needs a shared executable baseline for task record shape,
+backend package layout, Windows-local bootstrap, PostgreSQL database creation,
+migration execution, DB readiness, transaction boundaries, local artifact roots,
+and redaction defaults. Without those anchors, FT-001..FT-003 can still interpret
+session tables, migrations, bootstrap steps, and local runtime paths differently.
 
-`REQ-000`, `FT-000`, `TASK-*`, packets, protocols, and implementation plans are not created by `/spec-design`; `/foundation-to-tasks` owns those artifacts.
+This Foundation intentionally does not restore the old broad critical path
+through Bus -> Agent -> Message/UI -> Safety -> timeline/photo export. Those
+contracts remain global or feature-local specs. Foundation implements only the
+minimum shared platform primitives that product features may build on.
 
-`/spec-design` does not choose the final foundation gate task id or infer the number of foundation tasks. `/foundation-to-tasks` must decide the task queue, create exactly one final gate task, and replace `pending_/foundation-to-tasks` with that concrete task id.
-
-The executable contract for the critical path is [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md). `/foundation-to-tasks` must use it as a normative input when creating `FT-000` task records and the final foundation gate task.
-
-## Critical Path
-
-The foundation must prove this path with a minimal fixture or smoke workflow:
-
-```text
-Photo/User input
-  -> BusEventEnvelope
-  -> Agent invocation
-  -> Project-owned adapter
-  -> MessageEnvelope
-  -> UIFeedEvent projection split
-  -> Safety / State / Task transitions
-  -> PostgreSQL mutable state + timeline.jsonl append-only audit
-  -> photo JSON export snapshot
-```
+`REQ-000`, `FT-000`, task records, packets, protocols, and implementation plans
+were created by `/foundation-to-tasks`. The final foundation gate is
+`TASK-004-FT-000-W-0`.
 
 ## Minimal Work Path
 - Build command: `python -m pip install -e ".[test]"`
+- Windows bootstrap command: `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-local.ps1`
+- Database init command: `powershell -ExecutionPolicy Bypass -File scripts/db-init-local.ps1`
+- Migration command: `powershell -ExecutionPolicy Bypass -File scripts/db-migrate-local.ps1`
 - Start command: `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`
 - Primary entrypoint: `backend.app.main:create_app`
-- Smoke path: foundation integration test or local smoke endpoint exercises one authorized user input and one photo fixture through the Critical Path.
+- Smoke path: `/health`, `/ready`, DB ping, migration status, rollback-safe test session, local data root availability.
 - Test command: `python -m pytest tests`
-- Evidence: pytest output, generated timeline JSONL sample, PostgreSQL/read-model rows or test DB assertions, generated photo JSON export sample, and redaction/context-hygiene assertions.
+- Memory Bank gates: `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`
+- Evidence: command output, pytest output, DB init/migration transcript with secrets redacted, and final foundation gate task report under `.tasks/`.
 
-## Required Compatibility Probes
-- Input/photo probe: satisfies `C-FND-001` by accepting a minimal observation/manual measurement payload and a small photo fixture, computing or recording photo identity, and creating source refs.
-- Bus probe: satisfies `C-FND-002` by creating a valid BusEventEnvelope with `consumable_by_agents` and `authorization_scope`.
-- Agent probe: satisfies `C-FND-003` by invoking the model adapter boundary through a project-owned adapter. Test-only stubs are allowed only inside tests and must not be wired as MVP runtime/demo acceptance.
-- Message/UI split probe: satisfies `C-FND-004` by producing a MessageEnvelope and a separate UIFeedEvent projection; UI Feed projection is never consumed by the agent context builder.
-- Safety/state/task probe: satisfies `C-FND-005` by blocking or fail-closed routing a physical-action implication while allowing only a safe clarification/task request.
-- Persistence/audit/export probe: satisfies `C-FND-006` through `C-FND-008` by writing mutable state to PostgreSQL/read model, appending a timeline event, and emitting a photo JSON export snapshot with refs back to runtime evidence.
-- Redaction/context-hygiene probe: satisfies `C-FND-009` over Bus, adapter, MessageEnvelope, UI Feed, SafetyRouteResult, timeline, export, logs, and captured smoke output.
+## Foundation Work Packages
+
+`/foundation-to-tasks` should create the smallest FT-000 queue that implements
+or verifies these packages.
+
+| Package | Required outcome | Product boundary |
+|---|---|---|
+| Task schema/protocol alignment | `task.schema.json`, `mb-lint`, and `mb-doctor` agree on `TASK-<NNN>-FT-<NNN>-W-<N>`, `tier`, optional `runtime_context`, and `FT-000/W0` semantics. | Does not create product tasks. |
+| Backend scaffold anchors | Backend has stable app factory, settings, route include pattern, bounded-context package anchors, and tests proving import/start behavior. | Does not implement auth/session, Plant lifecycle, admin UI, agents, or safety behavior. |
+| Windows local bootstrap | PowerShell bootstrap sets up `.venv`, installs project/test deps, prepares `.env` from `.env.example` without printing secrets, and verifies Python/PostgreSQL tooling. | Does not require Docker or hosted services. |
+| Local PostgreSQL init | PowerShell DB init creates or verifies local database/user for `DATABASE_URL` on Windows 10, with idempotent behavior and redacted output. | Does not create product domain rows. |
+| Migration baseline | Alembic command path can run against local PostgreSQL and test SQLite where appropriate; migration status is inspectable. | Product tables belong to feature tasks. |
+| DB session/UoW baseline | Shared engine/session/test-session dependency is available and documented; `/ready` proves DB connectivity when configured. | Does not define product repositories beyond interfaces/helpers. |
+| Local runtime roots | Settings define local data/artifact root, timeline root placeholder, and temp/smoke paths with `local_only` defaults. | Does not implement photo catalog, timeline event taxonomy, or dataset export. |
+| Redaction baseline | Shared redaction helper/test prevents `.env`, tokens, passwords, DB URLs with credentials, and auth material from leaking in logs/errors/bootstrap evidence. | Does not replace feature-specific redaction tests. |
+| Final foundation gate | One final FT-000 gate verifies build/start/bootstrap/db/migrate/test/mb-gates on the local-first path. | Product tasking remains blocked until this gate is `done`. |
 
 ## Feature Pressure Map
+
 | Feature | Pressure | Foundation Response | Probe | Status |
 |---|---|---|---|---|
-| FT-001 | ActorContext and role/session contracts must be present before protected input/context paths. | Use a minimal authorized ActorContext fixture or service boundary without full account UI. | Context fixture rejects missing/unauthorized actor. | planned |
-| FT-002 | Plant identity and PlantAccessGrant filter every Plant-scoped path. | Seed or fixture one Farm and `tomato_001` permission context. | Unauthorized Plant context cannot enter Bus or agent invocation. | planned |
-| FT-003 | Admin audit must not leak into agent facts. | Keep admin audit out of foundation path except safe refs when needed. | Audit/display text is excluded from agent context fixtures. | planned |
-| FT-004 | Daily/user input starts the product path. | Minimal observation/manual measurement command enters the same persistence and Bus pipeline. | User input creates source refs and BusEventEnvelope. | planned |
-| FT-005 | Photo artifact, manifest, and export refs are shared by agents and dataset flow. | Accept a small photo fixture, store/catalog identity, and export photo JSON snapshot. | Photo JSON export includes refs and does not override runtime state. | planned |
-| FT-006 | Runtime state vs timeline authority is cross-cutting. | Write state to PostgreSQL/read model and append timeline JSONL separately. | Timeline replay cannot mutate state in the smoke. | planned |
-| FT-007 | Real model-backed agent runtime cannot be a fake product path. | Build adapter seam and runtime decision path; test doubles remain test-only. | Adapter invocation creates auditable runtime decision evidence. | planned |
-| FT-008 | Bus/UI Feed split is a core anti-cheat boundary. | Produce separate BusEventEnvelope and UIFeedEvent projection. | Context builder excludes UIFeedEvent content. | planned |
-| FT-009 | Vision/photo observation depends on actual photo bytes/refs. | Prove photo refs can reach the adapter boundary without mock product output. | Vision-capable provider can be configured later; test validates boundary shape. | planned |
-| FT-010 | Missing/stale data policy affects advice and Safety Gate handoff. | Include a missing-data clarification branch. | Missing data produces clarification/task request, not invented evidence. | planned |
-| FT-011 | Physical-action wording must fail closed. | Include one physical-action implication in the foundation smoke. | Safety route blocks or marks pending; no action unlock. | planned |
-| FT-012 | Human approval creates tasks/outcomes only after gates. | Prove task-state transition shape without completing approval workflow. | No automated action task is created by agent output alone. | planned |
-| FT-013 | Companion governance must stay separate from Safety Gate. | Keep governance out of foundation path except explicit separation assertion. | DecisionRecord absence cannot be treated as Safety Gate approval. | planned |
-| FT-014 | Dataset/export evidence must be non-trainable by default. | Photo JSON export carries evidence refs and non-trainable/default metadata. | `can_train_on` remains false or absent until dataset governance permits it. | planned |
-| FT-015 | Local privacy, redaction, and storage boundaries affect all artifacts. | Foundation smoke asserts `local_only` and no secrets in logs/timeline/export/feed. | Redaction check over generated artifacts. | planned |
-| FT-016 | First demo depends on the whole cross-boundary path. | Foundation gate proves the path before first-demo UI tasking. | One end-to-end backend smoke artifact exists. | planned |
+| FT-001 | Accounts/sessions need stable table/migration/session conventions before implementation. | Provide DB session/UoW, migration baseline, settings, redaction helper, and access-admin package anchor. | FT-001 task can add tables without inventing bootstrap or session infrastructure. | planned |
+| FT-002 | Farm/Plant lifecycle needs the same PostgreSQL/Alembic path and package layout. | Provide migration command path and runtime-state/access package anchors. | FT-002 task can add Plant tables and seeds through the common migration path. | planned |
+| FT-003 | Boss admin/audit needs safe bootstrap, redaction, and route/module conventions. | Provide admin package anchor, route include pattern, redacted error/bootstrap evidence. | Admin task uses the shared app factory and audit persistence path. | planned |
+| FT-004 | Daily check-in needs local runtime DB/session path. | Provide DB readiness and transaction-test baseline only. | Feature owns check-in schema and API. | planned |
+| FT-005 | Photo intake needs local artifact root conventions. | Provide settings for local data/artifact roots only. | Feature owns photo storage layout, catalog, manifests, and checksums. | planned |
+| FT-006 | Runtime state/timeline needs clear authority boundaries. | Provide PostgreSQL as runtime authority and timeline root placeholder. | Feature owns timeline event taxonomy and history projections. | planned |
+| FT-007 | Agent runtime needs package and settings boundaries. | Provide agent-runtime package anchor and redaction baseline. | Feature owns real model adapter/runtime decisions. | planned |
+| FT-008 | Bus/UI split needs package boundaries, not implementation here. | Provide package anchors only; global contracts remain authoritative. | Feature owns Bus/UI schema and context filtering. | planned |
+| FT-009 | Vision path needs artifact root and agent-runtime anchor. | Provide storage/settings anchor only. | Feature owns real vision integration. | planned |
+| FT-010 | Advisor needs agent-runtime package and redaction defaults. | Provide package/settings anchor only. | Feature owns missing-data policy and Safety Gate handoff. | planned |
+| FT-011 | Safety Gate needs package boundary and fail-closed defaults. | Provide safety package anchor only. | Feature owns action taxonomy and approval routing. | planned |
+| FT-012 | Tasks/outcomes need DB/migration/session path. | Provide DB/UoW baseline only. | Feature owns task/approval/outcome states. | planned |
+| FT-013 | Companion governance needs DB/migration and package anchor. | Provide governance package anchor only if task slicing needs it. | Feature owns proposal/decision state machine. | planned |
+| FT-014 | Dataset governance needs local roots and redaction defaults. | Provide local data root and `local_only` settings. | Feature owns dataset lifecycle and trainability. | planned |
+| FT-015 | Local security/storage depends on bootstrap and redaction. | Provide Windows bootstrap, local-only settings, and redaction baseline. | Feature owns LAN/storage prompt policy. | planned |
+| FT-016 | PWA first demo depends on backend being startable. | Provide backend start/readiness path only. | Feature owns UI route/view implementation. | planned |
 
 ## Deferred Decisions
+
 | Decision | Why deferred | Trigger to revisit |
 |---|---|---|
-| Exact public HTTP routes for the critical path | Endpoint naming belongs to feature-local design and implementation tasks. Foundation may use minimal internal service or smoke-only route. | `/foundation-to-tasks` task slicing or `/prd-to-tasks FT-004/FT-005/FT-016`. |
-| Exact database tables and migrations | `/spec-design` records authority boundaries; concrete schemas belong to FT-000 tasks and later feature specs/tasks. | First FT-000 persistence task. |
-| Real provider/model configuration | MVP runtime requires real model-backed flows, but secrets/provider setup must not be invented in docs. | Agent runtime foundation task or explicit provider decision. |
-| Full Safety Gate action taxonomy | Foundation needs fail-closed proof, not the full future taxonomy. | `/prd-to-tasks FT-011` or safety-specific task. |
-| Full frontend UI behavior | Foundation proves backend/event/export path first; operator UI belongs to FT-016. | `/prd-to-tasks FT-016`. |
+| Product auth/session schema | FT-001 already owns exact local account/session lifecycle and route contracts. | `/prd-to-tasks FT-001`. |
+| Single Farm and `tomato_001` seed implementation | FT-002 owns product seed semantics. Foundation only proves DB/migration capability. | `/prd-to-tasks FT-002`. |
+| Admin invite/audit tables | FT-003 owns admin domain records and audit semantics. | `/prd-to-tasks FT-003`. |
+| Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | `/spec-improve` or `/prd-to-tasks FT-005/FT-006`. |
+| Agent/provider configuration | MVP runtime requires real model-backed flows, but provider secrets/config must not be invented in Foundation. | `/prd-to-tasks FT-007` or explicit provider decision. |
+| Frontend scaffold | Backend/local DB foundation is the immediate blocker; UI belongs to FT-016. | `/prd-to-tasks FT-016`. |
+| Docker-based database path | User target is local Windows 10. Docker may be optional later, not required by Foundation. | Explicit operator request or deployment spec update. |
 
 ## Foundation Exit Criteria
-- Minimal path passes.
-- Compatibility probes pass.
-- `node scripts/mb-doctor.mjs` passes at the foundation/task-queue boundary after `/foundation-to-tasks`.
-- Final foundation gate task selected by `/foundation-to-tasks` is `done`.
-- Build/start/test/smoke evidence is recorded under `.tasks/` and linked from task records.
-- BusEventEnvelope, MessageEnvelope, and UIFeedEvent are distinct in evidence.
-- [.memory-bank/contracts/foundation-critical-path.md](contracts/foundation-critical-path.md) `C-FND-001` through `C-FND-009` are satisfied by linked task evidence.
-- PostgreSQL/read-model assertions, timeline JSONL append, and photo JSON export snapshot are all present.
-- Safety fail-closed behavior is proven for physical-action implication.
-- No fake/stubbed product-agent runtime path is accepted as MVP demo evidence.
-- No P0/P1 design pressure from the Feature Pressure Map remains unresolved.
-- Product feature dev path is allowed only after the final foundation gate is done.
+
+- Task schema/protocol tooling accepts current `TASK-<NNN>-FT-<NNN>-W-<N>` records and `FT-000/W0` semantics.
+- Windows bootstrap command is documented, idempotent, and redacts secrets.
+- Local PostgreSQL database init and migration commands run or fail with actionable safe errors.
+- App starts locally on loopback and `/health` plus `/ready` pass with configured DB readiness.
+- DB session and rollback-safe test session are proven by tests.
+- Local data/artifact root settings exist with `local_only` default semantics.
+- Redaction helper/tests cover `.env`, tokens, passwords, DB URLs with credentials, and auth material.
+- `python -m pytest tests` passes.
+- `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`, and `git diff --check` pass after `/foundation-to-tasks`.
+- Final foundation gate task `TASK-004-FT-000-W-0` is `done`.
+- No product feature task is generated or executed until the final FT-000 gate is done.

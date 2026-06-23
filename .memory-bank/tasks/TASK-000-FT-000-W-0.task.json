@@ -1,0 +1,75 @@
+{
+  "id": "TASK-000-FT-000-W-0",
+  "title": "Align task protocol and backend scaffold anchors",
+  "status": "ready",
+  "wave": "W0",
+  "feature": "FT-000",
+  "reqs": [
+    "REQ-000"
+  ],
+  "depends_on": [],
+  "touched_files": [
+    ".memory-bank/schemas/task.schema.json",
+    "backend/app/main.py",
+    "backend/app/__init__.py",
+    "backend/app/config.py",
+    "tests/backend/test_baseline.py",
+    "tests/backend/test_database_harness.py"
+  ],
+  "tier": "T1",
+  "gates": [
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "backend-tests",
+      "command": "python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Task schema accepts TASK-<NNN>-FT-<NNN>-W-<N>, tier, optional runtime_context, and FT-000/W0 semantics.",
+    "Backend exposes stable create_app/settings/database anchors and tests prove import/start behavior.",
+    "No product auth/session, Plant lifecycle, admin, agent, safety, photo, timeline, dataset, or PWA behavior is implemented."
+  ],
+  "docs": [
+    ".memory-bank/foundation.md",
+    ".memory-bank/features/FT-000-foundation.md",
+    ".memory-bank/tasks/plans/IMPL-FT-000.md"
+  ],
+  "evidence_required": [
+    "mb-lint output",
+    "targeted backend pytest output",
+    "summary of scaffold/package anchors"
+  ],
+  "source_artifacts": [
+    ".memory-bank/foundation.md",
+    ".memory-bank/features/FT-000-foundation.md",
+    ".memory-bank/schemas/task.schema.json"
+  ],
+  "normative_inputs": [
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "constraints": [
+    "Do not create product task records.",
+    "Do not implement product domain behavior.",
+    "Keep changes limited to task protocol compatibility and scaffold/package anchors."
+  ],
+  "invariants": [
+    "FT-000 is a pseudo-feature only.",
+    "W0 is reserved for FT-000 foundation tasks."
+  ],
+  "verification_targets": [
+    "node scripts/mb-lint.mjs",
+    "python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py"
+  ],
+  "purpose": "Ensure task tooling and backend scaffold anchors are unambiguous before executable Foundation work.",
+  "success_outcome": "Future FT-000 and product task records can rely on one task-id format and stable backend entrypoint/settings/database anchors.",
+  "anti_goals": [
+    "No product feature implementation.",
+    "No broad critical-path contract restoration."
+  ]
+}

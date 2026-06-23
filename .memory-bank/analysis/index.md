@@ -11,9 +11,9 @@ status: active
 - Active MVP v2 PRD exists at [.memory-bank/prd.md](../prd.md) with `clarification_status: complete`.
 - Active MVP v2 product, requirements, epics, and features exist as draft L1-L3 artifacts derived by `/prd`.
 - Active MVP v2 global architecture backbone exists and is complete.
-- Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](../foundation.md).
+- Compact Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](../foundation.md).
 - First-wave feature-local SDD specs exist and are complete for FT-001, FT-002, and FT-003; they are registered in [.memory-bank/spec-index.md](../spec-index.md).
-- Generated first-wave task-decomposition artifacts have been intentionally removed; [.memory-bank/tasks/index.json](../tasks/index.json) is empty and no `TASK-*` execution route is active.
+- Generated first-wave product task-decomposition artifacts have been intentionally removed; [.memory-bank/tasks/index.json](../tasks/index.json) now contains only compact `FT-000` Foundation tasks.
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -27,7 +27,7 @@ status: active
 - [.memory-bank/epics/index.md](../epics/index.md): active MVP v2 epic router.
 - [.memory-bank/features/index.md](../features/index.md): active MVP v2 feature router.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): active global architecture backbone.
-- [.memory-bank/foundation.md](../foundation.md): required Foundation Dev Path and Feature Pressure Map before product tasking.
+- [.memory-bank/foundation.md](../foundation.md): compact Foundation Dev Path for task schema/protocol alignment, backend scaffold anchors, Windows bootstrap, local PostgreSQL init, migration baseline, local runtime roots, and redaction baseline.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): active runtime authority model.
 - [.memory-bank/contracts/index.md](../contracts/index.md): active contract router.
 - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md): current normative feature design for local accounts, sessions, and ActorContext.
@@ -56,7 +56,7 @@ status: active
 After explicit user instruction, choose the next implementation-planning workflow:
 
 ```text
-/foundation-to-tasks
+node scripts/mb-doctor.mjs, then execute/verify FT-000 until TASK-004-FT-000-W-0 is done
 ```
 
 ## Closed PRD Clarifications

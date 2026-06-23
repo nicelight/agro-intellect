@@ -3,13 +3,14 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-06-14
+last_updated: 2026-06-23
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
   - .memory-bank/user-scenarios.md
   - .memory-bank/domains/core-domain.md
+  - .memory-bank/foundation.md
 ---
 # Requirements
 
@@ -19,6 +20,7 @@ source_of_truth:
 
 ## REQ list
 
+- `REQ-000` Verified executable foundation: project MUST have a verified executable baseline before product feature implementation starts, including task schema/protocol alignment, backend scaffold anchors, Windows local bootstrap, PostgreSQL init, migration baseline, DB readiness, local runtime roots, and redaction baseline.
 - `REQ-001` Single local Farm workspace: MVP MUST support exactly one local Farm workspace and keep multi-Farm tenancy out of scope.
 - `REQ-002` Local Accounts and sessions: MVP MUST support local Accounts and a local login/session baseline sufficient for authorization and audit attribution.
 - `REQ-003` ActorContext authority: every Farm/Plant read, mutation, context-builder path, task, approval, and audit record MUST resolve Account, Farm, role/membership, Plant permissions, and session/auth provenance through ActorContext.
@@ -57,6 +59,7 @@ source_of_truth:
 ## Traceability (RTM)
 | REQ | Epic | Feature | Test | Lifecycle |
 |---|---|---|---|---|
+| REQ-000 | Foundation | FT-000 | gate: final Foundation Dev Path build/start/bootstrap/db/migration/test/MB checks | planned |
 | REQ-001 | EP-001 | FT-002 | integration: single Farm workspace; e2e: Boss setup | planned |
 | REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | planned |
 | REQ-003 | EP-001 | FT-001, FT-002, FT-003 | integration: ActorContext on every Farm/Plant route and context builder | planned |

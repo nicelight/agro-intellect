@@ -26,7 +26,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^TASK-[0-9]{3,}$"
+      "pattern": "^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$"
     },
     "title": {
       "type": "string"
@@ -43,21 +43,25 @@
       ]
     },
     "wave": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^W[0-9]+$"
     },
     "feature": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^FT-[0-9]{3}$"
     },
     "reqs": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^REQ-[0-9]{3}$"
       }
     },
     "depends_on": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$"
       }
     },
     "touched_files": {
@@ -84,6 +88,7 @@
           "command",
           "required"
         ],
+        "additionalProperties": false,
         "properties": {
           "name": {
             "type": "string"
@@ -151,6 +156,49 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "success_outcome": {
+      "type": "string"
+    },
+    "anti_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "packet_required": {
+          "type": "boolean"
+        },
+        "packet_ref": {
+          "type": "string",
+          "pattern": "^\\.memory-bank/packets/TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\\.packet\\.json$"
+        },
+        "allowed_write_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     }
   }

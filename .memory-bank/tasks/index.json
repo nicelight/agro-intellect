@@ -1,4 +1,25 @@
 {
   "version": 1,
-  "tasks": []
+  "tasks": [
+    {
+      "id": "TASK-000-FT-000-W-0",
+      "file": "TASK-000-FT-000-W-0.task.json"
+    },
+    {
+      "id": "TASK-001-FT-000-W-0",
+      "file": "TASK-001-FT-000-W-0.task.json"
+    },
+    {
+      "id": "TASK-002-FT-000-W-0",
+      "file": "TASK-002-FT-000-W-0.task.json"
+    },
+    {
+      "id": "TASK-003-FT-000-W-0",
+      "file": "TASK-003-FT-000-W-0.task.json"
+    },
+    {
+      "id": "TASK-004-FT-000-W-0",
+      "file": "TASK-004-FT-000-W-0.task.json"
+    }
+  ]
 }
