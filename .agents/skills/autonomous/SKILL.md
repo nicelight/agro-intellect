@@ -84,7 +84,7 @@ Default pre-queue health check:
 4) Запусти `/spec-auto --init` after `/write-prd` and before `/prd`; it must produce `.memory-bank/spec-backbone.md` Pre-PRD Spec Status `ready_for_prd` and keep `.memory-bank/spec-index.md` as a pure registry.
 5) Построй L1–L3 через `/prd`.
 6) Запусти `/review-feat-plan` before global SDD design.
-7) Запусти `/spec-design --all`. For simple independent T0/T1-only features it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved decisions it must record blockers and stop downstream. If a minimum executable baseline is needed before business features, it records `.memory-bank/foundation.md` and routes executable work to `/foundation-to-tasks`.
+7) Запусти `/spec-design --all`. For local/simple feature-set pressure it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved shared-boundary, contract, state/data/runtime/security, or strict decisions it must record blockers and stop downstream. If a minimum executable baseline is needed before business features, it records `.memory-bank/foundation.md` and routes executable work to `/foundation-to-tasks`.
 8) If `.memory-bank/foundation.md` says `Foundation Required: true`, run `/foundation-to-tasks`, run strict `/mb-doctor` at the foundation/task-queue boundary, then execute and verify the `FT-000` queue first until the final foundation gate task is `done`.
 9) Запусти `/spec-auto --all` before `/prd-to-tasks --all`.
 10) Если есть пробелы:
@@ -180,15 +180,25 @@ without creating `REQ-000`, `FT-000`, or foundation task records.
   advisory only.
 
 ## 6.1) Task-plan review gate по JSON task records
-Сразу после `/prd-to-tasks --all` и до scheduler execution запусти `/review-tasks-plan` именно по task planning surface:
-- `.memory-bank/tasks/index.json`
-- all indexed `.memory-bank/tasks/*.task.json`
-- per-feature implementation plans
+Сразу после `/prd-to-tasks --all` и до scheduler execution выполни
+feature-scoped `/review-tasks-plan` по каждой task-linked product feature:
+
+1. Resolve product feature ids from indexed task records and
+   `.memory-bank/tasks/plans/IMPL-FT-*.md`.
+2. Exclude `FT-000`; Foundation Dev Path is reviewed by its own
+   foundation/task-queue doctor gate and by product task dependency checks.
+3. For each `FT-<NNN>`, run `/review-tasks-plan FT-<NNN>` in a fresh-context
+   reviewer / separate fresh session.
 
 Правило:
-- если review даёт `REJECT` → это blocking gate; исправь JSON task records и повтори `/review-tasks-plan`
-- если после 2–3 циклов всё ещё `REJECT` → terminal state `HALT_REVIEW_REJECT`
-- scheduler execution разрешён только после `APPROVE`; non-blocking findings may appear only as notes under `APPROVE`
+- если review по feature даёт `REJECT` → это blocking gate; исправь task
+  records, packets, specs, or dependencies for that feature and rerun
+  `/review-tasks-plan FT-<NNN>`
+- если после 2–3 циклов та же feature всё ещё `REJECT` → terminal state
+  `HALT_REVIEW_REJECT`
+- scheduler execution разрешён только после latest `APPROVE` for every
+  task-linked product feature; non-blocking findings may appear only as notes
+  under `APPROVE`
 
 ## 6.2) Readiness gate
 Перед scheduler execution запусти `node scripts/mb-lint.mjs`, затем `/mb-doctor --strict` using the repository's documented command or `node scripts/mb-doctor.mjs --strict`.
@@ -228,9 +238,10 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify`.
+- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
-- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence.
+- `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
+- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership.
 - T2 task closure may rely on `/verify PASS` when full protocol and required packet/spec gates are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
 - If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
@@ -326,7 +337,9 @@ runtime context.
 - убедись, что все `semantic-concern` этой wave имеют явное решение (blocked status, human review required, or follow-up); без subsequent `semantic-pass` affected tasks are not closed
 - обнови `.protocols/AUTONOMOUS-RUN/status.md`
 - запусти `node scripts/mb-lint.mjs`, затем `/mb-doctor --strict`; если gate падает, не закрывай wave и не переходи к следующей wave
-- запусти `/review-tasks-plan` по текущему состоянию task queue
+- запусти `/review-tasks-plan FT-<NNN>` по каждой product feature, затронутой
+  завершенной wave; если wave affected-feature set cannot be determined
+  safely, review every task-linked product feature one by one
 
 Если доступны **оба** движка:
 - prefer engine A for execution
@@ -367,6 +380,7 @@ runtime context.
 - every completed T2 feature doc contains a feature-level
   `SEMANTIC_VERDICT: semantic-pass`
 - нет открытых blocking bugs / blockers
-- latest `/review-tasks-plan` = `APPROVE`
+- latest `/review-tasks-plan FT-<NNN>` = `APPROVE` for every task-linked
+  product feature
 - latest `node scripts/mb-lint.mjs` + `/mb-doctor --strict` pass without readiness errors
 </process>

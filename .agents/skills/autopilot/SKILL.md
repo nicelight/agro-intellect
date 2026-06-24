@@ -13,7 +13,9 @@ status: active
 ## Важно
 - Это **executor JSON task queue**, а не полный `PRD → done` orchestrator.
 - Для полного unattended flow используй `/autonomous`.
-- Запуск разрешён только если JSON task records уже декомпозированы и последний `/review-tasks-plan` дал `APPROVE`.
+- Запуск разрешён только если JSON task records уже декомпозированы и каждая
+  task-linked product feature имеет latest `/review-tasks-plan FT-<NNN>`
+  `APPROVE`.
 - По умолчанию выполняй **строго последовательно**. Параллель — только для независимых задач без общих файлов.
 - `/autopilot` не запускает `/prd-to-tasks` и не создает task queue; он только исполняет уже готовые JSON task records.
 
@@ -71,7 +73,8 @@ Before task selection and before progression after a task closes, run `/mb-docto
 
 Во время прогона обновляй:
 - queue state from JSON task records (`ready`, `in_progress`, `blocked`, `done`, `failed`)
-- latest `/review-tasks-plan` verdict
+- latest `/review-tasks-plan FT-<NNN>` verdict coverage for task-linked product
+  features
 - current failure budget
 - terminal state
 
@@ -94,9 +97,10 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify` for one TASK.
+- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
+- `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - `T2` manual task closure requires full protocol, required packet/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
@@ -119,7 +123,10 @@ Manual mode:
 - нет blocking bug / blocked upstream
 
 Если после promotion pass `ready` пусто:
-- и JSON task queue полностью закрыт → запусти финальный `/review-tasks-plan`; `SUCCESS` разрешён только если final `/review-tasks-plan` вернул `APPROVE`
+- и JSON task queue полностью закрыт → запусти финальный
+  `/review-tasks-plan FT-<NNN>` for every task-linked product feature;
+  `SUCCESS` разрешён только если every final feature review returned
+  `APPROVE`
 - и остались `planned` / `blocked` → `HALT_DEPENDENCY_DEADLOCK`
 
 ## TASK loop
@@ -192,19 +199,19 @@ Every fresh-session worker prompt must include:
 
 ```bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and packet context when present or expected. Assume scheduler/doctor checked packet readiness; do not repair or structurally validate packets here. Respect packet scope/verification/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and packet/spec context only when required by tier/policy or linked by the task/feature. Assume scheduler/doctor checked required packet readiness; do not repair or structurally validate packets here. Respect packet scope/verification/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
 
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, linked acceptance criteria, and packet context when present or expected. Assume scheduler/doctor checked packet readiness; do not repair or structurally validate packets here. Respect packet verification/scope/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 verify PASS without per-task red-verify; T3 verify + per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, linked acceptance criteria, and packet/spec context only when required by tier/policy or linked by the task/feature. Assume scheduler/doctor checked required packet readiness; do not repair or structurally validate packets here. Respect packet verification/scope/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 verify PASS without per-task red-verify; T3 verify + per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
 ```
 
 ### Claude (fresh session per TASK)
 ```bash
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and packet context when present or expected. Assume scheduler/doctor checked packet readiness; do not repair or structurally validate packets here. Respect packet scope/verification/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and packet/spec context only when required by tier/policy or linked by the task/feature. Assume scheduler/doctor checked required packet readiness; do not repair or structurally validate packets here. Respect packet scope/verification/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
 
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, linked acceptance criteria, and packet context when present or expected. Assume scheduler/doctor checked packet readiness; do not repair or structurally validate packets here. Respect packet verification/scope/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 verify PASS without per-task red-verify; T3 verify + per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, linked acceptance criteria, and packet/spec context only when required by tier/policy or linked by the task/feature. Assume scheduler/doctor checked required packet readiness; do not repair or structurally validate packets here. Respect packet verification/scope/stop_conditions as derivative context. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 verify PASS without per-task red-verify; T3 verify + per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
 ```
 
 ## Terminal states
