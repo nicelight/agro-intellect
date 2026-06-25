@@ -1,0 +1,111 @@
+{
+  "id": "TASK-010-T3-FT-001-W3",
+  "title": "Implement FT-001 protected-route and context-builder authz seams",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-001",
+  "reqs": [
+    "REQ-003",
+    "REQ-004",
+    "REQ-013",
+    "REQ-020",
+    "REQ-022"
+  ],
+  "depends_on": [
+    "TASK-009-T3-FT-001-W2"
+  ],
+  "touched_files": [
+    "backend/app/access_admin/dependencies.py",
+    "backend/app/access_admin/context_builders.py",
+    "tests/backend/access_admin/test_ft001_context_builder_authz.py",
+    "tests/backend/api/test_ft001_protected_route_authz.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "context-builder-authz-tests",
+      "command": "python -m pytest tests/backend/access_admin/test_ft001_context_builder_authz.py tests/backend/api/test_ft001_protected_route_authz.py",
+      "required": true
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Protected route dependency fails closed for missing, invalid, expired, pending, disabled, or membership-disabled sessions.",
+    "Context builders use ActorContext and PlantPermissionContext before returning scoped context.",
+    "Bus/context-builder output excludes session IDs, tokens, token hashes, password hashes, auth headers, cookies, UI Feed, raw chat, and unapproved proposal content.",
+    "Unauthorized Plant context is filtered before Bus/model context is prepared.",
+    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
+  ],
+  "docs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tasks/plans/IMPL-FT-001.md"
+  ],
+  "evidence_required": [
+    "protected route/context-builder test output",
+    "auth material exclusion evidence",
+    "unauthorized Plant filtering evidence",
+    "T3 verify/red-verify/human/recovery evidence"
+  ],
+  "source_artifacts": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/behavior-specs/FT-001-BHV-003-actor-context-permission-filtering.behavior.json",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/boundary-map.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Context builders must resolve ActorContext and PlantPermissionContext before returning events or scoped data.",
+    "Agent Chat Bus context must include authorization_scope but not session/auth material.",
+    "Do not implement agent output publication, Bus event payload taxonomy, MessageEnvelope validation, or UI Feed projection."
+  ],
+  "invariants": [
+    "UI Feed, raw chat, raw reasoning, admin notices, and unapproved Companion proposals never become agent working context.",
+    "Agent-originated domain output must pass project-owned runtime decision, MessageEnvelope, and Agent Chat Bus boundaries.",
+    "Secrets/auth material must not enter agent context."
+  ],
+  "verification_targets": [
+    "python -m pytest tests/backend/access_admin/test_ft001_context_builder_authz.py tests/backend/api/test_ft001_protected_route_authz.py",
+    "node scripts/mb-lint.mjs",
+    "/verify PASS",
+    "/red-verify semantic-pass"
+  ],
+  "purpose": "Provide the reusable protected-route and context-builder seams that later product features must call before Farm/Plant data access.",
+  "success_outcome": "Later routes and context builders can require ActorContext and produce safe authorization-scoped context without leaking auth material.",
+  "anti_goals": [
+    "No Bus event payload implementation.",
+    "No MessageEnvelope implementation.",
+    "No UI Feed projection."
+  ],
+  "runtime_context": {
+    "packet_required": true,
+    "packet_ref": ".memory-bank/packets/TASK-010-T3-FT-001-W3.packet.json",
+    "allowed_write_scope": [
+      "backend/app/access_admin/dependencies.py",
+      "backend/app/access_admin/context_builders.py",
+      "tests/backend/access_admin/test_ft001_context_builder_authz.py",
+      "tests/backend/api/test_ft001_protected_route_authz.py"
+    ],
+    "forbidden_scope": [
+      "Agent Chat Bus event payload implementation",
+      "MessageEnvelope validation implementation",
+      "UI Feed projection",
+      "raw auth material in context output"
+    ],
+    "stop_conditions": [
+      "Context-builder authorization cannot be proven before data exposure.",
+      "Auth material exclusion cannot be tested.",
+      "Implementation requires owning FT-007/FT-008 agent publication behavior."
+    ]
+  }
+}

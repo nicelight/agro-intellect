@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "packet_id": "PACKET-TASK-009-T3-FT-001-W2-R1",
+  "task_id": "TASK-009-T3-FT-001-W2",
+  "created_at": "2026-06-25T23:18:37+05:00",
+  "source_task_hash": "sha256:4134a6c754333f6dea912d7362908f19531b2bbcee347debcde80c1e864ddba7",
+  "status": "ready",
+  "tier": "T3",
+  "purpose": "Expose the FT-001 session API surface with stable safe errors and browser/PWA default session transport.",
+  "success_outcome": "Clients can login, logout, and inspect the current safe session summary through FastAPI routes without leaking auth material.",
+  "anti_goals": [
+    "No public invite activation route.",
+    "No admin/personnel routes.",
+    "No frontend UI implementation."
+  ],
+  "source_refs": {
+    "task": ".memory-bank/tasks/TASK-009-T3-FT-001-W2.task.json",
+    "feature": ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
+    "specs": [
+      ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+      ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
+      ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
+      ".memory-bank/contracts/api-guidelines.md",
+      ".memory-bank/architecture/system-architecture.md",
+      ".memory-bank/workflows/tier-policy.md"
+    ],
+    "guides": [],
+    "protocols": [
+      ".protocols/FT-001/plan.md",
+      ".protocols/FT-001/decision-log.md"
+    ]
+  },
+  "scope": {
+    "allowed_write_scope": [
+      "backend/app/api/__init__.py",
+      "backend/app/api/session.py",
+      "backend/app/access_admin/errors.py",
+      "backend/app/main.py",
+      "tests/backend/api/test_ft001_session_routes.py"
+    ],
+    "forbidden_scope": [
+      "POST /api/local-invites/activate",
+      "admin/personnel routes",
+      "frontend UI implementation",
+      "raw auth material in responses or evidence"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "python -m pytest tests/backend/api/test_ft001_session_routes.py",
+      "node scripts/mb-lint.mjs",
+      "/verify PASS",
+      "/red-verify semantic-pass"
+    ],
+    "success_checks": [
+      "POST /api/session/login returns safe session summary and HTTP-only same-site session cookie on success.",
+      "Invalid login returns generic AUTH_CREDENTIAL_INVALID without account enumeration.",
+      "POST /api/session/logout revokes/clears current session and is idempotent for missing or invalid sessions.",
+      "GET /api/session/me returns safe actor/session summary without auth material.",
+      "Validation and auth errors use stable codes and redacted safe messages.",
+      "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
+    ],
+    "evidence_required": [
+      "session API route test output",
+      "HTTP-only same-site cookie evidence",
+      "no-leak error response evidence",
+      "T3 verify/red-verify/human/recovery evidence"
+    ]
+  },
+  "stop_conditions": [
+    "Route behavior conflicts with FT-001 error contract.",
+    "Cookie/session behavior cannot be verified without leaking token material.",
+    "Implementation requires FT-003 public route ownership."
+  ],
+  "required_handoff": [
+    "changed_files",
+    "commands_run",
+    "evidence",
+    "scope_compliance",
+    "blockers_or_none"
+  ]
+}

@@ -21,10 +21,13 @@ first product decisions back into the active Memory Bank. Active MVP v2 product,
 requirements, epics, and features exist as draft L1-L3 artifacts. The global SDD
 architecture backbone is complete. Feature-level `/spec-improve` is complete for
 FT-001, FT-002, and FT-003; their current normative feature designs are
-registered in [.memory-bank/spec-index.md](spec-index.md). The active task index
-contains `FT-000` foundation tasks only, and `TASK-000-T1-FT-000-W0` through
-`TASK-004-T2-FT-000-W0` are `done`. `REQ-000` and `FT-000` are verified by the
-final Foundation gate and W0 semantic red-verification.
+registered in [.memory-bank/spec-index.md](spec-index.md). `/prd-to-tasks FT-001`
+is complete with [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md),
+behavior specs, required packets, and active task records
+`TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`. The active task index
+also contains completed `FT-000` foundation tasks, and `TASK-000-T1-FT-000-W0`
+through `TASK-004-T2-FT-000-W0` are `done`. `REQ-000` and `FT-000` are verified
+by the final Foundation gate and W0 semantic red-verification.
 Other features still require feature-level `/spec-improve FT-<NNN>` before any
 future implementation planning.
 
@@ -76,16 +79,18 @@ future implementation planning.
 Next route:
 
 ```text
-/prd-to-tasks FT-001
-then /review-tasks-plan FT-001 before implementation
+/review-tasks-plan FT-001
+then conditional /mb-doctor before tier-routed /execute TASK-005-T3-FT-001-W1
 ```
 
-Foundation no longer blocks product tasking. FT-001, FT-002, and FT-003 already
-have current normative feature designs and may be decomposed with `/prd-to-tasks`
-one feature at a time, followed by `/review-tasks-plan FT-<NNN>` before
-implementation. For features outside FT-001..FT-003, run `/spec-improve
-FT-<NNN>` before task decomposition. Do not use archived MVP v1 features as
-current source of truth.
+Foundation no longer blocks product tasking. FT-001 task decomposition is ready
+for fresh-context task-plan review. Because FT-001 tasks are T3 and packet-backed,
+run `/review-tasks-plan FT-001`, then conditional `/mb-doctor` for T3/packet
+readiness before executing `TASK-005-T3-FT-001-W1`. FT-002 and FT-003 already
+have current normative feature designs and may be decomposed later with
+`/prd-to-tasks FT-<NNN>` one feature at a time. For features outside
+FT-001..FT-003, run `/spec-improve FT-<NNN>` before task decomposition. Do not
+use archived MVP v1 features as current source of truth.
 
 ## Operational Roots
 

@@ -1,0 +1,135 @@
+{
+  "id": "TASK-011-T3-FT-001-W3",
+  "title": "Run FT-001 integration gate and docs sync",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-001",
+  "reqs": [
+    "REQ-002",
+    "REQ-003",
+    "REQ-004",
+    "REQ-020",
+    "REQ-021",
+    "REQ-022"
+  ],
+  "depends_on": [
+    "TASK-010-T3-FT-001-W3"
+  ],
+  "touched_files": [
+    ".tasks/TASK-011-T3-FT-001-W3/",
+    ".protocols/TASK-011-T3-FT-001-W3/",
+    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-011-T3-FT-001-W3.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft001-tests",
+      "command": "python -m pytest tests/backend/access_admin tests/backend/api",
+      "required": true
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "memory-bank-doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": true
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "All FT-001 unit/integration/API tests pass together.",
+    "Behavior specs are covered by task evidence or linked test output.",
+    "FT-001 Memory Bank docs, task record evidence, and changelog are synchronized without claiming FT-002/FT-003 completion.",
+    "Feature-level /red-verify --feature FT-001 remains required after all FT-001 tasks are done before treating the feature as complete.",
+    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/plans/IMPL-FT-001.md"
+  ],
+  "evidence_required": [
+    "FT-001 test suite output",
+    "node scripts/mb-lint.mjs output",
+    "node scripts/mb-doctor.mjs output",
+    "git diff --check output",
+    "docs sync diff summary",
+    "T3 verify/red-verify/human/recovery evidence"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tasks/plans/IMPL-FT-001.md",
+    ".memory-bank/testing/index.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/workflows/mb-sync.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/constitution.md"
+  ],
+  "constraints": [
+    "Do not close FT-002 or FT-003 from FT-001 evidence.",
+    "Do not mark FT-001 verified before all FT-001 tasks are done and feature-level red-verification passes.",
+    "Record only reproducible safe evidence; redact secrets."
+  ],
+  "invariants": [
+    "Memory Bank is durable project knowledge and must be synchronized after meaningful changes.",
+    "Every completed T3 task requires verify, red-verify, human checkpoint, and rollback/recovery evidence.",
+    "Secrets/auth material must not enter evidence artifacts."
+  ],
+  "verification_targets": [
+    "python -m pytest tests/backend/access_admin tests/backend/api",
+    "node scripts/mb-lint.mjs",
+    "node scripts/mb-doctor.mjs",
+    "git diff --check",
+    "/verify PASS",
+    "/red-verify semantic-pass"
+  ],
+  "purpose": "Provide one explicit FT-001 integration and documentation sync gate before feature-level completion review.",
+  "success_outcome": "FT-001 task evidence is coherent, docs are synchronized, and the feature is ready for feature-level red-verification after all tasks close.",
+  "anti_goals": [
+    "No FT-002 or FT-003 closure.",
+    "No product feature verification without feature-level red-verification.",
+    "No new product behavior beyond FT-001 evidence sync."
+  ],
+  "runtime_context": {
+    "packet_required": true,
+    "packet_ref": ".memory-bank/packets/TASK-011-T3-FT-001-W3.packet.json",
+    "allowed_write_scope": [
+      ".tasks/TASK-011-T3-FT-001-W3/",
+      ".protocols/TASK-011-T3-FT-001-W3/",
+      ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
+      ".memory-bank/requirements.md",
+      ".memory-bank/changelog.md",
+      ".memory-bank/tasks/TASK-011-T3-FT-001-W3.task.json"
+    ],
+    "forbidden_scope": [
+      "FT-002 or FT-003 closure",
+      "feature-level verified lifecycle without feature red-verification",
+      "unredacted auth/session evidence"
+    ],
+    "stop_conditions": [
+      "Any FT-001 prerequisite task is not done.",
+      "Any required gate fails.",
+      "Evidence contains unredacted secrets or auth material.",
+      "Docs sync would imply FT-002 or FT-003 completion."
+    ]
+  }
+}

@@ -44,6 +44,12 @@ source_of_truth:
 - Integration: ActorContext present on every protected route/context builder.
 - E2E: Engineer sees only assigned Plants; Consultant stays advisory/read/comment only.
 
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json`
+- `.memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json`
+- `.memory-bank/behavior-specs/FT-001-BHV-003-actor-context-permission-filtering.behavior.json`
+
 ## Normative Backbone Links
 
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): source-of-truth hierarchy, modules, security, deployment.
@@ -56,4 +62,11 @@ Status: feature-local `/spec-improve FT-001` is complete.
 
 Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md) as the current normative feature design for exact auth/session lifecycle, ActorContext shape, permission checks, route contracts, error handling, migration/indexing targets, and verification targets.
 
-Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-001 implementation plan or `TASK-*` record is active.
+## Task Decomposition
+
+Status: `/prd-to-tasks FT-001` completed on 2026-06-25.
+
+- Implementation plan: [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md).
+- Active task records: `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
+- Required packets: `.memory-bank/packets/TASK-005-T3-FT-001-W1.packet.json` through `.memory-bank/packets/TASK-011-T3-FT-001-W3.packet.json`.
+- Next gate: `/review-tasks-plan FT-001` before any FT-001 implementation.

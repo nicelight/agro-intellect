@@ -4,9 +4,10 @@ status: active
 owner: architecture
 type: feature_design
 feature_id: FT-002
-last_updated: 2026-06-14
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md
+  - .memory-bank/foundation.md
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/contracts/api-guidelines.md
@@ -22,6 +23,7 @@ Define the single local Farm, Plant lifecycle, `tomato_001` seed, and PlantAcces
 ## Normative Inputs
 
 - [.memory-bank/spec-backbone.md](../spec-backbone.md): global backbone is complete.
+- [.memory-bank/foundation.md](../foundation.md): verified Foundation baseline for local Farm/Plant migrations, DB session conventions, bootstrap, and redaction.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Access & Admin and Runtime State boundaries.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Plant and PlantAccessGrant authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): API authz and route grouping.

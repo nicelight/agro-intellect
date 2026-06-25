@@ -1,0 +1,100 @@
+{
+  "id": "TASK-006-T3-FT-001-W1",
+  "title": "Implement FT-001 credential and session token security primitives",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-001",
+  "reqs": [
+    "REQ-002",
+    "REQ-003",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-005-T3-FT-001-W1"
+  ],
+  "touched_files": [
+    "backend/app/core/security.py",
+    "backend/app/access_admin/security.py",
+    "tests/backend/access_admin/test_ft001_security_primitives.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "security-primitive-tests",
+      "command": "python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py",
+      "required": true
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Password hashing and verification are one-way and do not store plaintext passwords.",
+    "Opaque session tokens are generated for clients and only token_hash is persisted.",
+    "Redaction covers passwords, tokens, token hashes, cookies, bearer tokens, and auth headers in error/log-like strings.",
+    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
+  ],
+  "docs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tasks/plans/IMPL-FT-001.md"
+  ],
+  "evidence_required": [
+    "security primitive test output",
+    "sample redaction evidence for auth/session material",
+    "T3 verify/red-verify/human/recovery evidence"
+  ],
+  "source_artifacts": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
+    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Never log, return, or persist plaintext passwords or raw session tokens.",
+    "Browser/PWA default session transport remains HTTP-only same-site cookie.",
+    "Do not introduce refresh tokens, OAuth, hosted recovery, or third-party identity."
+  ],
+  "invariants": [
+    "Secrets/auth material must not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.",
+    "MVP data and artifacts remain local/private by default."
+  ],
+  "verification_targets": [
+    "python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py",
+    "node scripts/mb-lint.mjs",
+    "/verify PASS",
+    "/red-verify semantic-pass"
+  ],
+  "purpose": "Provide reusable credential and session-token primitives before implementing auth/session services and routes.",
+  "success_outcome": "FT-001 services can issue and verify local credentials and sessions without leaking or persisting raw auth material.",
+  "anti_goals": [
+    "No hosted identity or recovery.",
+    "No refresh-token/device-management subsystem.",
+    "No provider/API key configuration."
+  ],
+  "runtime_context": {
+    "packet_required": true,
+    "packet_ref": ".memory-bank/packets/TASK-006-T3-FT-001-W1.packet.json",
+    "allowed_write_scope": [
+      "backend/app/core/security.py",
+      "backend/app/access_admin/security.py",
+      "tests/backend/access_admin/test_ft001_security_primitives.py"
+    ],
+    "forbidden_scope": [
+      "OAuth or enterprise identity",
+      "hosted password recovery",
+      "refresh-token/device-management subsystem",
+      "raw auth material in logs/errors/tests"
+    ],
+    "stop_conditions": [
+      "A required test would expose real or generated secrets unredacted.",
+      "A primitive requires storing raw session tokens.",
+      "Security behavior conflicts with FT-001 or API Guidelines."
+    ]
+  }
+}

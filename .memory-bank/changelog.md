@@ -4,6 +4,14 @@ status: active
 ---
 # Changelog
 
+## [2026-06-25] FT-001 task decomposition
+- Ran `/prd-to-tasks FT-001` after verified Foundation closure.
+- Added [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md) and `.protocols/FT-001/` planning notes.
+- Added behavior specs for login success, no-leak login failure, and ActorContext permission filtering under `.memory-bank/behavior-specs/`.
+- Added T3 task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3` and indexed them in [.memory-bank/tasks/index.json](tasks/index.json).
+- Added required execution packets for every FT-001 task under `.memory-bank/packets/`.
+- Updated FT-001, EP-001, feature router, and Memory Bank index routing so the next gate is `/review-tasks-plan FT-001`.
+
 ## [2026-06-25] Wave W0 - TASK-004 final gate failed
 - Ran `TASK-004-T2-FT-000-W0` final Foundation gate evidence collection.
 - Passed local bootstrap, venv install, DB init, DB migration, full pytest suite, `mb-lint`, `mb-doctor`, `git diff --check`, and TASK-004 evidence secret-pattern scan.

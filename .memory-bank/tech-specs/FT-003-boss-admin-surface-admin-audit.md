@@ -4,9 +4,10 @@ status: active
 owner: architecture
 type: feature_design
 feature_id: FT-003
-last_updated: 2026-06-14
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/features/FT-003-boss-admin-surface-admin-audit.md
+  - .memory-bank/foundation.md
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/contracts/api-guidelines.md
@@ -22,6 +23,7 @@ Define the minimum Boss admin workflow and durable admin audit boundary for loca
 ## Normative Inputs
 
 - [.memory-bank/spec-backbone.md](../spec-backbone.md): global backbone is complete.
+- [.memory-bank/foundation.md](../foundation.md): verified Foundation baseline for admin package anchors, route include pattern, DB migrations/session helpers, and redaction.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Access & Admin module.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): AdminAuditRecord authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): admin API guardrails.

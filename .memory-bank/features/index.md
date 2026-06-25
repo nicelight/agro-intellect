@@ -15,7 +15,7 @@ Compact Foundation Dev Path is complete and verified; see [.memory-bank/foundati
 
 First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
 
-Generated product task-decomposition artifacts for FT-001, FT-002, and FT-003 have been intentionally removed. The active [.memory-bank/tasks/index.json](../tasks/index.json) queue contains only completed `FT-000` Foundation tasks.
+`/prd-to-tasks FT-001` is complete. The active [.memory-bank/tasks/index.json](../tasks/index.json) queue contains completed `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`. Run `/review-tasks-plan FT-001` before implementation. Generated product task-decomposition artifacts for FT-002 and FT-003 remain intentionally removed.
 
 All other features still require their own `/spec-improve FT-<NNN>` gate before any future implementation planning.
 
@@ -25,7 +25,7 @@ All other features still require their own `/spec-improve FT-<NNN>` gate before 
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md).
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/spec-improve` and `/prd-to-tasks` complete; current normative feature design is [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md), implementation plan is [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md), and active tasks are `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
 - [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md).
 - [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md).
 

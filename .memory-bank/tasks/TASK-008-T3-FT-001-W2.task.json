@@ -1,0 +1,105 @@
+{
+  "id": "TASK-008-T3-FT-001-W2",
+  "title": "Implement FT-001 ActorContext and role policy",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-001",
+  "reqs": [
+    "REQ-003",
+    "REQ-004",
+    "REQ-022"
+  ],
+  "depends_on": [
+    "TASK-007-T3-FT-001-W2"
+  ],
+  "touched_files": [
+    "backend/app/access_admin/actor_context.py",
+    "backend/app/access_admin/permissions.py",
+    "tests/backend/access_admin/test_ft001_actor_context.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "actor-context-tests",
+      "command": "python -m pytest tests/backend/access_admin/test_ft001_actor_context.py",
+      "required": true
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    }
+  ],
+  "verify": [
+    "ActorContext resolves request_id, session, account, Farm, membership, role, auth provenance, and PlantPermissionContext resolver before business logic.",
+    "Role preset policy matches Boss, Engineer, and Consultant authority from FT-001.",
+    "Consultant cannot operate, create domain task/recommendation records, approve governance by default, or approve physical actions.",
+    "PlantPermissionContext interface remains compatible with FT-002 resolver ownership and does not implement PlantAccessGrant mutations.",
+    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
+  ],
+  "docs": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tasks/plans/IMPL-FT-001.md"
+  ],
+  "evidence_required": [
+    "ActorContext/role policy test output",
+    "Consultant and missing-grant fail-closed evidence",
+    "FT-002 resolver interface compatibility evidence",
+    "T3 verify/red-verify/human/recovery evidence"
+  ],
+  "source_artifacts": [
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/behavior-specs/FT-001-BHV-003-actor-context-permission-filtering.behavior.json",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/contracts/boundary-map.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Every protected route/context-builder path must require ActorContext before business logic.",
+    "The only MVP per-Plant permission override is plant_approve_actions.",
+    "Do not add a general ACL engine or permission override matrix.",
+    "Do not implement FT-002 PlantAccessGrant persistence or mutation routes."
+  ],
+  "invariants": [
+    "Frontend hide/show is presentation only and never an authorization substitute.",
+    "Consultant remains advisory/read/comment only by default.",
+    "can_approve_actions is actor authority only and never Safety Gate clearance."
+  ],
+  "verification_targets": [
+    "python -m pytest tests/backend/access_admin/test_ft001_actor_context.py",
+    "node scripts/mb-lint.mjs",
+    "/verify PASS",
+    "/red-verify semantic-pass"
+  ],
+  "purpose": "Create the ActorContext and role/Plant permission boundary that later Farm/Plant routes and context builders must consume.",
+  "success_outcome": "Protected backend paths can require a typed ActorContext and derive role/Plant permission decisions without duplicating FT-002 access rules.",
+  "anti_goals": [
+    "No generic ACL engine.",
+    "No FT-002 PlantAccessGrant mutation implementation.",
+    "No Safety Gate clearance implementation."
+  ],
+  "runtime_context": {
+    "packet_required": true,
+    "packet_ref": ".memory-bank/packets/TASK-008-T3-FT-001-W2.packet.json",
+    "allowed_write_scope": [
+      "backend/app/access_admin/actor_context.py",
+      "backend/app/access_admin/permissions.py",
+      "tests/backend/access_admin/test_ft001_actor_context.py"
+    ],
+    "forbidden_scope": [
+      "general ACL engine",
+      "FT-002 PlantAccessGrant persistence or mutation routes",
+      "Safety Gate approval logic"
+    ],
+    "stop_conditions": [
+      "ActorContext shape conflicts with FT-001 tech spec.",
+      "Permission resolver requires unresolved FT-002 implementation decisions.",
+      "Consultant or missing-grant behavior cannot be proven fail-closed."
+    ]
+  }
+}

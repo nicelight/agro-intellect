@@ -1,0 +1,38 @@
+{
+  "id": "FT-001-BHV-001",
+  "feature_id": "FT-001",
+  "title": "Successful local login issues a safe browser session",
+  "given": {
+    "account_status": "active",
+    "membership_status": "active",
+    "role_preset": "boss",
+    "transport": "cookie",
+    "password": "valid"
+  },
+  "when": {
+    "request": "POST /api/session/login",
+    "body": {
+      "login_name": "boss",
+      "password": "valid-password"
+    }
+  },
+  "then": {
+    "status": 200,
+    "sets_cookie": "HTTP-only same-site session cookie",
+    "stores": "server-side token_hash only",
+    "returns": [
+      "account_id",
+      "farm_id",
+      "membership_id",
+      "role_preset",
+      "session_expires_at"
+    ],
+    "forbidden_output": [
+      "password",
+      "password_hash",
+      "raw session token",
+      "token_hash",
+      "auth header"
+    ]
+  }
+}

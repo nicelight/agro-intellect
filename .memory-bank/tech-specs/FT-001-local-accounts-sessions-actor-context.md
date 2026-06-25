@@ -4,9 +4,10 @@ status: active
 owner: architecture
 type: feature_design
 feature_id: FT-001
-last_updated: 2026-06-14
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/features/FT-001-local-accounts-sessions-actor-context.md
+  - .memory-bank/foundation.md
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/contracts/api-guidelines.md
@@ -24,6 +25,7 @@ Define the local identity, session, role, and ActorContext boundary that every F
 ## Normative Inputs
 
 - [.memory-bank/spec-backbone.md](../spec-backbone.md): global backbone is complete.
+- [.memory-bank/foundation.md](../foundation.md): verified Foundation baseline for migrations, DB/session helpers, local runtime roots, and redaction.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Access & Admin module and source-of-truth hierarchy.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Account, FarmMembership, ActorContext authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): API authz and error guardrails.

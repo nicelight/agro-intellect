@@ -1,0 +1,35 @@
+{
+  "id": "FT-001-BHV-003",
+  "feature_id": "FT-001",
+  "title": "ActorContext derives Plant permissions and filters unsafe context",
+  "given": {
+    "actor_context": {
+      "account_status": "active",
+      "membership_status": "active",
+      "role_preset": "consultant"
+    },
+    "plant_access_grant": {
+      "grant_status": "active",
+      "plant_approve_actions": true
+    }
+  },
+  "when": {
+    "operation": "resolve PlantPermissionContext for agent/context-builder input"
+  },
+  "then": {
+    "can_read": true,
+    "can_comment": true,
+    "can_operate": false,
+    "can_create_domain_tasks": false,
+    "can_manage_access": false,
+    "can_approve_actions": false,
+    "excluded_from_context": [
+      "session_id",
+      "session token",
+      "token_hash",
+      "password_hash",
+      "auth headers",
+      "cookies"
+    ]
+  }
+}
