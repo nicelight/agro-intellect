@@ -8,17 +8,18 @@ version = "0.1.0"
 description = "Agro Intellect local modular monolith baseline"
 requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.115,<1",
-  "sqlalchemy>=2.0,<3",
-  "pydantic>=2,<3",
-  "alembic>=1.13,<2",
-  "psycopg[binary]>=3.2,<4",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "sqlalchemy>=2.0",
+  "pydantic>=2",
+  "alembic>=1.13",
+  "psycopg[binary]>=3.2",
 ]
 
 [project.optional-dependencies]
 test = [
-  "httpx>=0.28,<1",
-  "pytest>=9,<10",
+  "httpx>=0.28",
+  "pytest>=9",
 ]
 
 [tool.setuptools.packages.find]

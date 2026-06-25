@@ -3,11 +3,12 @@ Name: agro-intellect
 Version: 0.1.0
 Summary: Agro Intellect local modular monolith baseline
 Requires-Python: >=3.11
-Requires-Dist: fastapi<1,>=0.115
-Requires-Dist: sqlalchemy<3,>=2.0
-Requires-Dist: pydantic<3,>=2
-Requires-Dist: alembic<2,>=1.13
-Requires-Dist: psycopg[binary]<4,>=3.2
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn>=0.30
+Requires-Dist: sqlalchemy>=2.0
+Requires-Dist: pydantic>=2
+Requires-Dist: alembic>=1.13
+Requires-Dist: psycopg[binary]>=3.2
 Provides-Extra: test
-Requires-Dist: httpx<1,>=0.28; extra == "test"
-Requires-Dist: pytest<10,>=9; extra == "test"
+Requires-Dist: httpx>=0.28; extra == "test"
+Requires-Dist: pytest>=9; extra == "test"

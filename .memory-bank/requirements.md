@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-06-23
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -59,7 +59,7 @@ source_of_truth:
 ## Traceability (RTM)
 | REQ | Epic | Feature | Test | Lifecycle |
 |---|---|---|---|---|
-| REQ-000 | Foundation | FT-000 | gate: final Foundation Dev Path build/start/bootstrap/db/migration/test/MB checks | planned |
+| REQ-000 | Foundation | FT-000 | gate: final Foundation Dev Path build/start/bootstrap/db/migration/test/MB checks | verified |
 | REQ-001 | EP-001 | FT-002 | integration: single Farm workspace; e2e: Boss setup | planned |
 | REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | planned |
 | REQ-003 | EP-001 | FT-001, FT-002, FT-003 | integration: ActorContext on every Farm/Plant route and context builder | planned |

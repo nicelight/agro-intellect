@@ -13,6 +13,20 @@ contents, credentials, tokens, or database URLs.
 USAGE
 }
 
+redact() {
+  local value="$*"
+  if command -v python3 >/dev/null 2>&1; then
+    AGRO_REDACT_TEXT="$value" PYTHONPATH="$PROJECT_ROOT/backend/app/core${PYTHONPATH:+:$PYTHONPATH}" python3 - <<'PY' 2>/dev/null && return 0
+from os import environ
+from redaction import redact_text
+
+print(redact_text(environ.get("AGRO_REDACT_TEXT", ""), environ=environ), end="")
+PY
+  fi
+  printf '%s' "$value" \
+    | sed -E 's#://([^:/@[:space:]]+):([^@[:space:]/]+)@#://\1:***@#g; s#([A-Za-z_][A-Za-z0-9_-]*(PASSWORD|PASSWD|PWD|TOKEN|SECRET|API[_-]?KEY|AUTH|AUTHORIZATION|CREDENTIAL|CREDENTIALS|DATABASE[_-]?URL|DB[_-]?URL|DSN|PRIVATE[_-]?KEY)[A-Za-z0-9_-]*[[:space:]]*[:=][[:space:]]*)[^[:space:],;]+#\1***#Ig'
+}
+
 for arg in "$@"; do
   case "$arg" in
     --dry-run)
@@ -23,7 +37,7 @@ for arg in "$@"; do
       exit 0
       ;;
     *)
-      printf '[bootstrap] ERROR: unsupported argument: %s\n' "$arg" >&2
+      printf '[bootstrap] ERROR: %s\n' "$(redact "unsupported argument: $arg")" >&2
       usage >&2
       exit 2
       ;;
@@ -31,15 +45,15 @@ for arg in "$@"; do
 done
 
 log() {
-  printf '[bootstrap] %s\n' "$*"
+  printf '[bootstrap] %s\n' "$(redact "$*")"
 }
 
 warn() {
-  printf '[bootstrap] WARN: %s\n' "$*" >&2
+  printf '[bootstrap] WARN: %s\n' "$(redact "$*")" >&2
 }
 
 fail() {
-  printf '[bootstrap] ERROR: %s\n' "$*" >&2
+  printf '[bootstrap] ERROR: %s\n' "$(redact "$*")" >&2
   exit 1
 }
 

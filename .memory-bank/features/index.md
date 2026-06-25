@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-06-23
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -11,17 +11,17 @@ source_of_truth:
 
 Active MVP v2 features are draft L3 decomposition artifacts. Global `/spec-design` is complete.
 
-Compact Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](../foundation.md). Product `/prd-to-tasks` must wait until the final `FT-000` foundation gate task `TASK-004-T2-FT-000-W0` is `done`.
+Compact Foundation Dev Path is complete and verified; see [.memory-bank/foundation.md](../foundation.md). Product `/prd-to-tasks` is unblocked for features that already have completed feature-level SDD designs.
 
 First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
 
-Generated product task-decomposition artifacts for FT-001, FT-002, and FT-003 have been intentionally removed. The active [.memory-bank/tasks/index.json](../tasks/index.json) queue contains only `FT-000` Foundation tasks.
+Generated product task-decomposition artifacts for FT-001, FT-002, and FT-003 have been intentionally removed. The active [.memory-bank/tasks/index.json](../tasks/index.json) queue contains only completed `FT-000` Foundation tasks.
 
 All other features still require their own `/spec-improve FT-<NNN>` gate before any future implementation planning.
 
 ## Foundation Pseudo-Feature
 
-- [FT-000 Foundation Dev Path](FT-000-foundation.md): reserved pseudo-feature for `/foundation-to-tasks`; current final gate is `TASK-004-T2-FT-000-W0`; not a product feature and not a valid `/prd-to-tasks FT-000` target.
+- [FT-000 Foundation Dev Path](FT-000-foundation.md): reserved pseudo-feature for `/foundation-to-tasks`; final gate `TASK-004-T2-FT-000-W0` is `done`; not a product feature and not a valid `/prd-to-tasks FT-000` target.
 
 ## EP-001 Local Farm Access And Admin
 

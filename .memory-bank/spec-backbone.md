@@ -20,14 +20,14 @@ status: active
 
 ## Open Design Questions
 - No global blocker remains after /spec-design.
-- Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](foundation.md).
+- Foundation Dev Path is complete and verified; see [.memory-bank/foundation.md](foundation.md).
 - Feature-local specs must still define exact auth/session lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope fields, Bus/UI projections, photo storage layout, state machines, freshness windows, action taxonomy, provider configuration, and UI route/view details before task decomposition.
 
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
 |---|---|---|---|
 | architecture_style | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/constitution.md](constitution.md) | Local modular monolith; standard AI-first guardrails. |
-| source_of_truth | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/foundation.md](foundation.md) | Design precedence, runtime authority layers, and pre-product executable baseline gate defined. |
+| source_of_truth | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/foundation.md](foundation.md) | Design precedence, runtime authority layers, and verified pre-product executable baseline gate defined. |
 | module_boundaries | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Bounded modules defined inside one deployable monolith. |
 | user_scenarios | authoritative | [.memory-bank/user-scenarios.md](user-scenarios.md), [.memory-bank/requirements.md](requirements.md) | Boss setup, Engineer operations, Safety Gate flow, and Companion governance covered. |
 | constraints | authoritative | [.memory-bank/constitution.md](constitution.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local-first, low-maintenance, safety, data authority, context hygiene, and no automated actuation. |
@@ -56,11 +56,11 @@ status: active
 - L1-L3 context: `/prd` completed active MVP v2 product, requirements, epics, and features on 2026-06-14; use [.memory-bank/requirements.md](requirements.md), [.memory-bank/epics/index.md](epics/index.md), and [.memory-bank/features/index.md](features/index.md) as decomposition inputs.
 
 ## Handoff To /foundation-to-tasks
-- Required: yes.
+- Required: complete.
 - Foundation decision: [.memory-bank/foundation.md](foundation.md) records `Foundation Required: true`, `Foundation Requirement: REQ-000`, `Foundation Pseudo-Feature: FT-000`, and `Foundation Gate Task: TASK-004-T2-FT-000-W0`.
 - Foundation scope: task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, local PostgreSQL init, Alembic migration baseline, DB session/UoW baseline, local runtime roots, redaction baseline, and final foundation gate.
 - Explicit non-scope: the old Bus -> Agent -> Message/UI -> Safety -> timeline/photo export critical path is not restored; those product boundaries remain in global contracts and feature-local specs.
-- Next command: `node scripts/mb-doctor.mjs` at the foundation/task-queue boundary, then execute/verify `FT-000` until `TASK-004-T2-FT-000-W0` is `done`.
+- Next command: none for Foundation. Product tasking may proceed through `/prd-to-tasks FT-001` for the first feature with completed feature-level SDD design.
 - Stop conditions: Foundation gate task missing, not indexed, not `done`, or product tasks without direct/transitive dependency on the final foundation gate.
 
 ## Handoff To /spec-improve
@@ -77,4 +77,4 @@ status: active
   - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
-- Notes: Global AI-first architecture guardrails are complete for MVP v2 feature-level design. Compact Foundation Dev Path is required before product feature tasking. Feature-local specs still own detailed schemas, state machines, API endpoints, and task-ready verification evidence.
+- Notes: Global AI-first architecture guardrails are complete for MVP v2 feature-level design. Compact Foundation Dev Path is verified. Feature-local specs still own detailed schemas, state machines, API endpoints, and task-ready verification evidence.

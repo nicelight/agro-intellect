@@ -2,7 +2,7 @@
 description: Testing and verification router for MVP v2 migration.
 status: active
 owner: quality
-last_updated: 2026-06-23
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -44,13 +44,13 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Readiness before autonomous/task selection must pass `node scripts/mb-doctor.mjs`.
 - Diffs must pass `git diff --check`.
 - Product feature task decomposition must not start before global `/spec-design`, required Foundation closure, and the relevant `/spec-improve FT-<NNN>`.
-- Global `/spec-design` is complete; current pre-product-task gate is `/foundation-to-tasks`, foundation `/mb-doctor`, and final `FT-000` gate closure.
+- Global `/spec-design` is complete; Foundation is closed and verified. Current product tasking gate is the relevant feature-level `/spec-improve FT-<NNN>` plus `/review-tasks-plan FT-<NNN>` before implementation.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
 
 ## Foundation Gate
 
 Before product feature tasking, the required [.memory-bank/foundation.md](../foundation.md)
-path must be generated through `/foundation-to-tasks` and verified through the
+path was generated through `/foundation-to-tasks` and verified through the
 final `FT-000` gate task.
 
 Foundation evidence must prove:

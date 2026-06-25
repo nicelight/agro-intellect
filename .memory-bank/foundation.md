@@ -2,7 +2,7 @@
 description: Foundation Dev Path evidence and feature pressure map.
 status: active
 owner: architecture
-last_updated: 2026-06-23
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
@@ -41,6 +41,20 @@ minimum shared platform primitives that product features may build on.
 were created by `/foundation-to-tasks`. The final foundation gate is
 `TASK-004-T2-FT-000-W0`.
 
+## Current Status
+
+- Status: verified
+- Final gate: `TASK-004-T2-FT-000-W0` is `done` with latest `VERDICT: PASS`.
+- W0 semantic verification: `SEMANTIC_VERDICT: semantic-pass`.
+- Evidence:
+  - `.protocols/TASK-004-T2-FT-000-W0/verification.md`
+  - `.tasks/TASK-004-T2-FT-000-W0/TASK-004-T2-FT-000-W0-S-VERIFY-final-report-code-02.md`
+  - `.protocols/FT-000/red-verification-W0.md`
+  - `.tasks/FT-000/FT-000-W0-S-RED-VERIFY-final-report-docs-01.md`
+- Product tasking is unblocked for features with completed feature-level SDD
+  designs. Foundation remains platform evidence only and does not close product
+  features.
+
 ## Minimal Work Path
 - Build command: `python -m pip install -e ".[test]"`
 - Linux Mint bootstrap command: `bash scripts/bootstrap-local.sh`
@@ -68,7 +82,7 @@ or verifies these packages.
 | DB session/UoW baseline | Shared engine/session/test-session dependency is available and documented; `/ready` proves DB connectivity when configured. | Does not define product repositories beyond interfaces/helpers. |
 | Local runtime roots | Settings define local data/artifact root, timeline root placeholder, and temp/smoke paths with `local_only` defaults. | Does not implement photo catalog, timeline event taxonomy, or dataset export. |
 | Redaction baseline | Shared redaction helper/test prevents `.env`, tokens, passwords, DB URLs with credentials, and auth material from leaking in logs/errors/bootstrap evidence. | Does not replace feature-specific redaction tests. |
-| Final foundation gate | One final FT-000 gate verifies build/start/bootstrap/db/migrate/test/mb-gates on the local-first path. | Product tasking remains blocked until this gate is `done`. |
+| Final foundation gate | One final FT-000 gate verifies build/start/bootstrap/db/migrate/test/mb-gates on the local-first path. | Product tasking was blocked until this gate became `done`; it is now unblocked for features with completed feature-level SDD designs. |
 
 ## Feature Pressure Map
 

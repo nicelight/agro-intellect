@@ -3,7 +3,7 @@ description: Implementation plan for FT-000 Foundation Dev Path.
 status: active
 type: implementation_plan
 feature_id: FT-000
-last_updated: 2026-06-24
+last_updated: 2026-06-25
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/features/FT-000-foundation.md
@@ -34,13 +34,12 @@ local runtime roots, redaction baseline, and a final gate.
 |---|---|---|---|
 | `TASK-000-T1-FT-000-W0` | T1 | done | Align task schema/protocol evidence and backend scaffold/package anchors. |
 | `TASK-001-T2-FT-000-W0` | T2 | done | Implement Linux Mint local bootstrap and local runtime configuration roots. |
-| `TASK-002-T2-FT-000-W0` | T2 | planned | Implement local PostgreSQL init, Alembic migration, and DB readiness baseline. |
-| `TASK-003-T3-FT-000-W0` | T3 | planned | Implement secret redaction baseline for bootstrap, settings, errors, and evidence. |
-| `TASK-004-T2-FT-000-W0` | T2 | planned | Run final Foundation gate and record build/start/bootstrap/db/migration/test evidence. |
+| `TASK-002-T2-FT-000-W0` | T2 | done | Implement local PostgreSQL init, Alembic migration, and DB readiness baseline. |
+| `TASK-003-T3-FT-000-W0` | T3 | done | Implement secret redaction baseline for bootstrap, settings, errors, and evidence. |
+| `TASK-004-T2-FT-000-W0` | T2 | done | Run final Foundation gate and record build/start/bootstrap/db/migration/test evidence. |
 
-`TASK-002-T2-FT-000-W0` has all direct dependencies done and is eligible for a
-separate scheduler/owner promotion pass. `/mb-sync` does not promote dependent
-tasks by itself.
+All `FT-000/W0` tasks are done. W0 semantic red-verification is
+`semantic-pass`. `/mb-sync` does not generate or promote product tasks.
 
 ## Dependency Order
 
@@ -67,11 +66,6 @@ later must depend directly or transitively on `TASK-004-T2-FT-000-W0`.
 
 ## Handoff
 
-After `/foundation-to-tasks`, run:
-
-```bash
-node scripts/mb-doctor.mjs
-```
-
-Then execute and verify `FT-000` tasks in dependency order. Do not run product
-`/prd-to-tasks` until the final gate task is `done`.
+Foundation is complete. Product tasking may proceed for features with completed
+feature-level SDD designs, starting with `/prd-to-tasks FT-001` and then
+`/review-tasks-plan FT-001` before implementation.

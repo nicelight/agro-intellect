@@ -4,6 +4,8 @@ from typing import Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .core.redaction import redact_url_credentials
+
 
 class AppSettings(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -44,3 +46,18 @@ class AppSettings(BaseModel):
             local_smoke_root=source.get("LOCAL_SMOKE_ROOT", "data/smoke"),
             sync_status=source.get("SYNC_STATUS", "local_only"),
         )
+
+    def redacted_for_log(self) -> dict[str, str]:
+        return {
+            "app_name": self.app_name,
+            "environment": self.environment,
+            "database_url": redact_url_credentials(self.database_url),
+            "database_echo": str(self.database_echo).lower(),
+            "database_pool_pre_ping": str(self.database_pool_pre_ping).lower(),
+            "local_data_root": str(self.local_data_root),
+            "local_artifact_root": str(self.local_artifact_root),
+            "local_timeline_root": str(self.local_timeline_root),
+            "local_temp_root": str(self.local_temp_root),
+            "local_smoke_root": str(self.local_smoke_root),
+            "sync_status": self.sync_status,
+        }

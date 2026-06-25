@@ -6,10 +6,10 @@ status: active
 
 ## Current State
 
-The active Memory Bank is in MVP v2 post-PRD-decomposition and
-post-global-SDD-backbone state. Generated first-wave product task artifacts have
-been intentionally removed. A compact `FT-000` Foundation task queue is active.
-Compact Foundation Dev Path is now required before product feature tasking.
+The active Memory Bank is in MVP v2 post-PRD-decomposition,
+post-global-SDD-backbone, and post-Foundation state. Generated first-wave
+product task artifacts have been intentionally removed. The compact `FT-000`
+Foundation task queue is complete and verified.
 
 The MVP v1 spec-layer has been hard-archived under
 [.memory-bank/archive/mvp-v1/](archive/mvp-v1/): historical PRD, requirements,
@@ -22,11 +22,9 @@ requirements, epics, and features exist as draft L1-L3 artifacts. The global SDD
 architecture backbone is complete. Feature-level `/spec-improve` is complete for
 FT-001, FT-002, and FT-003; their current normative feature designs are
 registered in [.memory-bank/spec-index.md](spec-index.md). The active task index
-contains `FT-000` foundation tasks only. `TASK-000-T1-FT-000-W0` and
-`TASK-001-T2-FT-000-W0` are done. `TASK-002-T2-FT-000-W0` remains `planned`
-with all direct dependencies done and is eligible for a separate scheduler/owner
-promotion pass. Continue execute/verify on `FT-000` until
-`TASK-004-T2-FT-000-W0` is `done`.
+contains `FT-000` foundation tasks only, and `TASK-000-T1-FT-000-W0` through
+`TASK-004-T2-FT-000-W0` are `done`. `REQ-000` and `FT-000` are verified by the
+final Foundation gate and W0 semantic red-verification.
 Other features still require feature-level `/spec-improve FT-<NNN>` before any
 future implementation planning.
 
@@ -78,15 +76,16 @@ future implementation planning.
 Next route:
 
 ```text
-run the scheduler/owner promotion pass for TASK-002-T2-FT-000-W0
-then execute/verify FT-000 until TASK-004-T2-FT-000-W0 is done
+/prd-to-tasks FT-001
+then /review-tasks-plan FT-001 before implementation
 ```
 
-Do not run `/prd-to-tasks` for product features until the final foundation gate
-task named in [.memory-bank/foundation.md](foundation.md) is done.
-For features outside FT-001..FT-003, run `/spec-improve FT-<NNN>` before task
-decomposition after the foundation gate is closed. Do not use archived MVP v1
-features as current source of truth.
+Foundation no longer blocks product tasking. FT-001, FT-002, and FT-003 already
+have current normative feature designs and may be decomposed with `/prd-to-tasks`
+one feature at a time, followed by `/review-tasks-plan FT-<NNN>` before
+implementation. For features outside FT-001..FT-003, run `/spec-improve
+FT-<NNN>` before task decomposition. Do not use archived MVP v1 features as
+current source of truth.
 
 ## Operational Roots
 

@@ -9,6 +9,7 @@ backend/app/__init__.py
 backend/app/config.py
 backend/app/database.py
 backend/app/main.py
+backend/app/core/redaction.py
 backend/migrations/__init__.py
 backend/migrations/env.py
 backend/migrations/versions/__init__.py

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-004-T2-FT-000-W0-R2",
+  "packet_id": "PACKET-TASK-004-T2-FT-000-W0-R3",
   "task_id": "TASK-004-T2-FT-000-W0",
-  "created_at": "2026-06-23T23:52:31+05:00",
-  "source_task_hash": "sha256:b09aab0659f46649621856922f279d1545dd6ce5378c433450ed57ca44d2f840",
+  "created_at": "2026-06-25T21:13:00+05:00",
+  "source_task_hash": "sha256:02beb6a1d3df714079cf42d567c51a00468e455829f5490d8b62bd7f8d2b3e61",
   "status": "ready",
   "tier": "T2",
   "purpose": "Provide one explicit closure gate for the compact Foundation Dev Path before product features are decomposed.",
@@ -35,7 +35,11 @@
       ".protocols/TASK-004-T2-FT-000-W0/",
       ".memory-bank/foundation.md",
       ".memory-bank/changelog.md",
-      ".memory-bank/tasks/TASK-004-T2-FT-000-W0.task.json"
+      ".memory-bank/tasks/TASK-004-T2-FT-000-W0.task.json",
+      "pyproject.toml",
+      "agro_intellect.egg-info/PKG-INFO",
+      "agro_intellect.egg-info/requires.txt",
+      "agro_intellect.egg-info/SOURCES.txt"
     ],
     "forbidden_scope": [
       "new product feature behavior",

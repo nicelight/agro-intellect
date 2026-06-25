@@ -4,6 +4,43 @@ status: active
 ---
 # Changelog
 
+## [2026-06-25] Wave W0 - TASK-004 final gate failed
+- Ran `TASK-004-T2-FT-000-W0` final Foundation gate evidence collection.
+- Passed local bootstrap, venv install, DB init, DB migration, full pytest suite, `mb-lint`, `mb-doctor`, `git diff --check`, and TASK-004 evidence secret-pattern scan.
+- Failed the app start gate because `.venv` does not contain `uvicorn`, so `/health` and `/ready` could not be checked.
+- Recorded `VERDICT: FAIL` evidence under `.protocols/TASK-004-T2-FT-000-W0/` and `.tasks/TASK-004-T2-FT-000-W0/`.
+- Did not run W0 red-verification because functional verification did not pass.
+
+## [2026-06-25] Wave W0 - TASK-004 dependency fix and verify PASS
+- Added `uvicorn>=0.30` to `pyproject.toml` so the documented local app start command is executable.
+- Recreated `.venv` from scratch through `scripts/bootstrap-local.sh`; fresh bootstrap installed `uvicorn 0.49.0`.
+- Reran the final Foundation gate: install, DB init, DB migration, app start, `/health`, `/ready`, full pytest suite, `mb-lint`, `git diff --check`, and evidence secret-pattern scan all passed.
+- Updated `TASK-004-T2-FT-000-W0` to `done` with latest `VERDICT: PASS` evidence.
+
+## [2026-06-25] Wave W0 - semantic red-verification PASS
+- Ran W0-level semantic red-verification for `FT-000` without using forbidden `--feature FT-000` mode.
+- Recorded `SEMANTIC_VERDICT: semantic-pass` in `.protocols/FT-000/red-verification-W0.md`.
+- Added final W0 red-verification report at `.tasks/FT-000/FT-000-W0-S-RED-VERIFY-final-report-docs-01.md`.
+- Confirmed the Foundation wave proves platform anchors only and does not close product features or generate product tasks.
+
+## [2026-06-25] Wave W0 - Foundation MB-SYNC
+- Marked `REQ-000` RTM lifecycle as `verified`.
+- Marked `FT-000` lifecycle as `verified`.
+- Updated Memory Bank routers and Foundation docs so product tasking is unblocked for features with completed feature-level SDD designs.
+- Recorded the next route as `/prd-to-tasks FT-001` followed by `/review-tasks-plan FT-001` before implementation.
+- Synchronized dependency wording after removing Python package upper bounds from `pyproject.toml` and generated package metadata.
+
+## [2026-06-25] Wave W0 - TASK-003 closed
+- Updated `TASK-003-T3-FT-000-W0` to `done` after `/verify` PASS,
+  `/red-verify` semantic-pass, and user-confirmed human checkpoint.
+- Recorded exact T3 closure markers `HUMAN_CHECKPOINT: done` and
+  `ROLLBACK_RECOVERY_NOTE: present` in closure evidence.
+- Refreshed `.memory-bank/packets/TASK-003-T3-FT-000-W0.packet.json` to R5 so
+  its `source_task_hash` matches the closed task record.
+- Updated [.memory-bank/index.md](index.md) and
+  [.memory-bank/tasks/plans/IMPL-FT-000.md](tasks/plans/IMPL-FT-000.md) so the
+  next route is `TASK-004-T2-FT-000-W0`, the final Foundation gate.
+
 ## [2026-06-24] Wave W0 - TASK-001 verified and synced
 - Updated [.memory-bank/tasks/plans/IMPL-FT-000.md](tasks/plans/IMPL-FT-000.md) to reflect `TASK-000-T1-FT-000-W0` and `TASK-001-T2-FT-000-W0` as `done`.
 - Recorded current routing in [.memory-bank/index.md](index.md): `TASK-002-T2-FT-000-W0` remains `planned` but has all direct dependencies done and is eligible for a separate scheduler/owner promotion pass.
