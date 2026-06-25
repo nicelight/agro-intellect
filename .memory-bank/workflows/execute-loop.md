@@ -20,27 +20,28 @@ status: active
   T0/T1 queues do not require `/mb-doctor` by default.
 
 ## Interactive mode (you stay)
-1) `/analysis -> /brief` when idea discovery is needed; use `/brainstorm` before `/brief` only for raw ideas
+1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts
 2) `/constitution` for contextual governing principles when `.memory-bank/constitution.md` is missing or `project_principles` is framework-default|skipped|missing; if principles are already ratified/partial, continue to `/write-prd`; if explicitly skipped, continue with framework-default/skipped principles
 3) `/write-prd` (creates clarified .memory-bank/prd.md)
 4) `/spec-init` (updates .memory-bank/spec-backbone.md framing and .memory-bank/spec-index.md registry)
 5) `/prd` (fills L1–L3)
-6) `/spec-design` (mandatory; minimal is valid for local/simple feature-set pressure)
-7) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
-8) Pick one top feature; use `/clarify-feature FT-001` only for explicit feature blockers
-9) `/prd-to-tasks FT-001` (completes feature-level SDD design, creates IMPL plan + `TASK-NNN-TN-FT-NNN-WN` records + required packets for this feature)
-10) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
+6) `/review-feat-plan` for high-risk, large, or autonomous-boundary work; optional/recommended for small manual flows
+7) `/spec-design` (mandatory; minimal is valid for local/simple feature-set pressure)
+8) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
+9) Pick one top feature; use `/clarify-feature FT-001` only for explicit feature blockers
+10) `/prd-to-tasks FT-001` (completes feature-level SDD design, creates IMPL plan + `TASK-NNN-TN-FT-NNN-WN` records + required packets for this feature)
+11) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
 feature/task-queue boundary only when T3, autonomous/autopilot handoff, or
 complex T2/foundation/dependency/packet/stale-doc/risky-link conditions apply;
 use `/mb-doctor --strict` before autonomous handoff
-11) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
+12) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
    - T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner
    - T2 manual: `/execute TASK -> /verify TASK`; sync at wave/feature boundary unless broader state must be reconciled earlier
    - T3 manual: `/execute TASK -> /verify TASK -> /red-verify TASK -> /mb-sync`
    - after all tasks for a T2 feature are implemented, run `/red-verify --feature FT-<ID>` before treating the feature as complete
    - start `/execute` only after the current feature task set has been decomposed and any required/conditional feature/task-queue doctor gate has passed
    - `/execute` reads packet/spec context only when required by tier/policy or linked by the task/feature; structural packet readiness is owned by `/mb-doctor`, not by the implementer
-12) After each wave: `/review-tasks-plan FT-<NNN>` for the current or affected
+13) After each wave: `/review-tasks-plan FT-<NNN>` for the current or affected
 feature, using a fresh-context reviewer / separate fresh session
 
 ## Autonomous end-to-end mode (start and leave)

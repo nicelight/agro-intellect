@@ -45,17 +45,18 @@ status: active
   `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`,
   `/foundation-to-tasks --verify-existing` только если baseline proof still
   needed, закрыть `FT-000` только если команда создала probe tasks, и
-  `/prd-to-tasks FT-<NNN>` как delta. По умолчанию brownfield не создает
+  `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional
+  `/mb-doctor`, и tier-routed `/execute TASK` как delta. По умолчанию brownfield не создает
   `FT-000`, если existing baseline уже доказан.
 - **Если есть код, но нет PRD / product brief / clear delta** → это
   **brownfield baseline only**: сначала запусти `/map-codebase` для as-is
   baseline, затем попроси PRD/delta. Не создавай roadmap EP/FT/TASK без delta.
-- **Если кода почти нет и есть PRD** → это **greenfield with existing PRD** → если project principles не ratified/partial, рекомендуй `/constitution`, затем перенеси/нормализуй PRD через `/write-prd`, затем `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, и `/prd-to-tasks FT-<NNN>`.
-- **Если кода почти нет и есть `.memory-bank/analysis/product-brief.md`** → если project principles уже `ratified|partial`, переходи к `/write-prd`; иначе рекомендуй `/constitution`, затем `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, и `/prd-to-tasks FT-<NNN>`.
-- **Если кода почти нет и концепт ясен, но PRD нет** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, и `/prd-to-tasks FT-<NNN>`.
-- **Если кода почти нет и идея сырая / направление нестабильно** → запусти `/analysis`; `/analysis` должен направить в `/brainstorm` или `/brief`.
-- **Если есть brainstorming artifact, но нет product brief и PRD** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, и `/prd-to-tasks FT-<NNN>`.
-- **Если нет кода и нет PRD / clear concept / analysis artifacts** → это **skeleton-only**: попроси пользователя предоставить PRD, product brief или хотя бы требования текстом и остановись.
+- **Если кода почти нет и есть PRD** → это **greenfield with existing PRD** → если project principles не ratified/partial, рекомендуй `/constitution`, затем перенеси/нормализуй PRD через `/write-prd`, затем `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, и tier-routed `/execute TASK`.
+- **Если кода почти нет и есть `.memory-bank/analysis/product-brief.md`** → если project principles уже `ratified|partial`, переходи к `/write-prd`; иначе рекомендуй `/constitution`, затем `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, и tier-routed `/execute TASK`.
+- **Если кода почти нет и концепт ясен, но PRD нет** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, и tier-routed `/execute TASK`.
+- **Если кода почти нет и идея сырая / направление нестабильно** → запусти `/brainstorm`, затем `/brief`.
+- **Если есть brainstorming artifact, но нет product brief и PRD** → запусти `/brief`; затем если project principles уже `ratified|partial`, переходи к `/write-prd`, иначе рекомендуй `/constitution` перед `/write-prd`; затем `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks` если required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, и tier-routed `/execute TASK`.
+- **Если нет кода и нет PRD / clear concept / discovery artifacts** → это **skeleton-only**: попроси пользователя предоставить PRD, product brief или хотя бы требования текстом и остановись.
 
 ## 2) Правила (важно)
 - Если **нет PRD**, ты **НЕ** создаёшь/заполняешь:
@@ -69,7 +70,7 @@ status: active
 - Если PRD есть, но пользователь временно недоступен:
   - фиксируй `Open questions` в `.protocols/PRD-BOOTSTRAP/decision-log.md`
   - **останавливайся и жди** (не выдумывай факты).
-- Analysis artifacts живут в `.memory-bank/analysis/` и являются durable Memory Bank artifacts, но Analysis не обязателен для каждого проекта.
+- Discovery artifacts живут в `.memory-bank/analysis/` и являются durable Memory Bank artifacts, но discovery не обязателен для каждого проекта.
 - Product Brief — upstream input contract для `/constitution` и `/write-prd`, а не PRD, backlog или task plan.
 - `/constitution` — нормальный greenfield step после Product Brief / existing PRD context и перед `/write-prd`, если project principles ещё не `ratified|partial`. Он должен читать Product Brief, если тот есть, и провести contextual interview.
 - `/constitution` не hard-blocker: если пользователь явно пропускает interview, продолжай downstream с `project_principles: framework-default|skipped` и предложи вернуться позже.
@@ -78,7 +79,8 @@ status: active
   not `ratified|partial` → `/write-prd` or `/write-prd --delta` →
   `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work →
   `/spec-design` → `/foundation-to-tasks` if required →
-  `/prd-to-tasks FT-<NNN>`.
+  `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` →
+  conditional `/mb-doctor` → tier-routed `/execute TASK`.
 - `/prd-to-tasks` must not run while PRD clarification is pending/blocked or a targeted feature is explicitly pending/blocked.
 
 ## 3) После запуска флоу
