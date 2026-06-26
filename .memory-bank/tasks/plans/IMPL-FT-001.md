@@ -3,10 +3,11 @@ description: Implementation plan for FT-001 Local Accounts Sessions And ActorCon
 status: active
 type: implementation_plan
 feature_id: FT-001
-last_updated: 2026-06-25
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/features/FT-001-local-accounts-sessions-actor-context.md
   - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
+  - .memory-bank/spec-backbone.md
   - .memory-bank/foundation.md
   - .memory-bank/workflows/tier-policy.md
 ---
@@ -37,19 +38,34 @@ needed by later Farm/Plant, admin, and agent-context features.
 
 ## Normative Inputs
 
+- `.memory-bank/spec-backbone.md`
 - `.memory-bank/foundation.md`
 - `.memory-bank/architecture/system-architecture.md`
 - `.memory-bank/domains/runtime-data-model.md`
 - `.memory-bank/contracts/api-guidelines.md`
 - `.memory-bank/contracts/agent-chat-bus.md`
 - `.memory-bank/contracts/message-envelope.md`
+- `.memory-bank/contracts/boundary-map.md`
+- `.memory-bank/invariants.md`
 - `.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md`
 - `.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md`
 - `.memory-bank/testing/index.md`
 - `.memory-bank/workflows/tier-policy.md`
 
+## Refresh Note
+
+`/prd-to-tasks FT-001` was refreshed on 2026-06-26 after the brownfield global
+SDD backbone update. No new global/shared or feature-local spec was required:
+the existing FT-001 feature design still covers auth/session lifecycle, route
+contracts, DB-backed state, error behavior, ActorContext, adjacent FT-002/FT-003
+boundaries, and verification. Task records and packets were refreshed against
+the verified FT-000 Foundation baseline and current global contracts.
+
 ## Constraints
 
+- Preserve verified FT-000 app factory, settings, database/session, migration,
+  readiness, runtime-root, and redaction anchors; if implementation contradicts
+  the brownfield baseline, stop and route to design repair.
 - Store only server-side session token hashes; never persist raw session tokens.
 - Use HTTP-only same-site cookie transport by default for browser/PWA sessions.
 - Every protected product route and context-builder path must resolve
@@ -76,6 +92,8 @@ needed by later Farm/Plant, admin, and agent-context features.
 - Passwords, activation secrets, session tokens, token hashes, cookies, bearer
   tokens, and auth headers never enter logs, audit/export, Bus, UI Feed,
   screenshots, exports, or agent context.
+- Generated task/packet assumptions remain below Constitution, explicit user
+  decisions, verified code/evidence, and active SDD specs.
 
 ## Task Queue
 

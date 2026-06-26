@@ -136,7 +136,7 @@ For `minimal`, explicit not-applicable global/shared lines must appear inside `.
 Do not use `TBD`, `none`, or empty placeholders as a substitute for `not_applicable` rationale.
 
 Status criteria:
-- `complete`: every relevant/global area in the Backbone Area Matrix has an authoritative linked source or explicit `not_applicable`; no `unknown`, `planned`, `candidate`, or `blocked` remains in global/shared areas.
+- `complete`: every relevant/global area in the Backbone Area Matrix has a route-level decision. Rows are normally `authoritative` or `not_applicable`. A concrete contract-detail row may be `needed_before_tasks` only when the source-of-truth owner/path is routed clearly enough for `/prd-to-tasks` to complete the concrete block before dependent T2/T3 task records are created. No `unknown`, `planned`, `candidate`, or `blocked` remains in global/shared areas.
 - `minimal`: only for explicit local/simple feature-set pressure; each unnecessary global/shared area has `not_applicable` plus rationale.
 - `blocked`: unsafe ambiguity remains, source-of-truth conflict exists, or a required global/shared area cannot be decided truthfully.
 
@@ -174,7 +174,60 @@ Required areas:
 - `open_questions`
 
 Allowed area statuses: `authoritative`, `needed_before_tasks`, `not_applicable`, `blocked`.
-Use `needed_before_tasks` only as a temporary working status; final `complete|minimal` cannot contain it for relevant/global areas.
+Use `needed_before_tasks` only for concrete contract details that are not yet written but are safely routed to a natural owner for `/prd-to-tasks` or `/spec-improve`. It must name the candidate authoritative source, affected features, and missing concrete block in the Notes column. It does not block entering `/prd-to-tasks`, but it blocks creation of dependent T2/T3 task records until resolved to `authoritative` or `not_applicable`.
+
+Strict/autonomous product readiness cannot contain `needed_before_tasks`; `/prd-to-tasks` must resolve any affected rows before product execution handoff. A foundation-only strict gate may pass with product contract rows still `needed_before_tasks` so the `FT-000` foundation queue can execute before product tasking.
+
+## 6.1) Core SDD spec generation
+While updating the Backbone Area Matrix, generate or update the core SDD
+specifications needed by the current PRD across four families:
+- `architecture`
+- `api_interface`
+- `data`
+- `contracts`
+
+Family outputs:
+- `architecture` / Architecture Specification: system shape, source-of-truth, module/bounded-context
+  boundaries, runtime/deployment constraints, and Architecture Spine `AD-*`
+  guardrails. Normal owners live under `.memory-bank/architecture/*` or
+  `.memory-bank/adrs/*`.
+- `api_interface` / Interface Specification: API, events, protocols, and
+  interaction contracts. Generate/update the relevant contract types:
+  Component Contract (module guarantees and responsibility boundaries), API
+  Contract (REST/gRPC/GraphQL inputs, outputs, auth/status/error behavior),
+  Event Contract (event/message/queue envelope, ordering, retry/idempotency),
+  and protocol/agent/tool I/O contracts. Normal owners live under
+  `.memory-bank/contracts/*`; stack-native schemas may be linked as the
+  implementation source when present.
+- `data` / Data Specification: domain model, storage ownership,
+  persistence/session/UoW/migrations, DB schemas, lifecycle/state-machine rules,
+  message/data formats, validation and serialization rules, retention, seed
+  data, runtime data paths, and Data Contract details such as versions and
+  required fields. Normal owners live under `.memory-bank/domains/*` and
+  `.memory-bank/states/*`.
+- `contracts`: cross-boundary responsibility, compatibility, Data Contract
+  ownership, evidence, redaction, safety/security, testing/runbook handoff, and
+  executable verification contracts. Normal owners live under
+  `.memory-bank/contracts/*`, `.memory-bank/testing/*`, and
+  `.memory-bank/runbooks/*`.
+
+KISS rules:
+- Create or update the natural owner for each relevant family. Prefer updating
+  an existing spec over creating a new file.
+- Use existing Backbone Area Matrix rows such as `module_boundaries`,
+  `data_flow`, `storage`, `api_contracts`, `event_message_contracts`,
+  `agent_io_contracts`, `security_safety`, and `testing_strategy` to show where
+  the generated family specs live.
+- Do not add a second mandatory readiness gate, validator, or coverage-map
+  artifact.
+- If a family is genuinely irrelevant to the current PRD, mark the relevant
+  area `not_applicable` with rationale; do not create an empty placeholder spec.
+- If a family needs concrete feature-local detail, route that to
+  `/prd-to-tasks` or `/spec-improve` through existing `needed_before_tasks`
+  notes; `/spec-design` still creates or updates the global/shared owner when
+  one is relevant.
+- Register specs in `spec-index.md`, but keep decision bodies in the natural
+  architecture/contract/domain/state/testing/runbook owner.
 
 ## 7) Spec-index and spec-backbone content boundary
 `.memory-bank/spec-index.md` is a pure spec registry/index, not an authoritative design spec or readiness/status file.
@@ -432,6 +485,14 @@ For AI-first architecture, route concrete contracts to verifiable artifacts when
 
 KISS rule: `/spec-design` must decide each relevant contract area as `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`. It does not need to write every concrete contract immediately.
 
+Use contract-area routing this way:
+- `authoritative`: a linked spec already owns enough detail for downstream tasking, or the area is governed by an existing stack-native source.
+- `needed_before_tasks`: feature tasking can enter `/prd-to-tasks`, but dependent T2/T3 task records must not be created until `/prd-to-tasks` writes or links the missing concrete block in the routed owner.
+- `not_applicable`: the current feature set has no such boundary; include a rationale.
+- `blocked`: the owner, boundary, or decision is unsafe to choose without user/external evidence; stop downstream work.
+
+Do not mark an area `needed_before_tasks` for unresolved product or architecture choices. Use it only when the owner is clear and the remaining work is making an implementation contract concrete.
+
 OpenAPI is not the source of truth for the whole system.
 
 Rules:
@@ -458,6 +519,8 @@ If the answer is unavailable and a safe assumption is not possible, mark backbon
 Update `.memory-bank/spec-backbone.md`:
 - exact `## Global Backbone Status` section and `- Status: complete|minimal|blocked` line
 - Backbone Area Matrix with authoritative links or explicit `not_applicable` rationale
+- generated or updated core SDD specs for the four families: architecture,
+  API/interface, data, and contracts
 - source-of-truth route labels and links; detailed hierarchy/rules live in the selected architecture artifact (`system-architecture.md` when single-file is selected, or `source-of-truth.md` when split)
 - global backbone blockers and next command routing
 - architecture artifact strategy and baseline backbone specs with their scope
@@ -483,6 +546,8 @@ Report:
 - architecture artifact strategy: single-file, split core docs, or split by boundary/topic
 - specs created/updated
 - Backbone Area Matrix summary
+- generated/updated SDD family specs and any family areas marked
+  `not_applicable` with rationale
 - not_applicable areas and rationale for local/simple feature-set pressure
 - affected features and normative links
 - foundation decision: `required`, `not_required`, or `blocked`

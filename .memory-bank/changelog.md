@@ -4,6 +4,18 @@ status: active
 ---
 # Changelog
 
+## [2026-06-26] /prd-to-tasks FT-001 refresh
+- Refreshed the existing FT-001 task planning surface against the brownfield
+  global SDD backbone, verified FT-000 Foundation evidence, and current
+  FT-001/FT-002/FT-003 feature specs.
+- Confirmed no new global/shared or feature-local design spec is required for
+  FT-001 before task-plan review.
+- Updated FT-001 implementation plan, feature routing, EP/index routing,
+  `.protocols/FT-001/`, task records, and execution packets so the next gate is
+  `/review-tasks-plan FT-001`.
+- Preserved the existing FT-001 task queue shape: `TASK-005-T3-FT-001-W1`
+  through `TASK-011-T3-FT-001-W3`; no runtime code was implemented.
+
 ## [2026-06-26] /spec-design review repair
 - Repaired overbroad ActorContext wording after brownfield review.
 - Clarified that protected product endpoints must resolve ActorContext before

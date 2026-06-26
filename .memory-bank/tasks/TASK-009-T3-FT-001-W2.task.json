@@ -59,13 +59,18 @@
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
     ".memory-bank/architecture/system-architecture.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Expose only POST /api/session/login, POST /api/session/logout, and GET /api/session/me for FT-001.",
     "Do not expose public local invite activation route; FT-003 owns POST /api/local-invites/activate.",
     "AUTH_CREDENTIAL_INVALID must not reveal whether login exists.",
-    "Errors must not include passwords, tokens, credentials, .env values, API keys, raw provider payloads, or hidden reasoning."
+    "Errors must not include passwords, tokens, credentials, .env values, API keys, raw provider payloads, or hidden reasoning.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Every non-health route must resolve ActorContext before business logic unless explicitly public by feature spec.",
@@ -75,7 +80,8 @@
     "python -m pytest tests/backend/api/test_ft001_session_routes.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Expose the FT-001 session API surface with stable safe errors and browser/PWA default session transport.",
   "success_outcome": "Clients can login, logout, and inspect the current safe session summary through FastAPI routes without leaking auth material.",
@@ -103,7 +109,8 @@
     "stop_conditions": [
       "Route behavior conflicts with FT-001 error contract.",
       "Cookie/session behavior cannot be verified without leaking token material.",
-      "Implementation requires FT-003 public route ownership."
+      "Implementation requires FT-003 public route ownership.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

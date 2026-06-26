@@ -102,6 +102,36 @@ Use the Feature Pressure Map in `.memory-bank/foundation.md` to decide the
 minimum task set. If the map is missing, stale, or not grounded in current
 features/specs, route back to `/spec-design`.
 
+## 2.1) Foundation scaffold spec links
+When `Foundation Required: true`, create or update the scaffold-level specs that
+define the walking-skeleton substrate, then link them from foundation tasks.
+Generate only the scaffold specs grounded in the Foundation Feature Pressure Map.
+
+Typical scaffold areas:
+- backend scaffold spec
+- DB/session/UoW/migration contract
+- local runtime/bootstrap runbook
+- redaction/evidence contract
+
+Rules:
+- Prefer existing owners under `.memory-bank/architecture/*`,
+  `.memory-bank/contracts/*`, `.memory-bank/domains/*`, `.memory-bank/testing/*`,
+  or `.memory-bank/runbooks/*`.
+- Do not create empty placeholder specs for scaffold areas that the foundation
+  path does not touch.
+- Foundation tasks must link scaffold specs through normal task fields when
+  those specs constrain the task: `source_artifacts`, `normative_inputs`,
+  `constraints`, `invariants`, or `verification_targets`.
+- Scaffold specs are reusable normative inputs for later T2/T3 product tasks.
+  They prove the selected substrate path; they must not define complete future
+  product APIs, domain behavior, state machines, or migrations by guessing.
+- When this command creates or materially updates scaffold specs, update
+  `.memory-bank/spec-index.md` as a registry only. Do not store decision bodies
+  in the index.
+- If the selected substrate requires an unresolved product/API/data/security
+  decision, stop and route back to `/spec-design` instead of creating weak
+  foundation tasks.
+
 ## 3) Create or update REQ-000 and FT-000
 When foundation is required:
 1. Add/update `REQ-000` in `.memory-bank/requirements.md`:
@@ -160,6 +190,9 @@ Task rules:
 - choose `tier` by `.memory-bank/workflows/tier-policy.md`
 - fill the normal task schema fields; use empty arrays only when no evidence
   exists
+- include scaffold-level spec links from section 2.1 when they exist and
+  constrain backend scaffold, DB/session/UoW/migration, runtime/bootstrap, or
+  redaction/evidence behavior
 - never add foundation-specific task fields or lifecycle values
 
 Brownfield `--verify-existing` mode should not create `FT-000` by default. If

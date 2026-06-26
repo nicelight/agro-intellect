@@ -14,11 +14,10 @@ status: active
   brownfield-refreshed against verified `FT-000` code/evidence.
 - Compact Foundation Dev Path is verified; see [.memory-bank/foundation.md](../foundation.md).
 - First-wave feature-local SDD specs exist and are complete for FT-001, FT-002, and FT-003; they are registered in [.memory-bank/spec-index.md](../spec-index.md).
-- `/prd-to-tasks FT-001` is complete; [.memory-bank/tasks/index.json](../tasks/index.json) contains completed compact `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
-- Because global specs/Foundation wording changed after FT-001 task generation,
-  existing FT-001 task records, implementation plan, behavior specs, and
-  packets are active planning context until `/prd-to-tasks FT-001` refreshes
-  them before review/execution.
+- `/prd-to-tasks FT-001` is complete and was refreshed on 2026-06-26; [.memory-bank/tasks/index.json](../tasks/index.json) contains completed compact `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
+- Existing FT-001 task records, implementation plan, behavior specs, and
+  packets are the current planning surface for `/review-tasks-plan FT-001`
+  before implementation.
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -58,12 +57,11 @@ status: active
 
 ## Recommended Next Step
 
-After this brownfield global SDD refresh, choose the next
-implementation-planning workflow:
+After the FT-001 task refresh, choose the next implementation-planning
+workflow:
 
 ```text
-/prd-to-tasks FT-001
-then /review-tasks-plan FT-001
+/review-tasks-plan FT-001
 then conditional /mb-doctor before tier-routed /execute TASK-005-T3-FT-001-W1
 ```
 

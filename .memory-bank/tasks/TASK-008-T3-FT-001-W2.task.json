@@ -57,13 +57,18 @@
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/domains/runtime-data-model.md",
     ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Every protected route/context-builder path must require ActorContext before business logic.",
     "The only MVP per-Plant permission override is plant_approve_actions.",
     "Do not add a general ACL engine or permission override matrix.",
-    "Do not implement FT-002 PlantAccessGrant persistence or mutation routes."
+    "Do not implement FT-002 PlantAccessGrant persistence or mutation routes.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Frontend hide/show is presentation only and never an authorization substitute.",
@@ -74,7 +79,8 @@
     "python -m pytest tests/backend/access_admin/test_ft001_actor_context.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Create the ActorContext and role/Plant permission boundary that later Farm/Plant routes and context builders must consume.",
   "success_outcome": "Protected backend paths can require a typed ActorContext and derive role/Plant permission decisions without duplicating FT-002 access rules.",
@@ -99,7 +105,8 @@
     "stop_conditions": [
       "ActorContext shape conflicts with FT-001 tech spec.",
       "Permission resolver requires unresolved FT-002 implementation decisions.",
-      "Consultant or missing-grant behavior cannot be proven fail-closed."
+      "Consultant or missing-grant behavior cannot be proven fail-closed.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

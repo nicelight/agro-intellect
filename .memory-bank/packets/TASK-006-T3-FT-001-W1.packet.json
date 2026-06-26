@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-006-T3-FT-001-W1-R1",
+  "packet_id": "PACKET-TASK-006-T3-FT-001-W1-R2",
   "task_id": "TASK-006-T3-FT-001-W1",
-  "created_at": "2026-06-25T23:18:37+05:00",
-  "source_task_hash": "sha256:5dd5e0e1e272de442e9fbc53eec5d948db2a238969272d7f2c804fb73930fda5",
+  "created_at": "2026-06-26T12:57:05+05:00",
+  "source_task_hash": "sha256:47a9159171e9eefaf384fef2eac33b3b10c1b5340b5fa726d79d295c647c2e1c",
   "status": "ready",
   "tier": "T3",
   "purpose": "Provide reusable credential and session-token primitives before implementing auth/session services and routes.",
@@ -22,7 +22,12 @@
       ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
       ".memory-bank/contracts/api-guidelines.md",
       ".memory-bank/invariants.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/spec-backbone.md",
+      ".memory-bank/foundation.md",
+      ".memory-bank/architecture/system-architecture.md",
+      ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
     "protocols": [
@@ -48,7 +53,8 @@
       "python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
-      "/red-verify semantic-pass"
+      "/red-verify semantic-pass",
+      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
     ],
     "success_checks": [
       "Password hashing and verification are one-way and do not store plaintext passwords.",
@@ -65,7 +71,8 @@
   "stop_conditions": [
     "A required test would expose real or generated secrets unredacted.",
     "A primitive requires storing raw session tokens.",
-    "Security behavior conflicts with FT-001 or API Guidelines."
+    "Security behavior conflicts with FT-001 or API Guidelines.",
+    "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],
   "required_handoff": [
     "changed_files",

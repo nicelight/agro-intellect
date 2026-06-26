@@ -53,12 +53,17 @@
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
     ".memory-bank/invariants.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Never log, return, or persist plaintext passwords or raw session tokens.",
     "Browser/PWA default session transport remains HTTP-only same-site cookie.",
-    "Do not introduce refresh tokens, OAuth, hosted recovery, or third-party identity."
+    "Do not introduce refresh tokens, OAuth, hosted recovery, or third-party identity.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Secrets/auth material must not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.",
@@ -68,7 +73,8 @@
     "python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Provide reusable credential and session-token primitives before implementing auth/session services and routes.",
   "success_outcome": "FT-001 services can issue and verify local credentials and sessions without leaking or persisting raw auth material.",
@@ -94,7 +100,8 @@
     "stop_conditions": [
       "A required test would expose real or generated secrets unredacted.",
       "A primitive requires storing raw session tokens.",
-      "Security behavior conflicts with FT-001 or API Guidelines."
+      "Security behavior conflicts with FT-001 or API Guidelines.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

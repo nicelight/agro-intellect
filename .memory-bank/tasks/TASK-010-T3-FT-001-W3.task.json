@@ -62,12 +62,17 @@
     ".memory-bank/contracts/message-envelope.md",
     ".memory-bank/contracts/api-guidelines.md",
     ".memory-bank/architecture/system-architecture.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Context builders must resolve ActorContext and PlantPermissionContext before returning events or scoped data.",
     "Agent Chat Bus context must include authorization_scope but not session/auth material.",
-    "Do not implement agent output publication, Bus event payload taxonomy, MessageEnvelope validation, or UI Feed projection."
+    "Do not implement agent output publication, Bus event payload taxonomy, MessageEnvelope validation, or UI Feed projection.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "UI Feed, raw chat, raw reasoning, admin notices, and unapproved Companion proposals never become agent working context.",
@@ -78,7 +83,8 @@
     "python -m pytest tests/backend/access_admin/test_ft001_context_builder_authz.py tests/backend/api/test_ft001_protected_route_authz.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Provide the reusable protected-route and context-builder seams that later product features must call before Farm/Plant data access.",
   "success_outcome": "Later routes and context builders can require ActorContext and produce safe authorization-scoped context without leaking auth material.",
@@ -105,7 +111,8 @@
     "stop_conditions": [
       "Context-builder authorization cannot be proven before data exposure.",
       "Auth material exclusion cannot be tested.",
-      "Implementation requires owning FT-007/FT-008 agent publication behavior."
+      "Implementation requires owning FT-007/FT-008 agent publication behavior.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

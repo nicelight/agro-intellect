@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-007-T3-FT-001-W2-R1",
+  "packet_id": "PACKET-TASK-007-T3-FT-001-W2-R2",
   "task_id": "TASK-007-T3-FT-001-W2",
-  "created_at": "2026-06-25T23:18:37+05:00",
-  "source_task_hash": "sha256:765bed115d00b32052aeaca45d3ab9163664aedc5928fbc6929dc8c238e66edd",
+  "created_at": "2026-06-26T12:57:05+05:00",
+  "source_task_hash": "sha256:42f17c151ecc6dc7d1413129b8da693c8f2f353d504f36e20e4455b909969939",
   "status": "ready",
   "tier": "T3",
   "purpose": "Implement the FT-001 local session lifecycle and the internal activation handoff primitive needed by FT-003.",
@@ -22,7 +22,13 @@
       ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
       ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
       ".memory-bank/contracts/api-guidelines.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/spec-backbone.md",
+      ".memory-bank/foundation.md",
+      ".memory-bank/architecture/system-architecture.md",
+      ".memory-bank/invariants.md",
+      ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
     "protocols": [
@@ -49,7 +55,8 @@
       "python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
-      "/red-verify semantic-pass"
+      "/red-verify semantic-pass",
+      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
     ],
     "success_checks": [
       "Login creates a new LocalSession and does not revive expired or revoked sessions.",
@@ -68,7 +75,8 @@
   "stop_conditions": [
     "Session lifecycle cannot be proven fail-closed.",
     "Implementation requires public FT-003 route ownership.",
-    "Raw auth material would enter persistence, logs, or evidence."
+    "Raw auth material would enter persistence, logs, or evidence.",
+    "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],
   "required_handoff": [
     "changed_files",

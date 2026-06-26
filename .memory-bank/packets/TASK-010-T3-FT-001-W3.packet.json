@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-010-T3-FT-001-W3-R1",
+  "packet_id": "PACKET-TASK-010-T3-FT-001-W3-R2",
   "task_id": "TASK-010-T3-FT-001-W3",
-  "created_at": "2026-06-25T23:18:37+05:00",
-  "source_task_hash": "sha256:23ca39f8a73acc2529b412baa240ce7cce599eabd4dc2bb86a4d0550668e5cf0",
+  "created_at": "2026-06-26T12:57:05+05:00",
+  "source_task_hash": "sha256:9ec3aed4f2a016a8ed77e5c192b8e0e8c68c9bd6b2530ed6e3f53790b5cdb2c1",
   "status": "ready",
   "tier": "T3",
   "purpose": "Provide the reusable protected-route and context-builder seams that later product features must call before Farm/Plant data access.",
@@ -24,7 +24,11 @@
       ".memory-bank/contracts/boundary-map.md",
       ".memory-bank/contracts/api-guidelines.md",
       ".memory-bank/architecture/system-architecture.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/spec-backbone.md",
+      ".memory-bank/foundation.md",
+      ".memory-bank/invariants.md",
+      ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
     "protocols": [
@@ -51,7 +55,8 @@
       "python -m pytest tests/backend/access_admin/test_ft001_context_builder_authz.py tests/backend/api/test_ft001_protected_route_authz.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
-      "/red-verify semantic-pass"
+      "/red-verify semantic-pass",
+      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
     ],
     "success_checks": [
       "Protected route dependency fails closed for missing, invalid, expired, pending, disabled, or membership-disabled sessions.",
@@ -70,7 +75,8 @@
   "stop_conditions": [
     "Context-builder authorization cannot be proven before data exposure.",
     "Auth material exclusion cannot be tested.",
-    "Implementation requires owning FT-007/FT-008 agent publication behavior."
+    "Implementation requires owning FT-007/FT-008 agent publication behavior.",
+    "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],
   "required_handoff": [
     "changed_files",

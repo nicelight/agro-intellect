@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-001
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-16
+last_updated: 2026-06-26
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
@@ -64,9 +64,12 @@ Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](..
 
 ## Task Decomposition
 
-Status: `/prd-to-tasks FT-001` completed on 2026-06-25.
+Status: `/prd-to-tasks FT-001` completed on 2026-06-25 and refreshed on
+2026-06-26 against the brownfield global SDD backbone.
 
 - Implementation plan: [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md).
 - Active task records: `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
 - Required packets: `.memory-bank/packets/TASK-005-T3-FT-001-W1.packet.json` through `.memory-bank/packets/TASK-011-T3-FT-001-W3.packet.json`.
+- Refresh result: no new feature-local or global spec was required; task records
+  and packets are the current planning surface for review.
 - Next gate: `/review-tasks-plan FT-001` before any FT-001 implementation.

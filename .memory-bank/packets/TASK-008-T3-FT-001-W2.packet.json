@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-008-T3-FT-001-W2-R1",
+  "packet_id": "PACKET-TASK-008-T3-FT-001-W2-R2",
   "task_id": "TASK-008-T3-FT-001-W2",
-  "created_at": "2026-06-25T23:18:37+05:00",
-  "source_task_hash": "sha256:508b8c7a866b74f61b8e64c0fc49995c61cfbca1e35ebbeb23587f446339a82f",
+  "created_at": "2026-06-26T12:57:05+05:00",
+  "source_task_hash": "sha256:39a380b98de02ec4a15d6398c36e95fe29139c2d27a4e8106c0db4c068282ed4",
   "status": "ready",
   "tier": "T3",
   "purpose": "Create the ActorContext and role/Plant permission boundary that later Farm/Plant routes and context builders must consume.",
@@ -24,7 +24,11 @@
       ".memory-bank/architecture/system-architecture.md",
       ".memory-bank/domains/runtime-data-model.md",
       ".memory-bank/contracts/api-guidelines.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/spec-backbone.md",
+      ".memory-bank/foundation.md",
+      ".memory-bank/invariants.md",
+      ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
     "protocols": [
@@ -49,7 +53,8 @@
       "python -m pytest tests/backend/access_admin/test_ft001_actor_context.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
-      "/red-verify semantic-pass"
+      "/red-verify semantic-pass",
+      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
     ],
     "success_checks": [
       "ActorContext resolves request_id, session, account, Farm, membership, role, auth provenance, and PlantPermissionContext resolver before business logic.",
@@ -68,7 +73,8 @@
   "stop_conditions": [
     "ActorContext shape conflicts with FT-001 tech spec.",
     "Permission resolver requires unresolved FT-002 implementation decisions.",
-    "Consultant or missing-grant behavior cannot be proven fail-closed."
+    "Consultant or missing-grant behavior cannot be proven fail-closed.",
+    "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],
   "required_handoff": [
     "changed_files",

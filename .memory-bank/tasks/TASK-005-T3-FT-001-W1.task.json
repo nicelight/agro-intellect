@@ -58,12 +58,17 @@
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/domains/runtime-data-model.md",
     ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Store only server-side token_hash for LocalSession; never persist raw session tokens.",
     "Use Account statuses pending_activation, active, disabled and FarmMembership statuses invited, active, disabled.",
-    "Do not create Farm, Plant, PlantAccessGrant, public invite, admin mutation, or AdminAuditRecord behavior in this task."
+    "Do not create Farm, Plant, PlantAccessGrant, public invite, admin mutation, or AdminAuditRecord behavior in this task.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "PostgreSQL/read model owns mutable Account, FarmMembership, and LocalSession state.",
@@ -73,7 +78,8 @@
     "python -m pytest tests/backend/access_admin/test_ft001_schema_migration.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Create the FT-001 persistence baseline for local identity, membership, and sessions without implementing adjacent product features.",
   "success_outcome": "Later FT-001 tasks can use stable Account, FarmMembership, and LocalSession records with enforced status/index/token-hash constraints.",
@@ -99,7 +105,8 @@
     "stop_conditions": [
       "Migration would require destructive database operations.",
       "Schema requires unresolved FT-002 or FT-003 ownership decisions.",
-      "Verification cannot prove token_hash-only session storage."
+      "Verification cannot prove token_hash-only session storage.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

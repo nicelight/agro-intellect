@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-009-T3-FT-001-W2-R1",
+  "packet_id": "PACKET-TASK-009-T3-FT-001-W2-R2",
   "task_id": "TASK-009-T3-FT-001-W2",
-  "created_at": "2026-06-25T23:18:37+05:00",
-  "source_task_hash": "sha256:4134a6c754333f6dea912d7362908f19531b2bbcee347debcde80c1e864ddba7",
+  "created_at": "2026-06-26T12:57:05+05:00",
+  "source_task_hash": "sha256:3dd3a187cda68f7b27b2265d4c0729d657de66ee8779dbe0fba7bdc0212cbed9",
   "status": "ready",
   "tier": "T3",
   "purpose": "Expose the FT-001 session API surface with stable safe errors and browser/PWA default session transport.",
@@ -22,7 +22,12 @@
       ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
       ".memory-bank/contracts/api-guidelines.md",
       ".memory-bank/architecture/system-architecture.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/spec-backbone.md",
+      ".memory-bank/foundation.md",
+      ".memory-bank/invariants.md",
+      ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
     "protocols": [
@@ -50,7 +55,8 @@
       "python -m pytest tests/backend/api/test_ft001_session_routes.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
-      "/red-verify semantic-pass"
+      "/red-verify semantic-pass",
+      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
     ],
     "success_checks": [
       "POST /api/session/login returns safe session summary and HTTP-only same-site session cookie on success.",
@@ -70,7 +76,8 @@
   "stop_conditions": [
     "Route behavior conflicts with FT-001 error contract.",
     "Cookie/session behavior cannot be verified without leaking token material.",
-    "Implementation requires FT-003 public route ownership."
+    "Implementation requires FT-003 public route ownership.",
+    "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],
   "required_handoff": [
     "changed_files",

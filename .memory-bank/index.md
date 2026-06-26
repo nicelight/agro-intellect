@@ -9,8 +9,9 @@ status: active
 The active Memory Bank is in MVP v2 post-PRD-decomposition,
 post-brownfield-global-SDD-backbone refresh, and post-Foundation state. Older
 generated first-wave product task artifacts were removed during rollback; the
-current FT-001 task queue was regenerated later and remains active planning
-context. The compact `FT-000` Foundation task queue is complete and verified.
+current FT-001 task queue was regenerated later and refreshed after the
+brownfield global SDD backbone update. The compact `FT-000` Foundation task
+queue is complete and verified.
 
 The MVP v1 spec-layer has been hard-archived under
 [.memory-bank/archive/mvp-v1/](archive/mvp-v1/): historical PRD, requirements,
@@ -24,15 +25,13 @@ architecture backbone is complete and brownfield-refreshed against verified
 FT-000 code/evidence. Feature-level `/spec-improve` is complete for
 FT-001, FT-002, and FT-003; their current normative feature designs are
 registered in [.memory-bank/spec-index.md](spec-index.md). `/prd-to-tasks FT-001`
-is complete with [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md),
+is complete and refreshed with [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md),
 behavior specs, required packets, and active task records
 `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`. The active task index
 also contains completed `FT-000` foundation tasks, and `TASK-000-T1-FT-000-W0`
 through `TASK-004-T2-FT-000-W0` are `done`. `REQ-000` and `FT-000` are verified
 by the final Foundation gate and W0 semantic red-verification.
-Because global specs/Foundation wording were refreshed after FT-001 task
-generation, FT-001 must route through `/prd-to-tasks FT-001` refresh before
-task-plan review and execution.
+The next FT-001 gate is `/review-tasks-plan FT-001` before task execution.
 Other product features should enter `/prd-to-tasks FT-<NNN>` when selected; that
 command owns feature-level SDD design before task slicing.
 
@@ -84,17 +83,14 @@ command owns feature-level SDD design before task slicing.
 Next route:
 
 ```text
-/prd-to-tasks FT-001
-then /review-tasks-plan FT-001
+/review-tasks-plan FT-001
 then conditional /mb-doctor before tier-routed /execute TASK-005-T3-FT-001-W1
 ```
 
 Foundation no longer blocks product tasking. The current FT-001 task records,
-implementation plan, behavior specs, and packets already exist, but they were
-generated before this brownfield global spec refresh. Run `/prd-to-tasks FT-001`
-as a refresh pass first so task/packet assumptions are realigned without
-starting implementation. Then run `/review-tasks-plan FT-001`, followed by
-conditional `/mb-doctor` for T3/packet readiness before executing
+implementation plan, behavior specs, and packets are refreshed against the
+2026-06-26 brownfield global SDD backbone. Run `/review-tasks-plan FT-001`,
+followed by conditional `/mb-doctor` for T3/packet readiness before executing
 `TASK-005-T3-FT-001-W1`. FT-002 and FT-003 already have current normative
 feature designs and may be decomposed later with
 `/prd-to-tasks FT-<NNN>` one feature at a time. For features outside

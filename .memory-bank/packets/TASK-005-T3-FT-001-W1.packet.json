@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-005-T3-FT-001-W1-R1",
+  "packet_id": "PACKET-TASK-005-T3-FT-001-W1-R2",
   "task_id": "TASK-005-T3-FT-001-W1",
-  "created_at": "2026-06-25T23:18:37+05:00",
-  "source_task_hash": "sha256:46581947574a870376708a4d00cfc2658f5ab0001440e2c4fd8b5089b2296621",
+  "created_at": "2026-06-26T12:57:05+05:00",
+  "source_task_hash": "sha256:b00cd1c2bee0dd3a06f329c7cf56bf7221466515182d257aba6445321de8d2e5",
   "status": "ready",
   "tier": "T3",
   "purpose": "Create the FT-001 persistence baseline for local identity, membership, and sessions without implementing adjacent product features.",
@@ -22,7 +22,11 @@
       ".memory-bank/architecture/system-architecture.md",
       ".memory-bank/domains/runtime-data-model.md",
       ".memory-bank/contracts/api-guidelines.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/spec-backbone.md",
+      ".memory-bank/invariants.md",
+      ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
     "protocols": [
@@ -48,7 +52,8 @@
       "python -m pytest tests/backend/access_admin/test_ft001_schema_migration.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
-      "/red-verify semantic-pass"
+      "/red-verify semantic-pass",
+      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
     ],
     "success_checks": [
       "Account, FarmMembership, and LocalSession records preserve the FT-001 field/status/index constraints.",
@@ -66,7 +71,8 @@
   "stop_conditions": [
     "Migration would require destructive database operations.",
     "Schema requires unresolved FT-002 or FT-003 ownership decisions.",
-    "Verification cannot prove token_hash-only session storage."
+    "Verification cannot prove token_hash-only session storage.",
+    "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],
   "required_handoff": [
     "changed_files",

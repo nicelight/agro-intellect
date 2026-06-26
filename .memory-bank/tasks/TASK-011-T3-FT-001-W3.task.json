@@ -21,7 +21,10 @@
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/requirements.md",
     ".memory-bank/changelog.md",
-    ".memory-bank/tasks/TASK-011-T3-FT-001-W3.task.json"
+    ".memory-bank/tasks/TASK-011-T3-FT-001-W3.task.json",
+    ".memory-bank/index.md",
+    ".memory-bank/features/index.md",
+    ".memory-bank/epics/EP-001-local-farm-access-admin.md"
   ],
   "tier": "T3",
   "gates": [
@@ -57,7 +60,10 @@
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/requirements.md",
     ".memory-bank/changelog.md",
-    ".memory-bank/tasks/plans/IMPL-FT-001.md"
+    ".memory-bank/tasks/plans/IMPL-FT-001.md",
+    ".memory-bank/index.md",
+    ".memory-bank/features/index.md",
+    ".memory-bank/epics/EP-001-local-farm-access-admin.md"
   ],
   "evidence_required": [
     "FT-001 test suite output",
@@ -82,12 +88,17 @@
     ".memory-bank/workflows/tier-policy.md",
     ".memory-bank/workflows/mb-sync.md",
     ".memory-bank/testing/index.md",
-    ".memory-bank/constitution.md"
+    ".memory-bank/constitution.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Do not close FT-002 or FT-003 from FT-001 evidence.",
     "Do not mark FT-001 verified before all FT-001 tasks are done and feature-level red-verification passes.",
-    "Record only reproducible safe evidence; redact secrets."
+    "Record only reproducible safe evidence; redact secrets.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Memory Bank is durable project knowledge and must be synchronized after meaningful changes.",
@@ -100,7 +111,8 @@
     "node scripts/mb-doctor.mjs",
     "git diff --check",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Provide one explicit FT-001 integration and documentation sync gate before feature-level completion review.",
   "success_outcome": "FT-001 task evidence is coherent, docs are synchronized, and the feature is ready for feature-level red-verification after all tasks close.",
@@ -118,7 +130,10 @@
       ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
       ".memory-bank/requirements.md",
       ".memory-bank/changelog.md",
-      ".memory-bank/tasks/TASK-011-T3-FT-001-W3.task.json"
+      ".memory-bank/tasks/TASK-011-T3-FT-001-W3.task.json",
+      ".memory-bank/index.md",
+      ".memory-bank/features/index.md",
+      ".memory-bank/epics/EP-001-local-farm-access-admin.md"
     ],
     "forbidden_scope": [
       "FT-002 or FT-003 closure",
@@ -129,7 +144,8 @@
       "Any FT-001 prerequisite task is not done.",
       "Any required gate fails.",
       "Evidence contains unredacted secrets or auth material.",
-      "Docs sync would imply FT-002 or FT-003 completion."
+      "Docs sync would imply FT-002 or FT-003 completion.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

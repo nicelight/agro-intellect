@@ -56,13 +56,19 @@
   ],
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/foundation.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/invariants.md",
+    ".memory-bank/contracts/boundary-map.md"
   ],
   "constraints": [
     "Default session TTL is 7 days from created_at.",
     "No refresh-token flow in MVP.",
     "FT-001 exposes only the internal credential/session primitive used by FT-003; it must not expose a public invite activation route.",
-    "Pending activation and invited membership cannot access normal Farm/Plant data."
+    "Pending activation and invited membership cannot access normal Farm/Plant data.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Missing, expired, revoked, malformed, or unknown session fails closed.",
@@ -73,7 +79,8 @@
     "python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
-    "/red-verify semantic-pass"
+    "/red-verify semantic-pass",
+    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
   ],
   "purpose": "Implement the FT-001 local session lifecycle and the internal activation handoff primitive needed by FT-003.",
   "success_outcome": "Local credentials and sessions can be issued, validated, revoked, and fail-closed against Account and FarmMembership status.",
@@ -100,7 +107,8 @@
     "stop_conditions": [
       "Session lifecycle cannot be proven fail-closed.",
       "Implementation requires public FT-003 route ownership.",
-      "Raw auth material would enter persistence, logs, or evidence."
+      "Raw auth material would enter persistence, logs, or evidence.",
+      "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]
   }
 }

@@ -60,7 +60,10 @@ status: active
 - Foundation decision: [.memory-bank/foundation.md](foundation.md) records `Foundation Required: true`, `Foundation Requirement: REQ-000`, `Foundation Pseudo-Feature: FT-000`, and `Foundation Gate Task: TASK-004-T2-FT-000-W0`.
 - Foundation scope: task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, local PostgreSQL init, Alembic migration baseline, DB session/UoW baseline, local runtime roots, redaction baseline, and final foundation gate.
 - Explicit non-scope: the old Bus -> Agent -> Message/UI -> Safety -> timeline/photo export critical path is not restored; those product boundaries remain in global contracts and feature-local specs.
-- Next command: none for Foundation. This brownfield refresh preserves verified FT-000 closure and found no new executable baseline gap. Because global specs and Foundation wording changed after FT-001 task generation, run `/prd-to-tasks FT-001` refresh before FT-001 task-plan review/execution.
+- Next command: none for Foundation. This brownfield refresh preserves verified
+  FT-000 closure and found no new executable baseline gap. `/prd-to-tasks
+  FT-001` refresh has been run against the updated global specs/Foundation
+  wording; run `/review-tasks-plan FT-001` before FT-001 execution.
 - Stop conditions: Foundation gate task missing, not indexed, not `done`, or product tasks without direct/transitive dependency on the final foundation gate.
 
 ## Handoff To /prd-to-tasks And /spec-improve Repair
@@ -79,4 +82,11 @@ status: active
   - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
-- Notes: Global AI-first architecture guardrails are complete for MVP v2 feature-level design. Brownfield-aware refresh on 2026-06-26 confirmed the verified FT-000 executable baseline remains sufficient and preserved its closure. Existing FT-001 task records, implementation plan, behavior specs, and packets are planning context until execution; route FT-001 through `/prd-to-tasks FT-001` refresh before `/review-tasks-plan FT-001` and implementation. Feature-local specs still own detailed schemas, state machines, API endpoints, and task-ready verification evidence.
+- Notes: Global AI-first architecture guardrails are complete for MVP v2
+  feature-level design. Brownfield-aware refresh on 2026-06-26 confirmed the
+  verified FT-000 executable baseline remains sufficient and preserved its
+  closure. FT-001 task records, implementation plan, behavior specs, and
+  packets were refreshed through `/prd-to-tasks FT-001`; run
+  `/review-tasks-plan FT-001` before implementation. Feature-local specs still
+  own detailed schemas, state machines, API endpoints, and task-ready
+  verification evidence.
