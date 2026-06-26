@@ -126,8 +126,10 @@ The PRD-level domain model includes:
 - `IssueStack`, `CompanionProposal`, `CompanionConclusion`, `HumanAttentionNeeded`, and `DecisionRecord`: Companion governance records scoped to a Plant in MVP.
 - Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
 
-Detailed schemas, payload fields, state machines, and event matrices belong to `/spec-design`
-and feature-level `/spec-improve`, not to this PRD.
+Detailed schemas, payload fields, state machines, and event matrices belong to
+global `/spec-design` and feature-level SDD design inside `/prd-to-tasks
+FT-<NNN>`, not to this PRD. Standalone `/spec-improve FT-<NNN>` remains a
+repair or advanced refresh route.
 
 ## UX / Interaction Flow
 

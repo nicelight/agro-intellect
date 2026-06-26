@@ -138,7 +138,8 @@ Do not add a general permission override matrix in MVP. The only per-Plant overr
 
 ## ActorContext
 
-Every non-health API route, protected domain service entrypoint, audit writer, and agent/context builder must resolve:
+Every protected product API route, protected domain service entrypoint, audit
+writer, and agent/context builder must resolve:
 
 - `request_id`
 - `session_id`
@@ -175,7 +176,7 @@ Permission derivation:
 | Engineer/Consultant missing or revoked grant | no | no | no | no | no | no |
 | Disabled account or membership | no | no | no | no | no | no |
 
-ActorContext must be created before business logic and must be present in audit records as account/membership/role references, not as session tokens or auth material.
+ActorContext must be created before business logic and must be present in audit records as account/membership/role references, not as session tokens or auth material. Service endpoints `/health` and `/ready`, plus explicitly public auth endpoints such as login/bootstrap endpoints, are exceptions; exceptions must not expose Farm/Plant data or auth material.
 
 ## Context Builder Rules
 

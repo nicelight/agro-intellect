@@ -3,7 +3,7 @@ description: Global MessageEnvelope contract boundary for MVP v2.
 status: active
 owner: architecture
 type: contract
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -15,6 +15,10 @@ source_of_truth:
 ## Scope
 
 MessageEnvelope is the structured boundary for publishable agent-originated output after project-owned runtime decision handling. It is not raw model output, hidden reasoning, provider history, or UI markup.
+
+The verified FT-000 executable baseline does not implement MessageEnvelope
+runtime code. This contract is a global guardrail for future product features;
+field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
 
 ## Runtime Decision
 

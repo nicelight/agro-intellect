@@ -2,7 +2,7 @@
 description: Testing and verification router for MVP v2 migration.
 status: active
 owner: quality
-last_updated: 2026-06-25
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -24,7 +24,7 @@ The active MVP v2 testing router has been rebuilt from the clarified PRD, `/prd`
 MVP v1 testing docs are archived under
 [.memory-bank/archive/mvp-v1/testing/](../archive/mvp-v1/testing/).
 
-Concrete endpoint schemas, DB migrations, state-machine fixtures, detailed event/message payloads, and executable test names still belong to feature-level `/spec-improve` and later task decomposition.
+Concrete endpoint schemas, DB migrations, state-machine fixtures, detailed event/message payloads, and executable test names still belong to feature-level SDD design inside `/prd-to-tasks` and later task decomposition. Standalone `/spec-improve` is reserved for repair or advanced refresh without task generation.
 
 ## Migration Gates
 
@@ -43,8 +43,8 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Memory Bank docs must pass `node scripts/mb-lint.mjs`.
 - Readiness before autonomous/task selection must pass `node scripts/mb-doctor.mjs`.
 - Diffs must pass `git diff --check`.
-- Product feature task decomposition must not start before global `/spec-design`, required Foundation closure, and the relevant `/spec-improve FT-<NNN>`.
-- Global `/spec-design` is complete; Foundation is closed and verified. Current product tasking gate is the relevant feature-level `/spec-improve FT-<NNN>` plus `/review-tasks-plan FT-<NNN>` before implementation.
+- Product feature task decomposition must not start before global `/spec-design`, required Foundation closure, and feature-level SDD design completion inside `/prd-to-tasks FT-<NNN>`.
+- Global `/spec-design` is complete; Foundation is closed and verified. Current product tasking gate is `/prd-to-tasks FT-<NNN>` followed by `/review-tasks-plan FT-<NNN>` before implementation.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
 
 ## Foundation Gate
@@ -56,7 +56,10 @@ final `FT-000` gate task.
 Foundation evidence must prove:
 
 - `task.schema.json`, `mb-lint`, and `mb-doctor` agree on `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`, `tier`, optional `runtime_context`, and `FT-000/W0` semantics.
-- Backend scaffold anchors exist for app factory, settings, route inclusion, bounded-context package layout, and tests.
+- Backend scaffold anchors exist for app factory, settings,
+  database/session helpers, app factory extension point for future route
+  registration, and tests proving import/start behavior; concrete product
+  modules/packages belong to owning feature tasks.
 - Linux Mint local bootstrap can create/use `.venv`, install project/test deps, prepare `.env` from `.env.example`, and verify Python/PostgreSQL tooling without printing secrets.
 - Local PostgreSQL init is idempotent and produces actionable redacted failures when local prerequisites are missing.
 - Alembic migration path can run against the configured local PostgreSQL database and is inspectable.

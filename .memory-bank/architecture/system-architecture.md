@@ -3,7 +3,7 @@ description: Global MVP v2 system architecture backbone and implementation guard
 status: active
 owner: architecture
 type: architecture
-last_updated: 2026-06-23
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -53,6 +53,22 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Verification: final Foundation evidence proves scaffold/bootstrap/DB gates and does not claim product acceptance for FT-001..FT-016.
 - Source: [.memory-bank/foundation.md](../foundation.md), [.memory-bank/features/index.md](../features/index.md).
 
+#### AD-003 - Brownfield baseline constrains contract refresh
+- Binds: `/spec-design` refresh, global contracts, Foundation sufficiency, and
+  downstream `/prd-to-tasks` refreshes.
+- Prevents: new global contracts silently contradicting verified FT-000 code,
+  executable baseline evidence, or current brownfield project shape.
+- Rule: verified FT-000 code/evidence is authoritative below Constitution and
+  explicit user decisions, but above older speculative specs and generated task
+  assumptions. If a refreshed contract differs from verified code, align the
+  contract to code, record a required migration/fix route, or block downstream
+  work when a safe contract cannot be written.
+- Verification: `/spec-design` handoff reports Foundation sufficiency and any
+  downstream feature task refresh route before execution.
+- Source: [.memory-bank/foundation.md](../foundation.md),
+  `.memory-bank/tasks/TASK-004-T2-FT-000-W0.task.json`,
+  `.protocols/FT-000/red-verification-W0.md`, and current backend source.
+
 ## Architecture Style
 
 Use a local modular monolith:
@@ -76,7 +92,7 @@ Design-time precedence:
 4. Authoritative contracts/specs.
 5. PRD, requirements, epics, and features.
 6. User scenarios and pre-PRD hints.
-7. Task records.
+7. Task records and generated packets/plans as planning context.
 8. Agent assumptions.
 
 Runtime authority:
@@ -144,12 +160,20 @@ flowchart LR
 - JSONL timeline stores append-only audit/export events and refs.
 - Secrets/auth material are never persisted into logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.
 
-Detailed table/field layouts belong to [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md) and feature-level `/spec-improve`.
+Detailed table/field layouts belong to
+[.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md)
+and feature-level SDD design inside `/prd-to-tasks FT-<NNN>`. Standalone
+`/spec-improve FT-<NNN>` is a repair or advanced refresh route, not the default
+task-generation gate.
 
 ## API / Contract Boundaries
 
 - HTTP API is FastAPI/Pydantic-style JSON plus multipart upload where needed.
-- Every non-health route resolves ActorContext before business logic.
+- Every protected product endpoint resolves ActorContext before business logic,
+  especially endpoints that read or mutate Farm/Plant data. Service endpoints
+  `/health` and `/ready`, plus explicitly public auth endpoints such as login
+  or bootstrap endpoints defined by feature specs, are exceptions; exceptions
+  must not expose Farm/Plant data and must follow no-leak/redaction rules.
 - API errors use stable machine-readable codes and redacted messages.
 - Generated OpenAPI may come from backend schemas later; no hand-written OpenAPI is the global source of truth at this stage.
 - Agent Chat Bus and MessageEnvelope are separate contracts from HTTP API and UI Feed.
@@ -200,6 +224,12 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 
 ## Open Questions
 
-No global blocker remains for `/spec-improve`.
+No global blocker remains after the brownfield-aware `/spec-design --all`
+refresh.
 
-Feature-local specs must still define exact auth/session lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope fields, Bus/UI projections, photo storage layout, state machines, freshness windows, action taxonomy, provider configuration, and UI route/view details before task decomposition.
+Feature-level SDD design inside `/prd-to-tasks FT-<NNN>` must still define exact
+auth/session lifecycle, route schemas, DB migrations, event payloads,
+MessageEnvelope fields, Bus/UI projections, photo storage layout, state
+machines, freshness windows, action taxonomy, provider configuration, and UI
+route/view details before task slicing. Use standalone `/spec-improve FT-<NNN>`
+only for repair or advanced refresh when no task generation should occur.

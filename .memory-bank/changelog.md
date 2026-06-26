@@ -4,6 +4,68 @@ status: active
 ---
 # Changelog
 
+## [2026-06-26] /spec-design review repair
+- Repaired overbroad ActorContext wording after brownfield review.
+- Clarified that protected product endpoints must resolve ActorContext before
+  business logic, while `/health`, `/ready`, and explicitly public auth
+  endpoints such as login/bootstrap endpoints are exceptions that must not
+  expose Farm/Plant data or auth material.
+- Replaced Foundation `route registration convention` wording with an app
+  factory extension point for future route registration; owning feature tasks
+  establish concrete product route registration.
+- Updated global contracts, runtime data model, Foundation wording, and the
+  FT-001 feature design/implementation-plan wording; did not edit task records
+  or packets.
+- Swept remaining active routing docs after the brownfield refresh so
+  `analysis`, `testing`, `FT-000`, `EP-001`, `skills`, `glossary`, and PRD
+  handoff language point to `/prd-to-tasks FT-001` refresh and no longer claim
+  product route/module anchors from the verified FT-000 baseline.
+- Added protocol notes so PRD bootstrap and FT-001 planning artifacts do not
+  send execution directly from stale pre-refresh task assumptions.
+
+## [2026-06-26] /spec-design --all brownfield refresh
+- Ran `/spec-design --all` as a brownfield-aware global SDD backbone refresh.
+- Read verified FT-000 evidence and current backend code before changing global
+  contracts; preserved `FT-000`/`TASK-004-T2-FT-000-W0` closure because no real
+  executable baseline gap was found.
+- Added explicit brownfield precedence in the global architecture: verified code
+  and FT-000 evidence constrain refreshed contracts below Constitution/user
+  decisions and above older speculative specs or generated task assumptions.
+- Refreshed global SDD routing so `/prd-to-tasks FT-<NNN>` owns feature-level
+  SDD design before task slicing, while `/spec-improve FT-<NNN>` remains
+  repair/advanced refresh without task generation.
+- Corrected Foundation wording so FT-000 proves shared app/settings/database,
+  bootstrap, readiness, runtime-root, and redaction anchors, but does not claim
+  product module/package anchors that current code has not created.
+- Routed existing FT-001 generated tasks/packets through `/prd-to-tasks FT-001`
+  refresh before `/review-tasks-plan FT-001` and implementation.
+- Did not create or edit product task records, packets, implementation plans, or
+  feature-local FT tech specs.
+
+## [2026-06-26] /prd refresh check
+- Ran `/prd` refresh check against the updated command contract after the
+  `/spec-init` refresh passed.
+- Confirmed PRD frontmatter, Constitution gate, pre-PRD framing gate, and pure
+  `spec-index` gate are valid for L1-L3 decomposition.
+- Kept the existing 6 epic / 16 product feature decomposition plus reserved
+  `FT-000` Foundation pseudo-feature; no product scope, REQ IDs, task records,
+  implementation plans, packets, or feature-local tech specs were created.
+- Refreshed routing text in derived PRD artifacts so `/prd-to-tasks FT-<NNN>`
+  owns feature-level SDD design before task slicing, while standalone
+  `/spec-improve FT-<NNN>` remains repair/advanced refresh only.
+- Next workflow focus is `/spec-design --all` for global/shared SDD refresh.
+
+## [2026-06-26] /spec-init refresh check
+- Ran `/spec-init` refresh check against the updated command contract.
+- Confirmed active PRD and pre-PRD framing artifacts still cover actors,
+  scenarios, domain, constraints, non-goals, risks, boundary hints, and
+  lifecycle hints sufficiently for `/prd` decomposition.
+- Updated [.memory-bank/spec-backbone.md](spec-backbone.md) `Pre-PRD Spec Status`
+  timestamp and notes; no new pre-PRD specs, feature docs, task records, or
+  implementation plans were created.
+- Next workflow focus remains `/prd` refresh check, then `/spec-design --all`
+  for global/shared SDD gaps.
+
 ## [2026-06-25] FT-001 task decomposition
 - Ran `/prd-to-tasks FT-001` after verified Foundation closure.
 - Added [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md) and `.protocols/FT-001/` planning notes.

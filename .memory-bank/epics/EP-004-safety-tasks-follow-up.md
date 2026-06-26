@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-004
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -40,8 +40,10 @@ Make physical-action advice safe and accountable by requiring freshness, Safety 
 - Human approval unlocks only human-performed action tracking.
 - No pumps, dosing, pH/EC correction, light-control command, autowatering, or automated actuation in MVP.
 
-## Feature-Local Questions For /spec-improve
+## Feature-Local Design Pressure
 
 - Exact action taxonomy and freshness windows.
 - Exact pending approval and action-task state model.
 - Exact replay/staleness prevention rules.
+
+These are resolved by feature-level SDD design inside `/prd-to-tasks FT-011..FT-012`; use standalone `/spec-improve` only for repair or advanced refresh.

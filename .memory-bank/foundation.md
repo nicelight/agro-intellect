@@ -2,7 +2,7 @@
 description: Foundation Dev Path evidence and feature pressure map.
 status: active
 owner: architecture
-last_updated: 2026-06-25
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
@@ -27,9 +27,9 @@ Foundation is required before product feature tasking.
 Reason: the current backend scaffold proves basic FastAPI app creation, settings,
 SQLAlchemy handle, Alembic config construction, and pytest fixtures. Product
 feature work still needs a shared executable baseline for task record shape,
-backend package layout, Linux Mint local bootstrap, PostgreSQL database creation,
-migration execution, DB readiness, transaction boundaries, local artifact roots,
-and redaction defaults. Without those anchors, FT-001..FT-003 can still interpret
+backend layout conventions, Linux Mint local bootstrap, PostgreSQL database
+creation, migration execution, DB readiness, transaction boundaries, local
+artifact roots, and redaction defaults. Without those anchors, FT-001..FT-003 can still interpret
 session tables, migrations, bootstrap steps, and local runtime paths differently.
 
 This Foundation intentionally does not restore the old broad critical path
@@ -54,6 +54,9 @@ were created by `/foundation-to-tasks`. The final foundation gate is
 - Product tasking is unblocked for features with completed feature-level SDD
   designs. Foundation remains platform evidence only and does not close product
   features.
+- Brownfield refresh on 2026-06-26 found no real contradiction or missing
+  executable baseline gap. Verified FT-000 history and closure remain preserved;
+  no new Foundation task is required by this `/spec-design --all` pass.
 
 ## Minimal Work Path
 - Build command: `python -m pip install -e ".[test]"`
@@ -69,13 +72,13 @@ were created by `/foundation-to-tasks`. The final foundation gate is
 
 ## Foundation Work Packages
 
-`/foundation-to-tasks` should create the smallest FT-000 queue that implements
-or verifies these packages.
+`/foundation-to-tasks` created the smallest FT-000 queue that implements or
+verifies these packages.
 
 | Package | Required outcome | Product boundary |
 |---|---|---|
 | Task schema/protocol alignment | `task.schema.json`, `mb-lint`, and `mb-doctor` agree on `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`, `tier`, optional `runtime_context`, and `FT-000/W0` semantics. | Does not create product tasks. |
-| Backend scaffold anchors | Backend has stable app factory, settings, route include pattern, bounded-context package anchors, and tests proving import/start behavior. | Does not implement auth/session, Plant lifecycle, admin UI, agents, or safety behavior. |
+| Backend scaffold anchors | Backend has stable app factory, settings, database/session helpers, app factory extension point for future route registration, and tests proving import/start behavior. | Product feature modules/packages are created by owning feature tasks; Foundation does not implement auth/session, Plant lifecycle, admin UI, agents, or safety behavior. |
 | Linux Mint local bootstrap | Bash bootstrap sets up `.venv`, installs project/test deps, prepares `.env` from `.env.example` without printing secrets, and verifies Python/PostgreSQL tooling. | Does not require Docker or hosted services. |
 | Local PostgreSQL init | Bash DB init creates or verifies local database/user for `DATABASE_URL` on Linux Mint, with idempotent behavior and redacted output. | Does not create product domain rows. |
 | Migration baseline | Alembic command path can run against local PostgreSQL and test SQLite where appropriate; migration status is inspectable. | Product tables belong to feature tasks. |
@@ -88,19 +91,19 @@ or verifies these packages.
 
 | Feature | Pressure | Foundation Response | Probe | Status |
 |---|---|---|---|---|
-| FT-001 | Accounts/sessions need stable table/migration/session conventions before implementation. | Provide DB session/UoW, migration baseline, settings, redaction helper, and access-admin package anchor. | FT-001 task can add tables without inventing bootstrap or session infrastructure. | planned |
-| FT-002 | Farm/Plant lifecycle needs the same PostgreSQL/Alembic path and package layout. | Provide migration command path and runtime-state/access package anchors. | FT-002 task can add Plant tables and seeds through the common migration path. | planned |
-| FT-003 | Boss admin/audit needs safe bootstrap, redaction, and route/module conventions. | Provide admin package anchor, route include pattern, redacted error/bootstrap evidence. | Admin task uses the shared app factory and audit persistence path. | planned |
+| FT-001 | Accounts/sessions need stable table/migration/session conventions before implementation. | Provide DB session/UoW, migration baseline, settings, redaction helper, and app package anchors; FT-001 creates the access-admin module/package and concrete route registration. | FT-001 task can add tables without inventing bootstrap or session infrastructure. | planned |
+| FT-002 | Farm/Plant lifecycle needs the same PostgreSQL/Alembic path and product package extension point. | Provide migration command path and app package anchors; FT-002 defines concrete product module/package structure. | FT-002 task can add Plant tables and seeds through the common migration path. | planned |
+| FT-003 | Boss admin/audit needs safe bootstrap, redaction, and route/module conventions. | Provide stable app factory and redacted bootstrap/error evidence; owning feature tasks establish concrete product route registration and create admin/access modules. | Admin task uses the shared app factory and audit persistence path. | planned |
 | FT-004 | Daily check-in needs local runtime DB/session path. | Provide DB readiness and transaction-test baseline only. | Feature owns check-in schema and API. | planned |
 | FT-005 | Photo intake needs local artifact root conventions. | Provide settings for local data/artifact roots only. | Feature owns photo storage layout, catalog, manifests, and checksums. | planned |
 | FT-006 | Runtime state/timeline needs clear authority boundaries. | Provide PostgreSQL as runtime authority and timeline root placeholder. | Feature owns timeline event taxonomy and history projections. | planned |
-| FT-007 | Agent runtime needs package and settings boundaries. | Provide agent-runtime package anchor and redaction baseline. | Feature owns real model adapter/runtime decisions. | planned |
-| FT-008 | Bus/UI split needs package boundaries, not implementation here. | Provide package anchors only; global contracts remain authoritative. | Feature owns Bus/UI schema and context filtering. | planned |
-| FT-009 | Vision path needs artifact root and agent-runtime anchor. | Provide storage/settings anchor only. | Feature owns real vision integration. | planned |
-| FT-010 | Advisor needs agent-runtime package and redaction defaults. | Provide package/settings anchor only. | Feature owns missing-data policy and Safety Gate handoff. | planned |
-| FT-011 | Safety Gate needs package boundary and fail-closed defaults. | Provide safety package anchor only. | Feature owns action taxonomy and approval routing. | planned |
+| FT-007 | Agent runtime needs package and settings boundaries. | Provide settings boundary and redaction baseline; feature tasks create agent-runtime modules. | Feature owns real model adapter/runtime decisions. | planned |
+| FT-008 | Bus/UI split needs package boundaries, not implementation here. | Provide app layout and app factory extension point for future route registration only; global contracts remain authoritative. | Feature owns Bus/UI schema and context filtering. | planned |
+| FT-009 | Vision path needs artifact root and agent-runtime boundary. | Provide storage/settings boundary only. | Feature owns real vision integration. | planned |
+| FT-010 | Advisor needs agent-runtime boundary and redaction defaults. | Provide settings/redaction boundary only. | Feature owns missing-data policy and Safety Gate handoff. | planned |
+| FT-011 | Safety Gate needs module boundary and fail-closed defaults. | Provide global safety rules only; owning feature tasks create safety modules. | Feature owns action taxonomy and approval routing. | planned |
 | FT-012 | Tasks/outcomes need DB/migration/session path. | Provide DB/UoW baseline only. | Feature owns task/approval/outcome states. | planned |
-| FT-013 | Companion governance needs DB/migration and package anchor. | Provide governance package anchor only if task slicing needs it. | Feature owns proposal/decision state machine. | planned |
+| FT-013 | Companion governance needs DB/migration and module boundary. | Provide governance boundary only if task slicing needs it. | Feature owns proposal/decision state machine. | planned |
 | FT-014 | Dataset governance needs local roots and redaction defaults. | Provide local data root and `local_only` settings. | Feature owns dataset lifecycle and trainability. | planned |
 | FT-015 | Local security/storage depends on bootstrap and redaction. | Provide Linux Mint bootstrap, local-only settings, and redaction baseline. | Feature owns LAN/storage prompt policy. | planned |
 | FT-016 | PWA first demo depends on backend being startable. | Provide backend start/readiness path only. | Feature owns UI route/view implementation. | planned |
@@ -112,7 +115,7 @@ or verifies these packages.
 | Product auth/session schema | FT-001 already owns exact local account/session lifecycle and route contracts. | `/prd-to-tasks FT-001`. |
 | Single Farm and `tomato_001` seed implementation | FT-002 owns product seed semantics. Foundation only proves DB/migration capability. | `/prd-to-tasks FT-002`. |
 | Admin invite/audit tables | FT-003 owns admin domain records and audit semantics. | `/prd-to-tasks FT-003`. |
-| Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | `/spec-improve` or `/prd-to-tasks FT-005/FT-006`. |
+| Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | `/prd-to-tasks FT-005/FT-006`; use `/spec-improve` only for repair or advanced refresh. |
 | Agent/provider configuration | MVP runtime requires real model-backed flows, but provider secrets/config must not be invented in Foundation. | `/prd-to-tasks FT-007` or explicit provider decision. |
 | Frontend scaffold | Backend/local DB foundation is the immediate blocker; UI belongs to FT-016. | `/prd-to-tasks FT-016`. |
 | Docker-based database path | User target is local Linux Mint. Docker may be optional later, not required by Foundation. | Explicit operator request or deployment spec update. |

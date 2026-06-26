@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-002
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -42,8 +42,10 @@ Make authorized Plant care workflows useful and traceable while preserving the s
 - Photo files and manifests are local artifacts, not mutable runtime authority.
 - Secrets/auth material never enter timeline, manifests, screenshots, exports, Bus, UI Feed, or agent context.
 
-## Feature-Local Questions For /spec-improve
+## Feature-Local Design Pressure
 
 - Exact storage layout and manifest fields.
 - Exact timeline event taxonomy.
 - Exact daily check-in state model and persistence sequence.
+
+These are resolved by feature-level SDD design inside `/prd-to-tasks FT-004..FT-006`; use standalone `/spec-improve` only for repair or advanced refresh.

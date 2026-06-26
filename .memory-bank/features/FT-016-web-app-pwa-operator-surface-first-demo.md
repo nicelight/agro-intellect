@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-016
 epic: EP-006
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -49,4 +49,4 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/spec-improve FT-016` to define exact route/view set, API dependency map, role-aware UI behavior, first-demo smoke flow, and e2e checks before `/prd-to-tasks FT-016`.
+Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-016`; it must define exact route/view set, API dependency map, role-aware UI behavior, first-demo smoke flow, and e2e checks during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-016` only for repair or advanced refresh without task generation.

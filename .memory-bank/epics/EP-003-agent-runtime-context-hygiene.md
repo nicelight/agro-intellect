@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-003
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -43,8 +43,10 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 - Raw reasoning, provider history, UI Feed, spoiler notes, raw chat, and unapproved Companion proposals never enter agent working context.
 - Agent hypotheses cannot become confirmed Plant state without human review or follow-up evidence.
 
-## Feature-Local Questions For /spec-improve
+## Feature-Local Design Pressure
 
 - Exact MessageEnvelope, BusEventEnvelope, and UIFeedEvent contracts.
 - Exact adapter validation and runtime decision flow.
 - Exact agent context-builder filters and anti-cheat verification.
+
+These are resolved by feature-level SDD design inside `/prd-to-tasks FT-007..FT-010`; use standalone `/spec-improve` only for repair or advanced refresh.

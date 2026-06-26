@@ -2,7 +2,7 @@
 description: Active contract router for MVP v2.
 status: active
 owner: architecture
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -18,4 +18,8 @@ source_of_truth:
 
 ## Routing
 
-Detailed endpoint schemas, event payloads, message fields, and state-machine contracts belong to feature-level `/spec-improve FT-<NNN>` unless they become shared enough to promote into this folder.
+Detailed endpoint schemas, event payloads, message fields, and state-machine
+contracts belong to feature-level SDD design inside `/prd-to-tasks FT-<NNN>`
+unless they become shared enough to promote into this folder. Standalone
+`/spec-improve FT-<NNN>` is a repair or advanced refresh route without task
+generation.

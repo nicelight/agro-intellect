@@ -3,7 +3,7 @@ description: Global runtime data authority model for MVP v2.
 status: active
 owner: architecture
 type: domain
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -14,7 +14,20 @@ source_of_truth:
 
 ## Scope
 
-This document defines global runtime authority and entity ownership for MVP v2. It is not a database schema, migration plan, or field catalog. Concrete tables, columns, indexes, and migrations belong to feature-local `/spec-improve` and task decomposition.
+This document defines global runtime authority and entity ownership for MVP v2.
+It is not a database schema, migration plan, or field catalog. Concrete tables,
+columns, indexes, and migrations belong to feature-level SDD design inside
+`/prd-to-tasks FT-<NNN>` and the resulting task decomposition. Standalone
+`/spec-improve FT-<NNN>` is reserved for repair or advanced refresh without task
+generation.
+
+## Brownfield Baseline
+
+Verified FT-000 code/evidence currently proves the shared backend app factory,
+settings, database/session helper, Alembic command path, local bootstrap,
+runtime-root settings, `/health`, `/ready`, and redaction baseline. It does not
+implement product Account, FarmMembership, Plant, task, photo, agent, Safety
+Gate, governance, or UI projection schemas.
 
 ## Authority Layers
 
@@ -44,7 +57,10 @@ This document defines global runtime authority and entity ownership for MVP v2. 
 ## Runtime Invariants
 
 - Every Farm/Plant mutable record is scoped to the single local Farm and, when relevant, Plant.
-- Every read/mutation/context-builder path has ActorContext before business logic.
+- Every protected product read, mutation, and context-builder path has
+  ActorContext before business logic. Service health/readiness endpoints and
+  explicitly public auth endpoints are not runtime authority and must not expose
+  Farm/Plant data.
 - Plant archive removes the Plant from normal operations but does not delete history, photos, tasks, outcomes, timeline, or admin audit.
 - Photo files/manifests can be referenced by runtime records but cannot override runtime state.
 - Timeline events can reference runtime records but cannot become mutable state authority.

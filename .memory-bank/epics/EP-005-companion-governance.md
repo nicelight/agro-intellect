@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-005
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -39,8 +39,10 @@ Let Companion coordinate Plant-scoped discussion and workflow direction through 
 - Farm-level issue governance and separate Farm-level chat are deferred.
 - Raw proposal text, rationale, UI markdown, and chat discussion stay non-consumable by agents.
 
-## Feature-Local Questions For /spec-improve
+## Feature-Local Design Pressure
 
 - Exact proposal/decision state machine.
 - Exact allowed workflow-effect catalog.
 - Exact compact approved governance summary schema.
+
+These are resolved by feature-level SDD design inside `/prd-to-tasks FT-013`; use standalone `/spec-improve` only for repair or advanced refresh.

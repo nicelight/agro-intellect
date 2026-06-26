@@ -52,8 +52,10 @@ needed by later Farm/Plant, admin, and agent-context features.
 
 - Store only server-side session token hashes; never persist raw session tokens.
 - Use HTTP-only same-site cookie transport by default for browser/PWA sessions.
-- Every non-health protected route and context-builder path must resolve
-  ActorContext before business logic.
+- Every protected product route and context-builder path must resolve
+  ActorContext before business logic. Service endpoints `/health` and `/ready`,
+  plus explicitly public auth endpoints such as login/bootstrap endpoints, are
+  exceptions and must not expose Farm/Plant data or auth material.
 - Authorization failures must fail closed and avoid leaking unauthorized Plant
   existence.
 - Do not implement FT-002 Plant lifecycle, FT-002 PlantAccessGrant mutation
@@ -143,4 +145,3 @@ TASK-004-T2-FT-000-W0
    session expiry summary.
 5. Consultant ActorContext cannot operate, create domain tasks, approve
    physical actions, or leak auth material into context-builder output.
-

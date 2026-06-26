@@ -3,7 +3,7 @@ description: Global Agent Chat Bus contract boundary for MVP v2.
 status: active
 owner: architecture
 type: contract
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -15,6 +15,10 @@ source_of_truth:
 ## Scope
 
 Agent Chat Bus is the domain-owned working event stream for agent-consumable context. It is not Agno memory, not UI Feed, not timeline replay, and not a replacement for PostgreSQL/read-model runtime authority.
+
+The verified FT-000 executable baseline does not implement Agent Chat Bus
+runtime code. This contract is a global guardrail for future product features;
+field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
 
 ## Publication Rule
 

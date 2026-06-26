@@ -1,14 +1,14 @@
 ---
 description: Active MVP v2 epic router.
 status: active
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
 ---
 # Epics Index
 
-Active MVP v2 epics are draft L2 decomposition artifacts derived from the clarified PRD. They are not implementation plans and do not replace `/spec-improve`.
+Active MVP v2 epics are draft L2 decomposition artifacts derived from the clarified PRD. They are not implementation plans and do not replace feature-level SDD design inside `/prd-to-tasks`.
 
 ## Active Epics
 
@@ -21,6 +21,6 @@ Active MVP v2 epics are draft L2 decomposition artifacts derived from the clarif
 
 ## Routing
 
-Global `/spec-design` gate is complete.
+Global `/spec-design` gate is complete, and the next workflow pass may refresh it for expanded SDD coverage.
 
-Run `/spec-improve FT-<NNN>` before `/prd-to-tasks FT-<NNN>`.
+Run `/prd-to-tasks FT-<NNN>` for product feature tasking. That command owns feature-level SDD design before task slicing; use standalone `/spec-improve FT-<NNN>` only for repair or advanced refresh without generating tasks.

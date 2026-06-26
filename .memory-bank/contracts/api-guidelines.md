@@ -3,7 +3,7 @@ description: Global HTTP/API guardrails for MVP v2.
 status: active
 owner: architecture
 type: contract
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -13,7 +13,17 @@ source_of_truth:
 
 ## Scope
 
-This document defines global HTTP/API guardrails. It does not define endpoint-by-endpoint schemas. Concrete route contracts belong to feature-level `/spec-improve` and later FastAPI/Pydantic schemas.
+This document defines global HTTP/API guardrails. It does not define
+endpoint-by-endpoint schemas. Concrete route contracts belong to feature-level
+SDD design inside `/prd-to-tasks FT-<NNN>` and later FastAPI/Pydantic schemas.
+Standalone `/spec-improve FT-<NNN>` is reserved for repair or advanced refresh
+without task generation.
+
+## Brownfield Baseline
+
+The verified FT-000 executable baseline exposes only `/health` and `/ready` as
+runtime routes. The route groups below are global guardrails for future product
+features, not evidence that those product routes already exist.
 
 ## API Style
 
@@ -40,7 +50,12 @@ Exact path names are feature-local design work.
 
 ## ActorContext And Authorization
 
-- Every non-health route must resolve ActorContext before business logic.
+- Every protected product endpoint must resolve ActorContext before business
+  logic, especially endpoints that read or mutate Farm/Plant data.
+- Service endpoints `/health` and `/ready`, plus explicitly public auth
+  endpoints such as login/bootstrap endpoints defined by feature specs, are
+  exceptions. Exceptions must not expose Farm/Plant data and must follow
+  no-leak/redaction rules.
 - Every Farm/Plant route must enforce backend authorization using FarmMembership, role preset, PlantAccessGrant, and optional `plant_approve_actions`.
 - Frontend hide/show is never an authorization substitute.
 - Context builders follow the same authorization rules as user-facing reads.
@@ -66,4 +81,6 @@ Exact path names are feature-local design work.
 ## Compatibility
 
 - MVP can evolve quickly, but breaking changes must be synchronized across API consumers, tests, and Memory Bank docs.
-- Feature-local `/spec-improve` decides versioning only when a boundary needs it.
+- Feature-level SDD design inside `/prd-to-tasks FT-<NNN>` decides versioning
+  only when a boundary needs it. Standalone `/spec-improve` may repair that
+  decision without generating tasks.

@@ -11,8 +11,8 @@ status: active
 - Bootstrap: cold-start / mb-init
 - Optional Analysis: mb-analysis, then /analysis /brainstorm /brief when the idea is not ready for PRD
 - Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial
-- PRD → MB: /write-prd, /spec-init, /prd, /spec-design, /spec-improve FT-<NNN>, then /prd-to-tasks FT-<NNN>
-- SDD design: /spec-init for route map, /spec-design for global/backbone design, /spec-improve FT-<NNN> for manual feature design, /spec-auto for autonomous feature design
+- PRD -> MB: /write-prd, /spec-init, /prd, /spec-design, then /prd-to-tasks FT-<NNN>; use /spec-improve FT-<NNN> only for repair or advanced refresh
+- SDD design: /spec-init for route map, /spec-design for global/backbone design, /prd-to-tasks FT-<NNN> for feature-level design before task slicing, /spec-improve FT-<NNN> for repair/advanced refresh, /spec-auto for autonomous feature design
 - Map codebase: /map-codebase
 - Execution: /execute
 - Verification (UAT): /verify

@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-006
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -42,8 +42,10 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 - No full dataset registry or real fine-tuning in MVP.
 - Web App/PWA is the first product surface.
 
-## Feature-Local Questions For /spec-improve
+## Feature-Local Design Pressure
 
 - Exact local storage accounting.
 - Exact UI route/view set and PWA/offline boundary.
 - Exact LAN/CORS/session control shape.
+
+These are resolved by feature-level SDD design inside `/prd-to-tasks FT-014..FT-016`; use standalone `/spec-improve` only for repair or advanced refresh.

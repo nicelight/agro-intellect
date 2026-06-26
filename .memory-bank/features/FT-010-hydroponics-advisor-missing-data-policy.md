@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-010
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -48,4 +48,4 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/spec-improve FT-010` to define exact advisor inputs, freshness policy, output contract, task handoff, Safety Gate handoff, and tests before `/prd-to-tasks FT-010`.
+Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-010`; it must define exact advisor inputs, freshness policy, output contract, task handoff, Safety Gate handoff, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-010` only for repair or advanced refresh without task generation.

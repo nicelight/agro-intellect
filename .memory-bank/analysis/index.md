@@ -10,10 +10,15 @@ status: active
 - The previous MVP v1 spec-layer is archived under [.memory-bank/archive/mvp-v1/](../archive/mvp-v1/).
 - Active MVP v2 PRD exists at [.memory-bank/prd.md](../prd.md) with `clarification_status: complete`.
 - Active MVP v2 product, requirements, epics, and features exist as draft L1-L3 artifacts derived by `/prd`.
-- Active MVP v2 global architecture backbone exists and is complete.
-- Compact Foundation Dev Path is required before product feature tasking; see [.memory-bank/foundation.md](../foundation.md).
+- Active MVP v2 global architecture backbone exists, is complete, and has been
+  brownfield-refreshed against verified `FT-000` code/evidence.
+- Compact Foundation Dev Path is verified; see [.memory-bank/foundation.md](../foundation.md).
 - First-wave feature-local SDD specs exist and are complete for FT-001, FT-002, and FT-003; they are registered in [.memory-bank/spec-index.md](../spec-index.md).
-- Generated first-wave product task-decomposition artifacts have been intentionally removed; [.memory-bank/tasks/index.json](../tasks/index.json) now contains only compact `FT-000` Foundation tasks.
+- `/prd-to-tasks FT-001` is complete; [.memory-bank/tasks/index.json](../tasks/index.json) contains completed compact `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
+- Because global specs/Foundation wording changed after FT-001 task generation,
+  existing FT-001 task records, implementation plan, behavior specs, and
+  packets are active planning context until `/prd-to-tasks FT-001` refreshes
+  them before review/execution.
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -27,7 +32,7 @@ status: active
 - [.memory-bank/epics/index.md](../epics/index.md): active MVP v2 epic router.
 - [.memory-bank/features/index.md](../features/index.md): active MVP v2 feature router.
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): active global architecture backbone.
-- [.memory-bank/foundation.md](../foundation.md): compact Foundation Dev Path for task schema/protocol alignment, backend scaffold anchors, Linux Mint bootstrap, local PostgreSQL init, migration baseline, local runtime roots, and redaction baseline.
+- [.memory-bank/foundation.md](../foundation.md): compact Foundation Dev Path for task schema/protocol alignment, app factory/settings/database anchors, Linux Mint bootstrap, local PostgreSQL init, migration baseline, local runtime roots, and redaction baseline.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): active runtime authority model.
 - [.memory-bank/contracts/index.md](../contracts/index.md): active contract router.
 - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md): current normative feature design for local accounts, sessions, and ActorContext.
@@ -53,11 +58,18 @@ status: active
 
 ## Recommended Next Step
 
-After explicit user instruction, choose the next implementation-planning workflow:
+After this brownfield global SDD refresh, choose the next
+implementation-planning workflow:
 
 ```text
-node scripts/mb-doctor.mjs, then execute/verify FT-000 until TASK-004-T2-FT-000-W0 is done
+/prd-to-tasks FT-001
+then /review-tasks-plan FT-001
+then conditional /mb-doctor before tier-routed /execute TASK-005-T3-FT-001-W1
 ```
+
+Run `/foundation-to-tasks` only if a later refresh discovers a real new
+Foundation executable-baseline gap. The current refresh preserves verified
+FT-000 closure.
 
 ## Closed PRD Clarifications
 

@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-009
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-06-14
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -48,4 +48,4 @@ source_of_truth:
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/spec-improve FT-009` to define exact vision input refs, observation schema, trust statuses, promotion gates, contradiction handling, and tests before `/prd-to-tasks FT-009`.
+Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-009`; it must define exact vision input refs, observation schema, trust statuses, promotion gates, contradiction handling, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-009` only for repair or advanced refresh without task generation.

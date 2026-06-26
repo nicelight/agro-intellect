@@ -35,8 +35,10 @@ semantics.
 
 - Task schema/protocol tooling accepts `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` records,
   `tier`, optional `runtime_context`, and `FT-000/W0` semantics.
-- Backend scaffold anchors exist for app factory, settings, route inclusion,
-  bounded-context package layout, and tests.
+- Backend scaffold anchors exist for app factory, settings, database/session
+  helpers, app factory extension point for future route registration, and tests
+  proving import/start behavior; concrete product modules/packages belong to
+  owning feature tasks.
 - Linux Mint local bootstrap and PostgreSQL init paths are documented,
   idempotent, and redact secrets.
 - Alembic migration baseline and DB readiness checks are executable.
