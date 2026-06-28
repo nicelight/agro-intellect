@@ -9,6 +9,10 @@ source_of_truth:
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/contracts/agent-chat-bus.md
+  - .memory-bank/contracts/ui-feed.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/plant-state-trust.md
 ---
 # MessageEnvelope
 
@@ -19,6 +23,23 @@ MessageEnvelope is the structured boundary for publishable agent-originated outp
 The verified FT-000 executable baseline does not implement MessageEnvelope
 runtime code. This contract is a global guardrail for future product features;
 field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
+
+## Ownership
+
+- Owns: project-owned publishable agent-output boundary, runtime decision
+  categories, envelope minimum, forbidden content, claim/safety rules, and
+  Bus/UI projection handoff.
+- Does not own: raw provider messages, hidden reasoning, model prompt history,
+  concrete adapter implementation, UI component payloads, or final Plant state.
+- Related specs:
+  - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): owns
+    agent-consumable event publication.
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human presentation
+    projection.
+  - [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md):
+    owns physical-action approval lifecycle.
+  - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md):
+    owns Plant state promotion rules.
 
 ## Runtime Decision
 
@@ -66,6 +87,8 @@ MessageEnvelope must not contain:
 - Agent hypotheses cannot become confirmed Plant state without human review or follow-up evidence.
 - Any physical-action implication must set a Safety Gate route before display/action tracking.
 - `requires_human_approval=true` does not itself authorize action.
+- `confidence` is advisory metadata only; it cannot replace evidence refs,
+  human review, Safety Gate, or backend authorization.
 
 ## Bus And UI Projection
 

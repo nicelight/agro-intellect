@@ -45,7 +45,9 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Bus/UI module boundary.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): agent-consumable event stream rules.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): MessageEnvelope projection boundary.
+- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): global presentation-only UI Feed contract.
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs that cannot publish directly to Bus.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-008`; it must define exact Bus/UI contracts, context-builder filters, event projection rules, and anti-cheat verification during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-008` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-008`; it must define exact Bus/UI contracts, context-builder filters, UI Feed projection rules, event payloads, and anti-cheat verification during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-008` only for repair or advanced refresh without task generation.

@@ -46,7 +46,10 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Operator PWA module and first-demo data flow.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): frontend/backend authorization boundary.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md) and [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): UI Feed projection and context hygiene boundaries.
+- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): human-facing presentation boundary.
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs shown in history.
+- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md), [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md), [.memory-bank/states/companion-governance.md](../states/companion-governance.md), and [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md): first-demo state surfaces.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-016`; it must define exact route/view set, API dependency map, role-aware UI behavior, first-demo smoke flow, and e2e checks during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-016` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-016`; it must define exact route/view set, API dependency map, role-aware UI behavior, first-demo smoke flow, UI Feed projections, and e2e checks during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-016` only for repair or advanced refresh without task generation.

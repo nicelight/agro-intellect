@@ -9,22 +9,37 @@ source_of_truth:
 ---
 # Features Index
 
-Active MVP v2 features are draft L3 decomposition artifacts. Global `/spec-design`
-is complete and was brownfield-refreshed on 2026-06-26 against verified FT-000
-code/evidence.
+Active MVP v2 features are draft L3 decomposition artifacts. Global
+`/spec-design` is complete, was brownfield-refreshed on 2026-06-26 against
+verified FT-000 code/evidence, and was refreshed again on 2026-06-26 for
+expanded shared SDD contract/state coverage.
 
 Compact Foundation Dev Path is complete and verified; see [.memory-bank/foundation.md](../foundation.md). Product `/prd-to-tasks` is unblocked for features that already have completed feature-level SDD designs.
 
 First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
 
 `/prd-to-tasks FT-001` is complete and was refreshed on 2026-06-26 against the
-brownfield global SDD backbone. The active [.memory-bank/tasks/index.json](../tasks/index.json)
+brownfield global SDD backbone and then against the expanded `/prd-to-tasks`
+concrete contract readiness protocol. The active [.memory-bank/tasks/index.json](../tasks/index.json)
 queue contains completed `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1`
-through `TASK-011-T3-FT-001-W3`. Next gate is `/review-tasks-plan FT-001`
-before implementation. Generated product task-decomposition artifacts for
+through `TASK-011-T3-FT-001-W3`. The latest refresh linked the FT-001 tech spec,
+implementation plan, task records, and packets to current Foundation
+runtime/data substrate, evidence-redaction, and testing owners without creating
+new tasks. A later standalone `/spec-improve FT-001` repair closed concrete
+security primitive, cookie transport, and PlantPermissionContext ownership
+gaps; `/prd-to-tasks FT-001` refreshed `TASK-006` through `TASK-011` and their
+packets against those contracts. The next gate is `/review-tasks-plan FT-001`
+before implementation.
+Generated product task-decomposition artifacts for
 FT-002 and FT-003 remain intentionally removed.
 
 Other product features should enter `/prd-to-tasks FT-<NNN>` when selected. `/prd-to-tasks` owns the feature-level SDD design phase before task slicing; use standalone `/spec-improve FT-<NNN>` only for repair or advanced refresh without task generation.
+
+Shared global SDD owners now include UI Feed, timeline audit/export, photo
+artifacts, Plant state trust, Safety action lifecycle, Companion governance,
+and dataset governance through [.memory-bank/spec-index.md](../spec-index.md).
+Feature-level design must link these owners when a feature touches the relevant
+boundary.
 
 ## Foundation Pseudo-Feature
 
@@ -32,7 +47,7 @@ Other product features should enter `/prd-to-tasks FT-<NNN>` when selected. `/pr
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/spec-improve` and refreshed `/prd-to-tasks` complete; current normative feature design is [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md), implementation plan is [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md), and active tasks are `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`. Next gate is `/review-tasks-plan FT-001`.
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/spec-improve` and refreshed `/prd-to-tasks` are complete, with a later `/spec-improve` repair and `/prd-to-tasks FT-001` task/packet refresh on 2026-06-26; current normative feature design is [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md), implementation plan is [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md), and active tasks are `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`; next gate is `/review-tasks-plan FT-001`.
 - [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md).
 - [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md).
 

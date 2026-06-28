@@ -4,6 +4,127 @@ status: active
 ---
 # Changelog
 
+## [2026-06-28] /prd-to-tasks FT-001 targeted TASK-005 relational refresh
+- Updated only `TASK-005-T3-FT-001-W1` and its canonical packet for native UUID
+  identity, exact nullability/timestamps, DB domain checks, normalized login
+  uniqueness, non-cascading Account FKs, deferred Farm FK ownership, exact
+  indexes, and PostgreSQL evidence targets.
+- Preserved the task ID, T3 tier, W1 dependency on the completed Foundation
+  gate, implementation write scope, and queue ordering.
+- Updated feature/implementation/protocol handoff notes. No new task, behavior
+  spec, runtime code, migration, or changes to `TASK-006` through `TASK-011`
+  and their packets were made.
+- Next gate: `/review-tasks-plan FT-001`, then conditional `/mb-doctor` before
+  `TASK-005` execution.
+
+## [2026-06-28] /spec-improve FT-001 relational storage repair
+- Added a shared PostgreSQL native UUID/Python `uuid.UUID` identity contract
+  with application UUIDv4 generation and non-cascading authority relations to
+  Runtime Data Model.
+- Completed the authoritative TASK-005 relational schema for `accounts`,
+  `farm_memberships`, and `local_sessions`: exact types/nullability/timestamps,
+  string-domain checks, active-account password invariant, normalized login
+  uniqueness, required Account FKs, and exact indexes.
+- Kept `farm_memberships.farm_id` required but temporarily without FK so FT-001
+  does not create the FT-002-owned Farm authority. FT-002 now owns deterministic
+  zero/one/multiple-ID reconciliation and final `ON DELETE RESTRICT` FK closure.
+- No runtime code, migrations, task records, packets, or new spec files were
+  created. Next route is targeted `/prd-to-tasks FT-001` for `TASK-005` and its
+  packet, then `/review-tasks-plan FT-001`.
+
+## [2026-06-27] /spec-improve FT-001 KISS storage repair
+- Added only the security-derived `TASK-005` storage contract needed before the
+  first FT-001 migration: unbounded Argon2id PHC `password_hash`, exact
+  64-character lowercase SHA-256 `token_hash`, nullability/status rules, unique
+  lookup behavior, raw-token prohibition, edge cases, and verification targets.
+- Reconciled FT-001 with FT-003 invite revocation: an Account disabled before
+  activation may have `password_hash=null`, while every active Account requires
+  a credential.
+- Did not add broader identifier/timestamp schemas, API DTO, event, callable
+  interface, runtime code, migration, task-record, or packet decisions.
+- Next route: `/prd-to-tasks FT-001` refreshes the existing `TASK-005` record and
+  packet, followed by `/review-tasks-plan FT-001`.
+
+## [2026-06-26] /prd-to-tasks FT-001 task-card refresh after spec repair
+- Refreshed existing FT-001 task cards and packets after `/spec-improve FT-001`
+  closed concrete security primitive, cookie/session transport, and
+  PlantPermissionContext ownership gaps.
+- Updated `TASK-006-T3-FT-001-W1` to own `argon2-cffi` Argon2id dependency,
+  256-bit opaque session tokens, SHA-256 `token_hash`, constant-time digest
+  comparison, and related evidence.
+- Updated `TASK-007-T3-FT-001-W2`, `TASK-008-T3-FT-001-W2`,
+  `TASK-009-T3-FT-001-W2`, `TASK-010-T3-FT-001-W3`, and
+  `TASK-011-T3-FT-001-W3` for session lifecycle, exact cookie transport,
+  PlantPermissionContext compatibility, denial filtering, and integration
+  evidence.
+- Left `TASK-005-T3-FT-001-W1` unchanged because no schema-level column,
+  nullability, index, or migration constraint changed.
+- Refreshed required FT-001 packets, implementation plan, feature protocol, and
+  routing docs. No new task records, behavior specs, runtime code, migrations,
+  or FT-002/FT-003 product tasks were created.
+
+## [2026-06-26] /spec-improve FT-001 finding repair
+- Evaluated the three `todo.md` FT-001 findings as objective against the
+  current FT-001/FT-002 specs and T3 task requirements.
+- Updated [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md)
+  with concrete Argon2id/password, opaque session token, `token_hash`,
+  constant-time verification, cookie transport, bearer-mode, and verification
+  targets.
+- Updated [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](tech-specs/FT-002-farm-plant-lifecycle-access-grants.md)
+  with explicit Ownership and canonical concrete PlantPermissionContext
+  resolver semantics aligned to the FT-001 interface envelope.
+- Refreshed routing docs so the next FT-001 step is rerun
+  `/prd-to-tasks FT-001`, then `/review-tasks-plan FT-001`; no task records,
+  packets, implementation plan, runtime code, DB migrations, or dependencies
+  were changed in this repair.
+
+## [2026-06-26] /prd-to-tasks FT-001 expanded protocol refresh
+- Reran the FT-001 planning surface through the expanded `/prd-to-tasks`
+  protocol without creating new task records.
+- Added explicit ownership and concrete contract readiness routing to
+  [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md).
+- Refreshed [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md),
+  `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`, and their required
+  packets to link current Foundation runtime/data substrate,
+  evidence-redaction, and testing owners.
+- Confirmed the FT-001 queue shape, statuses, and dependencies are unchanged;
+  next gate remains `/review-tasks-plan FT-001`.
+
+## [2026-06-26] Foundation post-hoc audit remediation
+- Clarified FT-000 local command wording so pytest, install, and uvicorn checks
+  use the project `.venv` created by `scripts/bootstrap-local.sh`.
+- Updated completed FT-000 task metadata and required packet spec refs to link
+  the new Foundation substrate specs: runtime substrate, smoke API, data
+  substrate, test harness, local runtime runbook, and evidence redaction.
+- Refreshed FT-000 required packet revisions and `source_task_hash` values after
+  task metadata link updates.
+
+## [2026-06-26] /foundation-to-tasks substrate spec audit
+- Ran the updated `/foundation-to-tasks` substrate spec audit against the
+  already verified FT-000 Foundation baseline and current backend code.
+- Added scaffold-level SDD owners for Foundation runtime shape, smoke API,
+  DB/session/Alembic/runtime roots, test harness, local runtime runbook, and
+  evidence redaction.
+- Registered the new owners in `.memory-bank/spec-index.md` and linked them
+  from Foundation, FT-000, backbone, architecture, contracts, domains, testing,
+  and Memory Bank navigation.
+- Did not create or edit task records, packets, implementation plans, backend
+  code, product schemas, generated OpenAPI, or feature-local `FT-*` tech specs.
+
+## [2026-06-26] /spec-design expanded shared SDD refresh
+- Reran global `/spec-design` after strengthening shared SDD formation rules.
+- Kept the backbone status `complete`, corrected the mode to
+  `standard_architecture_scaffold`, and preserved the verified FT-000
+  Foundation closure.
+- Added shared global SDD owners for UI Feed, timeline audit/export, photo
+  artifacts, Plant state trust, Safety action lifecycle, Companion governance,
+  and dataset governance.
+- Updated existing API, Agent Chat Bus, MessageEnvelope, runtime data,
+  architecture, testing, spec registry, backbone, feature routing, and Memory
+  Bank navigation docs to link the new owners.
+- Did not create product task records, implementation plans, packets, generated
+  OpenAPI, DB migrations, or feature-local `FT-*` tech specs.
+
 ## [2026-06-26] /prd-to-tasks FT-001 refresh
 - Refreshed the existing FT-001 task planning surface against the brownfield
   global SDD backbone, verified FT-000 Foundation evidence, and current

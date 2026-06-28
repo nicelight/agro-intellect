@@ -11,6 +11,12 @@ source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/requirements.md
   - .memory-bank/spec-backbone.md
+  - .memory-bank/architecture/foundation-runtime-substrate.md
+  - .memory-bank/domains/foundation-data-substrate.md
+  - .memory-bank/contracts/foundation-smoke-api.md
+  - .memory-bank/contracts/evidence-redaction.md
+  - .memory-bank/testing/foundation-test-harness.md
+  - .memory-bank/runbooks/foundation-local-runtime.md
   - .memory-bank/workflows/tier-policy.md
 ---
 # FT-000 Foundation Dev Path
@@ -59,14 +65,14 @@ semantics.
 
 ## Verification Targets
 
-- `python -m pip install -e ".[test]"`
 - `bash scripts/bootstrap-local.sh`
+- `.venv/bin/python -m pip install -e ".[test]"`
 - `bash scripts/db-init-local.sh`
 - `bash scripts/db-migrate-local.sh`
-- `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`
+- `.venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`
 - `/health`, `/ready`, DB ping, migration status, rollback-safe test session,
   local data root availability.
-- `python -m pytest tests`
+- `.venv/bin/python -m pytest tests`
 - `node scripts/mb-lint.mjs`
 - `node scripts/mb-doctor.mjs`
 - `git diff --check`
@@ -79,8 +85,20 @@ semantics.
   protocol, packet, and FT-000 rules.
 - [.memory-bank/schemas/task.schema.json](../schemas/task.schema.json): current
   task record schema.
+- [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md):
+  Foundation runtime shape and app factory boundary.
+- [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md):
+  DB/session/Alembic/runtime-root substrate.
+- [.memory-bank/contracts/foundation-smoke-api.md](../contracts/foundation-smoke-api.md):
+  `/health` and `/ready` contract.
+- [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md):
+  Foundation evidence/log redaction contract.
 - [.memory-bank/testing/index.md](../testing/index.md): Foundation gate
   verification surface.
+- [.memory-bank/testing/foundation-test-harness.md](../testing/foundation-test-harness.md):
+  Foundation harness, smoke targets, fixtures, and evidence requirements.
+- [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md):
+  local setup/start/smoke runbook.
 
 ## SDD Design Gate
 

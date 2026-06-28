@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-009-T3-FT-001-W2-R2",
+  "packet_id": "PACKET-TASK-009-T3-FT-001-W2-R4",
   "task_id": "TASK-009-T3-FT-001-W2",
-  "created_at": "2026-06-26T12:57:05+05:00",
-  "source_task_hash": "sha256:3dd3a187cda68f7b27b2265d4c0729d657de66ee8779dbe0fba7bdc0212cbed9",
+  "created_at": "2026-06-26T22:07:46+05:00",
+  "source_task_hash": "sha256:601480aa40d50eb0ce4824a6acb50e1cc6dfde6b93b3f808118790420f161905",
   "status": "ready",
   "tier": "T3",
   "purpose": "Expose the FT-001 session API surface with stable safe errors and browser/PWA default session transport.",
@@ -21,12 +21,17 @@
       ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
       ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
       ".memory-bank/contracts/api-guidelines.md",
+      ".memory-bank/contracts/evidence-redaction.md",
+      ".memory-bank/contracts/foundation-smoke-api.md",
       ".memory-bank/architecture/system-architecture.md",
       ".memory-bank/workflows/tier-policy.md",
       ".memory-bank/spec-backbone.md",
       ".memory-bank/foundation.md",
       ".memory-bank/invariants.md",
       ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/architecture/foundation-runtime-substrate.md",
+      ".memory-bank/domains/foundation-data-substrate.md",
+      ".memory-bank/testing/index.md",
       ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
@@ -56,26 +61,35 @@
       "node scripts/mb-lint.mjs",
       "/verify PASS",
       "/red-verify semantic-pass",
-      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+      "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+      "Check FT-001 session route registration preserves Foundation Smoke API /health and /ready behavior.",
+      "Check login Set-Cookie uses agro_intellect_session with HttpOnly, SameSite=Lax, Path=/, Max-Age=604800, Expires aligned with session_expires_at, and correct Secure behavior for loopback versus HTTPS.",
+      "Check logout clears agro_intellect_session with matching name/path/samesite/secure mode, Max-Age=0, expired Expires, and idempotent 204 behavior for missing or invalid sessions.",
+      "Check bearer mode, if implemented, returns a raw token only once through the allowed non-browser/LAN boundary, emits no cookie, sets no-store cache behavior, and persists only token_hash.",
+      "Check session API errors match the FT-001 Error Contract and API Guidelines without leaking auth material."
     ],
     "success_checks": [
-      "POST /api/session/login returns safe session summary and HTTP-only same-site session cookie on success.",
+      "POST /api/session/login returns safe session summary and sets the browser/PWA cookie named agro_intellect_session with HttpOnly, SameSite=Lax, Path=/, Max-Age=604800, Expires aligned to session_expires_at, and Secure behavior matching FT-001 loopback/HTTPS rules.",
       "Invalid login returns generic AUTH_CREDENTIAL_INVALID without account enumeration.",
-      "POST /api/session/logout revokes/clears current session and is idempotent for missing or invalid sessions.",
+      "POST /api/session/logout revokes/clears current session and is idempotent for missing or invalid sessions, clearing agro_intellect_session with matching name/path/samesite/secure mode, Max-Age=0, and an expired Expires value.",
       "GET /api/session/me returns safe actor/session summary without auth material.",
+      "Explicit bearer mode, when implemented, emits no session cookie, returns the raw token only once through the allowed non-browser/LAN response boundary, and still persists only token_hash.",
       "Validation and auth errors use stable codes and redacted safe messages.",
       "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
     ],
     "evidence_required": [
       "session API route test output",
-      "HTTP-only same-site cookie evidence",
+      "Set-Cookie evidence for agro_intellect_session name, HttpOnly, SameSite=Lax, Path=/, Max-Age=604800, Expires/session_expires_at alignment, and loopback versus HTTPS Secure behavior",
+      "logout clear-cookie evidence for agro_intellect_session with Max-Age=0, expired Expires, and idempotent missing/invalid session behavior",
+      "bearer-mode boundary evidence when bearer mode is implemented, including no-cookie emission and token_hash-only persistence",
       "no-leak error response evidence",
       "T3 verify/red-verify/human/recovery evidence"
     ]
   },
   "stop_conditions": [
     "Route behavior conflicts with FT-001 error contract.",
-    "Cookie/session behavior cannot be verified without leaking token material.",
+    "Cookie attributes, clear-cookie behavior, or bearer-mode boundaries cannot be verified without leaking token material.",
+    "Browser/PWA session response includes the raw token outside the cookie transport.",
     "Implementation requires FT-003 public route ownership.",
     "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
   ],

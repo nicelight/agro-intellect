@@ -47,7 +47,10 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Companion Governance module and authority boundary.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): governance record ownership.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): approved governance summary consumability rules.
+- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): human-facing Companion projection rules.
+- [.memory-bank/states/companion-governance.md](../states/companion-governance.md): IssueStack/proposal/DecisionRecord lifecycle boundary.
+- [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): governance approval separation from physical-action approval.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-013`; it must define exact IssueStack/proposal/decision state machines, workflow-effect catalog, approved summary schema, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-013` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-013`; it must define exact IssueStack/proposal/decision state machines, workflow-effect catalog, approved summary schema, UI projection behavior, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-013` only for repair or advanced refresh without task generation.

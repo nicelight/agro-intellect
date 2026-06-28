@@ -44,8 +44,10 @@ source_of_truth:
 
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): real model/vision integration and Plant state authority boundaries.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Plant state authority and evidence refs.
+- [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md): authorized local photo artifact input refs.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): observation/hypothesis output boundary.
+- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): trust status and promotion guardrails.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-009`; it must define exact vision input refs, observation schema, trust statuses, promotion gates, contradiction handling, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-009` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-009`; it must define exact vision input refs, observation schema, trust statuses, promotion gates, contradiction handling, real vision/provider configuration, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-009` only for repair or advanced refresh without task generation.

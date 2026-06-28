@@ -46,7 +46,9 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Safety & Task Loop boundaries and no-actuation rule.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): physical-action implication and Safety Gate route fields.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): authorization, errors, and safety route API guardrails.
+- [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): global Safety Gate and physical-action lifecycle boundary.
+- [.memory-bank/states/companion-governance.md](../states/companion-governance.md): DecisionRecord separation from Safety Gate approval.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-011`; it must define exact action taxonomy, freshness rules, Safety Gate decision contract, approval routing, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-011` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-011`; it must define exact action taxonomy, freshness rules, Safety Gate decision contract, approval routing, replay/stale handling, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-011` only for repair or advanced refresh without task generation.

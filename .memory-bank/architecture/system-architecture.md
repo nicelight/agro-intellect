@@ -9,6 +9,14 @@ source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
+  - .memory-bank/architecture/foundation-runtime-substrate.md
+  - .memory-bank/contracts/foundation-smoke-api.md
+  - .memory-bank/domains/foundation-data-substrate.md
+  - .memory-bank/contracts/evidence-redaction.md
+  - .memory-bank/contracts/ui-feed.md
+  - .memory-bank/contracts/timeline-event.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/dataset-governance.md
 ---
 # System Architecture
 
@@ -51,7 +59,10 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Prevents: broad upfront implementation of auth, Plant lifecycle, admin, photo, agent, safety, UI Feed, dataset, or first-demo product behavior inside Foundation.
 - Rule: Foundation may implement task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, PostgreSQL init, migration baseline, DB readiness/session helpers, local runtime roots, and redaction baseline; product schemas and state machines stay in their owning feature tasks.
 - Verification: final Foundation evidence proves scaffold/bootstrap/DB gates and does not claim product acceptance for FT-001..FT-016.
-- Source: [.memory-bank/foundation.md](../foundation.md), [.memory-bank/features/index.md](../features/index.md).
+- Source: [.memory-bank/foundation.md](../foundation.md),
+  [.memory-bank/architecture/foundation-runtime-substrate.md](foundation-runtime-substrate.md),
+  [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md),
+  [.memory-bank/features/index.md](../features/index.md).
 
 #### AD-003 - Brownfield baseline constrains contract refresh
 - Binds: `/spec-design` refresh, global contracts, Foundation sufficiency, and
@@ -68,6 +79,54 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Source: [.memory-bank/foundation.md](../foundation.md),
   `.memory-bank/tasks/TASK-004-T2-FT-000-W0.task.json`,
   `.protocols/FT-000/red-verification-W0.md`, and current backend source.
+
+#### AD-004 - Presentation and audit projections are not authority
+- Binds: UI Feed, timeline audit/export, Agent Chat Bus context builders,
+  MessageEnvelope projection, Plant history, and first-demo UI work.
+- Prevents: UI cards, timeline replay, admin notices, raw chat, raw provider
+  output, or presentation summaries becoming runtime truth or agent working
+  context.
+- Rule: UI Feed is human presentation only, `timeline.jsonl` is append-only
+  audit/export only, and neither layer may publish directly to Agent Chat Bus or
+  mutate PostgreSQL/read-model state.
+- Verification: tests prove UI Feed/timeline content is excluded from agent
+  context, cannot mutate runtime state, and remains filtered by ActorContext and
+  PlantAccessGrant.
+- Source: [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md),
+  [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md),
+  [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md).
+
+#### AD-005 - Physical-action approval is a separate safety lifecycle
+- Binds: Hydroponics Advisor, Safety Gate, human approval, action tasks,
+  follow-up outcomes, Companion governance, UI prompts, and MessageEnvelope
+  safety routing.
+- Prevents: DecisionRecord approval, UI prompt display, MessageEnvelope flags,
+  or Bus publication from being treated as Safety Gate approval or action-task
+  unlock.
+- Rule: physical-action wording can become cleared user-visible action wording
+  or a human-performed action task only after fresh evidence, Safety Gate pass,
+  authorized human approval, and task/action tracking exist.
+- Verification: tests prove Boss/Engineer/Consultant approval rules, no
+  automated actuation, governance-vs-safety separation, and replay/stale
+  approval blocking.
+- Source: [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md),
+  [.memory-bank/states/companion-governance.md](../states/companion-governance.md),
+  [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md).
+
+#### AD-006 - Dataset trainability is evidence-gated state
+- Binds: photo artifacts, measurements, follow-up outcomes, agent observations,
+  timeline/export refs, dataset fields, and first-demo dataset display.
+- Prevents: UI Feed, timeline snapshots, manifests, raw agent output, or raw
+  Companion content from making data trainable by implication.
+- Rule: dataset candidates are non-trainable by default; any future
+  trainability transition must be explicit, evidence-referenced, Plant-scoped,
+  and owned by dataset governance.
+- Verification: tests prove new candidates default to `can_train_on=false`,
+  evidence refs are required, unauthorized context is excluded, and no MVP path
+  performs fine-tuning or server upload.
+- Source: [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md),
+  [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md),
+  [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md).
 
 ## Architecture Style
 
@@ -99,9 +158,13 @@ Runtime authority:
 
 - PostgreSQL/read model owns mutable operational state.
 - Local photo files and manifests own file/artifact identity only.
-- `timeline.jsonl` owns append-only audit/export trace only.
+- Photo artifact authority is further constrained by
+  [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md).
+- `timeline.jsonl` owns append-only audit/export trace only, constrained by
+  [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md).
 - Agent Chat Bus owns agent-consumable working events only.
-- UI Feed owns human presentation only.
+- UI Feed owns human presentation only, constrained by
+  [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md).
 - DecisionRecord owns governance/workflow direction only.
 - Safety Gate approval owns physical-action clearance only after fresh evidence and authorized human approval.
 
@@ -181,8 +244,22 @@ task-generation gate.
 Global contract docs:
 
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md)
+- [.memory-bank/contracts/foundation-smoke-api.md](../contracts/foundation-smoke-api.md)
+- [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md)
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md)
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md)
+- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md)
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md)
+
+Shared state/data guardrails:
+
+- [.memory-bank/architecture/foundation-runtime-substrate.md](foundation-runtime-substrate.md)
+- [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md)
+- [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md)
+- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md)
+- [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md)
+- [.memory-bank/states/companion-governance.md](../states/companion-governance.md)
+- [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md)
 
 ## Security / Safety Constraints
 
@@ -193,6 +270,8 @@ Global contract docs:
 - Physical-action advice fails closed unless fresh evidence, Safety Gate pass, authorized human approval, and task/action tracking exist.
 - Human approval unlocks only human-performed task tracking, never automated execution.
 - Companion governance approval is not Safety Gate approval.
+- Dataset candidates are non-trainable by default and require evidence refs for
+  any future trainability transition.
 
 ## Testing Strategy
 
@@ -230,6 +309,7 @@ refresh.
 Feature-level SDD design inside `/prd-to-tasks FT-<NNN>` must still define exact
 auth/session lifecycle, route schemas, DB migrations, event payloads,
 MessageEnvelope fields, Bus/UI projections, photo storage layout, state
-machines, freshness windows, action taxonomy, provider configuration, and UI
-route/view details before task slicing. Use standalone `/spec-improve FT-<NNN>`
-only for repair or advanced refresh when no task generation should occur.
+machines, freshness windows, action taxonomy, dataset transition details,
+provider configuration, and UI route/view details before task slicing. Use
+standalone `/spec-improve FT-<NNN>` only for repair or advanced refresh when no
+task generation should occur.

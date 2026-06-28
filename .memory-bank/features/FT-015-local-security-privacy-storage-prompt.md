@@ -47,7 +47,10 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): local privacy, deployment, and security constraints.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): loopback/LAN, CORS, authz, upload, and redacted errors.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): local artifact and sync-status authority.
+- [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md): local artifact privacy and `local_only` evidence refs.
+- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): storage prompt projection without agent-context leakage.
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): redacted audit/export surface.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-015`; it must define exact local security controls, redaction rules, storage accounting, LAN mode, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-015` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-015`; it must define exact local security controls, redaction rules, storage accounting, LAN mode, storage prompt UI behavior, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-015` only for repair or advanced refresh without task generation.

@@ -13,6 +13,7 @@
     "TASK-005-T3-FT-001-W1"
   ],
   "touched_files": [
+    "pyproject.toml",
     "backend/app/core/security.py",
     "backend/app/access_admin/security.py",
     "tests/backend/access_admin/test_ft001_security_primitives.py"
@@ -31,8 +32,9 @@
     }
   ],
   "verify": [
-    "Password hashing and verification are one-way and do not store plaintext passwords.",
-    "Opaque session tokens are generated for clients and only token_hash is persisted.",
+    "Password hashing uses argon2-cffi Argon2id PHC strings with FT-001 parameters and verification is one-way without storing plaintext passwords.",
+    "Opaque session tokens use at least 256 bits of entropy from Python secrets APIs and are returned only through the selected session transport.",
+    "LocalSession token storage persists only lowercase hex SHA-256 token_hash values and verifies presented tokens with constant-time digest comparison.",
     "Redaction covers passwords, tokens, token hashes, cookies, bearer tokens, and auth headers in error/log-like strings.",
     "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
   ],
@@ -41,14 +43,18 @@
     ".memory-bank/tasks/plans/IMPL-FT-001.md"
   ],
   "evidence_required": [
+    "dependency diff showing argon2-cffi added to runtime dependencies",
     "security primitive test output",
+    "Argon2id parameter/hash format verification evidence",
+    "session token entropy, SHA-256 token_hash-only persistence, and constant-time comparison evidence",
     "sample redaction evidence for auth/session material",
     "T3 verify/red-verify/human/recovery evidence"
   ],
   "source_artifacts": [
     ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
-    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json"
+    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
+    ".memory-bank/contracts/evidence-redaction.md"
   ],
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
@@ -57,13 +63,21 @@
     ".memory-bank/spec-backbone.md",
     ".memory-bank/foundation.md",
     ".memory-bank/architecture/system-architecture.md",
-    ".memory-bank/contracts/boundary-map.md"
+    ".memory-bank/contracts/boundary-map.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/index.md"
   ],
   "constraints": [
     "Never log, return, or persist plaintext passwords or raw session tokens.",
-    "Browser/PWA default session transport remains HTTP-only same-site cookie.",
+    "Add argon2-cffi as the runtime dependency for Argon2id password hashing; do not use plain SHA, unsalted hashes, reversible encryption, homemade password KDFs, bcrypt/passlib alternatives, or plaintext password storage.",
+    "Use FT-001 Argon2id parameters unless a later explicit security spec replaces them: time_cost=3, memory_cost=65536, parallelism=4, hash_len=32, salt_len=16.",
+    "Generate raw session tokens with at least 256 bits of entropy, for example secrets.token_urlsafe(32).",
+    "Compute token_hash as lowercase hex SHA-256 over the exact raw session token bytes after UTF-8 encoding and compare stored/presented digests with hmac.compare_digest or equivalent constant-time comparison.",
     "Do not introduce refresh tokens, OAuth, hosted recovery, or third-party identity.",
-    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Secrets/auth material must not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.",
@@ -74,7 +88,11 @@
     "node scripts/mb-lint.mjs",
     "/verify PASS",
     "/red-verify semantic-pass",
-    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+    "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+    "Check pyproject.toml includes argon2-cffi as the password hashing dependency required by FT-001.",
+    "Check password hashing produces Argon2id PHC strings with FT-001 parameters and rejects wrong passwords without plaintext persistence.",
+    "Check session token tests prove at least 256-bit entropy generation, SHA-256 token_hash-only persistence, malformed-token rejection, and constant-time digest comparison.",
+    "Check auth/session redaction covers passwords, raw tokens, token hashes, cookies, bearer tokens, and auth headers per Evidence Redaction and API Guidelines."
   ],
   "purpose": "Provide reusable credential and session-token primitives before implementing auth/session services and routes.",
   "success_outcome": "FT-001 services can issue and verify local credentials and sessions without leaking or persisting raw auth material.",
@@ -87,6 +105,7 @@
     "packet_required": true,
     "packet_ref": ".memory-bank/packets/TASK-006-T3-FT-001-W1.packet.json",
     "allowed_write_scope": [
+      "pyproject.toml",
       "backend/app/core/security.py",
       "backend/app/access_admin/security.py",
       "tests/backend/access_admin/test_ft001_security_primitives.py"
@@ -99,7 +118,9 @@
     ],
     "stop_conditions": [
       "A required test would expose real or generated secrets unredacted.",
+      "A password hashing implementation does not use argon2-cffi Argon2id with the FT-001 parameter contract.",
       "A primitive requires storing raw session tokens.",
+      "Token verification cannot be proven constant-time at the digest comparison boundary.",
       "Security behavior conflicts with FT-001 or API Guidelines.",
       "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-007-T3-FT-001-W2-R2",
+  "packet_id": "PACKET-TASK-007-T3-FT-001-W2-R4",
   "task_id": "TASK-007-T3-FT-001-W2",
-  "created_at": "2026-06-26T12:57:05+05:00",
-  "source_task_hash": "sha256:42f17c151ecc6dc7d1413129b8da693c8f2f353d504f36e20e4455b909969939",
+  "created_at": "2026-06-26T22:07:46+05:00",
+  "source_task_hash": "sha256:6f21d1cc953a00a798fe85a2917c715eddf43b2e8d570c175fe06efa812c2e48",
   "status": "ready",
   "tier": "T3",
   "purpose": "Implement the FT-001 local session lifecycle and the internal activation handoff primitive needed by FT-003.",
@@ -21,6 +21,8 @@
       ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
       ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
       ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+      ".memory-bank/domains/foundation-data-substrate.md",
+      ".memory-bank/contracts/evidence-redaction.md",
       ".memory-bank/contracts/api-guidelines.md",
       ".memory-bank/workflows/tier-policy.md",
       ".memory-bank/spec-backbone.md",
@@ -28,6 +30,8 @@
       ".memory-bank/architecture/system-architecture.md",
       ".memory-bank/invariants.md",
       ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/architecture/foundation-runtime-substrate.md",
+      ".memory-bank/testing/index.md",
       ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
@@ -56,10 +60,15 @@
       "node scripts/mb-lint.mjs",
       "/verify PASS",
       "/red-verify semantic-pass",
-      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+      "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+      "Check session lifecycle tests prove created_at plus 7-day expires_at calculation, current-session-only logout revocation, and no revival of expired/revoked sessions.",
+      "Check session verification tests use token_hash lookup and the TASK-006 constant-time digest comparison primitive for valid, malformed, unknown, revoked, and expired tokens.",
+      "Check session repositories/services use the Foundation Data Substrate session boundary and preserve the FT-001 session lifecycle."
     ],
     "success_checks": [
       "Login creates a new LocalSession and does not revive expired or revoked sessions.",
+      "Session issuance uses the TASK-006 primitive: raw token returned once through transport, only SHA-256 token_hash persisted, and default expires_at is created_at plus 7 days.",
+      "Presented session tokens are verified by computing token_hash and using the TASK-006 constant-time digest comparison path.",
       "Logout revokes only the current session and invalid/missing logout can be idempotent.",
       "Session validity is fail-closed from session, Account, and FarmMembership status.",
       "Internal activation primitive activates Account/FarmMembership and issues a session only after FT-003 validates invite credentials.",
@@ -67,6 +76,8 @@
     ],
     "evidence_required": [
       "session lifecycle test output",
+      "session issuance evidence showing 7-day expires_at and token_hash-only persistence",
+      "session verification evidence showing malformed/unknown/revoked/expired tokens fail closed through token_hash lookup",
       "fail-closed status behavior evidence",
       "internal activation primitive evidence without public FT-003 route implementation",
       "T3 verify/red-verify/human/recovery evidence"
@@ -74,6 +85,7 @@
   },
   "stop_conditions": [
     "Session lifecycle cannot be proven fail-closed.",
+    "Session service reimplements or diverges from the TASK-006 credential/session primitive contract.",
     "Implementation requires public FT-003 route ownership.",
     "Raw auth material would enter persistence, logs, or evidence.",
     "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."

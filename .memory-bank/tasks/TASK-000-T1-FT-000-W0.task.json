@@ -25,7 +25,7 @@
     },
     {
       "name": "backend-tests",
-      "command": "python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py",
+      "command": ".venv/bin/python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py",
       "required": true
     }
   ],
@@ -69,7 +69,11 @@
   ],
   "normative_inputs": [
     ".memory-bank/workflows/tier-policy.md",
-    ".memory-bank/testing/index.md"
+    ".memory-bank/testing/index.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/contracts/foundation-smoke-api.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/testing/foundation-test-harness.md"
   ],
   "constraints": [
     "Do not create product task records.",
@@ -82,7 +86,7 @@
   ],
   "verification_targets": [
     "node scripts/mb-lint.mjs",
-    "python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py"
+    ".venv/bin/python -m pytest tests/backend/test_baseline.py tests/backend/test_database_harness.py"
   ],
   "purpose": "Ensure task tooling and backend scaffold anchors are unambiguous before executable Foundation work.",
   "success_outcome": "Future FT-000 and product task records can rely on one task-id format and stable backend entrypoint/settings/database anchors.",

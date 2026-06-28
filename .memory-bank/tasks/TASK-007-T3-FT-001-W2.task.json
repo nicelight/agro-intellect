@@ -33,6 +33,8 @@
   ],
   "verify": [
     "Login creates a new LocalSession and does not revive expired or revoked sessions.",
+    "Session issuance uses the TASK-006 primitive: raw token returned once through transport, only SHA-256 token_hash persisted, and default expires_at is created_at plus 7 days.",
+    "Presented session tokens are verified by computing token_hash and using the TASK-006 constant-time digest comparison path.",
     "Logout revokes only the current session and invalid/missing logout can be idempotent.",
     "Session validity is fail-closed from session, Account, and FarmMembership status.",
     "Internal activation primitive activates Account/FarmMembership and issues a session only after FT-003 validates invite credentials.",
@@ -44,6 +46,8 @@
   ],
   "evidence_required": [
     "session lifecycle test output",
+    "session issuance evidence showing 7-day expires_at and token_hash-only persistence",
+    "session verification evidence showing malformed/unknown/revoked/expired tokens fail closed through token_hash lookup",
     "fail-closed status behavior evidence",
     "internal activation primitive evidence without public FT-003 route implementation",
     "T3 verify/red-verify/human/recovery evidence"
@@ -52,7 +56,9 @@
     ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
     ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
-    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md"
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md"
   ],
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
@@ -61,14 +67,22 @@
     ".memory-bank/foundation.md",
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/invariants.md",
-    ".memory-bank/contracts/boundary-map.md"
+    ".memory-bank/contracts/boundary-map.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md"
   ],
   "constraints": [
     "Default session TTL is 7 days from created_at.",
+    "Do not silently revive expired or revoked sessions; login creates a new LocalSession.",
+    "Session services must consume the TASK-006 credential/session primitive and must not reimplement password hashing, token generation, token_hash derivation, or digest comparison with divergent rules.",
     "No refresh-token flow in MVP.",
     "FT-001 exposes only the internal credential/session primitive used by FT-003; it must not expose a public invite activation route.",
     "Pending activation and invited membership cannot access normal Farm/Plant data.",
-    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Missing, expired, revoked, malformed, or unknown session fails closed.",
@@ -80,7 +94,10 @@
     "node scripts/mb-lint.mjs",
     "/verify PASS",
     "/red-verify semantic-pass",
-    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+    "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+    "Check session lifecycle tests prove created_at plus 7-day expires_at calculation, current-session-only logout revocation, and no revival of expired/revoked sessions.",
+    "Check session verification tests use token_hash lookup and the TASK-006 constant-time digest comparison primitive for valid, malformed, unknown, revoked, and expired tokens.",
+    "Check session repositories/services use the Foundation Data Substrate session boundary and preserve the FT-001 session lifecycle."
   ],
   "purpose": "Implement the FT-001 local session lifecycle and the internal activation handoff primitive needed by FT-003.",
   "success_outcome": "Local credentials and sessions can be issued, validated, revoked, and fail-closed against Account and FarmMembership status.",
@@ -106,6 +123,7 @@
     ],
     "stop_conditions": [
       "Session lifecycle cannot be proven fail-closed.",
+      "Session service reimplements or diverges from the TASK-006 credential/session primitive contract.",
       "Implementation requires public FT-003 route ownership.",
       "Raw auth material would enter persistence, logs, or evidence.",
       "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."

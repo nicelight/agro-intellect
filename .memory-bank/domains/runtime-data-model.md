@@ -3,12 +3,19 @@ description: Global runtime data authority model for MVP v2.
 status: active
 owner: architecture
 type: domain
-last_updated: 2026-06-26
+last_updated: 2026-06-28
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/domains/core-domain.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/domains/foundation-data-substrate.md
+  - .memory-bank/domains/photo-artifacts.md
+  - .memory-bank/contracts/timeline-event.md
+  - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/companion-governance.md
+  - .memory-bank/states/dataset-governance.md
 ---
 # Runtime Data Model
 
@@ -21,13 +28,36 @@ columns, indexes, and migrations belong to feature-level SDD design inside
 `/spec-improve FT-<NNN>` is reserved for repair or advanced refresh without task
 generation.
 
+## Ownership
+
+- Owns: global runtime authority layers, shared entity ownership, cross-feature
+  relational identifier compatibility, storage authority separation, and
+  feature-local data-detail routing.
+- Does not own: exact table schemas, migrations, endpoint payloads, concrete
+  event payloads, or feature-specific state machines.
+- Related specs:
+  - [.memory-bank/domains/foundation-data-substrate.md](foundation-data-substrate.md):
+    owns FT-000 DB/session/Alembic/runtime-root substrate.
+  - [.memory-bank/domains/photo-artifacts.md](photo-artifacts.md): owns local
+    photo artifact authority and cross-feature refs.
+  - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md):
+    owns append-only audit/export events.
+  - [.memory-bank/states/index.md](../states/index.md): routes active
+    cross-feature lifecycle/state specs.
+  - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md):
+    owns exact Account, FarmMembership, and LocalSession columns/constraints.
+  - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md):
+    owns exact Farm, Plant, PlantAccessGrant, and deferred Farm FK migration.
+
 ## Brownfield Baseline
 
 Verified FT-000 code/evidence currently proves the shared backend app factory,
 settings, database/session helper, Alembic command path, local bootstrap,
-runtime-root settings, `/health`, `/ready`, and redaction baseline. It does not
-implement product Account, FarmMembership, Plant, task, photo, agent, Safety
-Gate, governance, or UI projection schemas.
+runtime-root settings, `/health`, `/ready`, and redaction baseline. The concrete
+substrate is owned by
+[.memory-bank/domains/foundation-data-substrate.md](foundation-data-substrate.md).
+It does not implement product Account, FarmMembership, Plant, task, photo,
+agent, Safety Gate, governance, or UI projection schemas.
 
 ## Authority Layers
 
@@ -54,6 +84,56 @@ Gate, governance, or UI projection schemas.
 - `IssueStack`, `CompanionProposal`, `CompanionConclusion`, `HumanAttentionNeeded`, `DecisionRecord`: Plant-scoped governance records.
 - Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
 
+Detailed state authority for Plant trust, Safety action lifecycle, Companion
+governance, and dataset trainability lives in the active state specs under
+[.memory-bank/states/](../states/index.md). Feature specs may refine those
+state machines but must not contradict the shared owner.
+
+## Cross-Feature Relational Identity Contract
+
+Shape:
+
+- Product entity identifiers and matching FK columns use PostgreSQL native
+  `uuid`, mapped as Python `uuid.UUID` through SQLAlchemy
+  `Uuid(as_uuid=True)`.
+- `account_id`, `membership_id`, `session_id`, and `farm_id` use this same
+  representation. FT-002 `plant_id` and `grant_id` follow it as well.
+- New identifiers are application-generated with `uuid.uuid4`; the schema does
+  not require a PostgreSQL UUID extension or integer sequence.
+
+Rules:
+
+- A FK column must use exactly the same UUID representation as its referenced
+  PK. String, integer, mixed UUID/text, and feature-local alternate ID schemes
+  are forbidden for these relational identities.
+- Human-readable keys such as `farm_key` and `plant_key` are alternate lookup
+  keys, never substitutes for UUID identity.
+- Authority records use disable/archive/revoke lifecycle semantics. Relational
+  FKs between Account/Farm/Membership/Session/Plant/Grant records must use
+  `ON DELETE RESTRICT` (or equivalent non-cascading enforcement); cascading
+  deletion of authority/history is forbidden.
+- Feature specs remain the single owners for exact columns, nullability,
+  indexes, FK timing, and migration order.
+
+Edge cases/errors:
+
+- Malformed external UUID text is rejected at request/schema validation before
+  repository access.
+- A migration that changes one side of an existing UUID relation to text or
+  integer is incompatible and must stop.
+- A cross-feature relation may be introduced in a later owning migration only
+  when the earlier feature cannot create the referenced authority without
+  violating ownership; the owning feature specs must define the temporary
+  invariant and final FK migration explicitly.
+
+Verification target:
+
+- Migration/model tests inspect native UUID PK/FK types and prove Python values
+  round-trip as `uuid.UUID`.
+- Contract tests prove authority FKs reject deletes instead of cascading.
+- Cross-feature migration tests prove deferred references are closed by the
+  owning feature before its product write paths are enabled.
+
 ## Runtime Invariants
 
 - Every Farm/Plant mutable record is scoped to the single local Farm and, when relevant, Plant.
@@ -78,3 +158,8 @@ Gate, governance, or UI projection schemas.
 - FT-014 owns dataset lifecycle and trainability transition details.
 - FT-015 owns local security/storage fields.
 - FT-016 owns UI projections and first-demo data dependencies.
+
+Before any T2/T3 task record is created for these areas, the feature-level SDD
+design must link the relevant shared owner and add concrete feature-local
+`shape`, `rules`, `edge cases/errors`, and `verification target` blocks where
+the shared owner intentionally routes detail to the feature.

@@ -45,7 +45,9 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Safety & Task Loop module.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Task, Approval, Outcome ownership.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): backend approval authority checks.
+- [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): approval, human-performed action task, and follow-up boundary.
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs for tasks, approvals, and outcomes.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-012`; it must define exact task/approval/outcome states, action unlock service, replay prevention, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-012` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-012`; it must define exact task/approval/outcome states, action unlock service, replay prevention, follow-up outcome vocabulary, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-012` only for repair or advanced refresh without task generation.

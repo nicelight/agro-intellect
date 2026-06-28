@@ -4,7 +4,7 @@ status: active
 owner: architecture
 type: feature_design
 feature_id: FT-002
-last_updated: 2026-06-25
+last_updated: 2026-06-28
 source_of_truth:
   - .memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md
   - .memory-bank/foundation.md
@@ -20,6 +20,25 @@ source_of_truth:
 
 Define the single local Farm, Plant lifecycle, `tomato_001` seed, and PlantAccessGrant rules that gate per-Plant visibility and work authorization.
 
+## Ownership
+
+- Owns: single local Farm seed, Plant lifecycle, PlantAccessGrant lifecycle,
+  concrete PlantPermissionContext resolver output semantics, retained-history
+  authorization, Plant/access route contracts, and Plant route denial codes.
+- Does not own: Account, FarmMembership, LocalSession, credential/session
+  primitives, ActorContext envelope, public invite activation route,
+  AdminAuditRecord durability policy, Safety Gate clearance, agent output
+  publication, MessageEnvelope validation, or UI Feed projection.
+- Related specs:
+  - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](FT-001-local-accounts-sessions-actor-context.md):
+    owns Account/session/ActorContext and the PlantPermissionContext interface
+    envelope consumed by protected routes and context builders.
+  - [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](FT-003-boss-admin-surface-admin-audit.md):
+    owns public invite/admin workflows and durable AdminAuditRecord write
+    policy used by successful FT-002 admin mutations.
+  - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md):
+    owns global no-existence-leak and stable API error guardrails.
+
 ## Normative Inputs
 
 - [.memory-bank/spec-backbone.md](../spec-backbone.md): global backbone is complete.
@@ -28,7 +47,7 @@ Define the single local Farm, Plant lifecycle, `tomato_001` seed, and PlantAcces
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Plant and PlantAccessGrant authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): API authz and route grouping.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): context builders must enforce ActorContext and PlantAccessGrant before agent context.
-- [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](FT-001-local-accounts-sessions-actor-context.md): role presets, ActorContext, and PlantPermissionContext resolver interface.
+- [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](FT-001-local-accounts-sessions-actor-context.md): role presets, ActorContext, and PlantPermissionContext interface envelope.
 - [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](FT-003-boss-admin-surface-admin-audit.md): AdminAuditRecord owner and audited admin mutations.
 - [.memory-bank/requirements.md](../requirements.md): REQ-001, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008.
 
@@ -43,15 +62,15 @@ PostgreSQL/read model is the mutable authority for all FT-002 records.
 Feature-owned mutable records and required fields:
 
 - `Farm`
-  - `farm_id`
+  - `farm_id`: PostgreSQL native UUID/Python `uuid.UUID` identity.
   - `farm_key`: fixed MVP value `local_farm`
   - `name`
   - `farm_status`: `active`
   - `created_at`
   - `updated_at`
 - `Plant`
-  - `plant_id`
-  - `farm_id`
+  - `plant_id`: PostgreSQL native UUID/Python `uuid.UUID` identity.
+  - `farm_id`: required UUID Farm FK.
   - `plant_key`: stable human-readable key, unique per Farm; initial value `tomato_001`
   - `display_name`
   - `crop_kind`
@@ -62,10 +81,10 @@ Feature-owned mutable records and required fields:
   - `archived_by`, `archived_at`, `archive_reason`
   - `restored_by`, `restored_at`
 - `PlantAccessGrant`
-  - `grant_id`
-  - `farm_id`
-  - `plant_id`
-  - `membership_id`
+  - `grant_id`: PostgreSQL native UUID/Python `uuid.UUID` identity.
+  - `farm_id`: required UUID Farm FK.
+  - `plant_id`: required UUID Plant FK.
+  - `membership_id`: required UUID FarmMembership FK.
   - `grant_status`: `active | revoked`
   - `plant_approve_actions`: boolean
   - `granted_by`, `granted_at`
@@ -82,6 +101,57 @@ Required constraints:
 - Revoked grants are retained for audit/history and are not deleted.
 
 Grant presence plus role preset controls visibility/work. The only MVP per-Plant override is `plant_approve_actions`; do not add a generic ACL matrix in MVP.
+
+## Farm Authority And Deferred Membership FK Closure
+
+This block owns the FT-002 side of the temporary
+`farm_memberships.farm_id` relation defined by FT-001. FT-001 owns the initial
+column and intentional FK absence; FT-002 owns Farm creation/reuse and final FK
+validation.
+
+Shape:
+
+- `farms.farm_id` is PostgreSQL native `uuid`, mapped as Python `uuid.UUID`,
+  and uses application-generated `uuid.uuid4` when no prior membership UUID
+  exists.
+- The final relation is
+  `farm_memberships.farm_id -> farms.farm_id ON DELETE RESTRICT`.
+- FT-002 follows the shared identifier contract in
+  [Runtime Data Model](../domains/runtime-data-model.md).
+
+Rules:
+
+1. Before seeding `farms`, the FT-002 migration reads distinct non-null
+   `farm_memberships.farm_id` values.
+2. With zero values, it generates one UUIDv4 and creates the single
+   `farm_key=local_farm` row with that ID.
+3. With exactly one value, it creates/reuses `farm_key=local_farm` with that
+   exact UUID; it does not rewrite existing memberships.
+4. With more than one distinct value, migration stops. It must not create
+   multiple Farm rows, choose one silently, or rewrite membership data.
+5. After the single Farm row exists, the migration adds and validates the
+   non-cascading FK before FT-002/FT-003 Farm or membership product-write paths
+   are enabled.
+
+Edge cases/errors:
+
+- An existing `local_farm` row with a different UUID from the sole membership
+  UUID is a migration conflict and must stop for explicit repair.
+- Null membership `farm_id` is invalid under FT-001 and must not be backfilled
+  here.
+- Deleting the Farm while memberships reference it is rejected; archive/disable
+  semantics are used instead of cascade deletion.
+- This migration must not create a second local Farm or infer multi-Farm
+  tenancy from inconsistent pre-release data.
+
+Verification target:
+
+- Migration tests cover zero, one matching, one conflicting, and multiple
+  distinct pre-existing membership Farm IDs.
+- Schema inspection proves the final native-UUID `RESTRICT` FK is present and
+  validated.
+- Integration tests prove an unknown `farm_id` cannot be inserted after FT-002
+  migration and referenced Farm deletion is rejected without cascading.
 
 ## Farm Seed
 
@@ -156,9 +226,19 @@ Rules:
 
 Authorization failures must fail closed and must not reveal whether an unauthorized Plant exists.
 
+For PlantPermissionContext output, `can_comment=true` follows authorized
+Plant read access for Boss, granted Engineer, and granted Consultant.
+`can_create_domain_tasks=true` only for Boss and granted Engineer during active
+normal-operation access; it is false for Consultant, archived retained-history
+access, denied access, and missing/revoked grants.
+
 ## PlantPermissionContext Resolver
 
-FT-002 provides the resolver used by FT-001 ActorContext for Plant-scoped paths.
+FT-002 provides the concrete resolver used by the FT-001 ActorContext interface
+for Plant-scoped paths. FT-001 owns the interface envelope and generic
+protected-seam denial code; FT-002 owns the resolver values, PlantAccessGrant
+lookup semantics, archived/retained-history behavior, and Plant route denial
+code mapping.
 
 Input:
 
@@ -171,13 +251,17 @@ Input:
 Output for a Plant-scoped result:
 
 - `plant_id`
-- `plant_status`
+- `plant_status`: `active | archived | null`; `null` is allowed only when the
+  internal result is denied/not-found/fail-closed and must not be exposed as a
+  Plant existence leak.
 - `can_read`
+- `can_comment`
 - `can_operate`
+- `can_create_domain_tasks`
 - `can_manage_access`
 - `can_approve_actions`
 - `source`: `boss_role | plant_access_grant | denied`
-- `grant_id` when permission came from a PlantAccessGrant
+- `grant_id` when permission came from a PlantAccessGrant; otherwise `null`
 
 Resolver rules:
 
@@ -185,8 +269,17 @@ Resolver rules:
 - Engineer/Consultant require an active grant for `normal_read` and `retained_history_read`.
 - Archived Plant returns `can_read=false` for `normal_read` and may return `can_read=true` only for `retained_history_read`.
 - Archived Plant always returns `can_operate=false` and `can_approve_actions=false`.
+- Archived Plant retained-history access always returns
+  `can_create_domain_tasks=false`.
+- `can_comment=true` for authorized read/retained-history access; denied access
+  returns `can_comment=false`.
+- Boss and granted Engineer may return `can_create_domain_tasks=true` only for
+  active normal-operation Plant access.
 - Consultant always returns `can_operate=false` and `can_approve_actions=false`.
 - Revoked or missing grants return `source=denied`.
+- Missing or forbidden Plant route access surfaces `plant_not_found_or_forbidden`
+  and must not be translated to FT-001 `AUTH_PLANT_FORBIDDEN` on FT-002 HTTP
+  routes.
 - Context builders and agent input builders must call this resolver and exclude denied or archived-normal-operation records before any Bus or model context is prepared.
 
 ## API Surface
@@ -259,7 +352,7 @@ Stable error codes:
 - `grant_revoked`
 - `invalid_membership_for_farm`
 
-Use `plant_not_found_or_forbidden` and `grant_not_found_or_forbidden` where revealing existence would leak unauthorized data.
+Use `plant_not_found_or_forbidden` and `grant_not_found_or_forbidden` where revealing existence would leak unauthorized data. FT-001 generic auth/session seams may use `AUTH_PLANT_FORBIDDEN` for non-route protected-seam denial, but concrete FT-002 Plant HTTP routes use the FT-002 lowercase route codes above.
 
 ## Audit And Event Decisions
 
@@ -291,7 +384,14 @@ FT-002 does not publish agent-consumable Bus events for access-management text. 
 
 - Unit: Plant lifecycle transition policy.
 - Unit: grant/revoke/update rules and `plant_approve_actions` derivation.
-- Unit: PlantPermissionContext resolver for Boss, Engineer, Consultant, archived Plant, revoked grant, and missing grant.
+- Unit: PlantPermissionContext resolver for Boss, Engineer, Consultant,
+  archived Plant, revoked grant, missing grant, `plant_status`, `grant_id`,
+  `source=denied`, `can_comment`, and `can_create_domain_tasks`.
+- Unit: compatibility between the FT-001 PlantPermissionContext interface
+  envelope and the FT-002 concrete resolver output.
+- Unit: FT-002 Plant route denial uses `plant_not_found_or_forbidden` while
+  preserving the same no-existence-leak semantics as FT-001 generic
+  `AUTH_PLANT_FORBIDDEN`.
 - Unit: uniqueness/constraint policy for single Farm, `plant_key`, and duplicate active grants.
 - Integration: Plant list filters Boss, Engineer, Consultant correctly.
 - Integration: context builder excludes unauthorized and revoked-grant Plants.

@@ -13,7 +13,15 @@ source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/agent-chat-bus.md
   - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/contracts/ui-feed.md
+  - .memory-bank/contracts/timeline-event.md
+  - .memory-bank/contracts/evidence-redaction.md
+  - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/companion-governance.md
+  - .memory-bank/states/dataset-governance.md
   - .memory-bank/foundation.md
+  - .memory-bank/testing/foundation-test-harness.md
 ---
 # Testing Index
 
@@ -24,7 +32,16 @@ The active MVP v2 testing router has been rebuilt from the clarified PRD, `/prd`
 MVP v1 testing docs are archived under
 [.memory-bank/archive/mvp-v1/testing/](../archive/mvp-v1/testing/).
 
-Concrete endpoint schemas, DB migrations, state-machine fixtures, detailed event/message payloads, and executable test names still belong to feature-level SDD design inside `/prd-to-tasks` and later task decomposition. Standalone `/spec-improve` is reserved for repair or advanced refresh without task generation.
+Concrete product endpoint schemas, DB migrations, state-machine fixtures,
+detailed event/message payloads, and executable test names still belong to
+feature-level SDD design inside `/prd-to-tasks` and later task decomposition.
+Shared global contract/state owners now define the minimum boundaries for UI
+Feed, timeline audit/export, photo artifacts, Plant state trust, Safety action
+lifecycle, Companion governance, and dataset governance. The Foundation test
+harness has its own substrate owner at
+[.memory-bank/testing/foundation-test-harness.md](foundation-test-harness.md).
+Standalone `/spec-improve` is reserved for repair or advanced refresh without
+task generation.
 
 ## Migration Gates
 
@@ -46,12 +63,18 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Product feature task decomposition must not start before global `/spec-design`, required Foundation closure, and feature-level SDD design completion inside `/prd-to-tasks FT-<NNN>`.
 - Global `/spec-design` is complete; Foundation is closed and verified. Current product tasking gate is `/prd-to-tasks FT-<NNN>` followed by `/review-tasks-plan FT-<NNN>` before implementation.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
+- T2/T3 task records that touch shared state/contract boundaries must link the
+  relevant owner: UI Feed, timeline audit/export, photo artifacts, Plant state
+  trust, Safety action lifecycle, Companion governance, or dataset governance.
 
 ## Foundation Gate
 
 Before product feature tasking, the required [.memory-bank/foundation.md](../foundation.md)
 path was generated through `/foundation-to-tasks` and verified through the
 final `FT-000` gate task.
+
+Foundation harness details live in
+[.memory-bank/testing/foundation-test-harness.md](foundation-test-harness.md).
 
 Foundation evidence must prove:
 
@@ -67,7 +90,7 @@ Foundation evidence must prove:
 - DB session and rollback-safe test session are verified.
 - Local data/artifact root settings exist with `local_only` default semantics.
 - Redaction tests cover `.env`, tokens, passwords, DB URLs with credentials, and auth material.
-- `python -m pytest tests`, `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`, and `git diff --check` pass.
+- `.venv/bin/python -m pytest tests`, `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`, and `git diff --check` pass.
 
 ## Unit Test Areas
 
@@ -75,6 +98,7 @@ Foundation evidence must prove:
 - ActorContext construction and fail-closed authorization.
 - Plant archive/restore and retained-history policy.
 - pH/EC provenance, freshness projections, and missing-data policy after specs define exact windows.
+- Plant state trust promotion rules: hypotheses, conflicts, confirmed state, and review/evidence gates.
 - Runtime decision, MessageEnvelope validation, and publish/block rules.
 - Context filtering: UI Feed, raw chat, spoiler notes, admin notices, and unapproved proposals excluded from agent working context.
 - Safety Gate classification, freshness, authority checks, and no-device-execution rules.
@@ -91,6 +115,8 @@ Foundation evidence must prove:
 - Real model-backed product-agent adapter path runs over actual scoped Plant data.
 - Vision Observation processes actual uploaded photo data through a real vision-capable model or real vision integration.
 - Agent Chat Bus and UI Feed projections preserve consumability boundaries.
+- Timeline replay cannot mutate runtime state or publish directly to Agent Chat Bus.
+- UI Feed, timeline, and manifests cannot grant dataset trainability.
 - Safety Gate separates governance approval from physical-action approval.
 - Companion DecisionRecord produces only compact approved governance summary facts.
 - Dataset/export context stays Plant-scoped and non-trainable by default.

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-003-T3-FT-000-W0-R5",
+  "packet_id": "PACKET-TASK-003-T3-FT-000-W0-R6",
   "task_id": "TASK-003-T3-FT-000-W0",
-  "created_at": "2026-06-25T17:58:38+05:00",
-  "source_task_hash": "sha256:816d2665d43ee6ee8436cb479013bdd4b89549f2dd5ac4d61414e89fd6e20ae1",
+  "created_at": "2026-06-26T20:46:39+05:00",
+  "source_task_hash": "sha256:da753d4f8a1233df1d8247b4a9f2300b3bf2b2e36d60bc501c4b243ac40ba57f",
   "status": "ready",
   "tier": "T3",
   "purpose": "Provide a security-sensitive redaction baseline for local bootstrap, settings, DB scripts, and future feature evidence.",
@@ -22,7 +22,10 @@
       ".memory-bank/testing/index.md",
       ".memory-bank/constitution.md",
       ".memory-bank/contracts/api-guidelines.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/contracts/evidence-redaction.md",
+      ".memory-bank/testing/foundation-test-harness.md",
+      ".memory-bank/runbooks/foundation-local-runtime.md"
     ],
     "guides": [],
     "protocols": [
@@ -48,7 +51,7 @@
   },
   "verification": {
     "commands": [
-      "python -m pytest tests/backend/test_foundation_redaction.py",
+      ".venv/bin/python -m pytest tests/backend/test_foundation_redaction.py",
       "node scripts/mb-lint.mjs",
       "/verify PASS",
       "/red-verify semantic-pass"

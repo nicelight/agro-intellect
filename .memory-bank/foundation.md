@@ -6,9 +6,15 @@ last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/architecture/foundation-runtime-substrate.md
   - .memory-bank/domains/runtime-data-model.md
+  - .memory-bank/domains/foundation-data-substrate.md
   - .memory-bank/contracts/api-guidelines.md
+  - .memory-bank/contracts/foundation-smoke-api.md
+  - .memory-bank/contracts/evidence-redaction.md
   - .memory-bank/testing/index.md
+  - .memory-bank/testing/foundation-test-harness.md
+  - .memory-bank/runbooks/foundation-local-runtime.md
   - .memory-bank/workflows/tier-policy.md
   - .memory-bank/schemas/task.schema.json
 ---
@@ -57,16 +63,35 @@ were created by `/foundation-to-tasks`. The final foundation gate is
 - Brownfield refresh on 2026-06-26 found no real contradiction or missing
   executable baseline gap. Verified FT-000 history and closure remain preserved;
   no new Foundation task is required by this `/spec-design --all` pass.
+- `/foundation-to-tasks` substrate spec audit on 2026-06-26 added scaffold-level
+  SDD owners for runtime shape, smoke API, DB/session/migration substrate, test
+  harness, local runtime runbook, and evidence redaction. It did not create new
+  FT-000 task records because the final Foundation gate is already verified.
+
+## Foundation Substrate Specs
+
+- [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md):
+  app factory, entrypoint, dependency direction, and smoke route mounting.
+- [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md):
+  `/health` and `/ready` response/status contract.
+- [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md):
+  DB handle, session lifetime, Alembic baseline, and local runtime roots.
+- [.memory-bank/testing/foundation-test-harness.md](testing/foundation-test-harness.md):
+  FT-000 test command, smoke targets, fixtures, and evidence expectations.
+- [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md):
+  local Linux Mint bootstrap, DB init, migration, start, and troubleshooting.
+- [.memory-bank/contracts/evidence-redaction.md](contracts/evidence-redaction.md):
+  redaction rules for Foundation logs, scripts, tests, and handoff artifacts.
 
 ## Minimal Work Path
-- Build command: `python -m pip install -e ".[test]"`
 - Linux Mint bootstrap command: `bash scripts/bootstrap-local.sh`
+- Build/install command after bootstrap: `.venv/bin/python -m pip install -e ".[test]"`
 - Database init command: `bash scripts/db-init-local.sh`
 - Migration command: `bash scripts/db-migrate-local.sh`
-- Start command: `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`
+- Start command after bootstrap: `.venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`
 - Primary entrypoint: `backend.app.main:create_app`
 - Smoke path: `/health`, `/ready`, DB ping, migration status, rollback-safe test session, local data root availability.
-- Test command: `python -m pytest tests`
+- Test command after bootstrap: `.venv/bin/python -m pytest tests`
 - Memory Bank gates: `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`
 - Evidence: command output, pytest output, DB init/migration transcript with secrets redacted, and final foundation gate task report under `.tasks/`.
 
@@ -129,7 +154,7 @@ verifies these packages.
 - DB session and rollback-safe test session are proven by tests.
 - Local data/artifact root settings exist with `local_only` default semantics.
 - Redaction helper/tests cover `.env`, tokens, passwords, DB URLs with credentials, and auth material.
-- `python -m pytest tests` passes.
+- `.venv/bin/python -m pytest tests` passes.
 - `node scripts/mb-lint.mjs`, `node scripts/mb-doctor.mjs`, and `git diff --check` pass after `/foundation-to-tasks`.
 - Final foundation gate task `TASK-004-T2-FT-000-W0` is `done`.
 - No product feature task is generated or executed until the final FT-000 gate is done.

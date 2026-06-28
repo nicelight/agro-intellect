@@ -27,12 +27,12 @@
   "gates": [
     {
       "name": "install",
-      "command": "python -m pip install -e \".[test]\"",
+      "command": ".venv/bin/python -m pip install -e \".[test]\"",
       "required": true
     },
     {
       "name": "tests",
-      "command": "python -m pytest tests",
+      "command": ".venv/bin/python -m pytest tests",
       "required": true
     },
     {
@@ -142,7 +142,7 @@
     "DB init transcript or safe local dry-run evidence",
     "migration command output",
     "app start plus /health and /ready evidence",
-    "python -m pytest tests output",
+    ".venv/bin/python -m pytest tests output",
     "node scripts/mb-lint.mjs output",
     "node scripts/mb-doctor.mjs output",
     "git diff --check output",
@@ -157,7 +157,13 @@
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/workflows/tier-policy.md",
     ".memory-bank/workflows/mb-sync.md",
-    ".memory-bank/spec-backbone.md"
+    ".memory-bank/spec-backbone.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/contracts/foundation-smoke-api.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/testing/foundation-test-harness.md",
+    ".memory-bank/runbooks/foundation-local-runtime.md",
+    ".memory-bank/contracts/evidence-redaction.md"
   ],
   "constraints": [
     "Do not implement new product behavior in the final gate.",
@@ -170,14 +176,14 @@
     "Secrets/auth material must not enter evidence artifacts."
   ],
   "verification_targets": [
-    "python -m pip install -e \".[test]\"",
     "bash scripts/bootstrap-local.sh",
+    ".venv/bin/python -m pip install -e \".[test]\"",
     "bash scripts/db-init-local.sh",
     "bash scripts/db-migrate-local.sh",
-    "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
+    ".venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
     "/health",
     "/ready",
-    "python -m pytest tests",
+    ".venv/bin/python -m pytest tests",
     "node scripts/mb-lint.mjs",
     "node scripts/mb-doctor.mjs",
     "git diff --check"

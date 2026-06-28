@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-004-T2-FT-000-W0-R3",
+  "packet_id": "PACKET-TASK-004-T2-FT-000-W0-R4",
   "task_id": "TASK-004-T2-FT-000-W0",
-  "created_at": "2026-06-25T21:13:00+05:00",
-  "source_task_hash": "sha256:02beb6a1d3df714079cf42d567c51a00468e455829f5490d8b62bd7f8d2b3e61",
+  "created_at": "2026-06-26T20:46:39+05:00",
+  "source_task_hash": "sha256:7850ca9c130521483b07e1208d8b8e052847624f3b1e012389e1d5197eccc970",
   "status": "ready",
   "tier": "T2",
   "purpose": "Provide one explicit closure gate for the compact Foundation Dev Path before product features are decomposed.",
@@ -21,7 +21,13 @@
       ".memory-bank/testing/index.md",
       ".memory-bank/spec-backbone.md",
       ".memory-bank/workflows/tier-policy.md",
-      ".memory-bank/workflows/mb-sync.md"
+      ".memory-bank/workflows/mb-sync.md",
+      ".memory-bank/architecture/foundation-runtime-substrate.md",
+      ".memory-bank/contracts/foundation-smoke-api.md",
+      ".memory-bank/domains/foundation-data-substrate.md",
+      ".memory-bank/testing/foundation-test-harness.md",
+      ".memory-bank/runbooks/foundation-local-runtime.md",
+      ".memory-bank/contracts/evidence-redaction.md"
     ],
     "guides": [],
     "protocols": [
@@ -49,14 +55,14 @@
   },
   "verification": {
     "commands": [
-      "python -m pip install -e \".[test]\"",
       "bash scripts/bootstrap-local.sh",
+      ".venv/bin/python -m pip install -e \".[test]\"",
       "bash scripts/db-init-local.sh",
       "bash scripts/db-migrate-local.sh",
-      "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
+      ".venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
       "/health",
       "/ready",
-      "python -m pytest tests",
+      ".venv/bin/python -m pytest tests",
       "node scripts/mb-lint.mjs",
       "node scripts/mb-doctor.mjs",
       "git diff --check"
@@ -72,7 +78,7 @@
       "DB init transcript or safe local dry-run evidence",
       "migration command output",
       "app start plus /health and /ready evidence",
-      "python -m pytest tests output",
+      ".venv/bin/python -m pytest tests output",
       "node scripts/mb-lint.mjs output",
       "node scripts/mb-doctor.mjs output",
       "git diff --check output",

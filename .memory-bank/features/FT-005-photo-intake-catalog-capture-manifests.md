@@ -45,8 +45,10 @@ source_of_truth:
 
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Photo & Artifact Intake module and storage decisions.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): artifact vs runtime authority.
+- [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md): global photo artifact identity, local-only authority, and cross-feature refs.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): upload validation and local-only semantics.
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export event refs for accepted photos.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-005`; it must define exact photo storage layout, manifest schema, validation rules, failure recovery, and audit/export refs during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-005` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-005`; it must define exact photo storage layout, manifest schema, validation rules, file/catalog/manifest atomicity, failure recovery, and audit/export refs during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-005` only for repair or advanced refresh without task generation.

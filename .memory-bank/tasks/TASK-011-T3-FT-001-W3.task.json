@@ -51,6 +51,9 @@
   ],
   "verify": [
     "All FT-001 unit/integration/API tests pass together.",
+    "Security primitive contract checks pass for argon2-cffi Argon2id parameters, 256-bit session token entropy, SHA-256 token_hash-only persistence, constant-time digest comparison, and auth/session redaction.",
+    "Session API contract checks pass for agro_intellect_session cookie attributes, logout clear-cookie behavior, bearer-mode boundaries when implemented, no-leak auth errors, and Foundation Smoke API preservation.",
+    "ActorContext/context-builder checks pass for canonical PlantPermissionContext interface compatibility with FT-002 resolver output, denial filtering, and auth/context exclusion.",
     "Behavior specs are covered by task evidence or linked test output.",
     "FT-001 Memory Bank docs, task record evidence, and changelog are synchronized without claiming FT-002/FT-003 completion.",
     "Feature-level /red-verify --feature FT-001 remains required after all FT-001 tasks are done before treating the feature as complete.",
@@ -67,6 +70,9 @@
   ],
   "evidence_required": [
     "FT-001 test suite output",
+    "security primitive contract evidence summary covering TASK-006 and TASK-007",
+    "cookie/session API contract evidence summary covering TASK-009",
+    "PlantPermissionContext/authz context-builder evidence summary covering TASK-008 and TASK-010",
     "node scripts/mb-lint.mjs output",
     "node scripts/mb-doctor.mjs output",
     "git diff --check output",
@@ -76,8 +82,12 @@
   "source_artifacts": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
     ".memory-bank/tasks/plans/IMPL-FT-001.md",
-    ".memory-bank/testing/index.md"
+    ".memory-bank/testing/index.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/foundation-test-harness.md",
+    ".memory-bank/runbooks/foundation-local-runtime.md"
   ],
   "normative_inputs": [
     ".memory-bank/architecture/system-architecture.md",
@@ -92,13 +102,22 @@
     ".memory-bank/spec-backbone.md",
     ".memory-bank/foundation.md",
     ".memory-bank/invariants.md",
-    ".memory-bank/contracts/boundary-map.md"
+    ".memory-bank/contracts/boundary-map.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/contracts/foundation-smoke-api.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/testing/foundation-test-harness.md",
+    ".memory-bank/runbooks/foundation-local-runtime.md"
   ],
   "constraints": [
     "Do not close FT-002 or FT-003 from FT-001 evidence.",
     "Do not mark FT-001 verified before all FT-001 tasks are done and feature-level red-verification passes.",
     "Record only reproducible safe evidence; redact secrets.",
-    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Memory Bank is durable project knowledge and must be synchronized after meaningful changes.",
@@ -112,7 +131,12 @@
     "git diff --check",
     "/verify PASS",
     "/red-verify semantic-pass",
-    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+    "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+    "Check FT-001 integration evidence covers argon2-cffi Argon2id parameters, 256-bit session token generation, SHA-256 token_hash-only persistence, constant-time digest comparison, and redaction of auth/session material.",
+    "Check FT-001 integration evidence covers agro_intellect_session Set-Cookie attributes, logout clear-cookie behavior, and bearer-mode no-cookie/no-store boundaries when implemented.",
+    "Check FT-001 integration evidence covers canonical PlantPermissionContext shape, FT-002 compatibility, denial filtering, AUTH_PLANT_FORBIDDEN no-existence-leak semantics, and auth/context exclusion.",
+    "Check every required FT-001 packet source_task_hash matches its task record after docs sync.",
+    "Check FT-001 evidence preserves Foundation runtime/data/redaction contracts without claiming FT-002 or FT-003 completion."
   ],
   "purpose": "Provide one explicit FT-001 integration and documentation sync gate before feature-level completion review.",
   "success_outcome": "FT-001 task evidence is coherent, docs are synchronized, and the feature is ready for feature-level red-verification after all tasks close.",
@@ -142,6 +166,7 @@
     ],
     "stop_conditions": [
       "Any FT-001 prerequisite task is not done.",
+      "Security primitive, cookie/session API, or PlantPermissionContext contract evidence is missing from the integrated FT-001 evidence set.",
       "Any required gate fails.",
       "Evidence contains unredacted secrets or auth material.",
       "Docs sync would imply FT-002 or FT-003 completion.",

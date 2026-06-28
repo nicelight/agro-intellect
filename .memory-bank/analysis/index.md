@@ -10,14 +10,18 @@ status: active
 - The previous MVP v1 spec-layer is archived under [.memory-bank/archive/mvp-v1/](../archive/mvp-v1/).
 - Active MVP v2 PRD exists at [.memory-bank/prd.md](../prd.md) with `clarification_status: complete`.
 - Active MVP v2 product, requirements, epics, and features exist as draft L1-L3 artifacts derived by `/prd`.
-- Active MVP v2 global architecture backbone exists, is complete, and has been
-  brownfield-refreshed against verified `FT-000` code/evidence.
+- Active MVP v2 global architecture backbone exists, is complete, has been
+  brownfield-refreshed against verified `FT-000` code/evidence, and has been
+  expanded with shared global SDD owners for UI Feed, timeline audit/export,
+  photo artifacts, Plant state trust, Safety action lifecycle, Companion
+  governance, and dataset governance.
 - Compact Foundation Dev Path is verified; see [.memory-bank/foundation.md](../foundation.md).
 - First-wave feature-local SDD specs exist and are complete for FT-001, FT-002, and FT-003; they are registered in [.memory-bank/spec-index.md](../spec-index.md).
 - `/prd-to-tasks FT-001` is complete and was refreshed on 2026-06-26; [.memory-bank/tasks/index.json](../tasks/index.json) contains completed compact `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
 - Existing FT-001 task records, implementation plan, behavior specs, and
-  packets are the current planning surface for `/review-tasks-plan FT-001`
-  before implementation.
+  packets were refreshed again after the `/spec-improve FT-001` repair and are
+  the current planning surface for `/review-tasks-plan FT-001` before
+  implementation.
 - Active MVP v2 Product Brief exists at [.memory-bank/analysis/product-brief.md](product-brief.md) with `Decision: proceed`.
 - [.memory-bank/constitution.md](../constitution.md) has been amended to allow a bounded local-first Farm workspace with local Accounts, role-scoped access, multiple Plants, and Companion governance after PRD/spec promotion.
 - [.memory-bank/glossary.md](../glossary.md) remains active and has been updated with MVP v2 vocabulary.
@@ -33,7 +37,9 @@ status: active
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): active global architecture backbone.
 - [.memory-bank/foundation.md](../foundation.md): compact Foundation Dev Path for task schema/protocol alignment, app factory/settings/database anchors, Linux Mint bootstrap, local PostgreSQL init, migration baseline, local runtime roots, and redaction baseline.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): active runtime authority model.
+- [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md): active local photo artifact authority model.
 - [.memory-bank/contracts/index.md](../contracts/index.md): active contract router.
+- [.memory-bank/states/index.md](../states/index.md): active state/lifecycle router.
 - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md): current normative feature design for local accounts, sessions, and ActorContext.
 - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md): current normative feature design for Farm, Plant lifecycle, and PlantAccessGrant.
 - [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md): current normative feature design for Boss admin surface and admin audit.

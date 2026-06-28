@@ -8,6 +8,9 @@ source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/contracts/foundation-smoke-api.md
+  - .memory-bank/contracts/ui-feed.md
+  - .memory-bank/contracts/timeline-event.md
 ---
 # API Guidelines
 
@@ -19,11 +22,30 @@ SDD design inside `/prd-to-tasks FT-<NNN>` and later FastAPI/Pydantic schemas.
 Standalone `/spec-improve FT-<NNN>` is reserved for repair or advanced refresh
 without task generation.
 
+## Ownership
+
+- Owns: cross-cutting HTTP style, route grouping, ActorContext/authz
+  requirements, error/response guardrails, upload guardrails, CORS/exposure,
+  compatibility, and generated OpenAPI policy.
+- Does not own: concrete endpoint paths, request/response schemas, DB models,
+  state transitions, or feature-specific error catalogs.
+- Related specs:
+  - [.memory-bank/contracts/foundation-smoke-api.md](foundation-smoke-api.md):
+    owns concrete `/health` and `/ready` substrate route behavior.
+  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): owns
+    append-only audit/export event rules.
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human-facing
+    projection rules.
+  - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md):
+    owns photo artifact authority used by upload routes.
+
 ## Brownfield Baseline
 
 The verified FT-000 executable baseline exposes only `/health` and `/ready` as
-runtime routes. The route groups below are global guardrails for future product
-features, not evidence that those product routes already exist.
+runtime routes. Their concrete substrate contract lives in
+[.memory-bank/contracts/foundation-smoke-api.md](foundation-smoke-api.md). The
+route groups below are global guardrails for future product features, not
+evidence that those product routes already exist.
 
 ## API Style
 
@@ -67,6 +89,18 @@ Exact path names are feature-local design work.
 - Authorization failures must fail closed and avoid leaking whether unauthorized Plant data exists.
 - Validation errors should identify invalid fields without exposing protected context.
 
+Minimum error shape:
+
+```json
+{
+  "error": {
+    "code": "STABLE_MACHINE_CODE",
+    "message": "Safe user-facing message.",
+    "request_id": "req_..."
+  }
+}
+```
+
 ## Upload Rules
 
 - Photo upload must validate content type, size, path safety, and actor/Plant authorization.
@@ -84,3 +118,15 @@ Exact path names are feature-local design work.
 - Feature-level SDD design inside `/prd-to-tasks FT-<NNN>` decides versioning
   only when a boundary needs it. Standalone `/spec-improve` may repair that
   decision without generating tasks.
+
+## Verification
+
+Tests must prove:
+
+- protected Farm/Plant endpoints resolve ActorContext before business logic;
+- service/public endpoints do not expose Farm/Plant data or auth material;
+- errors use stable codes and redacted messages;
+- uploads validate ActorContext, Plant access, content type, size, and path
+  safety before accepting artifacts;
+- generated OpenAPI, when implementation schemas exist, matches critical
+  endpoint contracts.

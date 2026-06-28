@@ -46,7 +46,9 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Plant Operations module and data flow.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): mutable runtime state ownership.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): operations route authorization and validation.
+- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): append-only audit/export refs for check-in evidence.
+- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): observation, measurement, and trust/promotion guardrails.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-004`; it must define exact daily check-in state, fields, persistence sequence, freshness projections, and API/UI dependencies during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-004` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-004`; it must define exact daily check-in state, fields, persistence sequence, freshness projections, timeline refs, and API/UI dependencies during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-004` only for repair or advanced refresh without task generation.

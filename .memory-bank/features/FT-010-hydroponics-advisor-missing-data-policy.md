@@ -45,7 +45,9 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Hydroponics Advisor, Safety Gate, and task-loop boundaries.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): recommendation, clarification, and safety route fields.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): Advisor input context rules.
+- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): stale/missing evidence and trust promotion guardrails.
+- [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): physical-action routing and approval boundary.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-010`; it must define exact advisor inputs, freshness policy, output contract, task handoff, Safety Gate handoff, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-010` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-010`; it must define exact advisor inputs, freshness policy, output contract, missing-data task handoff, Safety Gate handoff, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-010` only for repair or advanced refresh without task generation.

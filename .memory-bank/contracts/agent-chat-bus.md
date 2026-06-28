@@ -9,6 +9,9 @@ source_of_truth:
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/contracts/ui-feed.md
+  - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/states/companion-governance.md
 ---
 # Agent Chat Bus
 
@@ -19,6 +22,21 @@ Agent Chat Bus is the domain-owned working event stream for agent-consumable con
 The verified FT-000 executable baseline does not implement Agent Chat Bus
 runtime code. This contract is a global guardrail for future product features;
 field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
+
+## Ownership
+
+- Owns: agent-consumable working event boundary, BusEventEnvelope minimum,
+  consumability rules, context-builder constraints, ordering/replay limits, and
+  Safety Gate handoff requirements for Bus events.
+- Does not own: raw model/provider messages, UI Feed projection payloads,
+  timeline event taxonomy, DB table schemas, or feature-specific event payloads.
+- Related specs:
+  - [.memory-bank/contracts/message-envelope.md](message-envelope.md): owns
+    publishable agent-originated output before Bus/UI projection.
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human-facing
+    projection rules.
+  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): owns
+    audit/export event rules.
 
 ## Publication Rule
 
@@ -57,6 +75,8 @@ Feature-local specs may add fields, but every Bus event must have:
 ## Ordering And Replay
 
 - MVP relies on `created_at` and `event_id` for ordering hints.
+- Bus payloads are event references and compact consumable facts, not full
+  runtime state snapshots.
 - Timeline replay cannot rehydrate mutable runtime state or bypass Bus publication rules.
 - Feature-level specs define any stricter per-Plant ordering or idempotency requirements before tasks.
 

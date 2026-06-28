@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-002-T2-FT-000-W0-R4",
+  "packet_id": "PACKET-TASK-002-T2-FT-000-W0-R5",
   "task_id": "TASK-002-T2-FT-000-W0",
-  "created_at": "2026-06-24T09:20:35+05:00",
-  "source_task_hash": "sha256:815e0ba7682e7c4e45756ef40d8ab5b7d8ca2f117872f631ee8e7b7808a414cd",
+  "created_at": "2026-06-26T20:46:39+05:00",
+  "source_task_hash": "sha256:e41f5727d14ab8eeb99033132377a78561459913b00f5628cf07db5adae1c1c2",
   "status": "ready",
   "tier": "T2",
   "purpose": "Make the local database and migration path executable before product tables and routes are implemented.",
@@ -20,7 +20,12 @@
       ".memory-bank/domains/runtime-data-model.md",
       ".memory-bank/architecture/system-architecture.md",
       ".memory-bank/testing/index.md",
-      ".memory-bank/workflows/tier-policy.md"
+      ".memory-bank/workflows/tier-policy.md",
+      ".memory-bank/domains/foundation-data-substrate.md",
+      ".memory-bank/contracts/foundation-smoke-api.md",
+      ".memory-bank/contracts/evidence-redaction.md",
+      ".memory-bank/runbooks/foundation-local-runtime.md",
+      ".memory-bank/testing/foundation-test-harness.md"
     ],
     "guides": [],
     "protocols": [
@@ -49,7 +54,7 @@
     "commands": [
       "bash scripts/db-init-local.sh",
       "bash scripts/db-migrate-local.sh",
-      "python -m pytest tests/backend/test_database_harness.py tests/backend/test_foundation_database_contract.py",
+      ".venv/bin/python -m pytest tests/backend/test_database_harness.py tests/backend/test_foundation_database_contract.py",
       "node scripts/mb-lint.mjs"
     ],
     "success_checks": [

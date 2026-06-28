@@ -31,10 +31,11 @@
     }
   ],
   "verify": [
-    "ActorContext resolves request_id, session, account, Farm, membership, role, auth provenance, and PlantPermissionContext resolver before business logic.",
+    "ActorContext resolves request_id, session, account, Farm, membership, role, auth provenance, and PlantPermissionContext interface envelope before business logic.",
     "Role preset policy matches Boss, Engineer, and Consultant authority from FT-001.",
     "Consultant cannot operate, create domain task/recommendation records, approve governance by default, or approve physical actions.",
-    "PlantPermissionContext interface remains compatible with FT-002 resolver ownership and does not implement PlantAccessGrant mutations.",
+    "PlantPermissionContext interface includes plant_id, plant_status, can_read, can_comment, can_operate, can_create_domain_tasks, can_manage_access, can_approve_actions, source, and optional grant_id, and remains compatible with FT-002 concrete resolver ownership.",
+    "FT-001 may provide fail-closed resolver adapters or test fixtures before FT-002 persistence exists, but does not implement PlantAccessGrant mutations, retained-history authorization, or archived-Plant lifecycle rules.",
     "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
   ],
   "docs": [
@@ -44,14 +45,17 @@
   "evidence_required": [
     "ActorContext/role policy test output",
     "Consultant and missing-grant fail-closed evidence",
-    "FT-002 resolver interface compatibility evidence",
+    "PlantPermissionContext shape compatibility evidence against FT-001 interface envelope and FT-002 resolver output fields",
+    "ownership evidence showing FT-001 does not implement PlantAccessGrant persistence/mutations, retained-history authorization, or archived-Plant lifecycle rules",
     "T3 verify/red-verify/human/recovery evidence"
   ],
   "source_artifacts": [
     ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/behavior-specs/FT-001-BHV-003-actor-context-permission-filtering.behavior.json",
     ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
-    ".memory-bank/contracts/boundary-map.md"
+    ".memory-bank/contracts/boundary-map.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/message-envelope.md"
   ],
   "normative_inputs": [
     ".memory-bank/architecture/system-architecture.md",
@@ -61,14 +65,22 @@
     ".memory-bank/spec-backbone.md",
     ".memory-bank/foundation.md",
     ".memory-bank/invariants.md",
-    ".memory-bank/contracts/boundary-map.md"
+    ".memory-bank/contracts/boundary-map.md",
+    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/index.md",
+    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md"
   ],
   "constraints": [
     "Every protected route/context-builder path must require ActorContext before business logic.",
     "The only MVP per-Plant permission override is plant_approve_actions.",
+    "FT-001 owns the PlantPermissionContext interface envelope; FT-002 owns concrete resolver semantics for plant_status, grant_id, source=denied, archived/retained-history behavior, PlantAccessGrant lookup, and Plant route denial codes.",
+    "Generic FT-001 protected-route/context-builder Plant denial may use AUTH_PLANT_FORBIDDEN; concrete FT-002 Plant HTTP routes use plant_not_found_or_forbidden.",
     "Do not add a general ACL engine or permission override matrix.",
-    "Do not implement FT-002 PlantAccessGrant persistence or mutation routes.",
-    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors; stop if implementation contradicts the brownfield baseline."
+    "Do not implement FT-002 PlantAccessGrant persistence, mutation routes, retained-history authorization, or archived-Plant lifecycle rules.",
+    "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "Frontend hide/show is presentation only and never an authorization substitute.",
@@ -80,7 +92,9 @@
     "node scripts/mb-lint.mjs",
     "/verify PASS",
     "/red-verify semantic-pass",
-    "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+    "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+    "Check ActorContext and PlantPermissionContext expose the canonical interface envelope fields and stay compatible with FT-002 resolver output, including plant_status, grant_id, source=denied, can_comment, and can_create_domain_tasks.",
+    "Check ActorContext and PlantPermissionContext remain interface-only for FT-002 PlantAccessGrant persistence, retained-history authorization, and archived-Plant lifecycle rules, while failing closed for missing grants."
   ],
   "purpose": "Create the ActorContext and role/Plant permission boundary that later Farm/Plant routes and context builders must consume.",
   "success_outcome": "Protected backend paths can require a typed ActorContext and derive role/Plant permission decisions without duplicating FT-002 access rules.",
@@ -104,7 +118,8 @@
     ],
     "stop_conditions": [
       "ActorContext shape conflicts with FT-001 tech spec.",
-      "Permission resolver requires unresolved FT-002 implementation decisions.",
+      "PlantPermissionContext shape conflicts with the FT-001 interface envelope or FT-002 concrete resolver output.",
+      "Permission resolver implementation requires unresolved FT-002 persistence, retained-history, or archived-Plant lifecycle decisions.",
       "Consultant or missing-grant behavior cannot be proven fail-closed.",
       "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]

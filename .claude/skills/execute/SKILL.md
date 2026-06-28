@@ -89,8 +89,10 @@ Use richer task fields when present:
 - `runtime_context`
 
 Packet context:
-- `/prd-to-tasks` creates initial required Execution Packets, and
-  `/mb-doctor` validates packet readiness at the feature/task-queue boundary.
+- `/foundation-to-tasks` creates initial required Execution Packets for
+  `FT-000` foundation tasks, `/prd-to-tasks` creates them for product tasks, and
+  `/mb-doctor` validates packet readiness at the foundation/task-queue or
+  feature/task-queue boundary.
 - `/execute` may read `.memory-bank/packets/<TASK_ID>.packet.json` only when
   required by tier/policy or explicitly linked by the task/feature, but it does
   not validate `packet_ref`, `source_task_hash`, packet freshness, or packet

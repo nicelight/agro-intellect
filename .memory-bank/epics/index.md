@@ -21,6 +21,8 @@ Active MVP v2 epics are draft L2 decomposition artifacts derived from the clarif
 
 ## Routing
 
-Global `/spec-design` gate is complete, and the next workflow pass may refresh it for expanded SDD coverage.
+Global `/spec-design` gate is complete, including the expanded shared SDD
+coverage for UI Feed, timeline audit/export, photo artifacts, Plant state
+trust, Safety action lifecycle, Companion governance, and dataset governance.
 
 Run `/prd-to-tasks FT-<NNN>` for product feature tasking. That command owns feature-level SDD design before task slicing; use standalone `/spec-improve FT-<NNN>` only for repair or advanced refresh without generating tasks.

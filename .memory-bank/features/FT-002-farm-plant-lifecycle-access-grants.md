@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-002
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-16
+last_updated: 2026-06-28
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md
@@ -59,5 +59,10 @@ Status: complete.
 Feature-local `/spec-improve FT-002` produced the authoritative feature hub:
 
 - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md): Farm seed, `tomato_001` seed, Plant lifecycle, PlantAccessGrant lifecycle, PlantPermissionContext resolver, route schemas, retained-history authorization, audit/event decisions, failure rules, and verification targets.
+
+The linked feature hub also owns the FT-002 migration that creates/reuses the
+single Farm UUID and closes FT-001's deferred
+`farm_memberships.farm_id -> farms.farm_id ON DELETE RESTRICT` relation before
+Farm/membership product writes are enabled.
 
 Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-002 implementation plan or `TASK-*` record is active.

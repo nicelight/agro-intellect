@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-010-T3-FT-001-W3-R2",
+  "packet_id": "PACKET-TASK-010-T3-FT-001-W3-R4",
   "task_id": "TASK-010-T3-FT-001-W3",
-  "created_at": "2026-06-26T12:57:05+05:00",
-  "source_task_hash": "sha256:9ec3aed4f2a016a8ed77e5c192b8e0e8c68c9bd6b2530ed6e3f53790b5cdb2c1",
+  "created_at": "2026-06-26T22:07:46+05:00",
+  "source_task_hash": "sha256:2ece68cdb24b69f666ca848c5bb57f54ef5d98b32eaf750f1c61c8877d811357",
   "status": "ready",
   "tier": "T3",
   "purpose": "Provide the reusable protected-route and context-builder seams that later product features must call before Farm/Plant data access.",
@@ -22,12 +22,18 @@
       ".memory-bank/contracts/agent-chat-bus.md",
       ".memory-bank/contracts/message-envelope.md",
       ".memory-bank/contracts/boundary-map.md",
+      ".memory-bank/contracts/ui-feed.md",
+      ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
       ".memory-bank/contracts/api-guidelines.md",
       ".memory-bank/architecture/system-architecture.md",
       ".memory-bank/workflows/tier-policy.md",
       ".memory-bank/spec-backbone.md",
       ".memory-bank/foundation.md",
       ".memory-bank/invariants.md",
+      ".memory-bank/architecture/foundation-runtime-substrate.md",
+      ".memory-bank/domains/foundation-data-substrate.md",
+      ".memory-bank/contracts/evidence-redaction.md",
+      ".memory-bank/testing/index.md",
       ".memory-bank/tasks/plans/IMPL-FT-001.md"
     ],
     "guides": [],
@@ -56,24 +62,32 @@
       "node scripts/mb-lint.mjs",
       "/verify PASS",
       "/red-verify semantic-pass",
-      "Check changed code preserves verified FT-000 app/settings/database/session/redaction baseline or records a blocker."
+      "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
+      "Check context-builder tests prove canonical PlantPermissionContext shape compatibility with FT-002 fields and denial filtering before scoped context leaves the boundary.",
+      "Check generic FT-001 Plant denial uses AUTH_PLANT_FORBIDDEN without leaking Plant existence and without taking ownership of FT-002 plant_not_found_or_forbidden route behavior.",
+      "Check context-builder output excludes auth material, UI Feed, raw chat, admin notices, and unapproved proposal content per Bus/MessageEnvelope/UI Feed owners."
     ],
     "success_checks": [
       "Protected route dependency fails closed for missing, invalid, expired, pending, disabled, or membership-disabled sessions.",
-      "Context builders use ActorContext and PlantPermissionContext before returning scoped context.",
+      "Context builders use ActorContext and the canonical PlantPermissionContext interface envelope before returning scoped context.",
+      "PlantPermissionContext compatibility checks cover plant_id, plant_status, can_read, can_comment, can_operate, can_create_domain_tasks, can_manage_access, can_approve_actions, source, and optional grant_id.",
+      "Denied Plant context, including source=denied, missing grant, revoked grant, and archived-normal-operation denial, is filtered before Bus/model context is prepared.",
       "Bus/context-builder output excludes session IDs, tokens, token hashes, password hashes, auth headers, cookies, UI Feed, raw chat, and unapproved proposal content.",
-      "Unauthorized Plant context is filtered before Bus/model context is prepared.",
+      "Generic FT-001 protected-route/context-builder Plant denial uses AUTH_PLANT_FORBIDDEN without leaking Plant existence and does not replace FT-002 plant_not_found_or_forbidden route ownership.",
       "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
     ],
     "evidence_required": [
       "protected route/context-builder test output",
+      "PlantPermissionContext canonical shape and FT-002 compatibility evidence",
+      "denial filtering evidence for source=denied, missing grant, revoked grant, and archived-normal-operation paths",
       "auth material exclusion evidence",
-      "unauthorized Plant filtering evidence",
+      "AUTH_PLANT_FORBIDDEN no-existence-leak evidence for generic FT-001 protected seams",
       "T3 verify/red-verify/human/recovery evidence"
     ]
   },
   "stop_conditions": [
     "Context-builder authorization cannot be proven before data exposure.",
+    "PlantPermissionContext shape or denial semantics conflict with FT-001 or FT-002 specs.",
     "Auth material exclusion cannot be tested.",
     "Implementation requires owning FT-007/FT-008 agent publication behavior.",
     "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."

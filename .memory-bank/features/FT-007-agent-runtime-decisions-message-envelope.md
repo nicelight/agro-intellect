@@ -45,7 +45,9 @@ source_of_truth:
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Agent Runtime module and external integration boundaries.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): runtime decision and publishable output boundary.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): Bus publication and consumability rules.
+- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): human-facing projection boundary that remains unavailable as agent context.
+- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): observation/hypothesis promotion rules.
 
 ## SDD Design Gate
 
-Run global `/spec-design` before this feature is task-decomposed. Then run `/prd-to-tasks FT-007`; it must define exact runtime decision model, adapter contract, MessageEnvelope schema, audit behavior, and anti-cheat tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-007` only for repair or advanced refresh without task generation.
+Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-007`; it must define exact runtime decision model, adapter contract, MessageEnvelope schema, audit behavior, provider configuration, and anti-cheat tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-007` only for repair or advanced refresh without task generation.

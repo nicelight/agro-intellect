@@ -48,6 +48,11 @@ Establish the local Farm authority boundary so every human action and agent cont
 
 - First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003.
 - Current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
-- `/prd-to-tasks FT-001` is complete and was refreshed on 2026-06-26 with [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md) and active task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
+- `/prd-to-tasks FT-001` is complete and was refreshed on 2026-06-26 with [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md) and active task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`; the latest refresh linked task records and packets to expanded SDD owners without creating new tasks.
+- A later `/spec-improve FT-001` repair on 2026-06-26 closed concrete
+  security primitive, cookie transport, and PlantPermissionContext ownership
+  gaps in the linked feature specs.
+- `/prd-to-tasks FT-001` then refreshed `TASK-006` through `TASK-011` and their
+  packets against the repaired contracts without creating new tasks.
 - Generated task-decomposition artifacts for FT-002 and FT-003 remain intentionally removed.
 - Next EP-001 route is `/review-tasks-plan FT-001` before implementation.

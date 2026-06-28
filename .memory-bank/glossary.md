@@ -2,10 +2,12 @@
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
 owner: architecture
-last_updated: 2026-06-02
+last_updated: 2026-06-26
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
+  - .memory-bank/spec-index.md
+  - .memory-bank/spec-backbone.md
   - .memory-bank/analysis/mvp-scope-expansion-integration-plan.md
   - .memory-bank/analysis/accounts-farm-access-admin-analysis.md
   - .memory-bank/analysis/companion-issue-stack-decision-governance.md
@@ -50,7 +52,21 @@ source_of_truth:
 - `Docs First`: meaningful work updates Memory Bank before code is considered done.
 - `SDD`: spec-driven development route where specs define normative decisions before task decomposition.
 - `Design Specs`: normative SDD documents routed by [.memory-bank/spec-index.md](spec-index.md).
-- `spec-index`: route map for authoritative specs, planned/candidate areas, feature design status, and gaps.
+- `spec-index`: pure registry for authoritative and planned SDD specs; global
+  backbone status lives in `spec-backbone`, and feature design status lives in
+  feature frontmatter.
+- `Foundation Runtime Substrate`: FT-000 runtime shape for app factory,
+  entrypoint, dependency direction, settings/database injection, and smoke route
+  mounting.
+- `Foundation Smoke API`: substrate-level `/health` and `/ready` contract.
+- `Foundation Data Substrate`: FT-000 DB/session/Alembic/runtime-root substrate
+  that product features build on without defining product schemas.
+- `Foundation Test Harness`: FT-000 test command, smoke targets, fixture
+  expectations, and evidence requirements.
+- `Evidence Redaction Contract`: rules for redacting Foundation logs, command
+  output, tests, and handoff evidence.
+- `Foundation Local Runtime Runbook`: local bootstrap, DB init, migration,
+  start, smoke, and troubleshooting command path for the verified Foundation.
 - `PRD`: product requirements document defining MVP scope, requirements, non-goals, and acceptance criteria.
 - `RTM`: requirements traceability matrix linking requirements to epics, features, and verification targets.
 - `epic`: C4 L2 product slice grouping related features.
@@ -63,11 +79,15 @@ source_of_truth:
 
 - `PostgreSQL/read model`: runtime authority for mutable operational state.
 - `timeline.jsonl`: append-only audit/export log, not primary mutable state.
+- `Timeline Event`: append-only audit/export event record that references
+  runtime/artifact authority but cannot mutate or rehydrate it.
 - `photo manifest`: immutable JSON artifact next to a photo; either `initial_capture` or `export_snapshot`.
 - `initial_capture`: manifest kind created at photo upload/capture time with identity and file metadata.
 - `export_snapshot`: manifest kind created later for dataset/export context snapshots.
 - `Agent Chat Bus`: domain-owned working event stream for agent-consumable events.
 - `UI Feed`: human-facing presentation stream; never agent working context.
+- `UIFeedEvent`: human-facing projection event; never runtime authority or
+  agent working context.
 - `Agno`: execution SDK for agents/workflows; not source of truth and not Agent Chat Bus.
 - `Agno Agent`: Agno execution unit wrapping model, tools, instructions, memory, HITL, and guardrails.
 - `Agno Workflow`: Agno execution flow for predictable steps, routers, conditions, loops, or parallel steps.
@@ -159,6 +179,9 @@ source_of_truth:
 - `physical action`: plant-system intervention such as pH/EC change, solution change, pump/light/dosing change, pruning, transplanting, or root trimming.
 - `Safety Gate`: policy boundary that blocks or routes physical-action advice before user display or task/action creation.
 - `Safety Gate approval`: physical-action approval path requiring Safety Gate clearance, fresh data, and authorized human decision; distinct from governance approval.
+- `Safety Action Lifecycle`: shared lifecycle from physical-action wording to
+  Safety Gate, authorized human approval, human-performed action task, and
+  follow-up outcome.
 - `human approval`: explicit user approval/rejection for risky physical actions; unlocks only human-performed task tracking in MVP.
 - `Human-in-the-loop`: pattern where important plant-impacting decisions require explicit human decision.
 - `analysis freshness`: pH/EC freshness window of up to 24 hours for analysis.
@@ -177,6 +200,8 @@ source_of_truth:
 - `probable`: hypothesis or incomplete-evidence value.
 - `unknown`: value is not known.
 - `conflict`: evidence contradicts other evidence.
+- `Plant State Trust`: shared boundary that keeps observations, hypotheses,
+  conflicts, and confirmed Plant state distinct.
 
 ## Data And Photo Artifacts
 

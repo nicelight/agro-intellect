@@ -21,7 +21,7 @@
   "gates": [
     {
       "name": "bootstrap-contract-tests",
-      "command": "python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
+      "command": ".venv/bin/python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
       "required": true
     },
     {
@@ -77,7 +77,11 @@
   "normative_inputs": [
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/runbooks/foundation-local-runtime.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/foundation-test-harness.md"
   ],
   "constraints": [
     "Target Linux Mint local setup.",
@@ -92,7 +96,7 @@
   ],
   "verification_targets": [
     "bash scripts/bootstrap-local.sh",
-    "python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
+    ".venv/bin/python -m pytest tests/backend/test_foundation_bootstrap_contract.py",
     "node scripts/mb-lint.mjs"
   ],
   "purpose": "Provide a repeatable Linux Mint local setup and runtime-root baseline for later backend feature tasks.",

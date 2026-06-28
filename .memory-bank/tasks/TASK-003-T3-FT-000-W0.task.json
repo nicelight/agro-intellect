@@ -24,7 +24,7 @@
   "gates": [
     {
       "name": "redaction-tests",
-      "command": "python -m pytest tests/backend/test_foundation_redaction.py",
+      "command": ".venv/bin/python -m pytest tests/backend/test_foundation_redaction.py",
       "required": true
     },
     {
@@ -110,7 +110,10 @@
   "normative_inputs": [
     ".memory-bank/constitution.md",
     ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/workflows/tier-policy.md"
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/foundation-test-harness.md",
+    ".memory-bank/runbooks/foundation-local-runtime.md"
   ],
   "constraints": [
     "Do not log or export secrets, API keys, tokens, .env values, credentials, or auth material.",
@@ -122,7 +125,7 @@
     "MVP data and artifacts remain local/private by default."
   ],
   "verification_targets": [
-    "python -m pytest tests/backend/test_foundation_redaction.py",
+    ".venv/bin/python -m pytest tests/backend/test_foundation_redaction.py",
     "node scripts/mb-lint.mjs",
     "/verify PASS",
     "/red-verify semantic-pass"
