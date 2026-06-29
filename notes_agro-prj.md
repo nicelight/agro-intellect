@@ -53,11 +53,11 @@ ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
      Только doc-spec правка в skills/_shared/references/commands/clarify-feature.md: добавить чтение spec_design_*, design-impact note, routing в /spec-improve//
      spec-design, behavior-spec stale note. Без scripts.
 
-  2. /mb-sync
+  --2. /mb-sync
      Тоже почти чистая документационная правка: commands/mb-sync.md + references/workflows/mb-sync.md. Добавить SDD checklist: spec-backbone, spec-index,
      spec_design_links, behavior specs, packet freshness handoff.
 
-  3. /execute
+  --3. /execute
      Небольшая правка в commands/execute.md: explicit stop на missing required packet для T2/T3, guide-only caveat, concrete contract minimum block. Низкий риск.
 
   Средняя сложность:
@@ -83,59 +83,13 @@ ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
 
  
 
-
-
-
 **********************************************************************************
 
-codex resume 019f051c-aa2a-74e0-90b0-17bc1509251d
-тут выполнялся  /review-tasks-plan FT-001
-
-**********************************************************************************
-
-  Обязательно править task cards
-
-  - TASK-006-T3-FT-001-W1
-    Главный owner для security primitives. Нужно уточнить verify, constraints,
-    evidence_required, возможно touched_files. Если выберем argon2/bcrypt/
-    passlib, сюда надо добавить pyproject.toml в touched_files.
-
-  - TASK-009-T3-FT-001-W2
-    Главный owner для cookie/session API. Добавить cookie name, Path, SameSite,
-    Secure, Max-Age/Expires, clear-cookie behavior в verification/evidence.
-
-  - TASK-008-T3-FT-001-W2
-    Главный owner для ActorContext и interface boundary PlantPermissionContext.
-    Нужно синхронизировать shape с FT-002 и убрать двусмысленность ownership.
-
-  - TASK-010-T3-FT-001-W3
-    Зависит от canonical PlantPermissionContext в context builders/protected
-    routes. Нужно обновить проверки на совместимость shape, denial filtering и
-    auth/context exclusion.
-
-  - TASK-011-T3-FT-001-W3
-    Integration/docs gate должен покрывать новые security/cookie/permission
-    contract checks и docs sync.
-
-  Условно править
-
-  - TASK-005-T3-FT-001-W1
-    Только если security repair задаст конкретные storage constraints для
-    password_hash / token_hash: длины колонок, nullable rules, индексы, формат
-    hash string. Если spec останется на уровне “строка hash, unique token_hash”,
-    можно не трогать.
-
-  - TASK-007-T3-FT-001-W2
-    Только если repair уточнит service semantics: token verification, session TTL
-    calculation, activation primitive, revocation/expiry behavior. Скорее всего
-    придется слегка обновить verification/evidence, но меньше, чем 006/009.
 
 **********************************************************************************
 **********************************************************************************
 **********************************************************************************
 
-
-Проведи еще раз brownfield-aware global SDD backbone refresh
   -----------------
 
 основные SDD спеки.
@@ -148,6 +102,20 @@ codex resume 019f051c-aa2a-74e0-90b0-17bc1509251d
    - Data Contract - Структура данных, версии, обязательные поля
 - Data Specification — модели данных, схемы БД, форматы сообщений, правила валидации и сериализации.
 
+
+ПЛАН УЛУЧШЕНИЯ MEMOBANK:
+
+  1. /prd-to-tasks выполняет обязательный Task Design Coverage Pass перед созданием каждой T2/T3-задачи:
+      - определяет необходимые Interface/Component/API/Event/Data specs;
+  2. /spec-improve получает дополнительный task-scoped режим:
+
+  /spec-improve TASK-001-T2-FT-001-W1
+  - проверить design coverage конкретной задачи;
+  - исправить существующие authoritative specs;
+  - создать недостающий spec только при отсутствии естественного owner;
+  - обновить ссылки задачи и feature metadata;
+  - не менять scope, tier, waves и dependencies;
+  - потребовать обновления packet через /mb-packet.
 
 
 
