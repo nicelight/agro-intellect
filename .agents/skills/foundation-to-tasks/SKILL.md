@@ -21,7 +21,6 @@ Foundation uses the same execution model as product work:
 - `.memory-bank/tasks/index.json`
 - `.protocols/TASK-*`
 - `.tasks/TASK-*`
-- `.memory-bank/packets/TASK-*.packet.json`
 
 Do not create a separate foundation registry, task lifecycle, protocol family, or
 task schema.
@@ -52,6 +51,17 @@ Required reads:
 
 `/spec-design` must run first. If `.memory-bank/foundation.md` is missing, route
 back to `/spec-design` and stop before task generation.
+
+Before reading foundation anchors or writing any artifact, require
+`.memory-bank/spec-backbone.md` `## Global Backbone Status` to be:
+- `complete`; or
+- `minimal` with the explicit `Not applicable areas` entries and rationales
+  required by the `/spec-design` status contract.
+
+If the section or status is missing/malformed, the status is `blocked`, or
+`minimal` lacks explicit not-applicable rationale, stop and route back to
+`/spec-design`. Do not create or update foundation specs, `REQ-000`, `FT-000`,
+task records, protocols, or plans.
 
 ## 1) Foundation contract
 Read `.memory-bank/foundation.md` and require this parseable section:
@@ -112,24 +122,31 @@ define and prove the executable substrate. Use evidence from
 `.memory-bank/foundation.md`, the Feature Pressure Map, PRD/features, and linked
 backbone specs. Do not invent future product behavior.
 
-The output is a foundation-level spec owner plus the minimal substrate block
-needed by `FT-000` tasks, not the final product specification for every future
-feature. A good foundation block records:
-- what the spec owns and does not own
+The output is the smallest set of subject-based canonical specs and substrate
+blocks needed by `FT-000` tasks, not the final product specification for every
+future feature. A good foundation block records:
+- its scope and out-of-scope concerns when the boundary is not obvious
 - the substrate shape or boundary used by the walking skeleton
 - the basic rules/invariants that foundation tasks must preserve
 - the verification target proving the baseline
-- where `/prd-to-tasks` should extend the same owner or create feature-local
-  specs later
+- where `/prd-to-tasks` should reuse or extend the same canonical path later
 
-Audit the key SDD families as foundation substrate concerns. Create or update
-the natural owner when the foundation path touches the family:
-- Architecture Specification: minimal runtime shape, entrypoints, core
+Before creating a substrate spec, read `spec-index.md`, relevant folder indexes,
+and plausible subject-based candidates in full. For each substrate concern use
+exactly one action: `reuse|extend|create|not_applicable|block`. If two paths
+compete for one concern, create no third file; route the conflict to
+`/spec-design`.
+
+Apply the same three design lenses used by `/spec-design` and `/prd-to-tasks`,
+but only to the substrate proof path:
+- Architecture impact: minimal runtime shape, entrypoints, core
   components/modules, dependency direction, source-of-truth boundary, and the
-  smallest vertical path through real layers.
-- Interface Specification: API, event, protocol, CLI, agent/tool, or
-  frontend/backend boundary used by the substrate proof path. Include the
-  relevant fundamental contracts:
+  smallest vertical path through real layers. Update the existing canonical
+  Architecture Specification; do not introduce product architecture here.
+- Interfaces / Contracts: API, event, protocol, CLI, agent/tool, component, or
+  frontend/backend boundary actually crossed by the substrate proof path.
+  Interface Specification is the lens; create or update only the applicable
+  fundamental canonical contracts:
   - Component Contract: module/component guarantees and ownership boundaries
     required by the walking skeleton.
   - API Contract: substrate-level REST/gRPC/GraphQL or other request/response
@@ -140,11 +157,16 @@ the natural owner when the foundation path touches the family:
     event/message boundary.
   - Data Contract: payload/data structure, versions, required fields,
     validation/serialization, and compatibility expectations for substrate data
-    crossing a boundary.
-- Data Specification: data model/storage ownership needed by the baseline, DB
+    crossing a component/API/event/protocol boundary. It does not define internal
+    DB/storage models.
+- Data impact: update the Data Specification only for internal data
+  model/storage ownership needed by the baseline, DB
   schema or migration path when persistence is part of foundation, session/UoW
-  lifetime, seed/bootstrap behavior, runtime data paths, message/data formats,
-  and validation/serialization rules used by the substrate proof.
+  lifetime, seed/bootstrap behavior, runtime data paths, internal stored or
+  serialized formats, and internal validation/serialization rules used by the
+  substrate proof.
+
+Create supporting substrate specs only when the proof path needs them:
 - Test Harness Specification: test command, smoke/integration target, required
   fixtures, and evidence expected from foundation verification.
 - Local Runtime / Bootstrap Runbook: setup/start commands, environment
@@ -160,17 +182,24 @@ or evidence behavior, when future T2/T3 product tasks will depend on the
 substrate rule already selected by the foundation path, or when `/spec-design`
 routed a relevant Backbone Area Matrix row to foundation proof.
 
-Natural owners:
+Canonical locations:
 - architecture/runtime shape -> `.memory-bank/architecture/*`
-- interface/API/message/agent/tool substrate proof and fundamental contracts ->
-  `.memory-bank/contracts/*`
-- DB/session/UoW/migration/seed/storage ownership -> `.memory-bank/domains/*` or
-  `.memory-bank/contracts/*`
+- interface/component/API/event/protocol/agent/tool boundaries and payloads
+  crossing them -> `.memory-bank/contracts/*`
+- internal DB/session/UoW/migration/seed/storage ownership ->
+  `.memory-bank/domains/*`, `.memory-bank/states/*`, or the stack-native schema
+  and migration source
 - test harness and evidence requirements -> `.memory-bank/testing/*`
 - local runtime/bootstrap/troubleshooting -> `.memory-bank/runbooks/*`
 
 Rules:
-- Prefer updating existing owners over creating new files.
+- Prefer reusing or extending an existing registered canonical path over
+  creating a new file.
+- New substrate specs use subject-oriented paths and names without `FT-000`,
+  `FT-<NNN>`, or feature identity. Recheck neighboring filenames for synonyms
+  and overlap before creation.
+- Register canonical identity by path and scope. Do not add feature ownership,
+  `used_by`, or file-owner metadata to specs or `spec-index.md`.
 - Do not create empty placeholder specs for scaffold areas that the foundation
   path does not touch.
 - Foundation tasks must link scaffold specs through normal task fields when
@@ -183,11 +212,12 @@ Rules:
 - Leave product-level endpoint shapes, feature data schemas, event payloads,
   domain rules, state transitions, and edge-case/error matrices for
   `/prd-to-tasks` unless they are required to prove the foundation baseline.
-  `/prd-to-tasks` may extend the same spec owner or create feature-local specs
-  without duplicating the foundation owner.
+  `/prd-to-tasks` may reuse or extend the same canonical spec, or create only a
+  missing subject-based spec, without duplicating the foundation definition.
 - When this command creates or materially updates scaffold specs, update
-  `.memory-bank/spec-index.md` as a registry only. Do not store decision bodies
-  in the index.
+  `.memory-bank/spec-index.md` as a registry only using
+  `Type | Path | Status | Scope | Change route`. Do not store decision bodies
+  or reverse feature usage in the index.
 - If the selected substrate requires an unresolved product/API/data/security
   decision, stop and route back to `/spec-design` instead of creating weak
   foundation tasks.
@@ -251,16 +281,23 @@ Task rules:
 - fill the normal task schema fields; use empty arrays only when no evidence
   exists
 - include scaffold-level spec links from section 2.1 when they constrain
-  foundation architecture, primary runtime/backend scaffold, interface smoke,
-  component/API/event/data contracts, DB/session/UoW/migration, test harness,
+  foundation Architecture, Interfaces / Contracts, Data, test harness,
   runtime/bootstrap, or redaction/evidence behavior
+- every T2/T3 record has non-empty `purpose` and one scalar
+  `success_outcome`, at least one existing direct task-linked canonical SDD spec
+  path, grounded scope in `touched_files` and/or
+  `runtime_context.allowed_write_scope`, and at least one verification path
+  through a real gate command and/or non-empty `verification_target`
+- leave `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
+  `invariants`, `evidence_required`, and `runtime_context.stop_conditions`
+  empty or absent when current evidence does not justify them
 - never add foundation-specific task fields or lifecycle values
 
 Brownfield `--verify-existing` mode should not create `FT-000` by default. If
 existing baseline evidence is already verified and no task is needed, update
 `.memory-bank/foundation.md` to `Foundation Required: false` and
 `Foundation Gate Task: not_required` with concise evidence/rationale, then stop
-without creating `REQ-000`, `FT-000`, protocols, packets, or task records. If
+without creating `REQ-000`, `FT-000`, protocols, or task records. If
 evidence is insufficient, keep `Foundation Required: true` and create only the
 minimum probe/verification tasks needed to prove the existing baseline before
 product feature tasking.
@@ -284,19 +321,21 @@ Do not mark the gate `done` during this command. Execution and verification go
 through `/execute`, `/verify`, `/red-verify` when tier requires it, and
 `/mb-sync`.
 
-## 6) Execution Packets
-Create or refresh required initial Execution Packets for:
-- every foundation `T2` / `T3` task
-- every foundation `T0` / `T1` task with
-  `runtime_context.packet_required: true`
+## 6) T2/T3 single-card handoff completeness
 
-Use the same packet rules as `/prd-to-tasks`:
-- canonical path `.memory-bank/packets/<task.id>.packet.json`
-- `source_task_hash` over the raw task record bytes
-- packet is derivative and never overrides task/spec/foundation truth
-- use `status: ready`, `ready_with_gaps`, or `blocked`
+Before handoff, apply the same single-card completeness contract as
+`/prd-to-tasks` to every foundation T2/T3 record:
+- schema/index/ID segments are valid
+- `REQ-000` and any additional governing requirements exist
+- `purpose` and scalar `success_outcome` are non-empty
+- at least one existing direct task-linked canonical SDD spec path is present
+- scope is grounded by `touched_files` and/or
+  `runtime_context.allowed_write_scope`
+- a real gate command and/or non-empty `verification_target` exists
+- dependencies exist and remain acyclic
 
-If a packet is blocked, keep the task queue but do not hand off to execution.
+This does not add a new status, artifact, nested object, or semantic doctor
+rule. Optional evidence-driven fields remain grounded-only.
 
 ## 7) Handoff
 Before finishing:
@@ -308,7 +347,7 @@ Before finishing:
 - stop before execution
 
 Next command:
-- run `/mb-doctor` at the foundation/task-queue boundary
+- run `/mb-doctor --strict` at the foundation/task-queue boundary
 - then execute/verify foundation tasks until the final foundation gate task is
   `done`
 - only then run `/prd-to-tasks FT-<NNN>` for product features

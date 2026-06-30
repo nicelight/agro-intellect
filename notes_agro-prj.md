@@ -25,7 +25,7 @@
 
 запуск отложенной задачи по промпту
 
-sleep 240m && codex -c model_reasoning_effort=xhigh resume 019ec059-2934-7a40-8bc2-eee1e029098b "Задача прервалась, скорее всего твои воркеры не завершили ее. Проверь в каком состоянии задача и аккуратно продолжи ее выполнение через новых воркеров"
+sleep 240m && codex -c model_reasoning_effort=xhigh resume 019ec059-2934-7a40-8bc2-eee1e029098b "Задачу опишем тут"
 
 sleep 120m && codex -c model_reasoning_effort=xhigh resume 019eebb6-9237-7263-8309-57bb787d4eef "$(< prompt.md)" 
  
@@ -33,7 +33,8 @@ sleep 120m && codex -c model_reasoning_effort=xhigh resume 019eebb6-9237-7263-83
 ----------------------
 
 
-1. убрать из воркфлоу для T3 - ROLLBACK_RECOVERY_NOTE:
+
+
 
 #tags  
 ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
@@ -81,42 +82,71 @@ ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
 ----------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------
 
- 
+На ночь запустить:
+Твоя основная задача - выполнить рефакторинг из файла IDEAS/specs_without_owners.md. 
+
+
+
 
 **********************************************************************************
-
-
 **********************************************************************************
+
+Кто еще может использовать не правильную модель генерации контрактов:
+```
+### Прямой генератор
+
+  - skills/_shared/references/commands/spec-auto.md:68
+      - обновляет feature spec_design_links;
+      - размещает feature-local design в tech-specs/*;
+      - рекомендует один concise feature hub;
+      - генерирует Component/API/Event/Data Contracts в рамках feature design.
+
+  ### Поддерживает модель через routing
+
+  - skills/_shared/references/commands/spec-design.md:177
+      - сам не создаёт FT-*.md;
+      - но направляет feature-local contracts/domain behavior в feature tech-spec;
+      - использует natural owner и needed_before_tasks, ведущие далее в /prd-to-tasks.
+
+  ### Особый случай
+
+  - skills/_shared/references/commands/foundation-to-tasks.md:115
+      - генерирует Component/API/Event/Data Contracts для FT-000;
+      - это substrate specs, задуманные как reusable, а не product-feature hubs;
+      - однако содержит старую terminology и разрешает /prd-to-tasks создавать feature-local specs.
+
+  ### Только сохраняют или передают старую модель
+
+  - skills/_shared/references/commands/clarify-feature.md:41: содержит пример .memory-bank/tech-specs/FT-<NNN>-<slug>.md.
+  - skills/_shared/references/commands/prd.md:101: создаёт feature routing и spec_design_links, но specs не генерирует.
+  ```
+
+
+
+подумать как оптимальнее разбивать фичи на таски, чтобы не дробить их на 1-2 часовые, а как то более оптимально для AI-first разработки. 
+
+В проекте :
+- проананлизировать, почему Текущий статус FT-001 повторяется минимум в пяти местах:
+root index, analysis index, features index, EP-001 и FT-001 feature. 
+
+
 **********************************************************************************
 **********************************************************************************
 
   -----------------
 
-основные SDD спеки.
+ SDD design specifications, описывающие устройство системы и технические контракты:
 
-- Architecture Specification
-- Interface Specification — API, события, протоколы, контракты.
-   - Component Contract - Что гарантирует каждый модуль
-   - API Contract - REST/gRPC/GraphQL, входы, выходы, ошибки
-   - Event Contract - Формат событий, очередей, сообщений
-   - Data Contract - Структура данных, версии, обязательные поля
-- Data Specification — модели данных, схемы БД, форматы сообщений, правила валидации и сериализации.
-
-
-ПЛАН УЛУЧШЕНИЯ MEMOBANK:
-
-  1. /prd-to-tasks выполняет обязательный Task Design Coverage Pass перед созданием каждой T2/T3-задачи:
-      - определяет необходимые Interface/Component/API/Event/Data specs;
-  2. /spec-improve получает дополнительный task-scoped режим:
-
-  /spec-improve TASK-001-T2-FT-001-W1
-  - проверить design coverage конкретной задачи;
-  - исправить существующие authoritative specs;
-  - создать недостающий spec только при отсутствии естественного owner;
-  - обновить ссылки задачи и feature metadata;
-  - не менять scope, tier, waves и dependencies;
-  - потребовать обновления packet через /mb-packet.
-
+  - Architecture Specification — модули, boundaries, source of truth, runtime/deployment.
+  - Component Contract — гарантии и ответственность компонентов.
+  - API Contract — REST/gRPC/GraphQL, входы, выходы, ошибки, auth.
+  - Event Contract — события, очереди, ordering, retry, idempotency.
+  - Data Contract — payload между системными boundaries.
+  - Data Specification — внутренние модели, БД, persistence, migrations.
+  - State Specification — lifecycle, состояния, переходы и guards.
+  - Security/access contracts — credentials, permissions, safety rules.
+  - Testing Specification — стратегия и критерии проверки связанных контрактов.
+  - При необходимости: ADR, runbook и нормативные guides.
 
 
 

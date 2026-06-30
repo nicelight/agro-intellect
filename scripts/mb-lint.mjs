@@ -53,8 +53,6 @@ const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const GATE_KEYS = new Set(['name', 'command', 'required']);
 const RUNTIME_CONTEXT_KEYS = new Set([
-  'packet_required',
-  'packet_ref',
   'allowed_write_scope',
   'forbidden_scope',
   'stop_conditions',
@@ -204,6 +202,7 @@ function isMetadataScopedDoc(rel) {
     n.startsWith('.memory-bank/architecture/') ||
     n.startsWith('.memory-bank/guides/') ||
     n.startsWith('.memory-bank/adrs/') ||
+    // Legacy brownfield spec paths remain lintable during subject-based migration.
     n.startsWith('.memory-bank/tech-specs/') ||
     n.startsWith('.memory-bank/domains/') ||
     n.startsWith('.memory-bank/contracts/') ||
@@ -360,7 +359,6 @@ function checkFrontmatter(filePath, text) {
     }
 
     if (isMetadataScopedDoc(rel) && status === 'active') {
-      if (!fm.owner || !String(fm.owner).trim()) warnings.push(`${rel}: missing 'owner' (recommended for active docs)`);
       if (!fm.last_updated || !String(fm.last_updated).trim()) {
         warnings.push(`${rel}: missing 'last_updated' (recommended for active docs, YYYY-MM-DD)`);
       } else if (!/^\d{4}-\d{2}-\d{2}$/.test(stripYamlQuotes(fm.last_updated))) {
@@ -505,7 +503,7 @@ function checkFileSize(filePath, text) {
   const rel = normalizeRel(path.relative(ROOT, filePath));
   const lines = text.split(/\r?\n/).length;
   if (lines > 2000) {
-    warnings.push(`${rel}: very large file (${lines} lines). Consider splitting.`);
+    warnings.push(`${rel}: very large file (${lines} lines). Review for mixed concerns; split only by boundary, change cadence, consumers, or reuse.`);
   }
 }
 
@@ -581,6 +579,13 @@ function checkArrayField(rel, task, field) {
   }
 }
 
+function checkRequiredStringField(rel, task, field) {
+  if (!hasOwn(task, field)) return;
+  if (typeof task[field] !== 'string') {
+    errors.push(`${rel}: '${field}' must be a string`);
+  }
+}
+
 function checkOptionalStringField(rel, object, field) {
   if (!hasOwn(object, field)) return;
   if (typeof object[field] !== 'string') {
@@ -602,12 +607,15 @@ function checkOptionalStringArrayField(rel, object, field, label = field) {
   });
 }
 
-function normalizePacketRef(value) {
-  return normalizeRel(String(value ?? '').trim()).replace(/^\.\//, '');
-}
+function checkVerifyItems(rel, task) {
+  if (!Array.isArray(task.verify)) return;
 
-function canonicalPacketRef(taskId) {
-  return `.memory-bank/packets/${taskId}.packet.json`;
+  task.verify.forEach((item, index) => {
+    const isStructuredObject = item && typeof item === 'object' && !Array.isArray(item);
+    if (typeof item !== 'string' && !isStructuredObject) {
+      errors.push(`${rel}: 'verify[${index}]' must be a string or object`);
+    }
+  });
 }
 
 function taskIdParts(taskId) {
@@ -659,28 +667,8 @@ function checkOptionalTaskRuntimeContext(rel, task) {
 
   checkExactKeys(rel, runtimeContext, RUNTIME_CONTEXT_KEYS, 'runtime_context');
 
-  if (hasOwn(runtimeContext, 'packet_required') && typeof runtimeContext.packet_required !== 'boolean') {
-    errors.push(`${rel}: 'runtime_context.packet_required' must be a boolean when present`);
-  }
-  if (hasOwn(runtimeContext, 'packet_ref') && typeof runtimeContext.packet_ref !== 'string') {
-    errors.push(`${rel}: 'runtime_context.packet_ref' must be a string when present`);
-  }
   for (const field of RUNTIME_CONTEXT_ARRAY_FIELDS) {
     checkOptionalStringArrayField(rel, runtimeContext, field, `runtime_context.${field}`);
-  }
-
-  if (runtimeContext.packet_required !== true) return;
-
-  if (typeof runtimeContext.packet_ref !== 'string' || !runtimeContext.packet_ref.trim()) {
-    errors.push(`${rel}: runtime_context.packet_required true requires non-empty runtime_context.packet_ref`);
-    return;
-  }
-
-  const packetRef = normalizePacketRef(runtimeContext.packet_ref);
-  if (packetRef !== canonicalPacketRef(task.id)) {
-    errors.push(
-      `${rel}: runtime_context.packet_ref for required packet must be ${canonicalPacketRef(task.id)}`
-    );
   }
 }
 
@@ -1118,6 +1106,9 @@ function checkTaskRecords() {
     if (!ALLOWED_TASK_TIER.has(task.tier)) {
       errors.push(`${rel}: invalid tier '${task.tier}' (allowed: T0|T1|T2|T3)`);
     }
+    for (const field of ['title', 'wave', 'feature']) {
+      checkRequiredStringField(rel, task, field);
+    }
     checkLegacyTaskRiskKeys(rel, task);
     checkOptionalTaskRuntimeContext(rel, task);
 
@@ -1137,6 +1128,21 @@ function checkTaskRecords() {
     ]) {
       checkArrayField(rel, task, field);
     }
+    for (const field of [
+      'reqs',
+      'depends_on',
+      'touched_files',
+      'docs',
+      'evidence_required',
+      'source_artifacts',
+      'normative_inputs',
+      'constraints',
+      'invariants',
+      'verification_targets',
+    ]) {
+      checkOptionalStringArrayField(rel, task, field);
+    }
+    checkVerifyItems(rel, task);
     checkTaskArchitectureReferences(rel, task);
     checkGateItems(rel, task);
 

@@ -27,7 +27,7 @@ Real global architecture/backbone and foundation decisions belong to `/spec-desi
 Run after clarified `/write-prd` and before `/prd`.
 
 Canonical manual chain:
-`/brainstorm -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK`.
+`/brainstorm -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict and execute/verify FT-000 until its gate is done when foundation tasks were created -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK`.
 
 Stage model:
 1. Read PRD and existing framing/spec context.
@@ -47,7 +47,11 @@ Read, if present and relevant:
 - existing `.memory-bank/spec-backbone.md`
 - existing `.memory-bank/user-scenarios.md`
 - existing `.memory-bank/invariants.md`
-- existing specs under `.memory-bank/architecture/`, `.memory-bank/tech-specs/`, `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, and `.memory-bank/runbooks/`
+- existing specs under `.memory-bank/architecture/`, `.memory-bank/contracts/`,
+  `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`,
+  `.memory-bank/testing/`, `.memory-bank/guides/`, and `.memory-bank/runbooks/`
+- legacy `.memory-bank/tech-specs/FT-*.md` only as brownfield evidence; do not
+  treat that path family as the target model for new specs
 
 Stop if `.memory-bank/prd.md` is missing or so unclear that pre-PRD framing would mislead `/prd`; route back to `/write-prd`.
 
@@ -125,7 +129,7 @@ Include only decomposition-affecting MUST/NEVER rules. Do not use `/spec-init` t
 ## 4) Forbidden work
 Do not create:
 - task records or implementation plans
-- feature-local tech specs
+- feature-owned or `FT-*`-named design specs
 - `.memory-bank/features/` files or feature design status
 - full architecture decisions
 - source-of-truth hierarchy
@@ -134,12 +138,12 @@ Do not create:
 
 If a real architecture decision is needed, record it as an open design question in `.memory-bank/spec-backbone.md` and route it to `/spec-design` after `/prd`, unless it blocks truthful PRD decomposition.
 
-`/spec-init` must not set `spec_design_status`, create feature-local design links, or create feature files. `/prd` creates features, `/spec-design` establishes the global backbone after features exist, and `/prd-to-tasks` owns feature design status before task slicing.
+`/spec-init` must not set `spec_design_status`, create feature-level design links, or create feature files. `/prd` creates features, `/spec-design` establishes the global backbone after features exist, and `/prd-to-tasks` sets feature design status before task slicing.
 
 ## 5) spec-index.md boundary
 Keep `.memory-bank/spec-index.md` as a pure index/registry with this shape:
 - Purpose
-- Spec Registry table: `Spec | Type | Path | Status | Owner command | Scope`
+- Spec Registry table: `Type | Path | Status | Scope | Change route`
 - Planned Specs table: `Area | Expected path | Needed by | Notes`
 - Broken / Missing Links
 - Update Rules

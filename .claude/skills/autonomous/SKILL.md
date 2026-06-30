@@ -113,7 +113,8 @@ Block `/prd-to-tasks --all` when any targeted feature has:
 - missing or `blocked` global backbone status
 - `.memory-bank/foundation.md` says foundation is required and the final
   foundation gate task is missing or not `done`
-- likely T2/T3 work with missing/incomplete `spec_design_status` or missing linked SDD specs
+- likely T2/T3 work with missing/incomplete `spec_design_status` or missing
+  canonical feature spec links
 - unresolved markers that affect decomposition, acceptance criteria, dependencies, verification, security/compliance, external contracts, data migration, or data-loss risk
 
 Правила:
@@ -122,7 +123,8 @@ Block `/prd-to-tasks --all` when any targeted feature has:
 - if feature blocker preflight finds blockers, record them in `.protocols/AUTONOMOUS-RUN/status.md`, set terminal state `HALT_CLARIFICATION_REQUIRED`, and stop
 - never invoke `/clarify-feature` automatically in autonomous mode; it is a manual or explicit follow-up command for feature blockers
 - missing clarification metadata is not a blocker
-- do not bypass `/spec-auto`; if T2/T3 work lacks linked SDD specs, record the blocker and stop before `/prd-to-tasks --all`
+- do not bypass `/spec-auto`; if T2/T3 feature concerns lack canonical specs,
+  record the blocker and stop before `/prd-to-tasks --all`
 - do not bypass `/spec-design`; missing or blocked backbone status stops before `/prd-to-tasks --all`
 - do not bypass `/foundation-to-tasks`; required foundation must be implemented
   and verified before product feature task generation
@@ -167,17 +169,12 @@ without creating `REQ-000`, `FT-000`, or foundation task records.
   - `verify`
   - `docs`
 - Authoritative routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
-- T2/T3 task records must include relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
-- T2/T3 task records must include
-  `runtime_context.packet_required: true` and canonical
-  `runtime_context.packet_ref: ".memory-bank/packets/<task.id>.packet.json"`.
-- T2/T3 tasks require usable Execution Packets before implementation,
-  regardless of whether older task records omit `runtime_context.packet_required`.
-- A T2/T3 task record with `runtime_context.packet_required: false` is a
-  policy violation, not permission to skip the packet.
-- T0/T1 tasks require packets only when the indexed task record sets
-  `runtime_context.packet_required: true`; `packet_ref` without that flag is
-  advisory only.
+- T2/T3 task records must directly link every relevant canonical SDD spec in
+  `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
+  `verification_targets`; feature links or `spec-index.md` alone do not count.
+- T2/T3 task records must satisfy the deterministic single-card handoff
+  contract: purpose/outcome, task-linked SDD path, grounded scope, verification
+  path, valid REQ/dependencies, and matching schema/index/ID segments.
 
 ## 6.1) Task-plan review gate по JSON task records
 Сразу после `/prd-to-tasks --all` и до scheduler execution выполни
@@ -192,7 +189,7 @@ feature-scoped `/review-tasks-plan` по каждой task-linked product featur
 
 Правило:
 - если review по feature даёт `REJECT` → это blocking gate; исправь task
-  records, packets, specs, or dependencies for that feature and rerun
+  records, specs, or dependencies for that feature and rerun
   `/review-tasks-plan FT-<NNN>`
 - если после 2–3 циклов та же feature всё ещё `REJECT` → terminal state
   `HALT_REVIEW_REJECT`
@@ -208,14 +205,17 @@ feature-scoped `/review-tasks-plan` по каждой task-linked product featur
 - если doctor command/script отсутствует, падает, или возвращает readiness errors → terminal state `HALT_QUALITY_GATES`
 - after task queue exists, required ordering is `node scripts/mb-lint.mjs` + `mb-doctor --strict`; do not replace strict doctor with plain lint
 - explicit pending/blocked feature clarification or tasks linked to such features are readiness errors
-- T2/T3 tasks without linked SDD specs are readiness errors
+- T2/T3 tasks without direct task-relevant canonical SDD links are readiness errors
 - strict doctor должен быть зелёным до первого task selection pass
 
 ## 7) Scheduler loop
 Работай по `.memory-bank/tasks/index.json` и indexed `.task.json` records.
 If JSON task records are missing or empty, set terminal state `HALT_DEPENDENCY_DEADLOCK` with reason `no schema-backed task records`.
 If any indexed task record is missing `tier`, set terminal state `HALT_POLICY_VIOLATION` and stop.
-If any indexed `T2` / `T3` task lacks linked SDD specs, set terminal state `HALT_QUALITY_GATES` and route back to `/spec-auto --all`.
+If any indexed `T2` / `T3` task lacks direct task-relevant canonical SDD links,
+set terminal state `HALT_QUALITY_GATES` and route task-card reconciliation back
+to `/prd-to-tasks --all`; route only missing shared/global design decisions to
+`/spec-design --all`.
 Read the task queue and task metadata only from JSON task records.
 Before task selection and before progression after each closed task, run `node scripts/mb-lint.mjs`, then `/mb-doctor --strict` using the repository's documented command or `node scripts/mb-doctor.mjs --strict`. Treat doctor absence, non-zero exit, or readiness errors as `HALT_QUALITY_GATES`.
 
@@ -232,9 +232,9 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
@@ -242,7 +242,7 @@ Manual mode:
 - Manual closure is allowed only when an explicit closure owner exists.
 - `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
 - T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership.
-- T2 task closure may rely on `/verify PASS` when full protocol and required packet/spec gates are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
+- T2 task closure may rely on `/verify PASS` when full protocol and applicable task/spec gates are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
 - If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
@@ -265,28 +265,17 @@ Manual mode:
 Правила очереди:
 - независимые задачи (нет deps и shared files) можно запускать параллельно
 - зависимые или shared-file задачи — только последовательно
-- follow-up task, добавленная по итогам verify, должна попасть в **следующую итерацию того же run**
+- follow-up task, созданная scheduler/owner после verify FAIL, должна попасть в
+  **следующую итерацию того же run**; `/verify` сам task records не создает
 
 ## 8) Execution loop per TASK
 Для каждого выбранного `TASK-NNN-TN-FT-NNN-WN`:
 1) reread `task.tier` and `runtime_context` from the JSON record and route only
    by those authoritative values
-2) before writing `ready -> in_progress`, ensure a usable packet while the task
-   remains `ready` when required by tier/policy (`T2` / `T3`, or `T0` / `T1`
-   with `runtime_context.packet_required: true`):
-   - use canonical `.memory-bank/packets/<task.id>.packet.json` when
-     `runtime_context.packet_ref` is absent
-   - if a `T2` / `T3` task has `packet_required` absent or false, record a
-     policy violation and route to task-record fix + `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
-   - if missing or stale, run/route `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` once without
-     changing task status
-   - usable packet status is `ready` or `ready_with_gaps` with matching
-     `source_task_hash`
-   - if the packet is still missing, stale, blocked, malformed, or
-     hash-mismatched after that one attempt, leave the task `ready`, record the
-     clear halt reason in `.protocols/AUTONOMOUS-RUN/status.md`, and stop with
-     `HALT_QUALITY_GATES`
-3) only after the required packet gate passes, scheduler writes `ready -> in_progress`
+2) require the latest `/mb-doctor --strict` pass before writing
+   `ready -> in_progress`; an incomplete T2/T3 single-card handoff remains
+   `ready` and stops with `HALT_QUALITY_GATES`
+3) scheduler writes `ready -> in_progress`
 4) `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
 5) `/verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` by `task.tier` from the JSON record:
    - `T0` / `T1`: compact protocol/evidence allowed according to tier policy
@@ -296,34 +285,38 @@ Manual mode:
    - `T2`: not required for task closure; optional/manual per-task semantic review is allowed
    - `T3`: required before task closure
 7) scheduler records the closure/failure/blocking decision, final task status, and evidence links in the authoritative indexed `.memory-bank/tasks/TASK-*.task.json`
-8) run `/mb-sync` to synchronize the already-written task state; if the task record does not contain the scheduler decision/status/evidence, `/mb-sync` reports a consistency gap and stops
-9) run `node scripts/mb-lint.mjs`, then `/mb-doctor --strict`
-10) scheduler performs a separate promotion/dependent blocking pass and writes any `planned -> ready` / downstream `blocked` changes to their `.task.json` records
+8) if this closure makes every task for a non-`FT-000` feature containing T2
+   work `done`, run `/red-verify --feature FT-<ID>` now and record exact
+   `SEMANTIC_VERDICT: semantic-pass` in the feature doc before `/mb-sync` and
+   the post-closure strict doctor. On `semantic-concern|semantic-fail`, record a
+   blocked/reopened/follow-up scheduler decision before continuing
+9) run `/mb-sync` to synchronize the already-written task/feature state; if the task record does not contain the scheduler decision/status/evidence, `/mb-sync` reports a consistency gap and stops
+10) run `node scripts/mb-lint.mjs`, then `/mb-doctor --strict`
+11) scheduler performs a separate promotion/dependent blocking pass and writes any `planned -> ready` / downstream `blocked` changes to their `.task.json` records
 
-Per-task command order is exactly: required packet readiness gate while task is
-still `ready` (`/mb-packet` for every T2/T3 and explicit T0/T1 packet
-requirement) → scheduler writes `ready -> in_progress` → `/execute` → `/verify` →
+Per-task command order is exactly: latest strict readiness gate while task is
+still `ready` → scheduler writes `ready -> in_progress` → `/execute` → `/verify` →
 `/red-verify` for T3 only, optional for T2 → scheduler writes final task decision/status/evidence
-to `.task.json` → `/mb-sync` → `node scripts/mb-lint.mjs` +
+to `.task.json` → conditional T2 feature-level `/red-verify` when the last
+feature task closes → `/mb-sync` → `node scripts/mb-lint.mjs` +
 `/mb-doctor --strict` → scheduler promotion/dependent blocking pass.
 
-Feature completion is a separate gate: after all tasks for a `T2` feature are
-implemented, run `/red-verify --feature FT-<ID>` and require
+Feature completion is a separate semantic gate: when all tasks for a `T2`
+feature become `done`, run `/red-verify --feature FT-<ID>` before the next
+strict doctor and require
 `SEMANTIC_VERDICT: semantic-pass` recorded in the matching
 `.memory-bank/features/FT-<ID>-*.md` before treating that feature as complete.
 
 Fresh-session worker prompts for Codex/Claude must include: read
-`runtime_context` from the indexed task record; for `T2` / `T3`, read canonical
-`.memory-bank/packets/<task.id>.packet.json`; for `T0` / `T1`, read the packet
-only when `runtime_context.packet_required: true`; respect packet `scope`,
-`verification`, and `stop_conditions`; treat the task record and linked
-authoritative specs as source of truth, with the packet only as derivative
-runtime context.
+`runtime_context` from the indexed task record; read direct task-linked canonical
+specs for T2/T3; respect task `gates`, `verification_targets`,
+`evidence_required`, allowed and forbidden scope, and stop conditions; treat
+the task record and direct task-linked canonical specs as source of truth.
 
 Переходы состояния:
 - `ready -> in_progress`
 - `in_progress -> done` for `T0` / `T1` при compact evidence / functional `VERDICT: PASS`
-- `in_progress -> done` for `T2` after full protocol, required packet/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required
+- `in_progress -> done` for `T2` after full protocol, applicable task/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required
 - `in_progress -> done` for `T3` only after `/verify` `VERDICT: PASS` evidence and per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass`
 - `in_progress -> failed` при `VERDICT: FAIL` или `SEMANTIC_VERDICT: semantic-fail`
 - `SEMANTIC_VERDICT: semantic-concern` is never normal `done`: set the task/dependents to `blocked` or require human review, and record owner/reason/follow-up evidence
@@ -332,21 +325,22 @@ runtime context.
 
 Все переходы записывай в соответствующий `.task.json`. Queue state в `.protocols/AUTONOMOUS-RUN/status.md` должен ссылаться на task record paths, а не дублировать authoritative state.
 
-## 9) Wave review
+## 9) Wave boundary
 После завершения каждой wave:
 - убедись, что все `semantic-concern` этой wave имеют явное решение (blocked status, human review required, or follow-up); без subsequent `semantic-pass` affected tasks are not closed
 - обнови `.protocols/AUTONOMOUS-RUN/status.md`
 - запусти `node scripts/mb-lint.mjs`, затем `/mb-doctor --strict`; если gate падает, не закрывай wave и не переходи к следующей wave
-- запусти `/review-tasks-plan FT-<NNN>` по каждой product feature, затронутой
-  завершенной wave; если wave affected-feature set cannot be determined
-  safely, review every task-linked product feature one by one
+- запусти `/review-tasks-plan FT-<NNN>` только для product features, где wave
+  изменила task cards, specs, dependencies, tier, scope или
+  вскрыла unresolved plan assumptions. Изменения только status, verify evidence
+  или protocol progress не требуют нового task-plan review
 
 Если доступны **оба** движка:
 - prefer engine A for execution
-- prefer engine B for final wave/final task-plan review
+- prefer engine B for a required task-plan review
 - не ревьюй критичный результат тем же freshest writer-context, если есть альтернатива
 
-Если review после wave даёт `REJECT`:
+Если conditional review после wave даёт `REJECT`:
 - исправь и повтори
 - если budget исчерпан → `HALT_REVIEW_REJECT`
 
