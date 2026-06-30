@@ -20,7 +20,6 @@ Define the MVP local operations baseline that keeps the app private by default, 
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-017, local security/privacy non-functional requirements, secrets baseline, privacy baseline, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 21, 23, 24, 30, and 33 for lazy sync and local operations context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-012.
 - [.memory-bank/constitution.md](../constitution.md): low-maintenance, local-first, KISS, and no-speculation constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for local security runbook and lazy sync workflow.

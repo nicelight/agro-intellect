@@ -15,7 +15,6 @@ source_of_truth:
 - Read this index before creating new specs or doing serious T2/T3 work.
 - If a design area is not needed, mark it `not_applicable` with a short reason.
 - Do not create authoritative specs unless PRD/user/spec evidence contains the decision.
-- Treat [project_dossier.md](../project_dossier.md) as upstream dossier context for ambiguities or insufficient context until a narrower SDD spec exists.
 
 ## Hard rules
 - Do not create a new spec before checking existing specs through this index.
@@ -25,9 +24,8 @@ source_of_truth:
 - Draft placeholder docs are not binding unless their content explicitly defines evidence-backed rules.
 
 ## Source Inputs For Routing
-- [project_dossier.md](../project_dossier.md): upstream dossier context for product intent, architecture rationale, contracts, safety, data, and staging; use for ambiguities or missing context.
 - [.memory-bank/prd.md](prd.md): clarified PRD and acceptance criteria for MVP scope and non-goals.
-- [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): product brief input contract.
+- [Archived Product Brief](analysis/product-brief.md): product brief input contract.
 - [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, KISS, Memory Bank, safety gates, and low maintenance.
 - [.memory-bank/testing/index.md](testing/index.md): active baseline quality gates and risk-surface verification.
 
@@ -150,7 +148,6 @@ Current feature set from `/prd`. Global `/spec-design` has produced the shared b
 - FT-014 has completed feature-local `/spec-improve`; no FT-014 blocker remains for `/prd-to-tasks FT-014`.
 - All current PRD features have completed feature-local `/spec-improve`.
 - Remaining exact API response field ordering, Pydantic/schema class names, migration/tooling names, UI component styling, fixture shapes, and implementation task sequencing belong to `/prd-to-tasks` and implementation tasks unless a future spec change promotes them.
-- `project_dossier.md` remains upstream context for ambiguity resolution, but binding decisions must live in PRD, requirements, constitution, or narrower SDD specs.
 
 ## Update Rules
 - When a planned/candidate area receives an evidence-backed spec, move it to `Existing Authoritative Specs` or link it from the relevant area with `authoritative` status.

@@ -70,8 +70,13 @@ COMPLETION_REPORT
 - The task requires unrelated cleanup, generated-file edits, or destructive git operations.
 - The smallest safe change depends on missing specs, missing credentials, or unavailable external systems.
 
-## Explorer TODO
-- Define the concise Explorer contract and report schema.
+## Explorer Role
+Explorer investigates the assigned question and returns a clear factual summary.
+It may read relevant code, docs, history, and diagnostics, then point out useful
+evidence, contradictions, unknowns, and likely next steps. Explorer does not
+implement changes or make binding product and architecture decisions. No strict
+report format is required; a concise answer with evidence and open questions is
+enough.
 
 ## Reviewer Contract
 Reviewer is a read-only delegated role.

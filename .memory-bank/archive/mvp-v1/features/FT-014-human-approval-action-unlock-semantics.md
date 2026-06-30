@@ -20,7 +20,6 @@ Define how pending physical-action proposals are approved or rejected by the hum
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-014, FR-015, human approval actor/data model, action-task semantics, task/follow-up acceptance criteria, and edge cases.
-- [project_dossier.md](../../project_dossier.md): sections 8.5, 8.6, 9.10.1, 13, 22, 23, 28, and 33 for approval and task lifecycle context.
 - [.memory-bank/requirements.md](../requirements.md): approval portions of REQ-009 and REQ-010.
 - [.memory-bank/constitution.md](../constitution.md): human gate for physical actions, bounded autonomy, and no automated actuation.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for safety approval lifecycle, task follow-up lifecycle, runtime data model, and timeline event areas.

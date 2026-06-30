@@ -5,10 +5,15 @@ type: feature
 feature_id: FT-001
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-28
+last_updated: 2026-06-29
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
+  - .memory-bank/domains/local-identity-session-data.md
+  - .memory-bank/contracts/local-session-security.md
+  - .memory-bank/contracts/local-session-api.md
+  - .memory-bank/contracts/actor-context.md
+  - .memory-bank/testing/ft-001-access-auth.md
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -59,12 +64,17 @@ source_of_truth:
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): ActorContext and backend authorization requirements.
 - [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md): redaction rules for auth/session evidence and reports.
 - [.memory-bank/testing/index.md](../testing/index.md): risk-based verification surfaces for auth/session/ActorContext work.
+- [.memory-bank/domains/local-identity-session-data.md](../domains/local-identity-session-data.md): exact Account/FarmMembership/LocalSession storage contract.
+- [.memory-bank/contracts/local-session-security.md](../contracts/local-session-security.md): credential, token, lifecycle, cookie, and bearer security contract.
+- [.memory-bank/contracts/local-session-api.md](../contracts/local-session-api.md): login/logout/me, activation handoff, and auth error contract.
+- [.memory-bank/contracts/actor-context.md](../contracts/actor-context.md): role, ActorContext, PlantPermissionContext interface, and context-builder contract.
+- [.memory-bank/testing/ft-001-access-auth.md](../testing/ft-001-access-auth.md): feature verification matrix and quality gates.
 
 ## SDD Design Gate
 
 Status: complete.
 
-Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md) as the current normative feature design for exact auth/session lifecycle, ActorContext shape, permission checks, route contracts, error handling, migration/indexing targets, concrete contract readiness, ownership boundaries, and verification targets.
+Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md) as the stable feature hub. Its Specification Map routes exact data, security, HTTP API, ActorContext, and verification decisions to the atomic `spec_design_links` above.
 
 The 2026-06-26 `/prd-to-tasks FT-001` protocol refresh found no shared/global
 blocker and no duplicate authoritative owner. No new task records were created.
@@ -82,7 +92,11 @@ The 2026-06-28 `/spec-improve FT-001` repair completes TASK-005 relational
 readiness: UUID identity, deferred Farm FK ownership, exact nullability,
 string-domain checks, login normalization/uniqueness, non-cascading FKs, and
 exact indexes. Shared identity lives in Runtime Data Model; exact FT-001 tables
-live in the feature tech spec; FT-002 owns final Farm FK closure.
+live in Local Identity And Session Data; FT-002 owns final Farm FK closure.
+
+The 2026-06-29 structural repair split the 735-line feature hub into atomic
+data, security, HTTP API, ActorContext, and verification owners. It changed no
+behavioral contract; the original hub path remains a compatibility facade.
 
 ## Task Decomposition
 

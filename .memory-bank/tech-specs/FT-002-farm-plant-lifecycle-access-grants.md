@@ -4,7 +4,7 @@ status: active
 owner: architecture
 type: feature_design
 feature_id: FT-002
-last_updated: 2026-06-28
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md
   - .memory-bank/foundation.md
@@ -12,7 +12,8 @@ source_of_truth:
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/agent-chat-bus.md
-  - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
+  - .memory-bank/domains/local-identity-session-data.md
+  - .memory-bank/contracts/actor-context.md
 ---
 # FT-002 Farm Plant Lifecycle And Access Grants
 
@@ -30,8 +31,11 @@ Define the single local Farm, Plant lifecycle, `tomato_001` seed, and PlantAcces
   AdminAuditRecord durability policy, Safety Gate clearance, agent output
   publication, MessageEnvelope validation, or UI Feed projection.
 - Related specs:
-  - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](FT-001-local-accounts-sessions-actor-context.md):
-    owns Account/session/ActorContext and the PlantPermissionContext interface
+  - [.memory-bank/domains/local-identity-session-data.md](../domains/local-identity-session-data.md):
+    owns Account, FarmMembership, and LocalSession storage, including the
+    deferred Farm FK handoff closed by FT-002.
+  - [.memory-bank/contracts/actor-context.md](../contracts/actor-context.md):
+    owns role presets, ActorContext, and the PlantPermissionContext interface
     envelope consumed by protected routes and context builders.
   - [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](FT-003-boss-admin-surface-admin-audit.md):
     owns public invite/admin workflows and durable AdminAuditRecord write
@@ -47,7 +51,8 @@ Define the single local Farm, Plant lifecycle, `tomato_001` seed, and PlantAcces
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Plant and PlantAccessGrant authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): API authz and route grouping.
 - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): context builders must enforce ActorContext and PlantAccessGrant before agent context.
-- [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](FT-001-local-accounts-sessions-actor-context.md): role presets, ActorContext, and PlantPermissionContext interface envelope.
+- [.memory-bank/domains/local-identity-session-data.md](../domains/local-identity-session-data.md): Account/FarmMembership storage and deferred Farm FK handoff.
+- [.memory-bank/contracts/actor-context.md](../contracts/actor-context.md): role presets, ActorContext, and PlantPermissionContext interface envelope.
 - [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](FT-003-boss-admin-surface-admin-audit.md): AdminAuditRecord owner and audited admin mutations.
 - [.memory-bank/requirements.md](../requirements.md): REQ-001, REQ-003, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008.
 

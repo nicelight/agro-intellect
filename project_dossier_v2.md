@@ -6,11 +6,10 @@
 
 Основные источники v2:
 
-- `project_dossier.md`: v1-досье и исторический продуктово-архитектурный контекст;
 - `.memory-bank/constitution.md`: активная Конституция проекта;
-- `.memory-bank/analysis/mvp-scope-expansion-integration-plan.md`: pre-PRD план ввода `Account`, `Farm`, `Boss Admin Surface` и `Companion governance`;
-- `.memory-bank/analysis/accounts-farm-access-admin-analysis.md`: analysis для `Account`, `Farm`, ролей, `Plant lifecycle` и `PlantAccessGrant`;
-- `.memory-bank/analysis/companion-issue-stack-decision-governance.md`: analysis для `IssueStack`, `CompanionProposal` и `DecisionRecord`.
+- `.memory-bank/prd.md`: активные product scope, actors, constraints и acceptance criteria;
+- `.memory-bank/architecture/system-architecture.md`: актуальные architecture и authority boundaries;
+- `.memory-bank/spec-index.md`: реестр действующих SDD specs.
 
 Содержание:
 

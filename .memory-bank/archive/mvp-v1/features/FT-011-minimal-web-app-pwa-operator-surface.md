@@ -20,7 +20,6 @@ Define the smallest user-facing Web App/PWA feature that lets the primary user o
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): product summary, UX/interaction flow, minimum UI, frontend dependency, acceptance criteria, and UI/e2e verification note.
-- [project_dossier.md](../../project_dossier.md): sections 6, 22, 23, 24, and 28 for minimum interface and React/Next.js/PWA stack.
 - [.memory-bank/requirements.md](../requirements.md): REQ-013.
 - [.memory-bank/constitution.md](../constitution.md): KISS, bounded agent autonomy, human gate, source-of-truth discipline, and low-maintenance constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for UI information architecture/PWA flow, UI Feed, safety approval, and lazy sync.

@@ -2,7 +2,7 @@
 description: Testing and verification router for MVP v2 migration.
 status: active
 owner: quality
-last_updated: 2026-06-26
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -22,6 +22,7 @@ source_of_truth:
   - .memory-bank/states/dataset-governance.md
   - .memory-bank/foundation.md
   - .memory-bank/testing/foundation-test-harness.md
+  - .memory-bank/testing/ft-001-access-auth.md
 ---
 # Testing Index
 
@@ -42,6 +43,9 @@ harness has its own substrate owner at
 [.memory-bank/testing/foundation-test-harness.md](foundation-test-harness.md).
 Standalone `/spec-improve` is reserved for repair or advanced refresh without
 task generation.
+
+FT-001 cross-contract verification is routed by
+[.memory-bank/testing/ft-001-access-auth.md](ft-001-access-auth.md).
 
 ## Migration Gates
 

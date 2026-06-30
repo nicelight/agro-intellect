@@ -25,7 +25,6 @@ Define the MVP learning-governance slice that records dataset lifecycle fields a
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-016, non-goals, dataset acceptance criteria, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 8.7, 8.8, 15.1, 18, 19, 28, and 33 for trainability and curator-source rules.
 - [.memory-bank/requirements.md](../requirements.md): REQ-011.
 - [.memory-bank/constitution.md](../constitution.md): bounded autonomy, dataset evidence discipline, KISS, and low-maintenance constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for dataset governance lifecycle, runtime data model, Training Data Curator policy, export snapshot interaction, and first-demo verification.

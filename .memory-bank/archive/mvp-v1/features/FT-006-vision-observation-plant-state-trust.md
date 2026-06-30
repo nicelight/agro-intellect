@@ -20,7 +20,6 @@ Support mock or real visual observation for the first demo while keeping a hard 
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-011, FR-012, plant-state edge cases, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 8.2, 8.3, 16, 17, 22, 23, and 28 for vision/plant-state context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-008.
 - [.memory-bank/constitution.md](../constitution.md): bounded agent autonomy, dataset evidence discipline, and no speculation.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for vision observation, plant state lifecycle, runtime data model, and first-demo verification areas.

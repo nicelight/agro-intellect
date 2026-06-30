@@ -20,7 +20,6 @@ Define the domain-owned Agent Chat Bus as the agent-consumable event stream. Thi
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-007, Agent Chat Bus acceptance criteria, authority model, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 4, 8, 9.3, 10.3, 20, 23, and 26 for Bus/event stream and publication-boundary context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-006 Bus and Agno boundary coverage.
 - [.memory-bank/constitution.md](../constitution.md): source-of-truth discipline, bounded agent autonomy, no speculation, and KISS.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for Agent Chat Bus and Agno execution boundary design areas.

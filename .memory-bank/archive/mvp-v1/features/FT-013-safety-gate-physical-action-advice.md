@@ -20,7 +20,6 @@ Define the Safety Gate that detects physical-action advice or wording, fails clo
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-004, FR-014, Safety Gate actor definition, physical-action edge cases, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 8.6, 9.10.1, 13, 22, 23, 28, and 31 for Safety Gate, freshness, and action-blocking context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-004 freshness coverage and Safety Gate portions of REQ-009.
 - [.memory-bank/constitution.md](../constitution.md): human gate for physical actions, bounded autonomy, and fail-closed safety expectations.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for safety approval lifecycle, pH/EC freshness, companion output, and task follow-up design areas.

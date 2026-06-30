@@ -94,13 +94,6 @@ command owns feature-level SDD design before task slicing.
 - [.memory-bank/testing/index.md](testing/index.md): testing and verification router for the post-PRD decomposition stage.
 - [.memory-bank/changelog.md](changelog.md): Memory Bank changelog.
 
-## Active Analysis Inputs
-
-- [.memory-bank/analysis/index.md](analysis/index.md): analysis router and current next-step record.
-- [.memory-bank/analysis/mvp-scope-expansion-integration-plan.md](analysis/mvp-scope-expansion-integration-plan.md): MVP v2 feature-scope input.
-- [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](analysis/accounts-farm-access-admin-analysis.md): draft analysis for Accounts, Farm access, Boss admin, personnel, Plants, and per-Plant access.
-- [.memory-bank/analysis/companion-issue-stack-decision-governance.md](analysis/companion-issue-stack-decision-governance.md): draft analysis for Companion `IssueStack`, proposals, and `DecisionRecord` governance.
-
 ## Archived MVP v1
 
 - [.memory-bank/archive/mvp-v1/index.md](archive/mvp-v1/index.md): archived MVP v1 router.

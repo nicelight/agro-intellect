@@ -4,14 +4,17 @@ status: active
 owner: architecture
 type: feature_design
 feature_id: FT-003
-last_updated: 2026-06-25
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/features/FT-003-boss-admin-surface-admin-audit.md
   - .memory-bank/foundation.md
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/contracts/api-guidelines.md
-  - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
+  - .memory-bank/domains/local-identity-session-data.md
+  - .memory-bank/contracts/local-session-security.md
+  - .memory-bank/contracts/local-session-api.md
+  - .memory-bank/contracts/actor-context.md
   - .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md
 ---
 # FT-003 Boss Admin Surface And Admin Audit
@@ -27,7 +30,10 @@ Define the minimum Boss admin workflow and durable admin audit boundary for loca
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Access & Admin module.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): AdminAuditRecord authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): admin API guardrails.
-- [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](FT-001-local-accounts-sessions-actor-context.md): Account, FarmMembership, session, role, ActorContext design.
+- [.memory-bank/domains/local-identity-session-data.md](../domains/local-identity-session-data.md): Account, FarmMembership, and LocalSession storage contract.
+- [.memory-bank/contracts/local-session-security.md](../contracts/local-session-security.md): credential/session primitives and transport used after invite validation.
+- [.memory-bank/contracts/local-session-api.md](../contracts/local-session-api.md): internal credential activation handoff and auth/session errors.
+- [.memory-bank/contracts/actor-context.md](../contracts/actor-context.md): role and ActorContext authorization contract.
 - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](FT-002-farm-plant-lifecycle-access-grants.md): Plant and PlantAccessGrant design.
 - [.memory-bank/requirements.md](../requirements.md): REQ-003, REQ-005, REQ-021, REQ-022.
 

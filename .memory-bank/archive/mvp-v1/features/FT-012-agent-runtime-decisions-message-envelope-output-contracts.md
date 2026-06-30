@@ -20,7 +20,6 @@ Define how an invoked agent turns execution output into an explicit runtime deci
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-007, FR-008, FR-009, FR-010, Agent Chat Bus/output acceptance criteria, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 4, 9.3, 9.4, 9.7 through 9.13, 10, 20, 23, and 26 for runtime decisions and `MessageEnvelope` context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-006 runtime decision/output contract coverage and concise-output coverage from REQ-007.
 - [.memory-bank/constitution.md](../constitution.md): bounded agent autonomy, source-of-truth discipline, no speculation, and KISS.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for MessageEnvelope, Agent output/runtime decision, companion output, and Agno boundary design areas.

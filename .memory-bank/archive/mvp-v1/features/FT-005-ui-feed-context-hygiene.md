@@ -20,7 +20,6 @@ Keep user-facing display events separate from agent working context so UI Feed, 
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-009, FR-010, UI Feed acceptance criteria, context hygiene non-functional requirements, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 9.3.1, 9.5, 9.6, 9.14, 10, 11, and 12 for UI Feed and spoiler-note context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-007 and UI/context parts of REQ-013.
 - [.memory-bank/constitution.md](../constitution.md): bounded agent autonomy, source-of-truth discipline, no speculation, and KISS.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for UI Feed, companion output, context hygiene, and UI/PWA design areas.

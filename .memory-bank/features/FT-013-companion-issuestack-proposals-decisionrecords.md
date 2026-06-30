@@ -5,11 +5,11 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
-  - .memory-bank/analysis/companion-issue-stack-decision-governance.md
+  - .memory-bank/states/companion-governance.md
 ---
 # FT-013 Companion IssueStack Proposals And DecisionRecords
 

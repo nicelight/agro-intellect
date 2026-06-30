@@ -30,7 +30,6 @@ Define the Hydroponics Advisor's reasoning boundary: it can use available hydrop
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-004, FR-013, missing/stale pH/EC handling, Hydroponics Advisor actor definition, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 8.4, 8.5, 8.6, 13, 22, 23, and 28 for advisor and missing-data context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-004 and advisor portions of REQ-009.
 - [.memory-bank/constitution.md](../constitution.md): bounded agent autonomy, human gate for physical actions, no speculation, and KISS.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for Hydroponics Advisor policy, pH/EC freshness, and Safety Gate areas.

@@ -30,7 +30,6 @@ Protect future training and evaluation data from raw agent hypotheses by making 
 ## Source artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-016, dataset governance acceptance criteria, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 8.7, 8.8, 15.1, 18, 19, 28, and 33 for compressed learning-loop context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-011 and RTM link.
 - [.memory-bank/features/FT-009-dataset-governance-trainability.md](../features/FT-009-dataset-governance-trainability.md): included feature scope.
 

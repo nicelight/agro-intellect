@@ -6,7 +6,6 @@ last_updated: 2026-05-31
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/spec-index.md
-  - project_dossier.md
 ---
 # Dataset Governance
 

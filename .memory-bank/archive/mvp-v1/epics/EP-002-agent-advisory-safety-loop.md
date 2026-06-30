@@ -35,7 +35,6 @@ Let single-competence agents turn daily evidence into concise, useful advice whi
 ## Source artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-007 through FR-015, agent communication, UI Feed, Safety Gate, task/follow-up, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 7 through 13, 22, 23, 28, and 31 for compressed agent/safety context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-006 through REQ-010 and RTM links.
 - [.memory-bank/features/FT-004-agent-chat-bus-event-stream-publication-boundary.md](../features/FT-004-agent-chat-bus-event-stream-publication-boundary.md): Agent Chat Bus event stream and publication boundary.
 - [.memory-bank/features/FT-005-ui-feed-context-hygiene.md](../features/FT-005-ui-feed-context-hygiene.md): UI Feed and context hygiene.

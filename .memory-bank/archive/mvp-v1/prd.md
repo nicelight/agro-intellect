@@ -9,8 +9,7 @@ constitution_checked: true
 
 ## Source Inputs
 
-- [project_dossier.md](../project_dossier.md): upstream dossier context for product intent, MVP scope, constraints, user flow, safety rules, agent boundaries, data/storage rules, and success criteria.
-- [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): Product Brief input contract for this PRD.
+- [Archived Product Brief](analysis/product-brief.md): Product Brief input contract for this PRD.
 - [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, KISS, Memory Bank, task execution, risk-based DoD, human safety gates, and low maintenance.
 - [.memory-bank/spec-index.md](spec-index.md): future routing layer for SDD Design Specs. After `/spec-init` and `/spec-design`, linked specs become normative.
 - [.memory-bank/testing/index.md](testing/index.md): baseline verification strategy.
@@ -248,7 +247,6 @@ Core runtime entities:
 Authority model:
 
 - Design Specs: normative truth after `/spec-init` and `/spec-design`.
-- `project_dossier.md`: upstream dossier context for ambiguity resolution; not runtime or durable spec authority.
 - PostgreSQL/read model: runtime authority for mutable operational state.
 - `timeline.jsonl`: append-only audit/export log.
 - Photo files and JSON manifests: dataset/export artifacts.

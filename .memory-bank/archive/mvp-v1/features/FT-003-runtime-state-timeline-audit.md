@@ -20,7 +20,6 @@ Define the runtime authority and audit/export boundary for mutable operational s
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-005, FR-006, authority model, source-of-truth discipline, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 14 and 20 for PostgreSQL/read-model authority and timeline JSONL context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-005, plus runtime-authority parts of REQ-001 through REQ-004.
 - [.memory-bank/constitution.md](../constitution.md): Memory Bank, source-of-truth discipline, KISS, and low-maintenance constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for source-of-truth, runtime data model, timeline event, and first-demo verification areas.

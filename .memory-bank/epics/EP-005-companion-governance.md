@@ -4,11 +4,11 @@ status: draft
 type: epic
 epic_id: EP-005
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
-  - .memory-bank/analysis/companion-issue-stack-decision-governance.md
+  - .memory-bank/states/companion-governance.md
 ---
 # EP-005 Companion Governance
 

@@ -2,11 +2,11 @@
 description: Глобальные инварианты и запреты проекта (MUST/NEVER).
 status: active
 owner: architecture
-last_updated: 2026-06-02
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/constitution.md
+  - .memory-bank/prd.md
   - .memory-bank/spec-index.md
-  - .memory-bank/analysis/mvp-scope-expansion-integration-plan.md
 ---
 # Invariants
 

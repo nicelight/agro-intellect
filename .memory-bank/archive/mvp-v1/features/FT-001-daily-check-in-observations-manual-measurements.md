@@ -20,7 +20,6 @@ Capture the daily user ritual for `tomato_001`: check-in prompt, textual observa
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-001, FR-004, UX/interaction flow, edge cases, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 6, 22, 23, 28, and 33 for daily check-in and manual measurement context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-001 and REQ-004.
 - [.memory-bank/constitution.md](../constitution.md): KISS, source-of-truth discipline, and low-maintenance constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for runtime data model, source-of-truth, timeline, and first-demo verification areas.

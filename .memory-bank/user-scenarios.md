@@ -2,10 +2,9 @@
 description: Pre-PRD user scenarios for MVP v2 decomposition.
 status: active
 owner: product
-last_updated: 2026-06-03
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/prd.md
-  - .memory-bank/analysis/product-brief.md
   - project_dossier_v2.md
 ---
 # User Scenarios

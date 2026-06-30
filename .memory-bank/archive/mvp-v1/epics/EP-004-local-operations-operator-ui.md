@@ -33,7 +33,6 @@ Keep the MVP local-first, private by default, and operable through the smallest 
 ## Source artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-017, local security/privacy non-functional requirements, UX/interaction flow, minimum UI, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 6, 21, 23, 24, 28, and 30 for compressed local operations and UI context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-012 and REQ-013 with RTM links.
 - [.memory-bank/features/FT-010-local-security-privacy-lazy-sync.md](../features/FT-010-local-security-privacy-lazy-sync.md): local security, privacy, and lazy sync.
 - [.memory-bank/features/FT-011-minimal-web-app-pwa-operator-surface.md](../features/FT-011-minimal-web-app-pwa-operator-surface.md): minimal Web App/PWA operator surface.

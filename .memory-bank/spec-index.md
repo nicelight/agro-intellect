@@ -2,7 +2,7 @@
 description: Pure SDD spec registry and planned-spec index.
 status: active
 owner: architecture
-last_updated: 2026-06-28
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -49,7 +49,12 @@ source_of_truth:
 | Dataset Governance | state | [.memory-bank/states/dataset-governance.md](states/dataset-governance.md) | active | /spec-design | Global non-trainable default, evidence-ref, and trainability lifecycle boundary. |
 | Foundation Test Harness | testing | [.memory-bank/testing/foundation-test-harness.md](testing/foundation-test-harness.md) | active | /foundation-to-tasks | FT-000 test command, smoke targets, fixture expectations, and evidence requirements. |
 | Foundation Local Runtime Runbook | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | /foundation-to-tasks | Local FT-000 setup/start/smoke command sequence and troubleshooting notes. |
-| FT-001 Local Accounts Sessions And ActorContext | feature_design | [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md) | active | /prd-to-tasks or /spec-improve repair | Current normative feature design for local identity, exact Account/FarmMembership/LocalSession relational schema, nullability/checks/login normalization/indexes, deferred Farm FK handoff, credential/session primitives, cookie/bearer transport, ActorContext, role policy, auth errors, ownership routing, and verification. |
+| FT-001 Local Accounts Sessions And ActorContext | feature_design | [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md) | active | /prd-to-tasks or /spec-improve repair | Stable FT-001 feature hub and compatibility facade routing atomic data, security, API, ActorContext, and verification specs. |
+| Local Identity And Session Data | domain | [.memory-bank/domains/local-identity-session-data.md](domains/local-identity-session-data.md) | active | /spec-improve FT-001 | Exact Account/FarmMembership/LocalSession schema, constraints, indexes, migration, and deferred Farm FK handoff. |
+| Local Session Security | contract | [.memory-bank/contracts/local-session-security.md](contracts/local-session-security.md) | active | /spec-improve FT-001 | Argon2id credentials, opaque session tokens, lifecycle, browser cookie, and optional bearer transport. |
+| Local Session API | contract | [.memory-bank/contracts/local-session-api.md](contracts/local-session-api.md) | active | /spec-improve FT-001 | Login/logout/me routes, activation handoff, stable auth errors, and no-leak failures. |
+| ActorContext | contract | [.memory-bank/contracts/actor-context.md](contracts/actor-context.md) | active | /spec-improve FT-001 | Fixed role policy, ActorContext, PlantPermissionContext interface, protected entrypoints, and context-builder authorization. |
+| FT-001 Access And Auth Verification | testing | [.memory-bank/testing/ft-001-access-auth.md](testing/ft-001-access-auth.md) | active | /spec-improve FT-001 | Cross-contract test coverage, task/evidence routing, and quality gates. |
 | FT-002 Farm Plant Lifecycle And Access Grants | feature_design | [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](tech-specs/FT-002-farm-plant-lifecycle-access-grants.md) | active | /prd-to-tasks or /spec-improve repair | Current normative feature design for single Farm seed/UUID authority, deferred FarmMembership FK closure, Plant lifecycle, PlantAccessGrant lifecycle, concrete PlantPermissionContext resolver semantics, retained-history authorization, route contracts, audit handoff, and verification. |
 | FT-003 Boss Admin Surface And Admin Audit | feature_design | [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](tech-specs/FT-003-boss-admin-surface-admin-audit.md) | active | /prd-to-tasks or /spec-improve repair | Current normative feature design for Boss admin workflows, local invite semantics, AdminAuditRecord, admin route contracts, UI boundary, and verification. |
 
@@ -60,7 +65,7 @@ source_of_truth:
 | generated_openapi | generated from backend schemas | implementation task / CI | Generated from FastAPI/Pydantic-style schemas after backend exists; no hand-written OpenAPI source during global backbone. |
 
 ## Broken / Missing Links
-- None detected as of 2026-06-28.
+- None detected as of 2026-06-29.
 
 ## Update Rules
 - Keep this file as index/registry only: names, paths, statuses, owners, scopes, and broken links.

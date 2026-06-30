@@ -20,7 +20,6 @@ Accept photos for `tomato_001` while preserving canonical photo identity, file s
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-002, FR-003, photo-related edge cases, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 14, 15, 17, 23, and 28 for photo storage, manifests, and photo types.
 - [.memory-bank/requirements.md](../requirements.md): REQ-002 and REQ-003.
 - [.memory-bank/constitution.md](../constitution.md): source-of-truth discipline, KISS, and low-maintenance constraints.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for photo artifacts, runtime data model, timeline event, local security, and export snapshot packaging areas.

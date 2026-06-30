@@ -3,7 +3,7 @@ description: Global runtime data authority model for MVP v2.
 status: active
 owner: architecture
 type: domain
-last_updated: 2026-06-28
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -44,7 +44,7 @@ generation.
     owns append-only audit/export events.
   - [.memory-bank/states/index.md](../states/index.md): routes active
     cross-feature lifecycle/state specs.
-  - [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md):
+  - [.memory-bank/domains/local-identity-session-data.md](local-identity-session-data.md):
     owns exact Account, FarmMembership, and LocalSession columns/constraints.
   - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md):
     owns exact Farm, Plant, PlantAccessGrant, and deferred Farm FK migration.

@@ -4,20 +4,16 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-06-02
+last_updated: 2026-06-29
 ---
 # PRD
 
 ## Source Inputs
 
 - [project_dossier_v2.md](../project_dossier_v2.md): upstream MVP v2 dossier and detailed product/architecture context.
-- [.memory-bank/analysis/product-brief.md](analysis/product-brief.md): direct PRD input contract.
 - [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, low-maintenance, bounded local-first MVP scope.
 - [.memory-bank/invariants.md](invariants.md): cross-cutting MUST/NEVER guardrails.
 - [.memory-bank/glossary.md](glossary.md): agreed MVP v2 vocabulary.
-- [.memory-bank/analysis/mvp-scope-expansion-integration-plan.md](analysis/mvp-scope-expansion-integration-plan.md): MVP v2 feature-scope input for Accounts, Farm access, Boss Admin, and Companion governance.
-- [.memory-bank/analysis/accounts-farm-access-admin-analysis.md](analysis/accounts-farm-access-admin-analysis.md): Accounts, Farm, roles, Plant lifecycle, and access-control analysis.
-- [.memory-bank/analysis/companion-issue-stack-decision-governance.md](analysis/companion-issue-stack-decision-governance.md): Companion IssueStack, proposal, and DecisionRecord governance analysis.
 
 ## Product Summary
 

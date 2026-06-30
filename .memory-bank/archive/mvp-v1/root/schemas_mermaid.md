@@ -6,7 +6,6 @@ status: archived
 
 Статус: обзорный onboarding-документ.
 
-Источник: `project_dossier.md` + `potential_PRBLMS_to_avoid.md`. Диаграммы помогают быстро понять архитектуру, runtime workflow и зоны риска. Этот файл не является нормативным source of truth; нормативные решения должны жить в `.memory-bank/spec-index.md`, contracts, domains и states.
 
 ## 1. Карта проекта в целом
 
@@ -469,7 +468,6 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Dossier["project_dossier.md"]
   Specs["Memory Bank specs"]
   Scope["MVP scope"]
   Bus["Agent Chat Bus"]
@@ -480,7 +478,6 @@ flowchart TD
   Dataset["Dataset governance"]
   Tests["Boundary tests"]
 
-  Dossier -->|must be normalized| Specs
   Scope -->|avoid platform too early| Bus
   Bus -->|adapter bottleneck| Agno
   Bus -->|context builder| UILeak

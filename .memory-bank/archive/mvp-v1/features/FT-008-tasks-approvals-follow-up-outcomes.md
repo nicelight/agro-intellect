@@ -28,7 +28,6 @@ Track safe next steps after advisory output: check tasks, measurement tasks, pen
 ## Source Artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-014, FR-015, task/follow-up acceptance criteria, edge cases, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 8.5, 8.6, 13, 22, 23, 28, and 33 for task/follow-up context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-010, REQ-004 for pH/EC freshness-driven measurement tasks, and task/approval parts of REQ-009.
 - [.memory-bank/constitution.md](../constitution.md): human gate for physical actions, bounded agent autonomy, and evidence-based workflow.
 - [.memory-bank/spec-index.md](../spec-index.md): route map for task follow-up lifecycle, safety approval lifecycle, runtime data model, and first-demo verification.

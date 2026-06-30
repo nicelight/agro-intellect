@@ -2,15 +2,12 @@
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
 owner: architecture
-last_updated: 2026-06-26
+last_updated: 2026-06-29
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
   - .memory-bank/spec-index.md
   - .memory-bank/spec-backbone.md
-  - .memory-bank/analysis/mvp-scope-expansion-integration-plan.md
-  - .memory-bank/analysis/accounts-farm-access-admin-analysis.md
-  - .memory-bank/analysis/companion-issue-stack-decision-governance.md
 ---
 # Glossary
 
@@ -73,7 +70,6 @@ source_of_truth:
 - `feature`: C4 L3 functional slice whose feature-level SDD design is completed inside `/prd-to-tasks FT-<NNN>` before task slicing; `/spec-improve FT-<NNN>` is a repair or advanced refresh route.
 - `task record`: schema-backed JSON `TASK-*` work item used for execution and verification.
 - `Memory Bank greenfield flow`: canonical route from analysis/brief/PRD/specs to tasks, execute, verify, and sync.
-- `project_dossier.md`: upstream dossier context for product intent, architecture rationale, constraints, safety, data, and staging; not a normative spec layer.
 
 ## Architecture And Authority
 
@@ -86,8 +82,6 @@ source_of_truth:
 - `export_snapshot`: manifest kind created later for dataset/export context snapshots.
 - `Agent Chat Bus`: domain-owned working event stream for agent-consumable events.
 - `UI Feed`: human-facing presentation stream; never agent working context.
-- `UIFeedEvent`: human-facing projection event; never runtime authority or
-  agent working context.
 - `Agno`: execution SDK for agents/workflows; not source of truth and not Agent Chat Bus.
 - `Agno Agent`: Agno execution unit wrapping model, tools, instructions, memory, HITL, and guardrails.
 - `Agno Workflow`: Agno execution flow for predictable steps, routers, conditions, loops, or parallel steps.
@@ -104,7 +98,8 @@ source_of_truth:
 - `audit/export`: trace and portability layer, not current mutable state authority.
 - `MessageEnvelope`: structured publishable agent output after runtime decision handling.
 - `BusEventEnvelope`: required wrapper for Agent Chat Bus events.
-- `UIFeedEvent`: required wrapper for UI presentation events.
+- `UIFeedEvent`: required wrapper for human-facing UI presentation events;
+  never runtime authority or agent working context.
 - `source_refs`: references to evidence such as photos, timeline events, measurements, review, follow-up, or sensor windows.
 - `InfluxDB`: future time-series authority for real sensor readings; not an MVP runtime dependency.
 - `object storage`: future storage option for photos/artifacts after local MVP proves the workflow.
@@ -184,8 +179,10 @@ source_of_truth:
   follow-up outcome.
 - `human approval`: explicit user approval/rejection for risky physical actions; unlocks only human-performed task tracking in MVP.
 - `Human-in-the-loop`: pattern where important plant-impacting decisions require explicit human decision.
-- `analysis freshness`: pH/EC freshness window of up to 24 hours for analysis.
-- `approval freshness`: pH/EC freshness window of up to 2 hours for physical-action approval.
+- `analysis freshness`: freshness requirement for using evidence in analysis;
+  the owning feature spec defines the exact policy.
+- `approval freshness`: freshness requirement for physical-action approval;
+  the owning safety spec defines the exact policy.
 - `fresh data`: measurement or evidence still inside the relevant freshness window.
 - `pending action proposal`: blocked risky recommendation converted into a proposal awaiting approval.
 - `pending approval task`: task representing required human decision before action tracking can start.

@@ -34,7 +34,6 @@ Give the daily monitoring loop a trustworthy evidence foundation: daily observat
 ## Source artifacts
 
 - [.memory-bank/prd.md](../prd.md): FR-001 through FR-006, authority model, edge cases, acceptance criteria, and verification strategy.
-- [project_dossier.md](../../project_dossier.md): sections 14 through 17, 20, 22, 23, and 28 for compressed data/artifact/flow context.
 - [.memory-bank/requirements.md](../requirements.md): REQ-001 through REQ-005 and RTM links.
 - [.memory-bank/features/FT-001-daily-check-in-observations-manual-measurements.md](../features/FT-001-daily-check-in-observations-manual-measurements.md): daily check-in, observations, and manual measurements.
 - [.memory-bank/features/FT-002-photo-intake-catalog-capture-manifests.md](../features/FT-002-photo-intake-catalog-capture-manifests.md): photo intake, catalog, and capture manifests.
