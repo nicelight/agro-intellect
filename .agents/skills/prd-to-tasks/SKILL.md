@@ -174,6 +174,12 @@ provisional outline to `plan.md`. For each candidate record only its purpose,
 likely dependencies/wave/tier, and expected design pressure. This is resumable
 planning state, not another task model.
 
+Prioritize complete canonical specs over detailed initial task slicing. Prefer
+fewer cohesive tasks; one task may span layers and include its tests. Do not
+split by file, module, layer, or artifact. Split only for independent outcomes,
+hard dependencies/waves, or materially different risk/rollback. When unsure,
+keep work together; revisit slicing only in an explicit full re-decomposition.
+
 Update the outline only when its structure changes, a material decision is
 accepted, or the run pauses. Do not write an iteration checkpoint after every
 task.
@@ -441,7 +447,8 @@ decision or external evidence.
 
 The loaded schema and tier policy are authoritative. Additionally:
 - task ID tier/feature/wave segments match `tier`, `feature`, and `wave`
-- every task has one independently verifiable outcome and grounded files/tests
+- every task has one cohesive, independently verifiable implementation outcome;
+  it may span layers and include its applicable tests
 - every T1/T2/T3 task links concrete governing `REQ-*` IDs in `reqs`; never use
   placeholder requirement or feature IDs
 - assign tier before writing; never use the removed `risk` model

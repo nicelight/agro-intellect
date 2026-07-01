@@ -112,8 +112,10 @@ specs, plans, tasks, or lifecycle state from this command.
 
 - Map every feature acceptance criterion and governing requirement to at least
   one task, and every task back to feature scope and requirements.
-- Reject missing coverage, orphan tasks, duplicated outcomes, or task slicing
-  that hides more than one independently verifiable outcome in one record.
+- Reject missing coverage, orphan tasks, duplicated or unrelated outcomes.
+- Prefer fewer cohesive tasks. Do not split by file, module, layer, artifact,
+  or tests; split only for independent outcomes, hard dependencies/waves, or
+  materially different risk/rollback.
 - Confirm the implementation plan, task queue, touched files, gates, and
   verification targets describe one coherent implementation strategy.
 - Confirm waves and dependencies are necessary, acyclic, and executable;

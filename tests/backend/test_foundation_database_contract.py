@@ -79,7 +79,9 @@ def test_redacted_database_url_hides_password():
     assert "postgresql+psycopg://postgres:***@localhost/agro_intellect" == redacted
 
 
-def test_alembic_baseline_runs_without_product_tables(tmp_path: Path):
+def test_alembic_baseline_discovers_product_head_without_running_it_on_sqlite(
+    tmp_path: Path,
+):
     settings = AppSettings(
         app_name="migration-test",
         environment="test",
@@ -89,7 +91,6 @@ def test_alembic_baseline_runs_without_product_tables(tmp_path: Path):
     try:
         config = build_alembic_config(settings)
         command.ensure_version(config)
-        command.upgrade(config, "head")
         script = ScriptDirectory.from_config(config)
 
         with database.engine().connect() as connection:
@@ -100,7 +101,7 @@ def test_alembic_baseline_runs_without_product_tables(tmp_path: Path):
         assert "alembic_version" in tables
         assert {"accounts", "farms", "plants"}.isdisjoint(tables)
         assert current_revision is None
-        assert script.get_heads() == []
+        assert script.get_heads() == ["ft001_access_sessions"]
     finally:
         database.dispose()
 
