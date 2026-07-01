@@ -43,25 +43,21 @@
       ]
     },
     "wave": {
-      "type": "string",
-      "pattern": "^W[0-9]+$"
+      "type": "string"
     },
     "feature": {
-      "type": "string",
-      "pattern": "^FT-[0-9]{3}$"
+      "type": "string"
     },
     "reqs": {
       "type": "array",
       "items": {
-        "type": "string",
-        "pattern": "^REQ-[0-9]{3}$"
+        "type": "string"
       }
     },
     "depends_on": {
       "type": "array",
       "items": {
-        "type": "string",
-        "pattern": "^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$"
+        "type": "string"
       }
     },
     "touched_files": {
@@ -88,7 +84,6 @@
           "command",
           "required"
         ],
-        "additionalProperties": false,
         "properties": {
           "name": {
             "type": "string"
@@ -128,6 +123,42 @@
         "type": "string"
       }
     },
+    "purpose": {
+      "type": "string"
+    },
+    "success_outcome": {
+      "type": "string"
+    },
+    "anti_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_write_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "source_artifacts": {
       "type": "array",
       "items": {
@@ -156,49 +187,6 @@
       "type": "array",
       "items": {
         "type": "string"
-      }
-    },
-    "purpose": {
-      "type": "string"
-    },
-    "success_outcome": {
-      "type": "string"
-    },
-    "anti_goals": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "runtime_context": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "packet_required": {
-          "type": "boolean"
-        },
-        "packet_ref": {
-          "type": "string",
-          "pattern": "^\\.memory-bank/packets/TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+\\.packet\\.json$"
-        },
-        "allowed_write_scope": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "forbidden_scope": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "stop_conditions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
       }
     }
   }

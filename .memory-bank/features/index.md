@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -9,72 +9,52 @@ source_of_truth:
 ---
 # Features Index
 
-Active MVP v2 features are draft L3 decomposition artifacts. Global
-`/spec-design` is complete, was brownfield-refreshed on 2026-06-26 against
-verified FT-000 code/evidence, and was refreshed again on 2026-06-26 for
-expanded shared SDD contract/state coverage.
+Global SDD backbone and verified FT-000 Foundation are complete. FT-001
+composes complete registered subject-based specs; FT-002 has the bounded
+permission dependency slice needed by FT-001, and FT-003 records the direct
+Account KISS direction. `/prd-to-tasks FT-001` is complete with active
+single-card tasks `TASK-005` through `TASK-011`; the next gate is a fresh
+`/review-tasks-plan FT-001`.
 
-Compact Foundation Dev Path is complete and verified; see [.memory-bank/foundation.md](../foundation.md). Product `/prd-to-tasks` is unblocked for features that already have completed feature-level SDD designs.
+Other features enter `/prd-to-tasks FT-<NNN>` when selected. That workflow
+discovers existing canonical paths, extends them when needed, creates only
+missing concerns, and writes direct applicable links to task cards.
 
-First-wave `/spec-improve` is complete for FT-001, FT-002, and FT-003. Their current normative feature designs are registered in [.memory-bank/spec-index.md](../spec-index.md).
+## Foundation
 
-`/prd-to-tasks FT-001` is complete and was refreshed on 2026-06-26 against the
-brownfield global SDD backbone and then against the expanded `/prd-to-tasks`
-concrete contract readiness protocol. The active [.memory-bank/tasks/index.json](../tasks/index.json)
-queue contains completed `FT-000` Foundation tasks plus `TASK-005-T3-FT-001-W1`
-through `TASK-011-T3-FT-001-W3`. The latest refresh linked the FT-001 tech spec,
-implementation plan, task records, and packets to current Foundation
-runtime/data substrate, evidence-redaction, and testing owners without creating
-new tasks. A later standalone `/spec-improve FT-001` repair closed concrete
-security primitive, cookie transport, and PlantPermissionContext ownership
-gaps; `/prd-to-tasks FT-001` refreshed `TASK-006` through `TASK-011` and their
-packets against those contracts. The next gate is `/review-tasks-plan FT-001`
-before implementation.
-Generated product task-decomposition artifacts for
-FT-002 and FT-003 remain intentionally removed.
-
-Other product features should enter `/prd-to-tasks FT-<NNN>` when selected. `/prd-to-tasks` owns the feature-level SDD design phase before task slicing; use standalone `/spec-improve FT-<NNN>` only for repair or advanced refresh without task generation.
-
-Shared global SDD owners now include UI Feed, timeline audit/export, photo
-artifacts, Plant state trust, Safety action lifecycle, Companion governance,
-and dataset governance through [.memory-bank/spec-index.md](../spec-index.md).
-Feature-level design must link these owners when a feature touches the relevant
-boundary.
-
-## Foundation Pseudo-Feature
-
-- [FT-000 Foundation Dev Path](FT-000-foundation.md): reserved pseudo-feature for `/foundation-to-tasks`; final gate `TASK-004-T2-FT-000-W0` is `done`; not a product feature and not a valid `/prd-to-tasks FT-000` target.
+- [FT-000 Foundation Dev Path](FT-000-foundation.md): verified pseudo-feature;
+  final gate `TASK-004-T2-FT-000-W0` is done.
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): `/spec-improve` and refreshed `/prd-to-tasks` are complete, with a later `/spec-improve` repair and `/prd-to-tasks FT-001` task/packet refresh on 2026-06-26; current normative feature design is [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md), implementation plan is [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md), and active tasks are `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`; next gate is `/review-tasks-plan FT-001`.
-- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md).
-- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): `/spec-improve` complete; current normative feature design is [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md).
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): complete identity/session/access composition; active `TASK-005` through `TASK-011`.
+- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): bounded storage/status/permission dependency slice; full SDD pending.
+- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): direct local Account creation direction; full SDD pending.
 
 ## EP-002 Plant Operations Evidence Authority
 
-- [FT-004 Authorized Plant Operations And Daily Check-In](FT-004-authorized-plant-operations-daily-check-in.md): authorized Plant selector, observations, pH/EC, Plant card/history, and workflow entry points.
-- [FT-005 Photo Intake Catalog And Capture Manifests](FT-005-photo-intake-catalog-capture-manifests.md): local photo files, catalog metadata, checksums, manifests, and audit refs.
-- [FT-006 Runtime State Timeline And Plant History](FT-006-runtime-state-timeline-plant-history.md): PostgreSQL/read model authority, timeline audit/export, and retained history.
+- [FT-004 Authorized Plant Operations And Daily Check-In](FT-004-authorized-plant-operations-daily-check-in.md): authorized daily operations entry points.
+- [FT-005 Photo Intake Catalog And Capture Manifests](FT-005-photo-intake-catalog-capture-manifests.md): local photo artifact intake and evidence refs.
+- [FT-006 Runtime State Timeline And Plant History](FT-006-runtime-state-timeline-plant-history.md): runtime authority, timeline, and retained history.
 
 ## EP-003 Agent Runtime And Context Hygiene
 
-- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): real model-backed runtime path, adapter validation, runtime decisions, and structured output.
-- [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): Bus working context, UI Feed presentation, and context anti-cheat rules.
-- [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): real vision processing, observation boundaries, and Plant state trust statuses.
-- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): cautious hydroponics advice, stale/missing data behavior, and Safety Gate handoff.
+- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): real model runtime and publishable output.
+- [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): working-context and presentation separation.
+- [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): visual evidence and state promotion.
+- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): cautious advice and missing-data behavior.
 
 ## EP-004 Safety Tasks And Follow-Up
 
-- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): fail-closed physical-action wording classification and approval routing.
-- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): approval authority, action_task creation, and outcome capture.
+- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): fail-closed physical-action routing.
+- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): human-performed tasks and outcomes.
 
 ## EP-005 Companion Governance
 
-- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md): typed Plant-scoped governance state and approved governance summary boundary.
+- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md): typed governance discussion and decisions.
 
 ## EP-006 Local Privacy And Operator Surface
 
-- [FT-014 Dataset Governance And Trainability](FT-014-dataset-governance-trainability.md): non-trainable default, evidence refs, and future trainability guardrails.
-- [FT-015 Local Security Privacy And Storage Prompt](FT-015-local-security-privacy-storage-prompt.md): loopback/LAN exposure, secret redaction, `local_only`, and 200 MB prompt.
-- [FT-016 Web App PWA Operator Surface And First Demo](FT-016-web-app-pwa-operator-surface-first-demo.md): first usable role-aware PWA surface and first-demo route.
+- [FT-014 Dataset Governance And Trainability](FT-014-dataset-governance-trainability.md): evidence-gated trainability.
+- [FT-015 Local Security Privacy And Storage Prompt](FT-015-local-security-privacy-storage-prompt.md): local privacy/exposure/storage behavior.
+- [FT-016 Web App PWA Operator Surface And First Demo](FT-016-web-app-pwa-operator-surface-first-demo.md): role-aware first-demo UI.

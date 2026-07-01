@@ -1,9 +1,8 @@
 ---
 description: Global dataset governance and trainability lifecycle boundary for MVP v2.
 status: active
-owner: architecture
 type: state
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -22,19 +21,19 @@ create a full dataset registry or real fine-tuning path in MVP.
 Exact dataset fields, lifecycle transitions, recomputation rules, endpoint
 schemas, and UI behavior belong to `/prd-to-tasks FT-014`.
 
-## Ownership
+## Scope Boundaries
 
-- Owns: global non-trainable default, evidence-ref requirement, allowed
+- Defines: global non-trainable default, evidence-ref requirement, allowed
   trainability authority, forbidden sources, and verification requirements.
-- Does not own: full registry schema, ML training jobs, model evaluation,
+- Out of scope: full registry schema, ML training jobs, model evaluation,
   export packaging, or fine-tuning workflows.
 - Related specs:
   - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md):
-    owns local photo evidence refs.
+    defines local photo evidence refs.
   - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md):
-    owns audit/export event refs.
+    defines audit/export event refs.
   - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md):
-    owns agent-consumable evidence boundaries.
+    defines agent-consumable evidence boundaries.
 
 ## Lifecycle Shape
 

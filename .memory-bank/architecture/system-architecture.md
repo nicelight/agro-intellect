@@ -1,9 +1,8 @@
 ---
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
-owner: architecture
 type: architecture
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -57,7 +56,7 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 #### AD-002 - Foundation implements platform anchors, not product behavior
 - Binds: FT-000 Foundation tasks and later FT-001..FT-016 task slicing.
 - Prevents: broad upfront implementation of auth, Plant lifecycle, admin, photo, agent, safety, UI Feed, dataset, or first-demo product behavior inside Foundation.
-- Rule: Foundation may implement task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, PostgreSQL init, migration baseline, DB readiness/session helpers, local runtime roots, and redaction baseline; product schemas and state machines stay in their owning feature tasks.
+- Rule: Foundation may implement task schema/protocol alignment, backend scaffold anchors, Linux Mint local bootstrap, PostgreSQL init, migration baseline, DB readiness/session helpers, local runtime roots, and redaction baseline; product schemas and state machines stay in canonical subject specs and their scoped tasks.
 - Verification: final Foundation evidence proves scaffold/bootstrap/DB gates and does not claim product acceptance for FT-001..FT-016.
 - Source: [.memory-bank/foundation.md](../foundation.md),
   [.memory-bank/architecture/foundation-runtime-substrate.md](foundation-runtime-substrate.md),
@@ -151,7 +150,7 @@ Design-time precedence:
 4. Authoritative contracts/specs.
 5. PRD, requirements, epics, and features.
 6. User scenarios and pre-PRD hints.
-7. Task records and generated packets/plans as planning context.
+7. Indexed task cards and generated plans as task-scoped planning context.
 8. Agent assumptions.
 
 Runtime authority:

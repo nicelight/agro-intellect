@@ -106,8 +106,6 @@
     "No product auth/session or UI implementation."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-001-T2-FT-000-W0.packet.json",
     "allowed_write_scope": [
       "scripts/bootstrap-local.sh",
       ".env.example",

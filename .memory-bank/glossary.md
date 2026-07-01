@@ -1,8 +1,7 @@
 ---
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
-owner: architecture
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -49,6 +48,10 @@ source_of_truth:
 - `Docs First`: meaningful work updates Memory Bank before code is considered done.
 - `SDD`: spec-driven development route where specs define normative decisions before task decomposition.
 - `Design Specs`: normative SDD documents routed by [.memory-bank/spec-index.md](spec-index.md).
+- `canonical subject spec`: the single registered path for one cohesive system
+  concern, named by subject rather than feature ID and scoped without file-owner metadata.
+- `feature composition root`: feature document that preserves product behavior
+  and links applicable canonical specs without duplicating their contracts.
 - `spec-index`: pure registry for authoritative and planned SDD specs; global
   backbone status lives in `spec-backbone`, and feature design status lives in
   feature frontmatter.
@@ -68,7 +71,8 @@ source_of_truth:
 - `RTM`: requirements traceability matrix linking requirements to epics, features, and verification targets.
 - `epic`: C4 L2 product slice grouping related features.
 - `feature`: C4 L3 functional slice whose feature-level SDD design is completed inside `/prd-to-tasks FT-<NNN>` before task slicing; `/spec-improve FT-<NNN>` is a repair or advanced refresh route.
-- `task record`: schema-backed JSON `TASK-*` work item used for execution and verification.
+- `task record`: schema-backed JSON `TASK-*` work item and the single
+  authoritative task-scoped planning/execution/verification handoff.
 - `Memory Bank greenfield flow`: canonical route from analysis/brief/PRD/specs to tasks, execute, verify, and sync.
 
 ## Architecture And Authority
@@ -180,7 +184,7 @@ source_of_truth:
 - `human approval`: explicit user approval/rejection for risky physical actions; unlocks only human-performed task tracking in MVP.
 - `Human-in-the-loop`: pattern where important plant-impacting decisions require explicit human decision.
 - `analysis freshness`: freshness requirement for using evidence in analysis;
-  the owning feature spec defines the exact policy.
+  the applicable canonical subject spec defines the exact policy.
 - `approval freshness`: freshness requirement for physical-action approval;
   the owning safety spec defines the exact policy.
 - `fresh data`: measurement or evidence still inside the relevant freshness window.
@@ -265,7 +269,7 @@ source_of_truth:
 - `vision model`: real vision-capable model or real vision model integration used for photo observation in the MVP runtime/demo path.
 - `test mock`: deterministic or fake dependency used only in automated tests; it is not an acceptable MVP runtime/demo agent path.
 - `JSONL`: newline-delimited JSON format used for append-only timeline export.
-- `Pydantic`: likely FastAPI schema layer; exact usage belongs to feature-local design.
+- `Pydantic`: likely FastAPI schema layer; exact usage belongs to the applicable canonical subject spec and implementation.
 
 ## Notes
 - Используй этот файл для устранения неоднозначностей в названиях и статусах.

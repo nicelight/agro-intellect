@@ -1,9 +1,8 @@
 ---
 description: Foundation data substrate for DB handle, session lifetime, Alembic baseline, and local runtime roots.
 status: active
-owner: architecture
 type: domain
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/domains/runtime-data-model.md
@@ -15,14 +14,14 @@ source_of_truth:
 ---
 # Foundation Data Substrate
 
-## Ownership
+## Scope
 
-- Owns: FT-000 DB/session/Alembic/runtime-root substrate that product features build on.
-- Does not own: product table schemas, product migrations, Account/Farm/Plant records, photo catalog rows, timeline taxonomy, or dataset fields.
+- Defines: FT-000 DB/session/Alembic/runtime-root substrate that product features build on.
+- Out of scope: product table schemas, product migrations, Account/Farm/Plant records, photo catalog rows, timeline taxonomy, or dataset fields.
 - Related specs:
-  - [.memory-bank/domains/runtime-data-model.md](runtime-data-model.md): owns global runtime authority and product data routing.
-  - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): owns app factory and runtime shape.
-  - [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md): owns local DB init/migration commands.
+  - [.memory-bank/domains/runtime-data-model.md](runtime-data-model.md): defines global runtime authority and product data routing.
+  - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): defines app factory and runtime shape.
+  - [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md): defines local DB init/migration commands.
 
 ## Shape
 

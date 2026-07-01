@@ -195,8 +195,6 @@
     "No product feature closure."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-004-T2-FT-000-W0.packet.json",
     "allowed_write_scope": [
       ".tasks/TASK-004-T2-FT-000-W0/",
       ".protocols/TASK-004-T2-FT-000-W0/",

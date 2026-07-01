@@ -1,11 +1,11 @@
 # План миграции спецификаций на subject-based SDD
 
 Дата подготовки: 2026-06-30  
-Статус: planning only, изменения проекта не выполнялись  
+Статус: implementation repaired after review; fresh-context re-review required
 Основание:
 
-- `/home/serg/Projects/DevRails 26/IDEAS/packet-reformation.md`
-- `/home/serg/Projects/DevRails 26/IDEAS/specs_without_owners.md`
+- `/home/serg/Projects/DevRails 26/IDEAS/DONE/packet-reformation.md`
+- `/home/serg/Projects/DevRails 26/IDEAS/DONE/specs_without_owners.md`
 
 ## 1. Цель
 
@@ -795,4 +795,3 @@ git diff --check
 - Archive и historical evidence не переписаны.
 - `mb-lint`, strict `mb-doctor` и `git diff --check` проходят.
 - Новый `/review-tasks-plan FT-001` возвращает `APPROVE`.
-

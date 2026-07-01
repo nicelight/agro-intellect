@@ -1,8 +1,7 @@
 ---
 description: Pre-PRD lifecycle hints for MVP v2 decomposition.
 status: active
-owner: architecture
-last_updated: 2026-06-03
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -16,8 +15,8 @@ and feature cuts. Detailed state machines belong to `/spec-design` or feature-lo
 
 | Entity | Lifecycle Summary | States | Transitions Needing Later Detail | Questions |
 |---|---|---|---|---|
-| Account | Local identity exists for login/session, authorization, attribution, and audit. | local active/invited/disabled style states are expected but not specified here. | create/add/invite, activate, disable/remove, audit attribution. | Exact local account invite/session behavior belongs to /spec-design. |
-| FarmMembership | Connects Account to the single local Farm and carries role preset. | active/invited/disabled/removed style states are expected but not specified here. | role assignment/change, membership status change, admin audit. | Exact membership state names belong to /spec-design. |
+| Account | Local identity exists for login/session, authorization, attribution, and audit. | active, disabled. | direct create with required password hash; disable; audit attribution. | First-Boss bootstrap CLI contract remains for FT-002/FT-003 design. |
+| FarmMembership | Connects Account to the single local Farm and carries role preset. | active, disabled. | direct active creation with Account; role/status change; admin audit. | Plant grants remain a separate FT-002 flow. |
 | Plant | Farm-managed Plant can be used operationally, archived, and restored. | active, archived. | create, archive, restore, authorized history/audit/export access after archive. | Exact retained-history UI/API behavior belongs to later specs. |
 | PlantAccessGrant | Gives per-Plant visibility and work authorization. | granted, revoked style states are expected but not specified here. | grant, revoke, update `plant_approve_actions`, filtering of context builders and UI. | Exact permission representation belongs to /spec-design. |
 | Daily Check-In | Authorized actor records current Plant evidence. | started/completed style states are expected but not specified here. | observation entry, pH/EC recording, photo upload, audit refs, agent publication trigger. | Exact check-in state model belongs to feature specs. |

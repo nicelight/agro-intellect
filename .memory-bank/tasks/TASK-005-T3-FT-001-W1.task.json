@@ -34,25 +34,24 @@
   ],
   "verify": [
     "The accounts, farm_memberships, and local_sessions models/migration use PostgreSQL native UUID mapped as Python uuid.UUID with application UUIDv4 generation for account_id, membership_id, session_id, account references, and farm_id.",
-    "Required text/status/timestamp fields are non-null; password_hash, disabled_at, revoked_at, last_seen_at, and client_label preserve the exact FT-001 nullable rules; created_at/updated_at use non-null timestamptz with server now defaults where specified.",
-    "DB CHECK constraints reject invalid account_status, membership_status, role_preset, and auth_method values and enforce active Account => password_hash IS NOT NULL plus pending_activation => password_hash IS NULL without a brittle PHC-prefix check.",
+    "Required text/status/timestamp fields are non-null; password_hash is required while disabled_at, revoked_at, last_seen_at, and client_label preserve the exact FT-001 nullable rules; created_at/updated_at use non-null timestamptz with server now defaults where specified.",
+    "DB CHECK constraints reject invalid account_status, membership_status, role_preset, and auth_method values; the only values are Account active/disabled, Membership active/disabled, and auth_method local_password.",
     "login_name persistence uses application strip().lower(), a DB normalized/non-empty check, and exactly one unique B-tree lookup on the stored normalized value.",
-    "FarmMembership.account_id and LocalSession.account_id use ON DELETE RESTRICT Account FKs; FarmMembership.farm_id is UUID/non-null with no FT-001 FK or farms table, preserving the explicit FT-002 closure handoff.",
+    "FarmMembership.account_id and LocalSession.account_id use ON DELETE RESTRICT Account FKs; FarmMembership.farm_id is UUID/non-null with no FT-001 FK or farms table, leaving the final relation to full FT-002 design.",
     "The schema has exactly the required unique membership, token_hash, LocalSession account_id, and expires_at indexes without duplicates; LocalSession has no raw session-token field.",
     "A rollback-scoped PostgreSQL migration smoke applies the FT-001 migration through the Foundation Alembic path, inserts/reads representative rows, and proves UUID round-trip, normalization conflicts, checks, FK restrictions, and index behavior.",
-    "Migration path creates only FT-001-owned records and does not create Farm, Plant, PlantAccessGrant, public invite, or admin audit behavior.",
+    "Migration path creates only Account, FarmMembership, and LocalSession records and does not create Farm, Plant, PlantAccessGrant, Boss account-creation, bootstrap, or admin audit behavior.",
     "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
   ],
   "docs": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/tasks/plans/IMPL-FT-001.md"
   ],
   "evidence_required": [
     "schema/migration test output",
     "native UUID/Python uuid.UUID mapping and UUIDv4 round-trip evidence",
     "column type, nullability, timestamptz, and server-default inspection evidence",
-    "status/role/auth-method and active/pending password CHECK evidence",
+    "status/role/auth-method and required password_hash CHECK evidence",
     "normalized login DB check and single unique lookup evidence",
     "ON DELETE RESTRICT Account FK plus deferred farm_id FK absence evidence",
     "exact uniqueness/index set and no duplicate index evidence",
@@ -61,12 +60,7 @@
     "T3 verify/red-verify/human/recovery evidence"
   ],
   "source_artifacts": [
-    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/foundation.md",
-    ".memory-bank/architecture/foundation-runtime-substrate.md",
-    ".memory-bank/domains/foundation-data-substrate.md",
-    ".memory-bank/contracts/evidence-redaction.md"
+    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md"
   ],
   "normative_inputs": [
     ".memory-bank/architecture/system-architecture.md",
@@ -77,30 +71,31 @@
     ".memory-bank/foundation.md",
     ".memory-bank/invariants.md",
     ".memory-bank/contracts/boundary-map.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/domains/identity/account-membership.md",
+    ".memory-bank/domains/auth/session-storage.md",
     ".memory-bank/architecture/foundation-runtime-substrate.md",
     ".memory-bank/domains/foundation-data-substrate.md",
     ".memory-bank/contracts/evidence-redaction.md",
-    ".memory-bank/testing/index.md"
+    ".memory-bank/testing/index.md",
+    ".memory-bank/testing/auth/session-and-access.md"
   ],
   "constraints": [
     "Store only server-side token_hash for LocalSession; never persist raw session tokens.",
     "Use PostgreSQL native uuid mapped as Python uuid.UUID through SQLAlchemy Uuid(as_uuid=True), with application uuid.uuid4 generation for FT-001 identifiers; do not use text or integer identifiers.",
-    "Use nullable unbounded text for Account.password_hash; active requires non-null password_hash, while pending_activation and disabled-before-activation Accounts may keep it null. Do not add a brittle PHC-prefix DB check or arbitrary maximum length.",
+    "Use non-null unbounded text for Account.password_hash. Do not add a brittle PHC-prefix DB check or arbitrary maximum length.",
     "Use one non-null 64-character LocalSession.token_hash column with exactly one unique lookup index; do not add a duplicate non-unique token_hash index.",
     "Use exact FT-001 nullability and timestamptz rules; created_at/updated_at are non-null with server now defaults where specified, while disabled_at, revoked_at, last_seen_at, and client_label remain nullable.",
-    "Use string columns plus DB CHECK constraints for Account statuses pending_activation/active/disabled, FarmMembership statuses invited/active/disabled, role presets boss/engineer/consultant, and auth methods local_password/local_invite_activation; do not use PostgreSQL native ENUM types.",
+    "Use string columns plus DB CHECK constraints for Account statuses active/disabled, FarmMembership statuses active/disabled, role presets boss/engineer/consultant, and the sole auth method local_password; do not use PostgreSQL native ENUM types.",
     "Normalize login_name with strip().lower() before persistence, enforce normalized non-empty storage in PostgreSQL, and use one unique B-tree lookup on the stored value without citext or duplicate functional indexes.",
-    "Use ON DELETE RESTRICT for Account-to-membership/session FKs. Keep farm_memberships.farm_id UUID/non-null without an FT-001 FK; do not create the FT-002-owned farms table.",
+    "Use ON DELETE RESTRICT for Account-to-membership/session FKs. Keep farm_memberships.farm_id UUID/non-null without a Farm FK; do not create a farms table or invent the deferred FT-002 migration.",
     "Create exactly one unique farm_memberships(account_id, farm_id) lookup, one unique local_sessions.token_hash lookup, one local_sessions.account_id index, and one local_sessions.expires_at index without duplicates.",
-    "Do not create Farm, Plant, PlantAccessGrant, public invite, admin mutation, or AdminAuditRecord behavior in this task.",
+    "Do not create Farm, Plant, PlantAccessGrant, Boss account-creation/bootstrap, admin mutation, or AdminAuditRecord behavior in this task.",
     "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
     "PostgreSQL/read model owns mutable Account, FarmMembership, and LocalSession state.",
     "Authority relations never cascade delete; disable/revoke lifecycle semantics preserve referenced records.",
-    "FT-001 owns the required farm_id column and intentional initial FK absence; FT-002 owns single-Farm reconciliation and final farm_memberships.farm_id RESTRICT FK validation.",
+    "Account/membership storage defines the required farm_id column and intentional initial FK absence; full FT-002 design owns final Farm relation and migration semantics.",
     "Secrets/auth material must not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context."
   ],
   "verification_targets": [
@@ -109,20 +104,18 @@
     "/verify PASS",
     "/red-verify semantic-pass",
     "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
-    "Check FT-001 migration uses the Foundation Data Substrate DB/session/Alembic path and creates only FT-001-owned tables/indexes.",
+    "Check the migration uses the Foundation Data Substrate DB/session/Alembic path and creates only Account, FarmMembership, and LocalSession tables/indexes.",
     "Inspect model and migrated PostgreSQL metadata for exact table/column names, native UUID, timestamptz, nullability/defaults, status/role/auth checks, normalized login uniqueness, RESTRICT Account FKs, deferred farm_id FK absence, exact indexes, and no raw-token column.",
-    "Run rollback-scoped PostgreSQL migration/repository smoke covering UUID round-trip, representative pending/active/disabled rows, invalid domain values, active/pending password checks, duplicate normalized login, referenced Account delete rejection, and no farms table creation."
+    "Run rollback-scoped PostgreSQL migration/repository smoke covering UUID round-trip, representative active/disabled rows, invalid domain values, required password hash, duplicate normalized login, referenced Account delete rejection, and no farms table creation."
   ],
   "purpose": "Create the FT-001 persistence baseline for local identity, membership, and sessions without implementing adjacent product features.",
   "success_outcome": "Later FT-001 tasks can use deterministic Account, FarmMembership, and LocalSession relational records with native UUID identity, exact nullability/checks/login uniqueness/non-cascading relations/indexes, token_hash-only storage, and an explicit deferred Farm FK handoff.",
   "anti_goals": [
     "No FT-002 Farm/Plant/PlantAccessGrant implementation.",
-    "No FT-003 public invite/admin/audit implementation.",
+    "No FT-003 direct Account creation/bootstrap/admin/audit implementation.",
     "No raw session token persistence."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-005-T3-FT-001-W1.packet.json",
     "allowed_write_scope": [
       "backend/app/access_admin/__init__.py",
       "backend/app/access_admin/models.py",
@@ -131,15 +124,15 @@
     ],
     "forbidden_scope": [
       "FT-002 Farm/Plant/PlantAccessGrant implementation",
-      "FT-003 public invite/admin/audit implementation",
+      "FT-003 direct Account creation/bootstrap/admin/audit implementation",
       "raw session token storage"
     ],
     "stop_conditions": [
       "Migration would require destructive database operations.",
-      "Schema requires unresolved FT-002 or FT-003 ownership decisions.",
-      "Implementation requires creating a Farm table or enabling durable FarmMembership creation before FT-002 closes the deferred farm_id FK.",
+      "Schema requires unresolved Farm/Plant/access or admin/bootstrap contract decisions.",
+      "Implementation requires creating a Farm table, selecting the deferred FT-002 migration, or enabling durable FarmMembership product creation.",
       "Native UUID, normalized login uniqueness, exact DB checks, non-cascading FKs, or the required index set cannot be proven on PostgreSQL.",
-      "The active-account password_hash invariant or single unique token_hash lookup index cannot be enforced without contradicting the authoritative FT-001 storage contract.",
+      "The required password_hash invariant or single unique token_hash lookup index cannot be enforced without contradicting the authoritative FT-001 storage contract.",
       "Verification cannot prove token_hash-only session storage.",
       "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]

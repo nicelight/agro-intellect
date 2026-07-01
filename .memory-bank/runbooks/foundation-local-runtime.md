@@ -1,9 +1,8 @@
 ---
 description: Local Foundation runtime runbook for bootstrap, database init, migrations, start, and troubleshooting.
 status: active
-owner: architecture
 type: runbook
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/architecture/foundation-runtime-substrate.md
@@ -15,14 +14,14 @@ source_of_truth:
 ---
 # Foundation Local Runtime Runbook
 
-## Ownership
+## Scope
 
-- Owns: local FT-000 setup/start/smoke command sequence and troubleshooting notes.
-- Does not own: production deployment, CI/CD, Docker path, hosted sync, product feature setup, or frontend/PWA runtime.
+- Defines: local FT-000 setup/start/smoke command sequence and troubleshooting notes.
+- Out of scope: production deployment, CI/CD, Docker path, hosted sync, product feature setup, or frontend/PWA runtime.
 - Related specs:
-  - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): owns runtime shape.
-  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): owns DB/session/migration substrate.
-  - [.memory-bank/testing/foundation-test-harness.md](../testing/foundation-test-harness.md): owns test/evidence surface.
+  - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): defines runtime shape.
+  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): defines DB/session/migration substrate.
+  - [.memory-bank/testing/foundation-test-harness.md](../testing/foundation-test-harness.md): defines test/evidence surface.
 
 ## Command Path
 

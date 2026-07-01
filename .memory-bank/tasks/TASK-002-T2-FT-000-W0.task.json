@@ -113,8 +113,6 @@
     "No hosted database or cloud sync."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-002-T2-FT-000-W0.packet.json",
     "allowed_write_scope": [
       "scripts/db-init-local.sh",
       "scripts/db-migrate-local.sh",

@@ -1,9 +1,8 @@
 ---
 description: Foundation runtime substrate contract for the verified FT-000 backend baseline.
 status: active
-owner: architecture
 type: architecture
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/architecture/system-architecture.md
@@ -13,14 +12,14 @@ source_of_truth:
 ---
 # Foundation Runtime Substrate
 
-## Ownership
+## Scope
 
-- Owns: executable FT-000 runtime shape, backend entrypoint, dependency direction, app factory boundary, settings/database injection, and smoke route mounting.
-- Does not own: product route groups, auth/session behavior, Plant lifecycle, admin workflows, agent runtime, Safety Gate, UI Feed, or product domain schemas.
+- Defines: executable FT-000 runtime shape, backend entrypoint, dependency direction, app factory boundary, settings/database injection, and smoke route mounting.
+- Out of scope: product route groups, auth/session behavior, Plant lifecycle, admin workflows, agent runtime, Safety Gate, UI Feed, or product domain schemas.
 - Related specs:
-  - [.memory-bank/contracts/foundation-smoke-api.md](../contracts/foundation-smoke-api.md): owns `/health` and `/ready` response contract.
-  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): owns DB/session/Alembic/runtime-root substrate.
-  - [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md): owns local setup/start commands.
+  - [.memory-bank/contracts/foundation-smoke-api.md](../contracts/foundation-smoke-api.md): defines `/health` and `/ready` responses.
+  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): defines DB/session/Alembic/runtime roots.
+  - [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md): defines local setup/start commands.
 
 ## Substrate Shape
 
@@ -53,5 +52,5 @@ source_of_truth:
 
 ## Extension Route
 
-- `/prd-to-tasks FT-<NNN>` may extend this owner only when a product feature needs to change app composition or shared substrate behavior.
-- Product-specific route paths, schemas, migrations, state machines, and verification examples stay in feature-local specs.
+- `/prd-to-tasks FT-<NNN>` may extend this canonical spec only when product work needs to change app composition or shared substrate behavior.
+- Product-specific routes, schemas, migrations, states, and verification live in applicable subject specs.

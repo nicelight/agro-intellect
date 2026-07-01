@@ -3,10 +3,10 @@ description: Implementation plan for FT-001 Local Accounts Sessions And ActorCon
 status: active
 type: implementation_plan
 feature_id: FT-001
-last_updated: 2026-06-27
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/features/FT-001-local-accounts-sessions-actor-context.md
-  - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
+  - .memory-bank/testing/auth/session-and-access.md
   - .memory-bank/spec-backbone.md
   - .memory-bank/foundation.md
   - .memory-bank/architecture/foundation-runtime-substrate.md
@@ -24,7 +24,7 @@ needed by later Farm/Plant, admin, and agent-context features.
 
 ## Constitution Check
 
-- Spec Before Code: tasks are derived from FT-001 feature doc, FT-001 tech spec,
+- Spec Before Code: tasks are derived from the FT-001 feature composition,
   requirements, Foundation, and global backbone specs.
 - KISS / low maintenance: use a local modular monolith, fixed role presets, and
   no general ACL engine beyond `plant_approve_actions`.
@@ -35,14 +35,19 @@ needed by later Farm/Plant, admin, and agent-context features.
 ## Source Artifacts
 
 - `.memory-bank/features/FT-001-local-accounts-sessions-actor-context.md`
-- `.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md`
 - `.memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json`
 - `.memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json`
 - `.memory-bank/behavior-specs/FT-001-BHV-003-actor-context-permission-filtering.behavior.json`
 
 ## Spec Design Links
 
-- `.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md`
+- `.memory-bank/domains/identity/account-membership.md`
+- `.memory-bank/domains/auth/session-storage.md`
+- `.memory-bank/contracts/auth/session-security.md`
+- `.memory-bank/states/auth/session-lifecycle.md`
+- `.memory-bank/contracts/auth/session-http.md`
+- `.memory-bank/contracts/access/actor-context.md`
+- `.memory-bank/testing/auth/session-and-access.md`
 
 ## Normative Inputs
 
@@ -59,38 +64,33 @@ needed by later Farm/Plant, admin, and agent-context features.
 - `.memory-bank/contracts/ui-feed.md`
 - `.memory-bank/contracts/boundary-map.md`
 - `.memory-bank/invariants.md`
-- `.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md`
-- `.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md`
+- `.memory-bank/domains/farm/farm-plant-access-storage.md`
+- `.memory-bank/states/plants/plant-and-access-lifecycle.md`
+- `.memory-bank/domains/admin/admin-audit.md`
 - `.memory-bank/testing/index.md`
 - `.memory-bank/testing/foundation-test-harness.md`
 - `.memory-bank/workflows/tier-policy.md`
 
 ## Refresh Note
 
-`/prd-to-tasks FT-001` was refreshed on 2026-06-26 after the brownfield global
-SDD backbone update and again against the expanded `/prd-to-tasks` concrete
-contract readiness protocol. A later `/spec-improve FT-001` repair closed
-concrete security primitive, cookie/session transport, and PlantPermissionContext
-ownership gaps. This `/prd-to-tasks FT-001` refresh updated the existing
-`TASK-006` through `TASK-011` cards and their packets without creating new task
-records. `TASK-005` remains unchanged because the repair did not add new
-schema-level column length, nullability, index, or migration constraints beyond
-the existing `password_hash` and unique `token_hash` storage contract.
+On 2026-06-30 the queue migrated to the framework single-card handoff and
+subject-based SDD model. Task IDs, tiers, waves, dependencies, statuses,
+outcomes, gates, evidence, and scope are unchanged. Persisted packets were
+removed after their success checks were confirmed in task cards. Each task now
+links only its applicable canonical specs.
 
-A targeted 2026-06-27 `/prd-to-tasks FT-001` refresh updates only `TASK-005`
-and its canonical packet after the KISS storage repair made those schema-level
-decisions concrete: nullable unbounded-text `password_hash`, active-account
-credential enforcement, one non-null 64-character `token_hash` column with a
-single unique lookup index, no raw-token column, and PostgreSQL migration smoke.
-The queue shape and `TASK-006` through `TASK-011` records/packets remain
-unchanged.
+On 2026-07-01 the queue was reconciled to the KISS direct-Account decision and
+the bounded FT-002 permission dependency. Invite/activation state and the
+session activation primitive were removed; Account/Membership states are now
+`active|disabled`, `password_hash` is required, and LocalSession uses only
+`local_password`. No task identity, tier, wave, dependency, lifecycle status,
+or independent outcome changed.
 
-A second targeted refresh on 2026-06-28 updates only `TASK-005` and its packet
-for the completed relational contract: native UUID/UUIDv4 identity, exact
-nullability and `timestamptz` defaults, string-domain DB checks, normalized
-login uniqueness, non-cascading Account FKs, intentional initial Farm FK
-absence with FT-002 closure ownership, and the exact index set. No queue or
-later-task boundary changes.
+A follow-up `/prd-to-tasks FT-001` link audit on 2026-07-01 confirmed that no
+new spec is required. It linked the existing cross-contract verification spec
+directly to every applicable implementation card and linked session lifecycle
+plus session HTTP directly to the protected-dependency task. Task topology and
+lifecycle state remain unchanged.
 
 ## Constraints
 
@@ -107,20 +107,19 @@ later-task boundary changes.
   HTTP.
 - Every protected product route and context-builder path must resolve
   ActorContext before business logic. Service endpoints `/health` and `/ready`,
-  plus explicitly public auth endpoints such as login/bootstrap endpoints, are
+  plus explicitly public auth endpoints such as login, are
   exceptions and must not expose Farm/Plant data or auth material.
 - Product code must extend the verified Foundation app/database substrate
   instead of inventing a parallel app factory, DB/session, migration, local
   runtime-root, or redaction path.
 - Authorization failures must fail closed and avoid leaking unauthorized Plant
   existence.
-- FT-001 owns ActorContext and the PlantPermissionContext interface envelope;
-  FT-002 owns concrete PlantPermissionContext resolver semantics,
-  PlantAccessGrant lookup, archived/retained-history behavior, and Plant route
-  denial code mapping.
-- Do not implement FT-002 Plant lifecycle, FT-002 PlantAccessGrant mutation
-  rules, FT-003 public invite activation route, FT-003 admin mutation surfaces,
-  or AdminAuditRecord persistence except minimal interfaces needed by FT-001.
+- ActorContext defines the permission interface and bounded resolver semantics;
+  Plant/access persistence, mutations, retained-history workflows, and Plant
+  HTTP behavior stay outside these task write scopes and await full FT-002 SDD.
+- Do not implement FT-002 Plant lifecycle/PlantAccessGrant persistence or
+  mutation rules, FT-003 direct Account creation/first-Boss bootstrap/admin
+  surfaces, or AdminAuditRecord persistence.
 - Do not introduce OAuth, hosted recovery, email delivery, SaaS tenancy,
   multi-Farm membership, refresh tokens, device management, or a general ACL
   engine.
@@ -133,10 +132,10 @@ later-task boundary changes.
 - Consultant remains advisory/read/comment only and cannot create domain tasks
   or approve physical actions.
 - `can_approve_actions` is actor authority only and never Safety Gate clearance.
-- Passwords, activation secrets, session tokens, token hashes, cookies, bearer
+- Passwords, session tokens, token hashes, cookies, bearer
   tokens, and auth headers never enter logs, audit/export, Bus, UI Feed,
   screenshots, exports, or agent context.
-- Generated task/packet assumptions remain below Constitution, explicit user
+- Generated task assumptions remain below Constitution, explicit user
   decisions, verified code/evidence, and active SDD specs.
 
 ## Task Queue
@@ -184,13 +183,13 @@ TASK-004-T2-FT-000-W0
   error mapping.
 - Integration tests for login/logout/me, protected-route ActorContext
   resolution, exact `agro_intellect_session` cookie attributes, logout
-  clear-cookie behavior, disabled/pending fail-closed behavior, canonical
+  clear-cookie behavior, disabled fail-closed behavior, canonical
   PlantPermissionContext compatibility, denial filtering, and context-builder
   auth material exclusion.
 - Contract checks that FT-001 feature code preserves Foundation `/health` and
   `/ready`, uses the Foundation DB/session/Alembic substrate, and applies
   evidence-redaction rules to auth/session material.
-- T3 task closure requires full protocol, required packet, `/verify PASS`,
+- T3 task closure requires full protocol, complete indexed task card, `/verify PASS`,
   per-task `/red-verify semantic-pass`, `HUMAN_CHECKPOINT: done`, and
   `ROLLBACK_RECOVERY_NOTE: present`.
 - Feature completion later requires feature-level `/red-verify --feature FT-001`
@@ -199,6 +198,7 @@ TASK-004-T2-FT-000-W0
 ## Quality Gates
 
 - `python -m pytest tests/backend/access_admin tests/backend/api`
+- `.venv/bin/python -m pytest tests`
 - `node scripts/mb-lint.mjs`
 - `node scripts/mb-doctor.mjs`
 - `git diff --check`
@@ -216,4 +216,8 @@ TASK-004-T2-FT-000-W0
 5. Consultant ActorContext cannot operate, create domain tasks, approve
    physical actions, or leak auth material into context-builder output.
 6. Plant-scoped context-builder seams filter denied Plant contexts before
-   Bus/model context and stay compatible with FT-002 resolver output fields.
+   Bus/model context and stay compatible with the bounded FT-002 permission
+   fields.
+
+Engineer/Consultant grant and direct-Account-creation E2E remains deferred until
+FT-002/FT-003 have completed SDD and runnable task queues.

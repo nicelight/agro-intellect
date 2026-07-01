@@ -1,9 +1,8 @@
 ---
 description: Foundation test harness and evidence contract for the verified FT-000 baseline.
 status: active
-owner: quality
 type: testing
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/testing/index.md
@@ -12,14 +11,14 @@ source_of_truth:
 ---
 # Foundation Test Harness
 
-## Ownership
+## Scope
 
-- Owns: FT-000 test command, smoke targets, fixture expectations, and evidence requirements.
-- Does not own: product feature test matrices, UI e2e flows, real model-provider evals, or feature-specific contract tests.
+- Defines: FT-000 test command, smoke targets, fixture expectations, and evidence requirements.
+- Out of scope: product feature test matrices, UI e2e flows, real model-provider evals, or feature-specific contract tests.
 - Related specs:
-  - [.memory-bank/contracts/foundation-smoke-api.md](../contracts/foundation-smoke-api.md): owns `/health` and `/ready` route contract.
-  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): owns DB/session/Alembic substrate.
-  - [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md): owns evidence redaction rules.
+  - [.memory-bank/contracts/foundation-smoke-api.md](../contracts/foundation-smoke-api.md): defines `/health` and `/ready`.
+  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): defines DB/session/Alembic substrate.
+  - [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md): defines evidence redaction.
 
 ## Harness Shape
 

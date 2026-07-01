@@ -1,9 +1,8 @@
 ---
 description: Global Safety Gate and physical-action lifecycle boundary for MVP v2.
 status: active
-owner: architecture
 type: state
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -22,19 +21,19 @@ device-control spec.
 Exact action taxonomy, freshness windows, API route schemas, task table fields,
 and UI prompts belong to `/prd-to-tasks FT-011` and `/prd-to-tasks FT-012`.
 
-## Ownership
+## Scope Boundaries
 
-- Owns: global Safety Gate authority separation, lifecycle phases, allowed
+- Defines: global Safety Gate authority separation, lifecycle phases, allowed
   approval roles, no-actuation rules, and verification requirements.
-- Does not own: detailed classifier implementation, exact pH/EC freshness
+- Out of scope: detailed classifier implementation, exact pH/EC freshness
   windows, endpoint schemas, task UI, or follow-up form fields.
 - Related specs:
   - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md):
-    owns physical-action implication and `safety_gate_route` fields.
-  - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): owns human
+    defines physical-action implication and `safety_gate_route` fields.
+  - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): defines human
     prompt projection.
   - [.memory-bank/states/companion-governance.md](companion-governance.md):
-    owns governance decisions that must not replace Safety Gate approval.
+    defines governance decisions that must not replace Safety Gate approval.
 
 ## Lifecycle Shape
 

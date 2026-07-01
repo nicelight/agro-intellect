@@ -1,9 +1,8 @@
 ---
 description: Foundation evidence and redaction contract for logs, scripts, tests, and handoff artifacts.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/invariants.md
@@ -12,14 +11,14 @@ source_of_truth:
 ---
 # Evidence Redaction Contract
 
-## Ownership
+## Scope
 
-- Owns: redaction rules for Foundation command output, test output, local bootstrap/database transcripts, and task evidence artifacts.
-- Does not own: product privacy UX, account/session authorization, dataset governance, or feature-specific redaction checks.
+- Defines: redaction rules for Foundation command output, test output, local bootstrap/database transcripts, and task evidence artifacts.
+- Out of scope: product privacy UX, account/session authorization, dataset governance, or feature-specific redaction checks.
 - Related specs:
-  - [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md): owns local command flow and troubleshooting notes.
-  - [.memory-bank/testing/foundation-test-harness.md](../testing/foundation-test-harness.md): owns evidence commands and verification surface.
-  - [.memory-bank/contracts/api-guidelines.md](api-guidelines.md): owns API error redaction guardrails.
+  - [.memory-bank/runbooks/foundation-local-runtime.md](../runbooks/foundation-local-runtime.md): defines local commands and troubleshooting.
+  - [.memory-bank/testing/foundation-test-harness.md](../testing/foundation-test-harness.md): defines evidence commands and verification.
+  - [.memory-bank/contracts/api-guidelines.md](api-guidelines.md): defines API error redaction guardrails.
 
 ## Shape
 

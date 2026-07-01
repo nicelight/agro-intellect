@@ -1,8 +1,7 @@
 ---
 description: "ADR-000: Шаблон для архитектурных решений."
 status: active
-owner: architecture
-last_updated: 2026-05-27
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/adrs/ADR-000-template.md
 ---

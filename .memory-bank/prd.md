@@ -72,7 +72,10 @@ does not replace backend rules, and cannot authorize physical actions.
 - The system MUST support Plant create, archive, and restore. Archive is the only MVP removal action; history, photos, tasks, outcomes, timeline audit, and admin audit remain retained and accessible to authorized roles.
 - The system MUST support PlantAccessGrant for per-Plant visibility and work authorization.
 - The system MUST limit MVP permission overrides to `plant_approve_actions`; other MVP permissions come from Boss/Engineer/Consultant role presets plus PlantAccessGrant.
-- Boss Admin Surface MUST support personnel list, local-only account add/invite, role assignment, Plant list, Plant archive/restore, Plant access management, durable admin audit records, and minimal admin audit view.
+- Boss Admin Surface MUST support direct local Account creation with an initial
+  password, personnel list, role assignment, Plant list, Plant archive/restore,
+  Plant access management, durable admin audit records, and minimal admin audit
+  view. Account, membership, and one safe creation audit record are atomic.
 - Authorized users MUST be able to select only authorized Plants.
 - Daily Plant operations MUST support check-in, observations, photo upload, manual pH/EC, Plant card/history, cautious agent-assisted outputs, tasks, approvals, and follow-up outcomes.
 - Photo intake MUST store local photo files, accepted catalog metadata, `sha256`, initial capture manifest, export-ready refs, and timeline audit refs.
@@ -176,7 +179,8 @@ from first demo.
 
 ## Acceptance Criteria
 
-- Boss can create or use one local Farm workspace, manage at least one Engineer Account, and grant Plant access.
+- Boss can create or use one local Farm workspace, directly create at least one
+  active Engineer Account, and grant Plant access.
 - Boss and Engineer can complete the first authorized Plant workflow on `tomato_001`.
 - First demo agent behavior is produced by real LLM/model-backed agents over actual scoped Plant data, not fake, mock, hardcoded, or stubbed outputs.
 - Engineer sees only assigned Plants and cannot approve physical actions without `plant_approve_actions`.

@@ -23,7 +23,7 @@ local runtime roots, redaction baseline, and a final gate.
 
 - Do not implement FT-001 auth/session product behavior.
 - Do not implement FT-002 Farm/Plant lifecycle or `tomato_001` seed behavior.
-- Do not implement FT-003 admin/invite/audit product workflows.
+- Do not implement FT-003 direct Account creation/admin/audit product workflows.
 - Do not implement Bus, agent runtime, MessageEnvelope/UI Feed, Safety Gate,
   photo catalog, timeline taxonomy, dataset governance, or PWA UI.
 - Do not recreate `.memory-bank/contracts/foundation-critical-path.md`.
@@ -57,9 +57,9 @@ later must depend directly or transitively on `TASK-004-T2-FT-000-W0`.
 ## Verification Strategy
 
 - T1 task may use compact protocol and local checks.
-- T2 tasks require full protocol, required packets, `/verify PASS`, and
+- T2 tasks require full protocol, complete indexed task cards, `/verify PASS`, and
   MB-SYNC.
-- T3 redaction task requires full protocol, required packet, `/verify PASS`,
+- T3 redaction task requires full protocol, complete indexed task card, `/verify PASS`,
   per-task `/red-verify` semantic-pass, `HUMAN_CHECKPOINT: done`, and
   `ROLLBACK_RECOVERY_NOTE: present` before closure.
 - Final gate verifies the complete `.memory-bank/foundation.md` exit criteria.

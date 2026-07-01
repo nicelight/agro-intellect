@@ -1,8 +1,7 @@
 ---
 description: Testing and verification router for MVP v2 migration.
 status: active
-owner: quality
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -22,7 +21,8 @@ source_of_truth:
   - .memory-bank/states/dataset-governance.md
   - .memory-bank/foundation.md
   - .memory-bank/testing/foundation-test-harness.md
-  - .memory-bank/testing/ft-001-access-auth.md
+  - .memory-bank/testing/auth/session-and-access.md
+  - .memory-bank/testing/admin/boss-admin-and-audit.md
 ---
 # Testing Index
 
@@ -36,16 +36,18 @@ MVP v1 testing docs are archived under
 Concrete product endpoint schemas, DB migrations, state-machine fixtures,
 detailed event/message payloads, and executable test names still belong to
 feature-level SDD design inside `/prd-to-tasks` and later task decomposition.
-Shared global contract/state owners now define the minimum boundaries for UI
+Shared global contract/state specs define the minimum boundaries for UI
 Feed, timeline audit/export, photo artifacts, Plant state trust, Safety action
 lifecycle, Companion governance, and dataset governance. The Foundation test
-harness has its own substrate owner at
+harness has its own substrate contract at
 [.memory-bank/testing/foundation-test-harness.md](foundation-test-harness.md).
 Standalone `/spec-improve` is reserved for repair or advanced refresh without
 task generation.
 
-FT-001 cross-contract verification is routed by
-[.memory-bank/testing/ft-001-access-auth.md](ft-001-access-auth.md).
+Subject verification is routed by:
+
+- [.memory-bank/testing/auth/session-and-access.md](auth/session-and-access.md): FT-001 identity/session/access verification.
+- [.memory-bank/testing/admin/boss-admin-and-audit.md](admin/boss-admin-and-audit.md): future Boss admin/audit verification.
 
 ## Migration Gates
 
@@ -68,7 +70,7 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Global `/spec-design` is complete; Foundation is closed and verified. Current product tasking gate is `/prd-to-tasks FT-<NNN>` followed by `/review-tasks-plan FT-<NNN>` before implementation.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
 - T2/T3 task records that touch shared state/contract boundaries must link the
-  relevant owner: UI Feed, timeline audit/export, photo artifacts, Plant state
+  relevant canonical spec: UI Feed, timeline audit/export, photo artifacts, Plant state
   trust, Safety action lifecycle, Companion governance, or dataset governance.
 
 ## Foundation Gate
@@ -86,7 +88,7 @@ Foundation evidence must prove:
 - Backend scaffold anchors exist for app factory, settings,
   database/session helpers, app factory extension point for future route
   registration, and tests proving import/start behavior; concrete product
-  modules/packages belong to owning feature tasks.
+  modules/packages belong to the task scoped by applicable canonical specs.
 - Linux Mint local bootstrap can create/use `.venv`, install project/test deps, prepare `.env` from `.env.example`, and verify Python/PostgreSQL tooling without printing secrets.
 - Local PostgreSQL init is idempotent and produces actionable redacted failures when local prerequisites are missing.
 - Alembic migration path can run against the configured local PostgreSQL database and is inspectable.

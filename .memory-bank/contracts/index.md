@@ -1,35 +1,32 @@
 ---
-description: Active contract router for MVP v2.
+description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-owner: architecture
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
-  - .memory-bank/spec-backbone.md
 ---
 # Contracts Index
 
-## Active Contracts
+## Global contracts
 
-- [Boundary Map](boundary-map.md): pre-PRD boundary hints retained as context.
-- [API Guidelines](api-guidelines.md): global HTTP/API guardrails for FastAPI/Pydantic boundaries.
-- [Foundation Smoke API](foundation-smoke-api.md): substrate-level `/health` and `/ready` contract.
-- [Evidence Redaction](evidence-redaction.md): Foundation command/test/evidence redaction contract.
-- [Agent Chat Bus](agent-chat-bus.md): global agent-consumable event stream boundary.
-- [MessageEnvelope](message-envelope.md): global structured agent-output boundary.
-- [UI Feed](ui-feed.md): global human-facing projection boundary that must not become agent context or runtime authority.
-- [Timeline Event](timeline-event.md): global append-only audit/export event boundary.
-- [Local Session Security](local-session-security.md): FT-001 credential, token, lifecycle, cookie, and optional bearer security contract.
-- [Local Session API](local-session-api.md): FT-001 login/logout/me, activation handoff, and auth error contract.
-- [ActorContext](actor-context.md): role policy, ActorContext, PlantPermissionContext interface, and context-builder authorization contract.
+- [Boundary Map](boundary-map.md): decomposition boundary hints.
+- [API Guidelines](api-guidelines.md): HTTP/auth/error/origin guardrails.
+- [Foundation Smoke API](foundation-smoke-api.md): `/health` and `/ready`.
+- [Evidence Redaction](evidence-redaction.md): secret/evidence redaction.
+- [Agent Chat Bus](agent-chat-bus.md): agent-consumable event boundary.
+- [MessageEnvelope](message-envelope.md): publishable agent output.
+- [UI Feed](ui-feed.md): human presentation only.
+- [Timeline Event](timeline-event.md): append-only audit/export event.
+
+## Subject contracts
+
+- [Session Security](auth/session-security.md): password/token/transport security.
+- [Session HTTP](auth/session-http.md): login/logout/current-session API.
+- [ActorContext](access/actor-context.md): actor and Plant authorization context.
+- [Boss Admin HTTP](admin/boss-admin-http.md): direct Account creation and personnel/admin/audit API.
 
 ## Routing
 
-Detailed product endpoint schemas, event payloads, message fields, and
-state-machine contracts belong to feature-level SDD design inside
-`/prd-to-tasks FT-<NNN>`. They may live here when a separate contract owner is
-clearer than a feature hub, as with the FT-001 session and ActorContext
-boundaries. Active contracts above are authoritative only for their declared
-scope. Standalone `/spec-improve FT-<NNN>` is a repair or advanced refresh
-route without task generation.
+Discover by registered path and declared scope before extending or creating a
+contract. Feature docs compose relevant contracts; they do not own them.

@@ -1,9 +1,8 @@
 ---
 description: Global Companion governance lifecycle boundary for MVP v2.
 status: active
-owner: architecture
 type: state
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -22,20 +21,20 @@ confirmation, raw chat authority, or action-task authority.
 Exact DB fields, endpoint schemas, workflow-effect catalog, and UI behavior
 belong to `/prd-to-tasks FT-013`.
 
-## Ownership
+## Scope Boundaries
 
-- Owns: global governance state boundaries, proposal supersede rule,
+- Defines: global governance state boundaries, proposal supersede rule,
   DecisionRecord authority limits, approved summary consumability, and
   verification requirements.
-- Does not own: exact proposal payload shape, UI conversation layout, task route
+- Out of scope: exact proposal payload shape, UI conversation layout, task route
   schemas, or Companion implementation internals.
 - Related specs:
   - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md):
-    owns approved governance summary consumability.
-  - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): owns
+    defines approved governance summary consumability.
+  - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): defines
     human-facing projection.
   - [.memory-bank/states/safety-action-lifecycle.md](safety-action-lifecycle.md):
-    owns physical-action approval separation.
+    defines physical-action approval separation.
 
 ## Lifecycle Shape
 

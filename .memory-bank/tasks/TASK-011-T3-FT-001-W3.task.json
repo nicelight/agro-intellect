@@ -34,6 +34,11 @@
       "required": true
     },
     {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": true
+    },
+    {
       "name": "memory-bank-lint",
       "command": "node scripts/mb-lint.mjs",
       "required": true
@@ -53,7 +58,7 @@
     "All FT-001 unit/integration/API tests pass together.",
     "Security primitive contract checks pass for argon2-cffi Argon2id parameters, 256-bit session token entropy, SHA-256 token_hash-only persistence, constant-time digest comparison, and auth/session redaction.",
     "Session API contract checks pass for agro_intellect_session cookie attributes, logout clear-cookie behavior, bearer-mode boundaries when implemented, no-leak auth errors, and Foundation Smoke API preservation.",
-    "ActorContext/context-builder checks pass for canonical PlantPermissionContext interface compatibility with FT-002 resolver output, denial filtering, and auth/context exclusion.",
+    "ActorContext/context-builder checks pass for canonical PlantPermissionContext compatibility with the bounded FT-002 dependency slice, denial filtering, and auth/context exclusion.",
     "Behavior specs are covered by task evidence or linked test output.",
     "FT-001 Memory Bank docs, task record evidence, and changelog are synchronized without claiming FT-002/FT-003 completion.",
     "Feature-level /red-verify --feature FT-001 remains required after all FT-001 tasks are done before treating the feature as complete.",
@@ -81,13 +86,7 @@
   ],
   "source_artifacts": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
-    ".memory-bank/tasks/plans/IMPL-FT-001.md",
-    ".memory-bank/testing/index.md",
-    ".memory-bank/contracts/evidence-redaction.md",
-    ".memory-bank/testing/foundation-test-harness.md",
-    ".memory-bank/runbooks/foundation-local-runtime.md"
+    ".memory-bank/tasks/plans/IMPL-FT-001.md"
   ],
   "normative_inputs": [
     ".memory-bank/architecture/system-architecture.md",
@@ -103,8 +102,13 @@
     ".memory-bank/foundation.md",
     ".memory-bank/invariants.md",
     ".memory-bank/contracts/boundary-map.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
-    ".memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/testing/auth/session-and-access.md",
+    ".memory-bank/domains/identity/account-membership.md",
+    ".memory-bank/domains/auth/session-storage.md",
+    ".memory-bank/contracts/auth/session-security.md",
+    ".memory-bank/states/auth/session-lifecycle.md",
+    ".memory-bank/contracts/auth/session-http.md",
+    ".memory-bank/contracts/access/actor-context.md",
     ".memory-bank/architecture/foundation-runtime-substrate.md",
     ".memory-bank/domains/foundation-data-substrate.md",
     ".memory-bank/contracts/evidence-redaction.md",
@@ -126,6 +130,7 @@
   ],
   "verification_targets": [
     "python -m pytest tests/backend/access_admin tests/backend/api",
+    ".venv/bin/python -m pytest tests",
     "node scripts/mb-lint.mjs",
     "node scripts/mb-doctor.mjs",
     "git diff --check",
@@ -135,7 +140,7 @@
     "Check FT-001 integration evidence covers argon2-cffi Argon2id parameters, 256-bit session token generation, SHA-256 token_hash-only persistence, constant-time digest comparison, and redaction of auth/session material.",
     "Check FT-001 integration evidence covers agro_intellect_session Set-Cookie attributes, logout clear-cookie behavior, and bearer-mode no-cookie/no-store boundaries when implemented.",
     "Check FT-001 integration evidence covers canonical PlantPermissionContext shape, FT-002 compatibility, denial filtering, AUTH_PLANT_FORBIDDEN no-existence-leak semantics, and auth/context exclusion.",
-    "Check every required FT-001 packet source_task_hash matches its task record after docs sync.",
+    "Check every FT-001 task card remains schema-valid, indexed, dependency-consistent, and directly linked to applicable canonical specs after docs sync.",
     "Check FT-001 evidence preserves Foundation runtime/data/redaction contracts without claiming FT-002 or FT-003 completion."
   ],
   "purpose": "Provide one explicit FT-001 integration and documentation sync gate before feature-level completion review.",
@@ -146,8 +151,6 @@
     "No new product behavior beyond FT-001 evidence sync."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-011-T3-FT-001-W3.packet.json",
     "allowed_write_scope": [
       ".tasks/TASK-011-T3-FT-001-W3/",
       ".protocols/TASK-011-T3-FT-001-W3/",

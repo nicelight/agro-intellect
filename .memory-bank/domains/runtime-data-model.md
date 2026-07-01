@@ -1,9 +1,8 @@
 ---
 description: Global runtime data authority model for MVP v2.
 status: active
-owner: architecture
 type: domain
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -21,33 +20,35 @@ source_of_truth:
 
 ## Scope
 
-This document defines global runtime authority and entity ownership for MVP v2.
+This document defines global runtime authority and entity responsibility for MVP v2.
 It is not a database schema, migration plan, or field catalog. Concrete tables,
 columns, indexes, and migrations belong to feature-level SDD design inside
 `/prd-to-tasks FT-<NNN>` and the resulting task decomposition. Standalone
 `/spec-improve FT-<NNN>` is reserved for repair or advanced refresh without task
 generation.
 
-## Ownership
+## Scope Boundaries
 
-- Owns: global runtime authority layers, shared entity ownership, cross-feature
+- Defines: global runtime authority layers, shared entity relationships, cross-feature
   relational identifier compatibility, storage authority separation, and
   feature-local data-detail routing.
-- Does not own: exact table schemas, migrations, endpoint payloads, concrete
+- Out of scope: exact table schemas, migrations, endpoint payloads, concrete
   event payloads, or feature-specific state machines.
 - Related specs:
   - [.memory-bank/domains/foundation-data-substrate.md](foundation-data-substrate.md):
-    owns FT-000 DB/session/Alembic/runtime-root substrate.
-  - [.memory-bank/domains/photo-artifacts.md](photo-artifacts.md): owns local
+    defines FT-000 DB/session/Alembic/runtime-root substrate.
+  - [.memory-bank/domains/photo-artifacts.md](photo-artifacts.md): defines local
     photo artifact authority and cross-feature refs.
   - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md):
-    owns append-only audit/export events.
+    defines append-only audit/export events.
   - [.memory-bank/states/index.md](../states/index.md): routes active
     cross-feature lifecycle/state specs.
-  - [.memory-bank/domains/local-identity-session-data.md](local-identity-session-data.md):
-    owns exact Account, FarmMembership, and LocalSession columns/constraints.
-  - [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md):
-    owns exact Farm, Plant, PlantAccessGrant, and deferred Farm FK migration.
+  - [.memory-bank/domains/identity/account-membership.md](identity/account-membership.md):
+    defines exact Account and FarmMembership columns/constraints.
+  - [.memory-bank/domains/auth/session-storage.md](auth/session-storage.md):
+    defines exact LocalSession persistence.
+  - [.memory-bank/domains/farm/farm-plant-access-storage.md](farm/farm-plant-access-storage.md):
+    defines Farm, Plant, PlantAccessGrant, and final Farm FK migration.
 
 ## Brownfield Baseline
 
@@ -87,7 +88,7 @@ agent, Safety Gate, governance, or UI projection schemas.
 Detailed state authority for Plant trust, Safety action lifecycle, Companion
 governance, and dataset trainability lives in the active state specs under
 [.memory-bank/states/](../states/index.md). Feature specs may refine those
-state machines but must not contradict the shared owner.
+state machines but must not contradict the shared canonical spec.
 
 ## Cross-Feature Relational Identity Contract
 
@@ -112,8 +113,8 @@ Rules:
   FKs between Account/Farm/Membership/Session/Plant/Grant records must use
   `ON DELETE RESTRICT` (or equivalent non-cascading enforcement); cascading
   deletion of authority/history is forbidden.
-- Feature specs remain the single owners for exact columns, nullability,
-  indexes, FK timing, and migration order.
+- Canonical subject specs remain the single sources for exact columns,
+  nullability, indexes, FK timing, and migration order.
 
 Edge cases/errors:
 
@@ -121,9 +122,9 @@ Edge cases/errors:
   repository access.
 - A migration that changes one side of an existing UUID relation to text or
   integer is incompatible and must stop.
-- A cross-feature relation may be introduced in a later owning migration only
-  when the earlier feature cannot create the referenced authority without
-  violating ownership; the owning feature specs must define the temporary
+- A cross-feature relation may be introduced in a later scoped migration only
+  when earlier work cannot create the referenced authority without crossing
+  its boundary; applicable canonical specs must define the temporary
   invariant and final FK migration explicitly.
 
 Verification target:
@@ -132,7 +133,7 @@ Verification target:
   round-trip as `uuid.UUID`.
 - Contract tests prove authority FKs reject deletes instead of cascading.
 - Cross-feature migration tests prove deferred references are closed by the
-  owning feature before its product write paths are enabled.
+  scoped migration before product write paths are enabled.
 
 ## Runtime Invariants
 
@@ -148,18 +149,16 @@ Verification target:
 - DecisionRecord can create governance/workflow direction only inside backend rules.
 - `can_train_on` is false unless dataset governance rules explicitly allow a later transition.
 
-## Feature-Local Detail Routing
+## Subject Detail Routing
 
-- FT-001..FT-003 own exact Account/FarmMembership/ActorContext/admin data details.
-- FT-004..FT-006 own check-in, measurement, photo catalog, timeline, and Plant history details.
-- FT-007..FT-010 own agent output refs and Plant state trust details.
-- FT-011..FT-012 own Safety Gate, approval, task, and outcome state details.
-- FT-013 owns Companion governance state details.
-- FT-014 owns dataset lifecycle and trainability transition details.
-- FT-015 owns local security/storage fields.
-- FT-016 owns UI projections and first-demo data dependencies.
+- FT-001..FT-003 compose registered identity/session/access/admin subject specs.
+- FT-004..FT-006 must discover or create canonical check-in, measurement,
+  photo catalog, timeline, and Plant-history specs.
+- FT-007..FT-010 must compose agent I/O and Plant-trust specs.
+- FT-011..FT-012 must compose Safety Gate, approval, task, and outcome specs.
+- FT-013..FT-016 must compose governance, dataset, local-security, and UI
+  subject specs as applicable.
 
-Before any T2/T3 task record is created for these areas, the feature-level SDD
-design must link the relevant shared owner and add concrete feature-local
-`shape`, `rules`, `edge cases/errors`, and `verification target` blocks where
-the shared owner intentionally routes detail to the feature.
+Before any T2/T3 task is created, `/prd-to-tasks` performs registry/folder
+discovery, links the relevant shared/canonical specs, and writes any missing
+concrete shape, rules, errors, and verification into exactly one subject path.

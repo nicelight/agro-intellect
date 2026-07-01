@@ -1,9 +1,8 @@
 ---
 description: Global MessageEnvelope contract boundary for MVP v2.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -24,22 +23,22 @@ The verified FT-000 executable baseline does not implement MessageEnvelope
 runtime code. This contract is a global guardrail for future product features;
 field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
 
-## Ownership
+## Contract Scope
 
-- Owns: project-owned publishable agent-output boundary, runtime decision
+- Defines: project-owned publishable agent-output boundary, runtime decision
   categories, envelope minimum, forbidden content, claim/safety rules, and
   Bus/UI projection handoff.
-- Does not own: raw provider messages, hidden reasoning, model prompt history,
+- Out of scope: raw provider messages, hidden reasoning, model prompt history,
   concrete adapter implementation, UI component payloads, or final Plant state.
 - Related specs:
-  - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): owns
+  - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): defines
     agent-consumable event publication.
-  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human presentation
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): defines human presentation
     projection.
   - [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md):
-    owns physical-action approval lifecycle.
+    defines physical-action approval lifecycle.
   - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md):
-    owns Plant state promotion rules.
+    defines Plant state promotion rules.
 
 ## Runtime Decision
 

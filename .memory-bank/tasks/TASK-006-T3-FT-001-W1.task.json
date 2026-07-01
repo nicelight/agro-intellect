@@ -39,7 +39,7 @@
     "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
   ],
   "docs": [
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/tasks/plans/IMPL-FT-001.md"
   ],
   "evidence_required": [
@@ -51,10 +51,8 @@
     "T3 verify/red-verify/human/recovery evidence"
   ],
   "source_artifacts": [
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
-    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
-    ".memory-bank/contracts/evidence-redaction.md"
+    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json"
   ],
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
@@ -64,11 +62,13 @@
     ".memory-bank/foundation.md",
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/contracts/boundary-map.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/contracts/auth/session-security.md",
+    ".memory-bank/domains/auth/session-storage.md",
     ".memory-bank/architecture/foundation-runtime-substrate.md",
     ".memory-bank/domains/foundation-data-substrate.md",
     ".memory-bank/contracts/evidence-redaction.md",
-    ".memory-bank/testing/index.md"
+    ".memory-bank/testing/index.md",
+    ".memory-bank/testing/auth/session-and-access.md"
   ],
   "constraints": [
     "Never log, return, or persist plaintext passwords or raw session tokens.",
@@ -102,8 +102,6 @@
     "No provider/API key configuration."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-006-T3-FT-001-W1.packet.json",
     "allowed_write_scope": [
       "pyproject.toml",
       "backend/app/core/security.py",

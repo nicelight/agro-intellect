@@ -1,9 +1,8 @@
 ---
 description: Global UI Feed projection contract for MVP v2.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -27,19 +26,19 @@ frontend routes, and component behavior belong to feature-level SDD design
 inside `/prd-to-tasks FT-008`, `/prd-to-tasks FT-016`, or another owning
 feature when a projection is feature-specific.
 
-## Ownership
+## Contract Scope
 
-- Owns: global presentation-only rules, projection boundary, consumability
+- Defines: global presentation-only rules, projection boundary, consumability
   flags, redaction expectations, and verification requirements for keeping UI
   content out of agent context.
-- Does not own: concrete frontend component layout, route/view map, exact card
+- Out of scope: concrete frontend component layout, route/view map, exact card
   payload fields, endpoint schemas, or task execution state machines.
 - Related specs:
-  - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): owns
+  - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): defines
     agent-consumable working events.
-  - [.memory-bank/contracts/message-envelope.md](message-envelope.md): owns
+  - [.memory-bank/contracts/message-envelope.md](message-envelope.md): defines
     publishable agent-output boundary before UI projection.
-  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): owns
+  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
     append-only audit/export events.
 
 ## Projection Shape

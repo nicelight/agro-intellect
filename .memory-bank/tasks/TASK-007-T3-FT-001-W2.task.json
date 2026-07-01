@@ -37,11 +37,11 @@
     "Presented session tokens are verified by computing token_hash and using the TASK-006 constant-time digest comparison path.",
     "Logout revokes only the current session and invalid/missing logout can be idempotent.",
     "Session validity is fail-closed from session, Account, and FarmMembership status.",
-    "Internal activation primitive activates Account/FarmMembership and issues a session only after FT-003 validates invite credentials.",
+    "Session services authenticate only active Account/FarmMembership records created by the separate admin/bootstrap boundary.",
     "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and ROLLBACK_RECOVERY_NOTE: present."
   ],
   "docs": [
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/tasks/plans/IMPL-FT-001.md"
   ],
   "evidence_required": [
@@ -49,16 +49,12 @@
     "session issuance evidence showing 7-day expires_at and token_hash-only persistence",
     "session verification evidence showing malformed/unknown/revoked/expired tokens fail closed through token_hash lookup",
     "fail-closed status behavior evidence",
-    "internal activation primitive evidence without public FT-003 route implementation",
+    "evidence that session services do not create or activate Accounts/Memberships",
     "T3 verify/red-verify/human/recovery evidence"
   ],
   "source_artifacts": [
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
     ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json",
-    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json",
-    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md",
-    ".memory-bank/domains/foundation-data-substrate.md",
-    ".memory-bank/contracts/evidence-redaction.md"
+    ".memory-bank/behavior-specs/FT-001-BHV-002-login-no-leak-failure.behavior.json"
   ],
   "normative_inputs": [
     ".memory-bank/contracts/api-guidelines.md",
@@ -68,20 +64,22 @@
     ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/invariants.md",
     ".memory-bank/contracts/boundary-map.md",
-    ".memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md",
+    ".memory-bank/domains/identity/account-membership.md",
+    ".memory-bank/domains/auth/session-storage.md",
+    ".memory-bank/contracts/auth/session-security.md",
+    ".memory-bank/states/auth/session-lifecycle.md",
     ".memory-bank/architecture/foundation-runtime-substrate.md",
     ".memory-bank/domains/foundation-data-substrate.md",
     ".memory-bank/contracts/evidence-redaction.md",
     ".memory-bank/testing/index.md",
-    ".memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md"
+    ".memory-bank/testing/auth/session-and-access.md"
   ],
   "constraints": [
     "Default session TTL is 7 days from created_at.",
     "Do not silently revive expired or revoked sessions; login creates a new LocalSession.",
     "Session services must consume the TASK-006 credential/session primitive and must not reimplement password hashing, token generation, token_hash derivation, or digest comparison with divergent rules.",
     "No refresh-token flow in MVP.",
-    "FT-001 exposes only the internal credential/session primitive used by FT-003; it must not expose a public invite activation route.",
-    "Pending activation and invited membership cannot access normal Farm/Plant data.",
+    "Session services authenticate existing active identities and must not create or activate Account/FarmMembership records.",
     "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
@@ -99,16 +97,14 @@
     "Check session verification tests use token_hash lookup and the TASK-006 constant-time digest comparison primitive for valid, malformed, unknown, revoked, and expired tokens.",
     "Check session repositories/services use the Foundation Data Substrate session boundary and preserve the FT-001 session lifecycle."
   ],
-  "purpose": "Implement the FT-001 local session lifecycle and the internal activation handoff primitive needed by FT-003.",
+  "purpose": "Implement the FT-001 local password-session lifecycle for existing active Accounts and FarmMemberships.",
   "success_outcome": "Local credentials and sessions can be issued, validated, revoked, and fail-closed against Account and FarmMembership status.",
   "anti_goals": [
-    "No public invite activation route.",
+    "No Account creation or bootstrap flow.",
     "No hosted recovery or email delivery.",
     "No broad account/personnel admin UI."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-007-T3-FT-001-W2.packet.json",
     "allowed_write_scope": [
       "backend/app/access_admin/repository.py",
       "backend/app/access_admin/session_service.py",
@@ -116,7 +112,7 @@
       "tests/backend/access_admin/test_ft001_session_lifecycle.py"
     ],
     "forbidden_scope": [
-      "FT-003 public local invite activation route",
+      "FT-003 Account creation or first-Boss bootstrap",
       "admin account/personnel mutation surfaces",
       "hosted recovery or email delivery",
       "refresh tokens"
@@ -124,7 +120,7 @@
     "stop_conditions": [
       "Session lifecycle cannot be proven fail-closed.",
       "Session service reimplements or diverges from the TASK-006 credential/session primitive contract.",
-      "Implementation requires public FT-003 route ownership.",
+      "Implementation requires creating or activating Account/FarmMembership records inside session services.",
       "Raw auth material would enter persistence, logs, or evidence.",
       "Implementation contradicts verified FT-000 app/settings/database/session/redaction baseline."
     ]

@@ -1,9 +1,8 @@
 ---
 description: Global HTTP/API guardrails for MVP v2.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -22,22 +21,22 @@ SDD design inside `/prd-to-tasks FT-<NNN>` and later FastAPI/Pydantic schemas.
 Standalone `/spec-improve FT-<NNN>` is reserved for repair or advanced refresh
 without task generation.
 
-## Ownership
+## Contract Scope
 
-- Owns: cross-cutting HTTP style, route grouping, ActorContext/authz
+- Defines: cross-cutting HTTP style, route grouping, ActorContext/authz
   requirements, error/response guardrails, upload guardrails, CORS/exposure,
   compatibility, and generated OpenAPI policy.
-- Does not own: concrete endpoint paths, request/response schemas, DB models,
+- Out of scope: concrete endpoint paths, request/response schemas, DB models,
   state transitions, or feature-specific error catalogs.
 - Related specs:
   - [.memory-bank/contracts/foundation-smoke-api.md](foundation-smoke-api.md):
-    owns concrete `/health` and `/ready` substrate route behavior.
-  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): owns
+    defines concrete `/health` and `/ready` substrate route behavior.
+  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
     append-only audit/export event rules.
-  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human-facing
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): defines human-facing
     projection rules.
   - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md):
-    owns photo artifact authority used by upload routes.
+    defines photo artifact authority used by upload routes.
 
 ## Brownfield Baseline
 

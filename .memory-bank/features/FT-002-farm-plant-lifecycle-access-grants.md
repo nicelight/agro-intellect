@@ -5,15 +5,15 @@ type: feature
 feature_id: FT-002
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-28
-spec_design_status: complete
+last_updated: 2026-06-30
 spec_design_links:
-  - .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md
+  - .memory-bank/domains/farm/farm-plant-access-storage.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
+  - .memory-bank/contracts/access/actor-context.md
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/states/lifecycle-map.md
-  - .memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md
 ---
 # FT-002 Farm Plant Lifecycle And Access Grants
 
@@ -52,17 +52,27 @@ source_of_truth:
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Plant and PlantAccessGrant ownership.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): route authorization and fail-closed behavior.
 
-## SDD Design Gate
+## Specification Composition
 
-Status: complete.
+Status: bounded dependency slice only; full FT-002 SDD is pending.
 
-Feature-local `/spec-improve FT-002` produced the authoritative feature hub:
+- [Farm/Plant/access storage](../domains/farm/farm-plant-access-storage.md)
+  defines only the identity/status relationships required by the FT-001 seam.
+- [Plant/access lifecycle](../states/plants/plant-and-access-lifecycle.md)
+  defines only active/archived and active/revoked permission effects.
+- [ActorContext](../contracts/access/actor-context.md) defines concrete Plant
+  permission resolution and fail-closed output.
 
-- [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](../tech-specs/FT-002-farm-plant-lifecycle-access-grants.md): Farm seed, `tomato_001` seed, Plant lifecycle, PlantAccessGrant lifecycle, PlantPermissionContext resolver, route schemas, retained-history authorization, audit/event decisions, failure rules, and verification targets.
+This slice exists only to stabilize FT-001. Full storage/migrations, seeds,
+mutation/API/error contracts, retained-history services, audit integration,
+verification plan, and task queue require later `/prd-to-tasks FT-002`.
 
-The linked feature hub also owns the FT-002 migration that creates/reuses the
-single Farm UUID and closes FT-001's deferred
-`farm_memberships.farm_id -> farms.farm_id ON DELETE RESTRICT` relation before
-Farm/membership product writes are enabled.
+## Non-Goals
+
+- Hard delete, multi-Farm tenancy, or a general ACL engine.
+- Plant operation forms, daily check-ins, photo upload, or detailed Plant
+  history rendering beyond access/lifecycle hooks.
+- Agent output generation, MessageEnvelope/UI Feed projection, Safety Gate
+  policy, or physical-action task execution.
 
 Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-002 implementation plan or `TASK-*` record is active.

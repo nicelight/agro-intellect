@@ -1,9 +1,8 @@
 ---
 description: Global Plant state trust and promotion boundary for MVP v2.
 status: active
-owner: architecture
 type: state
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -20,20 +19,20 @@ hypotheses, model outputs, and follow-up evidence may move toward confirmed
 Plant state. It is a global guardrail; exact state fields, freshness windows,
 and UI labels belong to feature-level SDD design.
 
-## Ownership
+## Scope Boundaries
 
-- Owns: global promotion rules, trust categories, conflict handling, and
+- Defines: global promotion rules, trust categories, conflict handling, and
   verification requirements for keeping agent hypotheses out of confirmed state
   without review/evidence.
-- Does not own: exact Plant state table schema, measurement freshness windows,
+- Out of scope: exact Plant state table schema, measurement freshness windows,
   Vision Observation payload fields, UI labels, or first-demo view layout.
 - Related specs:
   - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md):
-    owns photo artifact refs.
+    defines photo artifact refs.
   - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md):
-    owns observation/hypothesis output boundary.
+    defines observation/hypothesis output boundary.
   - [.memory-bank/states/safety-action-lifecycle.md](safety-action-lifecycle.md):
-    owns physical-action routing after Plant state evidence is evaluated.
+    defines physical-action routing after Plant state evidence is evaluated.
 
 ## Trust Shape
 

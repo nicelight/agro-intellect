@@ -1,8 +1,7 @@
 ---
 description: Глобальные инварианты и запреты проекта (MUST/NEVER).
 status: active
-owner: architecture
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -12,7 +11,7 @@ source_of_truth:
 
 This file contains only cross-cutting MUST/NEVER guardrails. Field lists, payload schemas,
 state machines, freshness windows, transition formulas, and implementation shapes live in
-their owning domain, contract, state, runbook, or feature-local tech specs.
+their canonical domain, contract, state, runbook, or other subject spec.
 
 ## MUST
 - The MVP scope MAY expand to a bounded local-first Farm workspace with local Accounts, role-scoped access, and multiple Plants only after PRD/spec promotion. Until the migration is specified, `tomato_001` remains the initial canonical Plant.

@@ -4,6 +4,53 @@ status: active
 ---
 # Changelog
 
+## [2026-07-01] KISS Account creation and bounded FT-002 dependency repair
+- Replaced local invite/activation with direct Boss-created active Account and
+  active FarmMembership semantics; removed invite entity/state/API specs and
+  reconciled FT-001 session/storage/task cards without changing task topology.
+- Recorded the local MVP trust model: Boss knows the initial password, no
+  mandatory first-login change, and no compatibility route or fallback state.
+- Defined `POST /api/admin/accounts` as a future FT-003 atomic boundary for
+  Account, membership, Argon2id password hash, and exactly one safe
+  `account_created` audit record; exact first-Boss one-shot CLI remains deferred
+  until FT-002/FT-003 design.
+- Narrowed FT-002 inputs to the minimum PlantPermissionContext dependency slice
+  needed by FT-001 and removed prematurely detailed Plant API, migration, seed,
+  mutation, and verification specs. No FT-002 plan/tasks/code were created.
+- Reconciled FT-001 subject specs, implementation plan, protocols, and
+  `TASK-005`, `TASK-007`, `TASK-008`, `TASK-009`, and `TASK-010`; task IDs,
+  tiers, waves, dependencies, statuses, and outcomes remain unchanged.
+- Re-ran `/prd-to-tasks FT-001` canonical discovery/link audit: no new spec was
+  needed; the existing session/access verification spec is now direct in all
+  applicable cards, `TASK-010` directly links session lifecycle/API, and
+  `TASK-008` explicitly owns only the bounded archived permission effect.
+
+## [2026-07-01] Post-migration review repairs
+- Restored mandatory exactly-one same-transaction admin audit writes and the
+  exact PlantAccessGrant response shape from the removed hubs.
+- Restored FT-001/FT-002/FT-003 feature non-goals and removed stale active
+  packet/file-routing wording.
+- Added the missing Account/FarmMembership spec link to `TASK-007`.
+- Split executable FT-001 verification from deferred FT-002/FT-003 E2E and
+  added the full project test-suite gate to `TASK-011`.
+- Added missing router annotations. Remaining ambiguous findings are deferred
+  explicitly rather than resolved by invention.
+
+## [2026-06-30] Single-card and subject-based SDD migration
+- Deployed current generated workflows/scripts and migrated the task schema to
+  the framework single-card contract.
+- Confirmed packet success checks were already represented in task cards, then
+  removed persisted packets and `packet_required`/`packet_ref` fields without
+  changing task IDs, tiers, waves, dependencies, statuses, or outcomes.
+- Replaced FT-001/FT-002/FT-003 tech-spec hubs with canonical subject specs for
+  identity, sessions, ActorContext, Farm/Plant access, local invite, admin
+  audit, HTTP boundaries, lifecycles, and verification.
+- Converted feature docs to composition roots, rebuilt `spec-index.md` around
+  canonical paths and `Change route`, and linked FT-001 tasks directly to the
+  applicable spec subset.
+- Removed obsolete compatibility hubs after active references were switched;
+  historical references below describe the state at their original date.
+
 ## [2026-06-29] FT-001 SDD ownership split
 - Replaced the 735-line FT-001 all-in-one tech spec with a stable feature hub
   plus atomic data, session-security, session-API, ActorContext, and
@@ -88,11 +135,13 @@ status: active
 ## [2026-06-26] /spec-improve FT-001 finding repair
 - Evaluated the three `todo.md` FT-001 findings as objective against the
   current FT-001/FT-002 specs and T3 task requirements.
-- Updated [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md)
+- Updated historical path `.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md`
+  (removed during the 2026-06-30 subject-spec migration)
   with concrete Argon2id/password, opaque session token, `token_hash`,
   constant-time verification, cookie transport, bearer-mode, and verification
   targets.
-- Updated [.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md](tech-specs/FT-002-farm-plant-lifecycle-access-grants.md)
+- Updated historical path `.memory-bank/tech-specs/FT-002-farm-plant-lifecycle-access-grants.md`
+  (removed during the 2026-06-30 subject-spec migration)
   with explicit Ownership and canonical concrete PlantPermissionContext
   resolver semantics aligned to the FT-001 interface envelope.
 - Refreshed routing docs so the next FT-001 step is rerun
@@ -104,7 +153,8 @@ status: active
 - Reran the FT-001 planning surface through the expanded `/prd-to-tasks`
   protocol without creating new task records.
 - Added explicit ownership and concrete contract readiness routing to
-  [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](tech-specs/FT-001-local-accounts-sessions-actor-context.md).
+  historical path `.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md`
+  (removed during the 2026-06-30 subject-spec migration).
 - Refreshed [.memory-bank/tasks/plans/IMPL-FT-001.md](tasks/plans/IMPL-FT-001.md),
   `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`, and their required
   packets to link current Foundation runtime/data substrate,

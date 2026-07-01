@@ -25,7 +25,10 @@ source_of_truth:
 - `REQ-002` Local Accounts and sessions: MVP MUST support local Accounts and a local login/session baseline sufficient for authorization and audit attribution.
 - `REQ-003` ActorContext authority: every Farm/Plant read, mutation, context-builder path, task, approval, and audit record MUST resolve Account, Farm, role/membership, Plant permissions, and session/auth provenance through ActorContext.
 - `REQ-004` Role presets and PlantAccessGrant: MVP MUST support Boss, Engineer, and Consultant role presets plus per-Plant PlantAccessGrant; the only MVP permission override is `plant_approve_actions`.
-- `REQ-005` Boss Admin Surface and admin audit: Boss MUST manage personnel, local-only account add/invite, roles, Plants, Plant access, Plant archive/restore, and durable admin audit records.
+- `REQ-005` Boss Admin Surface and admin audit: Boss MUST directly create local
+  active Accounts with an initial password, manage personnel and roles, Plants,
+  Plant access, Plant archive/restore, and durable admin audit records; Account,
+  membership, and exactly one safe creation audit record MUST commit atomically.
 - `REQ-006` Multiple Plants and `tomato_001`: MVP MUST support multiple Plants in the local Farm, with `tomato_001` as the initial Plant.
 - `REQ-007` Plant lifecycle retention: MVP MUST support create, archive, and restore; archive is the only removal action and history/photos/tasks/outcomes/timeline/admin audit remain retained for authorized access.
 - `REQ-008` Authorized Plant operations: authorized users MUST select only authorized Plants and complete daily check-in, observations, manual pH/EC, Plant card/history, tasks, approvals, and follow-up workflows.

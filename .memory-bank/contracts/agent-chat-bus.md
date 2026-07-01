@@ -1,9 +1,8 @@
 ---
 description: Global Agent Chat Bus contract boundary for MVP v2.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -23,19 +22,19 @@ The verified FT-000 executable baseline does not implement Agent Chat Bus
 runtime code. This contract is a global guardrail for future product features;
 field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
 
-## Ownership
+## Contract Scope
 
-- Owns: agent-consumable working event boundary, BusEventEnvelope minimum,
+- Defines: agent-consumable working event boundary, BusEventEnvelope minimum,
   consumability rules, context-builder constraints, ordering/replay limits, and
   Safety Gate handoff requirements for Bus events.
-- Does not own: raw model/provider messages, UI Feed projection payloads,
+- Out of scope: raw model/provider messages, UI Feed projection payloads,
   timeline event taxonomy, DB table schemas, or feature-specific event payloads.
 - Related specs:
-  - [.memory-bank/contracts/message-envelope.md](message-envelope.md): owns
+  - [.memory-bank/contracts/message-envelope.md](message-envelope.md): defines
     publishable agent-originated output before Bus/UI projection.
-  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human-facing
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): defines human-facing
     projection rules.
-  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): owns
+  - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
     audit/export event rules.
 
 ## Publication Rule

@@ -1,9 +1,8 @@
 ---
 description: Global photo artifact authority and data contract for MVP v2.
 status: active
-owner: architecture
 type: domain
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -25,21 +24,21 @@ The verified FT-000 executable baseline provides local artifact root settings
 only. Exact storage layout, manifest schema, upload route contracts, recovery
 behavior, and photo catalog migrations belong to `/prd-to-tasks FT-005`.
 
-## Ownership
+## Contract Scope
 
-- Owns: global photo artifact authority boundary, accepted artifact identity,
+- Defines: global photo artifact authority boundary, accepted artifact identity,
   local-only privacy rules, and cross-feature reference requirements.
-- Does not own: exact directory layout, multipart endpoint schema, manifest
+- Out of scope: exact directory layout, multipart endpoint schema, manifest
   field catalog, thumbnail/derivative policy, or Vision Observation payloads.
 - Related specs:
   - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md):
-    owns upload/authz/error guardrails.
+    defines upload/authz/error guardrails.
   - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md):
-    owns audit/export refs.
+    defines audit/export refs.
   - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md):
-    owns trust/promotion rules for photo-derived observations.
+    defines trust/promotion rules for photo-derived observations.
   - [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md):
-    owns trainability state.
+    defines trainability state.
 
 ## Artifact Identity
 
@@ -82,7 +81,7 @@ store stable artifact refs and safe metadata.
 
 - Unsupported content type, invalid file, unsafe path, missing Plant access, or
   missing ActorContext must fail closed.
-- The owning feature spec must define the atomicity policy for file write,
+- The applicable canonical subject spec must define the atomicity policy for file write,
   catalog row, manifest, and timeline refs before task creation.
 - If cleanup is needed after partial failure, it must not delete unrelated local
   data or retained authorized history.

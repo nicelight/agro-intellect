@@ -5,15 +5,16 @@ type: feature
 feature_id: FT-001
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 spec_design_status: complete
 spec_design_links:
-  - .memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md
-  - .memory-bank/domains/local-identity-session-data.md
-  - .memory-bank/contracts/local-session-security.md
-  - .memory-bank/contracts/local-session-api.md
-  - .memory-bank/contracts/actor-context.md
-  - .memory-bank/testing/ft-001-access-auth.md
+  - .memory-bank/domains/identity/account-membership.md
+  - .memory-bank/domains/auth/session-storage.md
+  - .memory-bank/contracts/auth/session-security.md
+  - .memory-bank/states/auth/session-lifecycle.md
+  - .memory-bank/contracts/auth/session-http.md
+  - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/testing/auth/session-and-access.md
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -47,7 +48,9 @@ source_of_truth:
 
 - Unit: role preset and permission derivation.
 - Integration: ActorContext present on every protected route/context builder.
-- E2E: Engineer sees only assigned Plants; Consultant stays advisory/read/comment only.
+- Deferred cross-feature E2E after FT-002/FT-003 tasking: Engineer sees only
+  assigned Plants; Consultant stays advisory/read/comment only; direct Account
+  creation permits login only for the intended identity/Farm scope.
 
 ## Behavior specs
 
@@ -59,44 +62,44 @@ source_of_truth:
 
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): source-of-truth hierarchy, modules, security, deployment.
 - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): app factory and route-mounting substrate FT-001 must preserve.
-- [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): shared native-UUID identity, non-cascading authority relations, Account/FarmMembership/ActorContext ownership, and authority layers.
+- [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): shared native-UUID identity, non-cascading authority relations, and authority layers.
 - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): DB/session/Alembic substrate for FT-001 tables and migrations.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): ActorContext and backend authorization requirements.
 - [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md): redaction rules for auth/session evidence and reports.
 - [.memory-bank/testing/index.md](../testing/index.md): risk-based verification surfaces for auth/session/ActorContext work.
-- [.memory-bank/domains/local-identity-session-data.md](../domains/local-identity-session-data.md): exact Account/FarmMembership/LocalSession storage contract.
-- [.memory-bank/contracts/local-session-security.md](../contracts/local-session-security.md): credential, token, lifecycle, cookie, and bearer security contract.
-- [.memory-bank/contracts/local-session-api.md](../contracts/local-session-api.md): login/logout/me, activation handoff, and auth error contract.
-- [.memory-bank/contracts/actor-context.md](../contracts/actor-context.md): role, ActorContext, PlantPermissionContext interface, and context-builder contract.
-- [.memory-bank/testing/ft-001-access-auth.md](../testing/ft-001-access-auth.md): feature verification matrix and quality gates.
+- [.memory-bank/domains/identity/account-membership.md](../domains/identity/account-membership.md): Account/FarmMembership storage.
+- [.memory-bank/domains/auth/session-storage.md](../domains/auth/session-storage.md): LocalSession storage.
+- [.memory-bank/contracts/auth/session-security.md](../contracts/auth/session-security.md): credential/token/transport security.
+- [.memory-bank/states/auth/session-lifecycle.md](../states/auth/session-lifecycle.md): login, expiry, disable, and revocation.
+- [.memory-bank/contracts/auth/session-http.md](../contracts/auth/session-http.md): login/logout/me.
+- [.memory-bank/contracts/access/actor-context.md](../contracts/access/actor-context.md): ActorContext and Plant permission resolution.
+- [.memory-bank/testing/auth/session-and-access.md](../testing/auth/session-and-access.md): cross-contract evidence.
 
-## SDD Design Gate
+## Specification Composition
 
 Status: complete.
 
-Use [.memory-bank/tech-specs/FT-001-local-accounts-sessions-actor-context.md](../tech-specs/FT-001-local-accounts-sessions-actor-context.md) as the stable feature hub. Its Specification Map routes exact data, security, HTTP API, ActorContext, and verification decisions to the atomic `spec_design_links` above.
+- [Account and membership storage](../domains/identity/account-membership.md)
+  defines identity persistence and deferred Farm relation.
+- [Session storage](../domains/auth/session-storage.md), [session security](../contracts/auth/session-security.md),
+  and [session lifecycle](../states/auth/session-lifecycle.md) define the local
+  credential/session boundary.
+- [Session HTTP](../contracts/auth/session-http.md) defines login/logout/me.
+- [ActorContext](../contracts/access/actor-context.md) defines roles and Plant
+  authorization context.
+- [Session and access verification](../testing/auth/session-and-access.md)
+  defines cross-contract evidence.
 
-The 2026-06-26 `/prd-to-tasks FT-001` protocol refresh found no shared/global
-blocker and no duplicate authoritative owner. No new task records were created.
+The feature composes these canonical specs and does not own or duplicate their
+fields, schemas, errors, transitions, or verification rules.
 
-The 2026-06-26 standalone `/spec-improve FT-001` repair closed concrete
-security primitive, session cookie transport, and PlantPermissionContext
-ownership gaps while keeping the feature design status `complete`.
+## Non-Goals
 
-The 2026-06-27 KISS `/spec-improve FT-001` repair added only the
-security-derived `password_hash`/`token_hash` storage contract required before
-`TASK-005`, including disabled-before-activation nullability. No broader DB,
-API DTO, event, or callable-interface design was added.
-
-The 2026-06-28 `/spec-improve FT-001` repair completes TASK-005 relational
-readiness: UUID identity, deferred Farm FK ownership, exact nullability,
-string-domain checks, login normalization/uniqueness, non-cascading FKs, and
-exact indexes. Shared identity lives in Runtime Data Model; exact FT-001 tables
-live in Local Identity And Session Data; FT-002 owns final Farm FK closure.
-
-The 2026-06-29 structural repair split the 735-line feature hub into atomic
-data, security, HTTP API, ActorContext, and verification owners. It changed no
-behavioral contract; the original hub path remains a compatibility facade.
+- Enterprise identity, OAuth, password recovery, email delivery, SaaS
+  tenancy, and multi-Farm membership.
+- A general ACL/permission override engine beyond `plant_approve_actions`.
+- Refresh tokens, device management, hosted account recovery, audit-export UI,
+  and broad personnel management.
 
 ## Task Decomposition
 
@@ -104,25 +107,16 @@ Status: `/prd-to-tasks FT-001` completed on 2026-06-25 and refreshed on
 2026-06-26 against the brownfield global SDD backbone and the expanded
 `/prd-to-tasks` concrete contract readiness protocol, then refreshed again after
 the standalone `/spec-improve FT-001` repair. A targeted 2026-06-27 refresh
-updated only `TASK-005` and its required packet for the KISS storage contract.
+updated `TASK-005`; the 2026-07-01 bounded reconciliation removed
+invite/activation semantics and aligned `TASK-005`, `TASK-007`, `TASK-008`,
+`TASK-009`, and `TASK-010` with direct Account creation and the minimal FT-002
+permission seam. A follow-up same-day `/prd-to-tasks` audit confirmed complete
+canonical concern coverage and reconciled direct verification/session links in
+the existing cards without changing queue topology or lifecycle status.
 
 - Implementation plan: [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md).
 - Active task records: `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
-- Required packets: `.memory-bank/packets/TASK-005-T3-FT-001-W1.packet.json` through `.memory-bank/packets/TASK-011-T3-FT-001-W3.packet.json`.
-- Previous refresh result: no new task was created; `TASK-006` through `TASK-011`, the
-  implementation plan, and required packets were refreshed against the concrete
-  security primitive, cookie/session transport, and PlantPermissionContext
-  ownership contracts. `TASK-005` remains unchanged because no schema-level
-  storage constraints changed.
-- 2026-06-27 refresh result: only `TASK-005-T3-FT-001-W1`, its canonical packet,
-  and feature-level routing docs/protocol were updated for nullable unbounded
-  `password_hash`, active-account credential enforcement, the single unique
-  64-character `token_hash` lookup index, and PostgreSQL migration smoke.
-  `TASK-006` through `TASK-011` and their packets were not changed.
-- Current refresh result: the targeted 2026-06-28 `/prd-to-tasks FT-001` pass
-  updated only `TASK-005`, its canonical packet, and feature-level handoff docs
-  for native UUID identity, exact nullability/checks/login normalization,
-  non-cascading Account FKs, the deferred Farm FK boundary, and exact indexes.
-  `TASK-006` through `TASK-011` and their packets were not changed.
+- Task cards are the complete single-card handoff and link direct applicable
+  canonical specs; no persisted packet layer exists.
 - Next gate: `/review-tasks-plan FT-001`, then conditional `/mb-doctor` before
   `TASK-005` execution.

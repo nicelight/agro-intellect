@@ -1,8 +1,7 @@
 ---
 description: Pre-PRD core domain framing for MVP v2 decomposition.
 status: active
-owner: domain
-last_updated: 2026-06-03
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -50,9 +49,11 @@ source_of_truth:
 
 ## Entity States
 
-- `Account`: local active/invited/disabled style states need later exact spec; decomposition only requires local identity and audit attribution.
+- `Account`: `active | disabled`; direct local creation stores an Argon2id
+  password hash before the Account becomes usable.
 - `Farm`: single active local workspace; multi-Farm tenancy is out of MVP.
-- `FarmMembership`: active/invited/disabled/removed style states need later exact spec; decomposition requires role and membership status.
+- `FarmMembership`: `active | disabled`; direct local Account creation creates
+  the membership active in the same transaction.
 - `Plant`: active, archived, restored history semantics. Archive removes from normal operations but retains history/audit/export access for authorized roles.
 - `PlantAccessGrant`: granted/revoked semantics need later exact spec; decomposition requires per-Plant filtering and authorization.
 - `Task` / `Approval` / `Outcome`: operational loop states need later state spec; decomposition requires separation between check/measurement/follow-up and approved human-performed action tasks.

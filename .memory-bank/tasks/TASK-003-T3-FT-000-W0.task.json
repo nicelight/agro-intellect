@@ -138,8 +138,6 @@
     "No provider configuration."
   ],
   "runtime_context": {
-    "packet_required": true,
-    "packet_ref": ".memory-bank/packets/TASK-003-T3-FT-000-W0.packet.json",
     "allowed_write_scope": [
       "backend/app/core/redaction.py",
       "backend/app/config.py",

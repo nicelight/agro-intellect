@@ -5,28 +5,39 @@ type: feature
 feature_id: FT-003
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-16
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/user-scenarios.md
-spec_design_status: complete
 spec_design_links:
-  - .memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md
+  - .memory-bank/domains/identity/account-membership.md
+  - .memory-bank/contracts/auth/session-security.md
+  - .memory-bank/states/auth/session-lifecycle.md
+  - .memory-bank/contracts/auth/session-http.md
+  - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/admin/admin-audit.md
+  - .memory-bank/contracts/admin/boss-admin-http.md
+  - .memory-bank/testing/admin/boss-admin-and-audit.md
 ---
 # FT-003 Boss Admin Surface And Admin Audit
 
 ## Use Cases
 
 - Boss manages a personnel list.
-- Boss adds or invites a local-only Account without email delivery or hosted recovery.
+- Boss directly creates a local active Account with login, initial password,
+  and role.
 - Boss assigns role presets.
 - Boss manages Plant list, archive/restore, and Plant access.
 - Boss views minimal durable admin audit records.
 
 ## Acceptance Criteria
 
-- Boss Admin Surface supports personnel, local-only add/invite, role assignment, Plant list, Plant lifecycle, access grants, and admin audit view.
+- Boss Admin Surface supports personnel, direct Account creation, role
+  assignment, Plant list, Plant lifecycle, access grants, and admin audit view.
+- Account, active FarmMembership, and exactly one safe `account_created` audit
+  record are committed atomically; password material is never returned or
+  audited.
 - Account, role, Plant lifecycle, membership, and access changes create durable AdminAuditRecord entries.
 - Admin audit is retained and visible only to authorized roles.
 - Minimal first-demo admin surface may be smaller than full MVP admin capability, but must support Boss plus at least one Engineer path.
@@ -36,7 +47,8 @@ spec_design_links:
 - Non-Boss actors cannot access admin mutations.
 - Admin UI notices do not become agent facts.
 - Admin changes cannot bypass backend authorization.
-- Local add/invite does not imply SaaS tenancy, email delivery, password recovery, hosted account recovery, or enterprise identity.
+- Direct local creation does not imply SaaS tenancy, email delivery, password
+  recovery, hosted account recovery, or enterprise identity.
 
 ## Verification Targets
 
@@ -50,10 +62,28 @@ spec_design_links:
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): AdminAuditRecord authority.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): admin route grouping, errors, and authorization.
 
-## SDD Design Gate
+## Specification Composition
 
-Status: feature-local `/spec-improve FT-003` is complete.
+Status: preliminary KISS direction; final FT-003 SDD remains pending.
 
-Use [.memory-bank/tech-specs/FT-003-boss-admin-surface-admin-audit.md](../tech-specs/FT-003-boss-admin-surface-admin-audit.md) as the current normative feature design for admin routes/services, audit record shape, local invite semantics, authorization checks, and verification targets.
+- Existing identity/session/ActorContext specs define login and authorization.
+- [Admin audit](../domains/admin/admin-audit.md) defines durable transaction
+  evidence; [Boss admin HTTP](../contracts/admin/boss-admin-http.md) defines
+  personnel/admin routes.
+- [Boss admin verification](../testing/admin/boss-admin-and-audit.md) defines
+  policy, security, audit, isolation, and E2E evidence.
+
+UI composition and product use cases remain here; concrete contracts remain in
+the linked subject specs. Exact first-Boss one-shot CLI and full FT-003 task
+design remain deferred to `/prd-to-tasks FT-003` after FT-002 Farm authority is
+ready.
+
+## Non-Goals
+
+- Hosted identity, email delivery, password recovery, enterprise identity, or
+  SaaS tenancy.
+- Broad HR/personnel management.
+- Complex audit search/export beyond the minimal admin audit view.
+- A complete Consultant UI path in the first demo.
 
 Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-003 implementation plan or `TASK-*` record is active.

@@ -1,9 +1,8 @@
 ---
 description: Global timeline audit/export event contract for MVP v2.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -25,19 +24,19 @@ write implementation belong to feature-level SDD design, primarily
 `/prd-to-tasks FT-005`, `/prd-to-tasks FT-006`, and features that emit audit
 refs.
 
-## Ownership
+## Contract Scope
 
-- Owns: global timeline authority boundary, minimum event identity, reference
+- Defines: global timeline authority boundary, minimum event identity, reference
   shape, redaction rules, replay limits, and verification requirements.
-- Does not own: exact event taxonomy, all payload fields, JSONL rotation,
+- Out of scope: exact event taxonomy, all payload fields, JSONL rotation,
   export UI, history projection endpoint schemas, or DB table schemas.
 - Related specs:
   - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md):
-    owns mutable runtime authority and shared entity ownership.
-  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): owns human-facing
+    defines mutable runtime authority and shared entity relationships.
+  - [.memory-bank/contracts/ui-feed.md](ui-feed.md): defines human-facing
     projection rules.
   - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md):
-    owns local photo artifact authority.
+    defines local photo artifact authority.
 
 ## Event Shape
 
@@ -76,12 +75,12 @@ raw provider payloads, hidden reasoning, raw proposal text, or full binary data.
 
 ## Edge Cases And Errors
 
-- If runtime persistence succeeds but timeline append fails, the owning feature
-  spec must define whether the operation fails, retries, or records a repair
+- If runtime persistence succeeds but timeline append fails, the applicable
+  canonical subject spec must define whether the operation fails, retries, or records a repair
   task. The global default is fail-safe: do not claim audit/export evidence
   exists when append failed.
-- If timeline append succeeds but the runtime transaction fails, the owning
-  feature must avoid committing a misleading success event.
+- If timeline append succeeds but the runtime transaction fails, the scoped
+  implementation must avoid committing a misleading success event.
 - If a timeline payload would include secrets or auth material, redact or block
   the event before writing.
 - If event ordering matters for a feature, the feature-level spec must define

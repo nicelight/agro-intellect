@@ -1,9 +1,8 @@
 ---
 description: Foundation smoke API contract for /health and /ready.
 status: active
-owner: architecture
 type: contract
-last_updated: 2026-06-26
+last_updated: 2026-06-30
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/contracts/api-guidelines.md
@@ -13,14 +12,14 @@ source_of_truth:
 ---
 # Foundation Smoke API
 
-## Ownership
+## Contract Scope
 
-- Owns: substrate-level `/health` and `/ready` route shape, status behavior, and redaction requirements.
-- Does not own: product endpoint paths, product auth/session routes, OpenAPI completeness, or feature-specific error catalogs.
+- Defines: substrate-level `/health` and `/ready` route shape, status behavior, and redaction requirements.
+- Out of scope: product endpoint paths, product auth/session routes, OpenAPI completeness, or feature-specific error catalogs.
 - Related specs:
-  - [.memory-bank/contracts/api-guidelines.md](api-guidelines.md): owns cross-cutting HTTP/API guardrails.
-  - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): owns app factory and route mounting substrate.
-  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): owns DB ping/session substrate used by readiness checks.
+  - [.memory-bank/contracts/api-guidelines.md](api-guidelines.md): defines cross-cutting HTTP/API guardrails.
+  - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): defines app factory and route mounting.
+  - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): defines DB ping/session readiness substrate.
 
 ## Shape
 

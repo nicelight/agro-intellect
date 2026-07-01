@@ -82,7 +82,7 @@ semantics.
 - [.memory-bank/foundation.md](../foundation.md): Foundation decision, work
   packages, pressure map, and exit criteria.
 - [.memory-bank/workflows/tier-policy.md](../workflows/tier-policy.md): tier,
-  protocol, packet, and FT-000 rules.
+  protocol, single-card handoff, and FT-000 rules.
 - [.memory-bank/schemas/task.schema.json](../schemas/task.schema.json): current
   task record schema.
 - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md):
