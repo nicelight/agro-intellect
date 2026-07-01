@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-001
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-30
+last_updated: 2026-07-01
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/identity/account-membership.md
@@ -116,12 +116,15 @@ the existing cards without changing queue topology or lifecycle status.
 `TASK-005` then passed implementation, `/verify`, and per-task `/red-verify`;
 the explicit manual owner recorded the T3 closure markers on 2026-07-01. A
 requested early Memory Bank sync and strict doctor gate cleared `TASK-006` for
-the next execution handoff.
+the next execution handoff. `TASK-006` then passed `/execute`, `/verify`, and
+per-task `/red-verify`; the explicit manual owner approved closure, completing
+W1 and its boundary Memory Bank sync.
 
 - Implementation plan: [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md).
-- Task state: `TASK-005-T3-FT-001-W1` is done,
-  `TASK-006-T3-FT-001-W1` is ready, and `TASK-007` through `TASK-011` remain
+- Task state: W1 `TASK-005-T3-FT-001-W1` and
+  `TASK-006-T3-FT-001-W1` are done; `TASK-007` through `TASK-011` remain
   planned.
 - Task cards are the complete single-card handoff and link direct applicable
   canonical specs; no persisted packet layer exists.
-- Next route: `/execute TASK-006-T3-FT-001-W1` in a clean task-scoped session.
+- Next route: a separate owner readiness decision for
+  `TASK-007-T3-FT-001-W2`, then `/execute` in a clean task-scoped session.

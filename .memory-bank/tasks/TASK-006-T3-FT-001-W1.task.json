@@ -1,7 +1,7 @@
 {
   "id": "TASK-006-T3-FT-001-W1",
   "title": "Implement FT-001 credential and session token security primitives",
-  "status": "ready",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-001",
   "reqs": [
@@ -36,7 +36,72 @@
     "Opaque session tokens use at least 256 bits of entropy from Python secrets APIs and are returned only through the selected session transport.",
     "LocalSession token storage persists only lowercase hex SHA-256 token_hash values and verifies presented tokens with constant-time digest comparison.",
     "Redaction covers passwords, tokens, token hashes, cookies, bearer tokens, and auth headers in error/log-like strings.",
-    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and explicit owner closure; /mb-sync runs at the wave boundary."
+    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and explicit owner closure; /mb-sync runs at the wave boundary.",
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: PASS",
+      "verified_at": "2026-07-01T14:34:01+05:00",
+      "evidence": [
+        ".protocols/TASK-006-T3-FT-001-W1/verification.md",
+        ".protocols/TASK-006-T3-FT-001-W1/handoff.md",
+        ".tasks/TASK-006-T3-FT-001-W1/TASK-006-T3-FT-001-W1-S-VERIFY-final-report-code-01.md",
+        ".tasks/TASK-006-T3-FT-001-W1/gate-evidence.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py -q",
+        ".venv/bin/python -m pytest tests/backend/test_foundation_redaction.py -q",
+        ".venv/bin/python -m pytest tests -q",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs --strict",
+        "git diff --check",
+        "independent synthetic runtime probe for Argon2/token/redaction semantics",
+        "changed-path and forbidden-scope source scan"
+      ],
+      "summary": "Functional verification passed. Exact Argon2id parameters, 256-bit token generation, lowercase SHA-256 digest-only handling, constant-time comparison, malformed-input failure, and auth-material redaction were independently proved. Focused tests passed with 9 tests, Foundation redaction compatibility with 9 tests, the full suite with 41 tests, and dependency/MB/diff gates passed. Changed implementation paths exactly match the allowlist and forbidden scope was not touched.",
+      "recommended_next_action": "/red-verify TASK-006-T3-FT-001-W1"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "manual",
+      "verdict": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-01T14:40:03+05:00",
+      "evidence": [
+        ".protocols/TASK-006-T3-FT-001-W1/red-verification.md",
+        ".tasks/TASK-006-T3-FT-001-W1/TASK-006-T3-FT-001-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-006-T3-FT-001-W1/verification.md"
+      ],
+      "commands": [
+        "independent hostile runtime probe for Argon2, token uniqueness/verification, and auth redaction",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py tests/backend/test_foundation_redaction.py -q",
+        ".venv/bin/python -m pytest tests -q",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs --strict",
+        "git diff --check"
+      ],
+      "summary": "Semantic verification passed. The primitives fit the intended FT-001 security outcome, preserve Foundation and Access/Admin responsibility boundaries, and introduce no persistence, transport, hosted identity, recovery, or raw-secret leakage path. Residual caller-redaction, transport-size, and Argon2 concurrency concerns belong to later service/API tasks and do not invalidate this primitive layer.",
+      "recommended_next_action": "Record HUMAN_CHECKPOINT: done through the explicit owner, close TASK-006, run the W1 boundary /mb-sync, pass strict doctor, then separately promote TASK-007."
+    },
+    {
+      "stage": "closure",
+      "mode": "manual",
+      "verdict": "CLOSURE: DONE",
+      "closed_at": "2026-07-01T15:00:02+05:00",
+      "owner_decision": "The user directly approved the semantic-pass result, providing the human checkpoint and manual owner authorization to close TASK-006.",
+      "evidence": [
+        ".protocols/TASK-006-T3-FT-001-W1/handoff.md",
+        ".protocols/TASK-006-T3-FT-001-W1/verification.md",
+        ".protocols/TASK-006-T3-FT-001-W1/red-verification.md",
+        ".tasks/TASK-006-T3-FT-001-W1/gate-evidence.md"
+      ],
+      "markers": [
+        "HUMAN_CHECKPOINT: done"
+      ],
+      "summary": "The explicit manual owner accepted the verified implementation and semantic-pass result. TASK-006 is closed after functional PASS, adversarial semantic-pass, and the required human checkpoint.",
+      "recommended_next_action": "Run the W1 boundary /mb-sync and strict doctor; report TASK-007 as a legal promotion candidate without promoting it automatically."
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",

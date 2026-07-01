@@ -67,5 +67,5 @@ later must depend directly or transitively on `TASK-004-T2-FT-000-W0`.
 ## Handoff
 
 Foundation is complete. Product tasking may proceed for features with completed
-feature-level SDD designs. FT-001 planning/review and `TASK-005` are complete;
-the current product route is `/execute TASK-006-T3-FT-001-W1`.
+feature-level SDD designs. FT-001 planning/review and W1 are complete; TASK-007
+is the next promotion candidate under a separate owner readiness decision.

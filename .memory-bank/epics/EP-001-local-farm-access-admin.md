@@ -49,6 +49,6 @@ Establish the local Farm authority boundary so every human action and agent cont
 - FT-001 composition is complete; FT-002 has only the bounded permission seam
   needed by FT-001, and FT-003 records the direct-account KISS direction.
 - Canonical subject specs are registered in [.memory-bank/spec-index.md](../spec-index.md); feature docs compose applicable paths.
-- `/prd-to-tasks FT-001` is complete with [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md) and active single-card task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`; `TASK-005` is done and `TASK-006` is ready.
+- `/prd-to-tasks FT-001` is complete with [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md) and active single-card task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`; W1 `TASK-005` and `TASK-006` are done.
 - Generated task-decomposition artifacts for FT-002 and FT-003 remain intentionally removed.
-- Next EP-001 route is `/execute TASK-006-T3-FT-001-W1`.
+- Next EP-001 route is a separate owner readiness decision for TASK-007.

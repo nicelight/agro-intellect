@@ -4,6 +4,15 @@ status: active
 ---
 # Changelog
 
+## [2026-07-01] Wave W1 — completion
+- Closed `TASK-006-T3-FT-001-W1` after recorded functional PASS,
+  adversarial `semantic-pass`, and the explicit owner human checkpoint.
+- Completed the final W1 Memory Bank sync for TASK-005 and TASK-006, including
+  FT-001 feature/epic/plan state, active routing, closure evidence, and
+  changelog reconciliation.
+- Left `TASK-007-T3-FT-001-W2` as `planned`: all dependencies are done, but
+  promotion remains a separate owner decision after the strict readiness gate.
+
 ## [2026-07-01] T3 closure policy optimization
 - Synchronized the deployed DevRails T3 command/workflow runtime in both
   `.agents/skills/` and `.claude/skills/` plus generated project policy and
