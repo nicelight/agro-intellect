@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -13,8 +13,8 @@ Global SDD backbone and verified FT-000 Foundation are complete. FT-001
 composes complete registered subject-based specs; FT-002 has the bounded
 permission dependency slice needed by FT-001, and FT-003 records the direct
 Account KISS direction. `/prd-to-tasks FT-001` is complete with active
-single-card tasks `TASK-005` through `TASK-011`; the next gate is a fresh
-`/review-tasks-plan FT-001`.
+single-card tasks `TASK-005` through `TASK-011`; `TASK-005` is done and
+`TASK-006` is ready for execution.
 
 Other features enter `/prd-to-tasks FT-<NNN>` when selected. That workflow
 discovers existing canonical paths, extends them when needed, creates only
@@ -27,7 +27,7 @@ missing concerns, and writes direct applicable links to task cards.
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): complete identity/session/access composition; active `TASK-005` through `TASK-011`.
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): complete identity/session/access composition; `TASK-005` done, `TASK-006` ready, `TASK-007` through `TASK-011` planned.
 - [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): bounded storage/status/permission dependency slice; full SDD pending.
 - [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): direct local Account creation direction; full SDD pending.
 

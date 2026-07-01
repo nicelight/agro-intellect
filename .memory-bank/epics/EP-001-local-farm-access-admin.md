@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-001
 lifecycle: planned
-last_updated: 2026-06-30
+last_updated: 2026-07-01
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -49,6 +49,6 @@ Establish the local Farm authority boundary so every human action and agent cont
 - FT-001 composition is complete; FT-002 has only the bounded permission seam
   needed by FT-001, and FT-003 records the direct-account KISS direction.
 - Canonical subject specs are registered in [.memory-bank/spec-index.md](../spec-index.md); feature docs compose applicable paths.
-- `/prd-to-tasks FT-001` is complete with [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md) and active single-card task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
+- `/prd-to-tasks FT-001` is complete with [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md) and active single-card task records `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`; `TASK-005` is done and `TASK-006` is ready.
 - Generated task-decomposition artifacts for FT-002 and FT-003 remain intentionally removed.
-- Next EP-001 route is `/review-tasks-plan FT-001` before implementation.
+- Next EP-001 route is `/execute TASK-006-T3-FT-001-W1`.

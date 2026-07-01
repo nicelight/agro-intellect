@@ -16,11 +16,11 @@ Account KISS direction while its full design/tasking remains deferred. The
 FT-001 queue uses one authoritative indexed task card per task and direct
 applicable SDD links.
 
-FT-000 tasks `TASK-000` through `TASK-004` are done. FT-001 tasks `TASK-005`
-through `TASK-011` retain their IDs, tiers, waves, dependencies, statuses,
-outcomes, and evidence requirements. The next gate is a fresh
-`/review-tasks-plan FT-001`, then conditional strict `/mb-doctor` before
-`TASK-005-T3-FT-001-W1` execution.
+FT-000 tasks `TASK-000` through `TASK-004` are done. FT-001
+`TASK-005-T3-FT-001-W1` is done after implementation, functional verification,
+semantic verification, and explicit T3 owner closure. The strict readiness
+gate passed, and `TASK-006-T3-FT-001-W1` is ready for execution. Tasks
+`TASK-007` through `TASK-011` remain planned.
 
 MVP v1 is archived under [.memory-bank/archive/mvp-v1/](archive/mvp-v1/) and is
 historical only.
@@ -61,7 +61,8 @@ historical only.
 ## Next Route
 
 ```text
-/review-tasks-plan FT-001
--> conditional /mb-doctor --strict
--> /execute TASK-005-T3-FT-001-W1
+/execute TASK-006-T3-FT-001-W1
+-> /verify TASK-006-T3-FT-001-W1
+-> /red-verify TASK-006-T3-FT-001-W1
+-> explicit T3 owner closure
 ```

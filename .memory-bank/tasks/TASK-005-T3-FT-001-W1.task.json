@@ -1,7 +1,7 @@
 {
   "id": "TASK-005-T3-FT-001-W1",
   "title": "Add FT-001 account membership session schema baseline",
-  "status": "ready",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-001",
   "reqs": [
@@ -83,6 +83,25 @@
       ],
       "summary": "Semantic verification passed. The persistence baseline serves the intended FT-001 outcome, preserves Foundation and adjacent feature boundaries, and introduces no raw credential storage. An independent isolated PostgreSQL run proved the real Foundation Alembic upgrade/downgrade path. Residual risks are the committed test's direct Operations invocation and the intentionally deferred Farm FK; neither is a semantic break while no durable membership write path exists. T3 closure still requires exact human checkpoint and rollback/recovery markers plus explicit owner closure and /mb-sync.",
       "recommended_next_action": "Record T3 closure markers through the explicit owner, close TASK-005, run /mb-sync, then promote TASK-006."
+    },
+    {
+      "stage": "closure",
+      "mode": "manual",
+      "verdict": "CLOSURE: DONE",
+      "closed_at": "2026-07-01T13:35:18+05:00",
+      "owner_decision": "The user directly confirmed TASK-005 verification is acceptable and instructed the current top-level GENERAL agent to record the closure markers and synchronize Memory Bank.",
+      "evidence": [
+        ".protocols/TASK-005-T3-FT-001-W1/handoff.md",
+        ".protocols/TASK-005-T3-FT-001-W1/verification.md",
+        ".protocols/TASK-005-T3-FT-001-W1/red-verification.md",
+        ".tasks/TASK-005-T3-FT-001-W1/gate-evidence.md"
+      ],
+      "markers": [
+        "HUMAN_CHECKPOINT: done",
+        "ROLLBACK_RECOVERY_NOTE: present"
+      ],
+      "summary": "The explicit manual owner accepted the verified implementation and rollback/recovery evidence. TASK-005 is closed after functional PASS, semantic-pass, human checkpoint, and recovery marker completion.",
+      "recommended_next_action": "Synchronize Memory Bank, pass the T3 strict readiness gate, then perform the separate owner promotion decision for TASK-006."
     }
   ],
   "docs": [

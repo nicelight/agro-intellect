@@ -4,6 +4,30 @@ status: active
 ---
 # Changelog
 
+## [2026-07-01] T3 closure policy optimization
+- Synchronized the deployed DevRails T3 command/workflow runtime in both
+  `.agents/skills/` and `.claude/skills/` plus generated project policy and
+  doctor surfaces.
+- Removed tier-generated rollback/recovery closure boilerplate from active
+  `TASK-006` through `TASK-011`, the FT-001 implementation plan, and the FT-001
+  execution protocol.
+- Preserved functional `/verify`, per-task `/red-verify`, exact human
+  checkpoint, explicit owner closure, and wave-boundary `/mb-sync` gates.
+- Left TASK-005-specific closure artifacts, historical completed evidence,
+  migration downgrade checks, product recovery non-goals, and unrelated
+  implementation/test changes unchanged.
+
+## [2026-07-01] Wave W1 — TASK-005 closure and TASK-006 readiness
+- Closed `TASK-005-T3-FT-001-W1` in manual mode after recorded
+  `VERDICT: PASS`, `SEMANTIC_VERDICT: semantic-pass`, explicit owner human
+  checkpoint, and verified Alembic rollback/recovery evidence.
+- Synchronized the TASK-005 authoritative record, closure handoff, FT-001
+  feature/epic/plan state, and active Memory Bank routing.
+- Ran the strict T3/dependency readiness gate, then applied the separate manual
+  owner promotion decision for `TASK-006-T3-FT-001-W1`; its status is `ready`.
+- This owner-requested early W1 sync enables a clean-agent TASK-006 handoff and
+  does not replace the final W1 boundary sync after TASK-006 closes.
+
 ## [2026-07-01] KISS Account creation and bounded FT-002 dependency repair
 - Replaced local invite/activation with direct Boss-created active Account and
   active FarmMembership semantics; removed invite entity/state/API specs and

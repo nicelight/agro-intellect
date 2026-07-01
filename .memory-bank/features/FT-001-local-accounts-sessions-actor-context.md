@@ -113,10 +113,15 @@ invite/activation semantics and aligned `TASK-005`, `TASK-007`, `TASK-008`,
 permission seam. A follow-up same-day `/prd-to-tasks` audit confirmed complete
 canonical concern coverage and reconciled direct verification/session links in
 the existing cards without changing queue topology or lifecycle status.
+`TASK-005` then passed implementation, `/verify`, and per-task `/red-verify`;
+the explicit manual owner recorded the T3 closure markers on 2026-07-01. A
+requested early Memory Bank sync and strict doctor gate cleared `TASK-006` for
+the next execution handoff.
 
 - Implementation plan: [.memory-bank/tasks/plans/IMPL-FT-001.md](../tasks/plans/IMPL-FT-001.md).
-- Active task records: `TASK-005-T3-FT-001-W1` through `TASK-011-T3-FT-001-W3`.
+- Task state: `TASK-005-T3-FT-001-W1` is done,
+  `TASK-006-T3-FT-001-W1` is ready, and `TASK-007` through `TASK-011` remain
+  planned.
 - Task cards are the complete single-card handoff and link direct applicable
   canonical specs; no persisted packet layer exists.
-- Next gate: `/review-tasks-plan FT-001`, then conditional `/mb-doctor` before
-  `TASK-005` execution.
+- Next route: `/execute TASK-006-T3-FT-001-W1` in a clean task-scoped session.

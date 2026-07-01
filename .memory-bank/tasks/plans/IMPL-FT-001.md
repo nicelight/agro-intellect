@@ -3,7 +3,7 @@ description: Implementation plan for FT-001 Local Accounts Sessions And ActorCon
 status: active
 type: implementation_plan
 feature_id: FT-001
-last_updated: 2026-06-30
+last_updated: 2026-07-01
 source_of_truth:
   - .memory-bank/features/FT-001-local-accounts-sessions-actor-context.md
   - .memory-bank/testing/auth/session-and-access.md
@@ -92,6 +92,13 @@ directly to every applicable implementation card and linked session lifecycle
 plus session HTTP directly to the protected-dependency task. Task topology and
 lifecycle state remain unchanged.
 
+Later on 2026-07-01, `TASK-005` passed implementation, functional verification,
+and adversarial semantic verification. The explicit manual owner recorded the
+required TASK-005-specific closure markers and closed the task. An
+owner-requested early Memory Bank sync plus strict doctor gate passed; the
+separate manual readiness decision promoted `TASK-006` to `ready`. This early
+sync does not replace the final W1 boundary sync after `TASK-006` closes.
+
 ## Constraints
 
 - Preserve verified FT-000 app factory, settings, database/session, migration,
@@ -142,8 +149,8 @@ lifecycle state remain unchanged.
 
 | Task | Tier | Status | Purpose |
 |---|---|---|---|
-| `TASK-005-T3-FT-001-W1` | T3 | ready | Add Account, FarmMembership, and LocalSession schema/migration baseline. |
-| `TASK-006-T3-FT-001-W1` | T3 | planned | Implement Argon2id password/session-token security primitives. |
+| `TASK-005-T3-FT-001-W1` | T3 | done | Add Account, FarmMembership, and LocalSession schema/migration baseline. |
+| `TASK-006-T3-FT-001-W1` | T3 | ready | Implement Argon2id password/session-token security primitives. |
 | `TASK-007-T3-FT-001-W2` | T3 | planned | Implement session lifecycle repositories and credential service using the security primitive contract. |
 | `TASK-008-T3-FT-001-W2` | T3 | planned | Implement ActorContext, role policy, and PlantPermissionContext interface envelope. |
 | `TASK-009-T3-FT-001-W2` | T3 | planned | Implement login/logout/me API routes, exact session cookie behavior, and no-leak error contract. |
@@ -189,9 +196,10 @@ TASK-004-T2-FT-000-W0
 - Contract checks that FT-001 feature code preserves Foundation `/health` and
   `/ready`, uses the Foundation DB/session/Alembic substrate, and applies
   evidence-redaction rules to auth/session material.
-- T3 task closure requires full protocol, complete indexed task card, `/verify PASS`,
-  per-task `/red-verify semantic-pass`, `HUMAN_CHECKPOINT: done`, and
-  `ROLLBACK_RECOVERY_NOTE: present`.
+- T3 task closure requires full protocol, complete indexed task card,
+  `/verify PASS`, per-task `/red-verify semantic-pass`,
+  `HUMAN_CHECKPOINT: done`, and explicit owner closure. Full `/mb-sync` runs at
+  the end of the current wave unless an explicit early-sync condition applies.
 - Feature completion later requires feature-level `/red-verify --feature FT-001`
   after all FT-001 tasks are done.
 
