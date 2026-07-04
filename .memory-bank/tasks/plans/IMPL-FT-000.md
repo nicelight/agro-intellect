@@ -3,7 +3,7 @@ description: Implementation plan for FT-000 Foundation Dev Path.
 status: active
 type: implementation_plan
 feature_id: FT-000
-last_updated: 2026-07-01
+last_updated: 2026-07-04
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/features/FT-000-foundation.md
@@ -67,5 +67,4 @@ later must depend directly or transitively on `TASK-004-T2-FT-000-W0`.
 ## Handoff
 
 Foundation is complete. Product tasking may proceed for features with completed
-feature-level SDD designs. FT-001 planning/review and W1 are complete; TASK-007
-is the next promotion candidate under a separate owner readiness decision.
+feature-level SDD designs.

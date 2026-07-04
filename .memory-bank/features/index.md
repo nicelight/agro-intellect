@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-01
+last_updated: 2026-07-04
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -9,27 +9,15 @@ source_of_truth:
 ---
 # Features Index
 
-Global SDD backbone and verified FT-000 Foundation are complete. FT-001
-composes complete registered subject-based specs; FT-002 has the bounded
-permission dependency slice needed by FT-001, and FT-003 records the direct
-Account KISS direction. `/prd-to-tasks FT-001` is complete with active
-single-card tasks `TASK-005` through `TASK-011`; W1 tasks `TASK-005` and
-`TASK-006` are done, while `TASK-007` is the next promotion candidate.
-
-Other features enter `/prd-to-tasks FT-<NNN>` when selected. That workflow
-discovers existing canonical paths, extends them when needed, creates only
-missing concerns, and writes direct applicable links to task cards.
-
 ## Foundation
 
-- [FT-000 Foundation Dev Path](FT-000-foundation.md): verified pseudo-feature;
-  final gate `TASK-004-T2-FT-000-W0` is done.
+- [FT-000 Foundation Dev Path](FT-000-foundation.md): executable Foundation baseline.
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): complete identity/session/access composition; W1 done, `TASK-007` through `TASK-011` planned.
-- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): bounded storage/status/permission dependency slice; full SDD pending.
-- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): direct local Account creation direction; full SDD pending.
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): local identity, session, and ActorContext boundary.
+- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): Farm, Plant lifecycle, and access-grant boundary.
+- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): Boss administration and durable audit boundary.
 
 ## EP-002 Plant Operations Evidence Authority
 
