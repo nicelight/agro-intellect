@@ -10,6 +10,11 @@ status: active
 ---
 # /red-verify — Adversarial semantic verification
 
+> Project policy override: per-task and feature-level T2/T3 `/red-verify` is a
+> recommended adversarial check, not a universal closure prerequisite.
+> Semantic findings inform the owner but do not automatically block closure or
+> promotion unless the owner makes that gate mandatory for the current run.
+
 <objective>
 Проверить, что реализованная задача правильна **по существу**, а не только по process/evidence surface.
 

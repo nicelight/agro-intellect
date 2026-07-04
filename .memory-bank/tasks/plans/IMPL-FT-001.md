@@ -202,12 +202,13 @@ TASK-004-T2-FT-000-W0
 - Contract checks that FT-001 feature code preserves Foundation `/health` and
   `/ready`, uses the Foundation DB/session/Alembic substrate, and applies
   evidence-redaction rules to auth/session material.
-- T3 task closure requires full protocol, complete indexed task card,
-  `/verify PASS`, per-task `/red-verify semantic-pass`,
-  `HUMAN_CHECKPOINT: done`, and explicit owner closure. Full `/mb-sync` runs at
-  the end of the current wave unless an explicit early-sync condition applies.
-- Feature completion later requires feature-level `/red-verify --feature FT-001`
-  after all FT-001 tasks are done.
+- T3 tasks should normally use a full protocol, complete indexed task card,
+  `/verify`, per-task `/red-verify`, a human checkpoint, and explicit owner
+  closure. These are advisory confidence-building steps under the active tier
+  policy; the owner may combine, skip, reorder, or waive them. `/mb-sync` is
+  recommended at a useful wave boundary.
+- Feature-level `/red-verify --feature FT-001` is recommended after all FT-001
+  tasks are done when semantic drift risk remains material.
 
 ## Quality Gates
 

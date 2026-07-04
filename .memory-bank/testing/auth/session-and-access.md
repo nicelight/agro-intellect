@@ -67,8 +67,9 @@ exist.
 - `node scripts/mb-doctor.mjs`
 - `git diff --check`
 
-Task-specific `/verify` and `/red-verify` evidence remains required by tier
-policy; this spec does not replace it.
+Task-specific `/verify` and `/red-verify` evidence remains recommended by tier
+policy when it adds confidence; this spec does not make either check a closure
+prerequisite.
 
 ## Related specs
 

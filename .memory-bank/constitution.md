@@ -1,10 +1,10 @@
 ---
 description: Project Constitution — governing principles for AI-first development.
 status: active
-version: 2
+version: 3
 project_principles: ratified
 ratified: 2026-05-27
-last_updated: 2026-06-01
+last_updated: 2026-07-03
 ---
 # Project Constitution
 
@@ -20,7 +20,7 @@ Agents MUST derive implementation work from explicit product, requirement, featu
 
 ### II. DO NOT Overengineering
 
-Project level is `medium`: use strict specs and gates for risky zones, but avoid enterprise overhead. Prefer KISS for ordinary MVP work; require stability-first design for safety, data authority, account/farm access boundaries, Companion governance decisions, dataset governance, Agent Chat Bus, MessageEnvelope, UI Feed isolation, and other agent-contract boundaries.
+Project level is `medium`: use risk-aware specs and checks for risky zones, but avoid enterprise overhead. Prefer KISS for ordinary MVP work and stability-first design for safety, data authority, account/farm access boundaries, Companion governance decisions, dataset governance, Agent Chat Bus, MessageEnvelope, UI Feed isolation, and other agent-contract boundaries.
 
 ### III. Memory Bank Is Durable Project Knowledge
 
@@ -28,11 +28,11 @@ Project level is `medium`: use strict specs and gates for risky zones, but avoid
 
 ### IV. Schema-Backed Task Execution
 
-Tasks MUST use the current schema-backed JSON task record model. If the framework uses `tier: T0|T1|T2|T3`, agents MUST route execution and verification through that tier model.
+Tasks MUST use the current schema-backed JSON task record model. The `tier: T0|T1|T2|T3` field classifies risk and recommends an execution profile; it does not by itself create mandatory protocol, verification, semantic-review, checkpoint, doctor, or synchronization gates.
 
 ### V. Risk-Based Definition of Done
 
-Every completed task MUST have evidence appropriate to its risk and tier. Core boundary zones require schema, contract, safety, and data integrity checks; user-facing workflows require UI/e2e smoke when the flow exists. Small docs or local changes may use lighter checks when they do not affect runtime, contracts, state, data, safety, or user flow.
+Every task SHOULD have evidence proportionate to its actual risk. Schema, contract, safety, data-integrity, UI/e2e, `/verify`, `/red-verify`, protocol, checkpoint, doctor, and synchronization checks are recommended tools, not automatic closure blockers for T2/T3. The explicit owner or scheduler may combine, reorder, skip, or accept residual risk based on the concrete change. Product safety rules, authorization boundaries, source-of-truth contracts, and explicit user decisions remain binding.
 
 ### VI. Bounded Agent Autonomy
 
@@ -52,17 +52,18 @@ Agents MUST NOT rely on deprecated task formats, old risk models, or undocumente
 
 ### X. Context Discipline
 
-Agents SHOULD read the smallest sufficient context for the task. Higher-tier or cross-cutting tasks MUST read relevant normative docs such as invariants, contracts, states, testing, and workflow policies.
+Agents SHOULD read the smallest sufficient context for the task. Higher-tier or cross-cutting tasks SHOULD read relevant normative docs such as invariants, contracts, states, testing, and workflow policies.
 
 ### XI. Synchronization
 
-After meaningful changes, agents MUST synchronize affected Memory Bank docs, task state, changelog, and routing files.
+After meaningful changes, agents SHOULD synchronize affected Memory Bank docs, task state, changelog, and routing files. Synchronization timing is owner-controlled and is not an automatic T2/T3 closure gate.
 
 ## Governance Decisions
 
 - Project level: `medium`.
 - Architecture priority: KISS by default, stability-first for safety, data, and agent-contract boundaries.
-- Definition of Done: risk-based checks; schema/contract/safety gates are mandatory for core boundaries, UI/e2e checks for real user flows.
+- Definition of Done: risk-informed and owner-controlled. T2/T3 workflow checks are recommendations; missing process artifacts produce warnings rather than automatic closure blockers.
+- T2/T3 execution amendment on 2026-07-03: protocol depth, task gates, `/verify`, `/red-verify`, human checkpoint, strict doctor, and `/mb-sync` are advisory unless the explicit owner makes a specific check mandatory for a concrete task/run.
 - Agent autonomy: plant state requires human/follow-up gate for confirmation; training data curation is mostly autonomous only with strong evidence.
 - MVP scope amendment on 2026-06-01: bounded local-first Farm workspace, local Accounts, role-scoped access, multiple Plants, and Companion governance are allowed in MVP after PRD/spec promotion; production SaaS and broad farm-management scope remain excluded.
 - Critical non-negotiable: low maintenance.
@@ -74,4 +75,4 @@ After meaningful changes, agents MUST synchronize affected Memory Bank docs, tas
 - Amendments must include rationale and update affected docs if needed.
 - Constitution should stay short. Put concrete project rules into `invariants.md`, `contracts/*`, `states/*`, or workflow policy docs.
 
-**Version**: 2 | **Ratified**: 2026-05-27 | **Last updated**: 2026-06-01
+**Version**: 3 | **Ratified**: 2026-05-27 | **Last updated**: 2026-07-03

@@ -10,6 +10,10 @@ status: active
 ---
 # /mb-doctor — Memory Bank readiness doctor
 
+> Project policy override: missing T2/T3 protocol, verification,
+> red-verification, checkpoint, doctor, or sync evidence is advisory and should
+> be reported as a warning, not a universal closure or promotion blocker.
+
 ## Objective
 Answer one question:
 

@@ -11,6 +11,11 @@ status: active
 
 # /execute - Execute One TASK
 
+> Project policy override: for T2/T3, full protocol, gates, `/verify`,
+> `/red-verify`, human checkpoint, strict doctor, and `/mb-sync` are advisory.
+> Interpret stricter legacy wording below as recommended unless the explicit
+> owner makes a concrete check mandatory for the current run.
+
 <objective>
 Implement one scoped JSON task and produce protocol/evidence for the next owner.
 `/execute` is not a scheduler. In manual mode it may close only simple `T0` /

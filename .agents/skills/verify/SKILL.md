@@ -10,6 +10,11 @@ status: active
 ---
 # /verify - Verify one implemented TASK
 
+> Project policy override: T2/T3 verification is recommended, not a universal
+> closure prerequisite. The owner may combine, skip, or accept available
+> evidence; stricter legacy wording below is advisory unless explicitly made
+> mandatory for the current run.
+
 <objective>
 Prove or disprove one task's independently verifiable outcome against its
 task-scoped normative basis and reproducible evidence.

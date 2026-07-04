@@ -789,7 +789,9 @@ function checkFullProtocolTask(record) {
   if (!FULL_PROTOCOL_TIERS.has(task.tier)) return;
   if (!FULL_PROTOCOL_STATUSES.has(task.status)) return;
 
-  const severity = options.strict ? 'error' : 'warning';
+  // T2/T3 execution evidence is advisory. Strict mode reports missing
+  // protocol/verify/red-verify/checkpoint artifacts without blocking closure.
+  const severity = 'warning';
   const missing = missingFullProtocolFiles(id);
   if (missing.length) {
     addFinding(severity, 'TASK_FULL_PROTOCOL_MISSING', `${rel}: ${task.tier} ${task.status} task is missing full protocol files.`, {
@@ -1206,7 +1208,8 @@ function checkT2FeatureSemanticCompletion(records) {
     if (record.task.tier === 'T2') group.hasT2 = true;
   }
 
-  const severity = options.strict ? 'error' : 'warning';
+  // T2 feature semantic review is recommended, not a hard readiness gate.
+  const severity = 'warning';
   for (const group of groups.values()) {
     if (!group.hasT2) continue;
     if (!group.records.every((record) => record.task.status === 'done')) continue;

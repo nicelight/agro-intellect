@@ -69,7 +69,7 @@ After `/prd` and `/spec-design`, run fresh-context Memory Bank review before tas
 - Product feature task decomposition must not start before global `/spec-design`, required Foundation closure, and feature-level SDD design completion inside `/prd-to-tasks FT-<NNN>`.
 - Global `/spec-design` is complete; Foundation is closed and verified. Current product tasking gate is `/prd-to-tasks FT-<NNN>` followed by `/review-tasks-plan FT-<NNN>` before implementation.
 - Runtime implementation later must include risk-based evidence: unit tests for policies/state, integration tests for boundaries/contracts, and e2e tests for real user flows.
-- T2/T3 task records that touch shared state/contract boundaries must link the
+- T2/T3 task records that touch shared state/contract boundaries should link the
   relevant canonical spec: UI Feed, timeline audit/export, photo artifacts, Plant state
   trust, Safety action lifecycle, Companion governance, or dataset governance.
 

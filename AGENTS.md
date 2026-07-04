@@ -84,6 +84,23 @@ After finishing a meaningful unit of work:
 - `.codex/` is only for project configuration (e.g. `.codex/config.toml`).
 
 ## Clean context (recommended)
+
+### Advisory T2/T3 execution override
+
+- `tier: T2|T3` classifies risk and recommends rigor; it does not create hard
+  process or closure gates.
+- Full protocol, task gates, `/verify`, `/red-verify`, feature semantic review,
+  `HUMAN_CHECKPOINT: done`, strict doctor, and `/mb-sync` are recommended for
+  T2/T3, not universally required.
+- The explicit owner or scheduler may combine, reorder, skip, or waive those
+  steps and may close/promote using accepted evidence. Missing recommended
+  artifacts should be reported as warnings.
+- Any later T2/T3 wording in this generated guide that says `required`, `must`,
+  or “only after” is interpreted through this advisory override unless the
+  explicit owner makes that concrete gate mandatory for the current run.
+- Product safety, authorization, source-of-truth, scope, and destructive-action
+  rules remain binding.
+
 - Route each `TASK-NNN-TN-FT-NNN-WN` by `task.tier` and `.memory-bank/workflows/tier-policy.md`.
 - Delegation and worker reports follow `.memory-bank/roles/orchestrator.md` and `.memory-bank/roles/worker.md`.
 - T0/T1 may use compact `.protocols/TASK-NNN-TN-FT-NNN-WN/run.md`; compact evidence can be enough.

@@ -10,6 +10,10 @@ status: active
 ---
 # /mb-sync — Memory Bank sync
 
+> Project policy override: for T2/T3, `/mb-sync` timing and associated closure
+> evidence are advisory. Missing recommended process artifacts should be
+> reported as warnings, not automatic closure blockers.
+
 Используй на boundary where broader Memory Bank state must be reconciled.
 The normal scheduler/manual boundary is the end of the current wave, after each
 task has already written authoritative status, closure decision, and evidence.

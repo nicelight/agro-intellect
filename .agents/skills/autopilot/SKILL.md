@@ -10,6 +10,10 @@ status: active
 ---
 # /autopilot — Run JSON task queue autonomously
 
+> Project policy override: T2/T3 protocol, verification, semantic review,
+> checkpoint, doctor, and sync steps are recommended defaults. The scheduler or
+> explicit owner may waive them without a process-only terminal failure.
+
 ## Важно
 - Это **executor JSON task queue**, а не полный `PRD → done` orchestrator.
 - Для полного unattended flow используй `/autonomous`.

@@ -1,7 +1,7 @@
 {
   "id": "TASK-007-T3-FT-001-W2",
   "title": "Implement FT-001 session lifecycle services",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-001",
   "reqs": [
@@ -38,7 +38,131 @@
     "Logout revokes only the current session and invalid/missing logout can be idempotent.",
     "Session validity is fail-closed from session, Account, and FarmMembership status.",
     "Session services authenticate only active Account/FarmMembership records created by the separate admin/bootstrap boundary.",
-    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and explicit owner closure; /mb-sync runs at the wave boundary."
+    "T3 closure includes /verify PASS, /red-verify semantic-pass, HUMAN_CHECKPOINT: done, and explicit owner closure; /mb-sync runs at the wave boundary.",
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: PASS",
+      "verified_at": "2026-07-02T01:07:32+05:00",
+      "evidence": [
+        ".protocols/TASK-007-T3-FT-001-W2/verification.md",
+        ".protocols/TASK-007-T3-FT-001-W2/handoff.md",
+        ".tasks/TASK-007-T3-FT-001-W2/TASK-007-T3-FT-001-W2-S-VERIFY-final-report-code-01.md",
+        ".tasks/TASK-007-T3-FT-001-W2/gate-evidence.md"
+      ],
+      "commands": [
+        "source .venv/bin/activate && python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs --strict",
+        "git diff --check",
+        "compileall plus source-hygiene, scope, and forbidden-pattern scans",
+        "independent persistence-boundary model/AST probe"
+      ],
+      "summary": "Functional verification passed. Existing active identities authenticate through the TASK-006 password primitive; issuance creates a new digest-only session with an exact seven-day TTL; validation uses token-hash lookup and the TASK-006 constant-time comparison path; malformed, unknown, revoked, expired, disabled, or ambiguous identity states fail closed; logout revokes only the presented session; and production services create or activate no Account/FarmMembership. Focused tests passed with 6 tests, the full suite with 47 tests, and dependency/Memory Bank/diff/scope/boundary checks passed.",
+      "recommended_next_action": "/red-verify TASK-007-T3-FT-001-W2"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "manual",
+      "verdict": "SEMANTIC_VERDICT: semantic-concern",
+      "verified_at": "2026-07-02T01:12:26+05:00",
+      "evidence": [
+        ".protocols/TASK-007-T3-FT-001-W2/red-verification.md",
+        ".protocols/TASK-007-T3-FT-001-W2/verification.md",
+        ".tasks/TASK-007-T3-FT-001-W2/TASK-007-T3-FT-001-W2-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "commands": [
+        "hostile timing probe comparing missing-login and existing-login wrong-password paths",
+        "hostile direct-issuance probe with caller-constructed AuthenticatedIdentity",
+        "source/spec/behavior/verification cross-boundary inspection",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Semantic verification found two unresolved T3 trust-boundary concerns: missing login skips Argon2 verification and creates a stable Account-enumeration timing signal, while publicly constructible AuthenticatedIdentity can be passed directly to issue_session without credential verification. No HTTP route currently exposes these paths, so the result is semantic-concern rather than semantic-fail. Repair TASK-007 in place, repeat /verify and /red-verify, and do not promote dependents before semantic-pass.",
+      "recommended_next_action": "/execute TASK-007-T3-FT-001-W2 repair, then repeat /verify and /red-verify"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "manual",
+      "verdict": "SEMANTIC_VERDICT: semantic-concern",
+      "verified_at": "2026-07-02T10:07:38+05:00",
+      "evidence": [
+        ".protocols/TASK-007-T3-FT-001-W2/red-verification.md",
+        ".tasks/TASK-007-T3-FT-001-W2/TASK-007-T3-FT-001-W2-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-007-T3-FT-001-W2/repair-gate-evidence.md"
+      ],
+      "commands": [
+        "deterministic credential-work parity probe for missing and existing login failures",
+        "hostile timing probe for missing and existing login failures",
+        "public session-issuance surface probe",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py -q",
+        ".venv/bin/python -m pytest tests -q",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs --strict",
+        "git diff --check"
+      ],
+      "summary": "Repeated semantic verification confirms the public issuance bypass is repaired, but missing login still skips Argon2 verification. A deterministic probe observed only one verifier call across missing-login and existing-login mismatch branches, and timing remained approximately 0.001 ms versus 59.6 ms. The linked no-account-enumeration behavior is therefore not substantively satisfied. Complete dummy verification repair, repeat /verify, and repeat /red-verify before closure or dependent promotion.",
+      "recommended_next_action": "/execute TASK-007-T3-FT-001-W2 timing repair, then /verify and /red-verify"
+    },
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: PASS",
+      "verified_at": "2026-07-02T10:10:22+05:00",
+      "evidence": [
+        ".protocols/TASK-007-T3-FT-001-W2/verification.md",
+        ".tasks/TASK-007-T3-FT-001-W2/TASK-007-T3-FT-001-W2-S-VERIFY-final-report-code-02.md",
+        ".tasks/TASK-007-T3-FT-001-W2/repair-gate-evidence.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py -q",
+        ".venv/bin/python -m pytest tests -q",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs --strict",
+        "git diff --check",
+        "public session-issuance surface and failed-auth persistence checks"
+      ],
+      "summary": "Post-repair functional verification passed. Public session creation now goes through SessionService.login, failed authentication creates no session rows, and digest-only issuance, exact TTL, fail-closed validation, revocation, scope, Foundation, and anti-goal checks remain satisfied. Focused tests passed 6/6 and the full suite 47/47. The explicit owner separately accepts timing-based enumeration risk for this task.",
+      "recommended_next_action": "repeat /red-verify using the explicit owner risk decision, then record T3 human checkpoint and closure"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "manual",
+      "verdict": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-02T10:11:12+05:00",
+      "owner_decision": "The user explicitly accepts timing-based login enumeration as residual local-MVP risk and excludes it from this task's closure threat model.",
+      "evidence": [
+        ".protocols/TASK-007-T3-FT-001-W2/red-verification.md",
+        ".protocols/TASK-007-T3-FT-001-W2/verification.md",
+        ".tasks/TASK-007-T3-FT-001-W2/TASK-007-T3-FT-001-W2-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-007-T3-FT-001-W2/TASK-007-T3-FT-001-W2-S-VERIFY-final-report-code-02.md"
+      ],
+      "summary": "Semantic verification passes under the explicit owner threat-model decision. The public issuance bypass is repaired, post-repair functional gates pass, and lifecycle/storage/fail-closed boundaries fit the intended task. Timing enumeration remains measurable and is explicitly accepted rather than represented as fixed.",
+      "recommended_next_action": "record HUMAN_CHECKPOINT: done and explicit owner closure; defer /mb-sync to W2 boundary"
+    },
+    {
+      "stage": "closure",
+      "mode": "manual",
+      "verdict": "CLOSURE: DONE",
+      "closed_at": "2026-07-02T10:11:12+05:00",
+      "owner_decision": "The user explicitly instructed the top-level agent to close TASK-007 as completed and accepted the documented timing-enumeration residual risk.",
+      "evidence": [
+        ".protocols/TASK-007-T3-FT-001-W2/handoff.md",
+        ".protocols/TASK-007-T3-FT-001-W2/verification.md",
+        ".protocols/TASK-007-T3-FT-001-W2/red-verification.md",
+        ".tasks/TASK-007-T3-FT-001-W2/repair-gate-evidence.md"
+      ],
+      "markers": [
+        "HUMAN_CHECKPOINT: done"
+      ],
+      "summary": "TASK-007 is closed after current post-repair functional PASS, owner-approved semantic-pass with accepted residual timing risk, and the required human checkpoint.",
+      "recommended_next_action": "continue W2 with a separate readiness decision for TASK-008; run /mb-sync at the W2 boundary"
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",

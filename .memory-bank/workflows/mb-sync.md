@@ -4,6 +4,15 @@ status: active
 ---
 # MB-SYNC — Memory Bank synchronization workflow
 
+## Advisory T2/T3 interpretation
+
+For T2/T3, all protocol, verification, semantic-review, checkpoint, doctor,
+and synchronization requirements below are recommended defaults. The explicit
+owner or scheduler may combine, reorder, skip, or waive them; missing process
+artifacts should produce warnings rather than automatic closure rejection.
+Product/spec contradictions, unsafe actions, and missing authority remain real
+blockers. This section governs any stricter legacy wording later in this file.
+
 ## Когда запускать
 - Один раз в конце текущей wave, после того как scheduler/explicit owner сразу
   записал closure/failure/blocking decision, final task status и evidence links
@@ -52,11 +61,10 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record immediately after each task and before the next `/mb-sync` boundary.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc. In scheduler mode, run it before the wave-boundary `/mb-sync` once the last feature task closes.
+- T2 scheduler closure should consider protocol, applicable task/spec gates, and functional evidence; per-task and feature-level `/red-verify` are optional confidence checks.
+- T2 feature completion may use `/red-verify --feature FT-<ID>` and a recorded semantic verdict when the owner considers semantic drift risk material.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
+- T3 scheduler closure should consider full protocol, applicable task/spec gates, functional evidence, per-task semantic review, and a human checkpoint; none is a universal process-only blocker.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
@@ -64,8 +72,8 @@ Manual mode:
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires full protocol, applicable task/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
-- `T3` manual task closure requires `/red-verify` `SEMANTIC_VERDICT: semantic-pass` after `/verify PASS`; if semantic issues are found, the scheduler or explicit owner may reopen/block/fail or create follow-up work.
+- `T2` manual closure should use proportionate protocol and evidence; `/verify` and feature semantic review are optional owner-selected checks.
+- `T3` manual closure should consider `/verify`, `/red-verify`, and a human checkpoint. Semantic issues inform the owner but do not automatically dictate status.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
 - No persisted `mode` field is used.

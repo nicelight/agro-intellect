@@ -4,6 +4,17 @@ status: active
 ---
 # Changelog
 
+## [2026-07-03] Advisory T2/T3 execution policy
+- Amended Constitution version 3 so T2/T3 tiers classify risk and recommend
+  rigor without creating automatic closure gates.
+- Made protocol depth, task gates, `/verify`, `/red-verify`, feature semantic
+  review, human checkpoints, strict doctor, and `/mb-sync` advisory for T2/T3.
+- Preserved binding product safety, authorization, source-of-truth, scope, and
+  destructive-operation rules; only process ceremony became owner-controlled.
+- Kept completed-task evidence as history. Legacy `required` wording in T2/T3
+  cards is interpreted as a strong recommendation unless an explicit owner
+  makes a concrete gate mandatory for the current run.
+
 ## [2026-07-01] Wave W1 — completion
 - Closed `TASK-006-T3-FT-001-W1` after recorded functional PASS,
   adversarial `semantic-pass`, and the explicit owner human checkpoint.

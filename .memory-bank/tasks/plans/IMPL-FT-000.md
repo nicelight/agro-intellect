@@ -59,8 +59,8 @@ later must depend directly or transitively on `TASK-004-T2-FT-000-W0`.
 - T1 task may use compact protocol and local checks.
 - T2 tasks require full protocol, complete indexed task cards, `/verify PASS`, and
   MB-SYNC.
-- T3 redaction task requires full protocol, complete indexed task card, `/verify PASS`,
-  per-task `/red-verify` semantic-pass, `HUMAN_CHECKPOINT: done`, and
+- T3 redaction work should normally use a full protocol, complete indexed task card, `/verify`,
+  per-task `/red-verify`, a human checkpoint, and
   `ROLLBACK_RECOVERY_NOTE: present` before closure.
 - Final gate verifies the complete `.memory-bank/foundation.md` exit criteria.
 

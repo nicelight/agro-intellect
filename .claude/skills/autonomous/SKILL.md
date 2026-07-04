@@ -10,6 +10,10 @@ status: active
 ---
 # /autonomous — End-to-end autonomous run
 
+> Project policy override: T2/T3 protocol, verification, semantic review,
+> checkpoint, doctor, and sync steps are recommended defaults. The scheduler or
+> explicit owner may waive them without a process-only terminal failure.
+
 <objective>
 Запустить **полный автономный цикл** без ожидания пользователя:
 - intake Product Brief / PRD / delta
