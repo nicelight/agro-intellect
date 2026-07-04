@@ -26,6 +26,10 @@ _PASSWORD_HASHER = PasswordHasher(
     type=Type.ID,
 )
 
+# Fixed non-secret PHC value used only to equalize missing-Account login work.
+# It uses the exact Argon2id parameters above and is never an Account credential.
+_DUMMY_PASSWORD_HASH = "$argon2id$v=19$m=65536,t=3,p=4$wAy/Hq6kNmtKD72lT7MfuQ$qGDQ468G4wllfDu8X9UnKRjq8Pc+BBUvSoiZkj8AJ10"
+
 
 def hash_password(password: str) -> str:
     """Return an Argon2id PHC string for a local Account password."""
@@ -46,6 +50,19 @@ def verify_password(password: object, password_hash: object) -> bool:
         return False
 
 
+def verify_password_for_account(
+    password: object,
+    password_hash: object | None,
+) -> bool:
+    """Verify once using a real Account hash or the non-secret dummy hash."""
+
+    candidate_hash = (
+        password_hash if isinstance(password_hash, str) else _DUMMY_PASSWORD_HASH
+    )
+    password_matches = verify_password(password, candidate_hash)
+    return isinstance(password_hash, str) and password_matches
+
+
 __all__ = [
     "ARGON2_HASH_LENGTH",
     "ARGON2_MEMORY_COST",
@@ -57,5 +74,6 @@ __all__ = [
     "hash_session_token",
     "redact_auth_material",
     "verify_password",
+    "verify_password_for_account",
     "verify_session_token",
 ]

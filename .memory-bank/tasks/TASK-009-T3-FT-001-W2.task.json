@@ -1,7 +1,7 @@
 {
   "id": "TASK-009-T3-FT-001-W2",
   "title": "Implement FT-001 session API routes and error contract",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-001",
   "reqs": [
@@ -16,7 +16,12 @@
     "backend/app/api/__init__.py",
     "backend/app/api/session.py",
     "backend/app/access_admin/errors.py",
+    "backend/app/access_admin/credential_service.py",
+    "backend/app/access_admin/security.py",
+    "backend/app/access_admin/session_service.py",
     "backend/app/main.py",
+    "tests/backend/access_admin/test_ft001_security_primitives.py",
+    "tests/backend/access_admin/test_ft001_session_lifecycle.py",
     "tests/backend/api/test_ft001_session_routes.py"
   ],
   "tier": "T3",
@@ -24,6 +29,16 @@
     {
       "name": "session-api-tests",
       "command": "python -m pytest tests/backend/api/test_ft001_session_routes.py",
+      "required": false
+    },
+    {
+      "name": "session-lifecycle-tests",
+      "command": "python -m pytest tests/backend/access_admin/test_ft001_session_lifecycle.py",
+      "required": false
+    },
+    {
+      "name": "credential-security-tests",
+      "command": "python -m pytest tests/backend/access_admin/test_ft001_security_primitives.py",
       "required": false
     },
     {
@@ -39,7 +54,13 @@
     "GET /api/session/me returns safe actor/session summary without auth material.",
     "Explicit bearer mode, when implemented, emits no session cookie, returns the raw token only once through the allowed non-browser/LAN response boundary, and still persists only token_hash.",
     "Validation and auth errors use stable codes and redacted safe messages.",
-    "T3 closure should consider /verify, /red-verify, a human checkpoint, and wave-boundary /mb-sync; these are advisory unless the owner makes a concrete gate mandatory."
+    "T3 closure should consider /verify, /red-verify, a human checkpoint, and wave-boundary /mb-sync; these are advisory unless the owner makes a concrete gate mandatory.",
+    "2026-07-04 /verify: VERDICT: FAIL — expired session, disabled Account, and disabled Membership are collapsed into generic AUTH_SESSION_INVALID/AUTH_CREDENTIAL_INVALID instead of the stable Session HTTP lifecycle codes. Evidence: superseded historical result retained in task history.",
+    "2026-07-04 /verify re-run: VERDICT: PASS — the repair preserves the complete stable Session HTTP lifecycle error catalog; session API 22/22, lifecycle plus ActorContext 24/24, non-environment regression 84/84, and static/MB gates pass. Three full-suite failures remain external PostgreSQL/psql prerequisites. Evidence: .protocols/TASK-009-T3-FT-001-W2/verification.md and .tasks/TASK-009-T3-FT-001-W2/verification-evidence.md.",
+    "2026-07-04 /red-verify: SEMANTIC_VERDICT: semantic-fail — invalid-login response timing reveals Account existence because the missing-login path skips Argon2 verification; HTTP medians were approximately 2.3 ms missing versus 56.8 ms known/wrong. Evidence: superseded historical result retained in task history.",
+    "2026-07-04 final /verify: VERDICT: PASS — Argon2 work parity, stable lifecycle errors, cookie/login/logout/me behavior, no-leak rules, and Foundation regressions pass; 35 security/lifecycle/ActorContext tests, 22 API tests, 86 non-environment regression tests, and HTTP timing ratio 0.97. Evidence: .protocols/TASK-009-T3-FT-001-W2/verification.md and .tasks/TASK-009-T3-FT-001-W2/verification-evidence.md.",
+    "2026-07-04 final /red-verify: SEMANTIC_VERDICT: semantic-pass — the repaired credential boundary removes timing-based Account enumeration without scope, lifecycle, API, persistence, Foundation, or maintenance drift. HUMAN_CHECKPOINT: done by explicit user closure instruction. Evidence: .protocols/TASK-009-T3-FT-001-W2/red-verification.md and .tasks/TASK-009-T3-FT-001-W2/TASK-009-T3-FT-001-W2-S-RED-VERIFY-final-report-docs-01.md.",
+    "2026-07-04 manual owner closure: status done after final VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, and explicit user checkpoint. Wave-boundary /mb-sync and TASK-010 promotion remain separate owner actions."
   ],
   "docs": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",
@@ -115,7 +136,12 @@
       "backend/app/api/__init__.py",
       "backend/app/api/session.py",
       "backend/app/access_admin/errors.py",
+      "backend/app/access_admin/credential_service.py",
+      "backend/app/access_admin/security.py",
+      "backend/app/access_admin/session_service.py",
       "backend/app/main.py",
+      "tests/backend/access_admin/test_ft001_security_primitives.py",
+      "tests/backend/access_admin/test_ft001_session_lifecycle.py",
       "tests/backend/api/test_ft001_session_routes.py"
     ],
     "forbidden_scope": [

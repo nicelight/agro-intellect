@@ -14,10 +14,22 @@ from backend.app.access_admin.actor_context import (
     ActorContextResolver,
     AuthTransport,
 )
-from backend.app.access_admin.credential_service import AuthenticationFailed
+from backend.app.access_admin.credential_service import (
+    AuthenticationFailed,
+    AuthenticationFailureReason,
+)
 from backend.app.access_admin.models import Account, Base, FarmMembership, LocalSession
-from backend.app.access_admin.security import hash_password, hash_session_token
-from backend.app.access_admin.session_service import IssuedSession, ValidatedSession
+from backend.app.access_admin.security import (
+    generate_session_token,
+    hash_password,
+    hash_session_token,
+)
+from backend.app.access_admin.session_service import (
+    IssuedSession,
+    SessionValidationFailed,
+    SessionValidationFailureReason,
+    ValidatedSession,
+)
 from backend.app.api.session import (
     ResolvedCurrentSession,
     SESSION_COOKIE_MAX_AGE,
@@ -46,6 +58,8 @@ class FakeSessionBackend:
     issued: IssuedSession
     resolved: ResolvedCurrentSession | None
     login_fails: bool = False
+    login_failure_reason: AuthenticationFailureReason | None = None
+    resolve_failure_reason: SessionValidationFailureReason | None = None
     revoked_result: bool = True
     login_calls: list[tuple[object, object, str | None]] = field(default_factory=list)
     revoked_tokens: list[object] = field(default_factory=list)
@@ -61,6 +75,8 @@ class FakeSessionBackend:
         client_label: str | None = None,
     ) -> IssuedSession:
         self.login_calls.append((login_name, password, client_label))
+        if self.login_failure_reason is not None:
+            raise AuthenticationFailed(self.login_failure_reason)
         if self.login_fails:
             raise AuthenticationFailed
         return self.issued
@@ -77,6 +93,8 @@ class FakeSessionBackend:
         transport: AuthTransport,
     ) -> ResolvedCurrentSession | None:
         self.resolve_calls.append((raw_token, request_id, transport))
+        if self.resolve_failure_reason is not None:
+            raise SessionValidationFailed(self.resolve_failure_reason)
         return self.resolved
 
 
@@ -271,6 +289,44 @@ def test_invalid_login_and_validation_failure_are_generic_and_redacted():
     assert "token_hash" not in validation.text
 
 
+@pytest.mark.parametrize(
+    ("reason", "status_code", "error_code"),
+    [
+        (
+            AuthenticationFailureReason.ACCOUNT_DISABLED,
+            403,
+            "AUTH_ACCOUNT_DISABLED",
+        ),
+        (
+            AuthenticationFailureReason.MEMBERSHIP_REQUIRED,
+            403,
+            "AUTH_MEMBERSHIP_REQUIRED",
+        ),
+        (
+            AuthenticationFailureReason.MEMBERSHIP_DISABLED,
+            403,
+            "AUTH_MEMBERSHIP_DISABLED",
+        ),
+    ],
+)
+def test_login_maps_safe_identity_failure_reasons(
+    reason: AuthenticationFailureReason,
+    status_code: int,
+    error_code: str,
+):
+    backend = _backend()
+    backend.login_failure_reason = reason
+    with _client(backend) as client:
+        response = client.post(
+            "/api/session/login",
+            json={"login_name": "boss", "password": "valid-password"},
+        )
+
+    assert response.status_code == status_code
+    assert response.json()["error"]["code"] == error_code
+    assert "valid-password" not in response.text
+
+
 def test_login_preserves_password_whitespace_as_credential_data():
     backend = _backend()
     with _client(backend) as client:
@@ -414,6 +470,49 @@ def test_me_missing_invalid_and_bearer_credentials_use_stable_safe_errors():
     assert "bearer-secret" not in bearer.text
 
 
+@pytest.mark.parametrize(
+    ("reason", "status_code", "error_code"),
+    [
+        (
+            SessionValidationFailureReason.SESSION_EXPIRED,
+            401,
+            "AUTH_SESSION_EXPIRED",
+        ),
+        (
+            SessionValidationFailureReason.ACCOUNT_DISABLED,
+            403,
+            "AUTH_ACCOUNT_DISABLED",
+        ),
+        (
+            SessionValidationFailureReason.MEMBERSHIP_REQUIRED,
+            403,
+            "AUTH_MEMBERSHIP_REQUIRED",
+        ),
+        (
+            SessionValidationFailureReason.MEMBERSHIP_DISABLED,
+            403,
+            "AUTH_MEMBERSHIP_DISABLED",
+        ),
+    ],
+)
+def test_me_maps_safe_lifecycle_failure_reasons(
+    reason: SessionValidationFailureReason,
+    status_code: int,
+    error_code: str,
+):
+    backend = _backend()
+    backend.resolve_failure_reason = reason
+    with _client(backend) as client:
+        response = client.get(
+            "/api/session/me",
+            headers={"cookie": f"{SESSION_COOKIE_NAME}={RAW_TOKEN}"},
+        )
+
+    assert response.status_code == status_code
+    assert response.json()["error"]["code"] == error_code
+    assert RAW_TOKEN not in response.text
+
+
 def test_session_router_preserves_foundation_smoke_routes():
     backend = _backend()
     with _client(backend) as client:
@@ -498,5 +597,135 @@ def test_production_backend_commits_digest_only_session_and_revokes_it():
             assert persisted[0].token_hash == hash_session_token(raw_token)
             assert persisted[0].token_hash != raw_token
             assert persisted[0].revoked_at is not None
+    finally:
+        database.dispose()
+
+
+def test_production_backend_maps_safe_lifecycle_error_catalog():
+    settings = AppSettings(database_url="sqlite+pysqlite:///:memory:")
+    database = build_database(settings)
+    engine = database.engine()
+
+    def install_sqlite_contract_functions(dbapi_connection, _record):
+        dbapi_connection.create_function(
+            "btrim",
+            1,
+            lambda value: value.strip() if isinstance(value, str) else value,
+        )
+
+    event.listen(engine, "connect", install_sqlite_contract_functions)
+    Base.metadata.create_all(engine)
+
+    now = datetime.now(timezone.utc)
+    password_hash = hash_password("valid-password")
+    session_cases: list[tuple[str, str]] = []
+    definitions = [
+        (
+            "expired",
+            "active",
+            "active",
+            now - timedelta(days=1),
+            "AUTH_SESSION_EXPIRED",
+        ),
+        (
+            "account-disabled",
+            "disabled",
+            "active",
+            now + timedelta(days=1),
+            "AUTH_ACCOUNT_DISABLED",
+        ),
+        (
+            "membership-disabled",
+            "active",
+            "disabled",
+            now + timedelta(days=1),
+            "AUTH_MEMBERSHIP_DISABLED",
+        ),
+        (
+            "membership-required",
+            "active",
+            None,
+            now + timedelta(days=1),
+            "AUTH_MEMBERSHIP_REQUIRED",
+        ),
+    ]
+    with database.session() as database_session:
+        for login_name, account_status, membership_status, expires_at, code in (
+            definitions
+        ):
+            account = Account(
+                login_name=login_name,
+                display_name=login_name,
+                account_status=account_status,
+                password_hash=password_hash,
+            )
+            database_session.add(account)
+            database_session.flush()
+            if membership_status is not None:
+                database_session.add(
+                    FarmMembership(
+                        account_id=account.account_id,
+                        farm_id=uuid.uuid4(),
+                        role_preset="boss",
+                        membership_status=membership_status,
+                    )
+                )
+            raw_token = generate_session_token()
+            database_session.add(
+                LocalSession(
+                    account_id=account.account_id,
+                    token_hash=hash_session_token(raw_token),
+                    created_at=now - timedelta(days=2),
+                    expires_at=expires_at,
+                    auth_method="local_password",
+                )
+            )
+            session_cases.append((raw_token, code))
+        database_session.commit()
+
+    app = create_app(settings=settings, database=database)
+    try:
+        with TestClient(
+            app,
+            base_url="http://127.0.0.1",
+            client=("127.0.0.1", 50000),
+        ) as client:
+            for raw_token, expected_code in session_cases:
+                response = client.get(
+                    "/api/session/me",
+                    headers={"cookie": f"{SESSION_COOKIE_NAME}={raw_token}"},
+                )
+                expected_status = (
+                    401 if expected_code == "AUTH_SESSION_EXPIRED" else 403
+                )
+                assert response.status_code == expected_status
+                assert response.json()["error"]["code"] == expected_code
+                assert raw_token not in response.text
+
+            correct_password = client.post(
+                "/api/session/login",
+                json={
+                    "login_name": "account-disabled",
+                    "password": "valid-password",
+                },
+            )
+            wrong_password = client.post(
+                "/api/session/login",
+                json={
+                    "login_name": "account-disabled",
+                    "password": "wrong-password",
+                },
+            )
+
+        assert correct_password.status_code == 403
+        assert (
+            correct_password.json()["error"]["code"]
+            == "AUTH_ACCOUNT_DISABLED"
+        )
+        assert wrong_password.status_code == 401
+        assert (
+            wrong_password.json()["error"]["code"]
+            == "AUTH_CREDENTIAL_INVALID"
+        )
     finally:
         database.dispose()

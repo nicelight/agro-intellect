@@ -7,7 +7,10 @@ import pytest
 from sqlalchemy import event, func, select
 
 from backend.app.access_admin import credential_service as credential_service_module
-from backend.app.access_admin.credential_service import AuthenticationFailed
+from backend.app.access_admin.credential_service import (
+    AuthenticationFailed,
+    AuthenticationFailureReason,
+)
 from backend.app.access_admin.models import Account, Base, FarmMembership, LocalSession
 from backend.app.access_admin.repository import AccessSessionRepository
 from backend.app.access_admin.security import (
@@ -17,6 +20,8 @@ from backend.app.access_admin.security import (
 )
 from backend.app.access_admin.session_service import (
     DEFAULT_SESSION_TTL,
+    SessionValidationFailed,
+    SessionValidationFailureReason,
     SessionService,
 )
 from backend.app.core.security import generate_session_token
@@ -151,6 +156,82 @@ def test_failed_auth_and_manually_created_identity_never_create_session(
     assert lifecycle_session.scalar(select(func.count(LocalSession.session_id))) == 0
 
 
+def test_missing_and_wrong_login_both_run_one_password_verification(
+    lifecycle_session,
+    monkeypatch,
+):
+    _add_identity(lifecycle_session)
+    _repository, sessions = _services(lifecycle_session)
+    verification_inputs: list[object | None] = []
+    original_verify = credential_service_module.verify_password_for_account
+
+    def tracked_verify(password: object, password_hash: object | None) -> bool:
+        verification_inputs.append(password_hash)
+        return original_verify(password, password_hash)
+
+    monkeypatch.setattr(
+        credential_service_module,
+        "verify_password_for_account",
+        tracked_verify,
+    )
+
+    with pytest.raises(AuthenticationFailed) as missing:
+        sessions.login("missing", "wrong-test-password")
+    with pytest.raises(AuthenticationFailed) as known_wrong:
+        sessions.login("boss", "wrong-test-password")
+
+    assert missing.value.reason is AuthenticationFailureReason.CREDENTIAL_INVALID
+    assert (
+        known_wrong.value.reason
+        is AuthenticationFailureReason.CREDENTIAL_INVALID
+    )
+    assert len(verification_inputs) == 2
+    assert verification_inputs[0] is None
+    assert isinstance(verification_inputs[1], str)
+
+
+def test_login_preserves_safe_account_and_membership_failure_reasons(
+    lifecycle_session,
+):
+    account, membership = _add_identity(lifecycle_session)
+    _repository, sessions = _services(lifecycle_session)
+
+    with pytest.raises(AuthenticationFailed) as wrong_password:
+        sessions.login("boss", "wrong-test-password")
+    assert (
+        wrong_password.value.reason
+        is AuthenticationFailureReason.CREDENTIAL_INVALID
+    )
+
+    account.account_status = "disabled"
+    lifecycle_session.flush()
+    with pytest.raises(AuthenticationFailed) as account_disabled:
+        sessions.login("boss", PASSWORD)
+    assert (
+        account_disabled.value.reason
+        is AuthenticationFailureReason.ACCOUNT_DISABLED
+    )
+
+    account.account_status = "active"
+    membership.membership_status = "disabled"
+    lifecycle_session.flush()
+    with pytest.raises(AuthenticationFailed) as membership_disabled:
+        sessions.login("boss", PASSWORD)
+    assert (
+        membership_disabled.value.reason
+        is AuthenticationFailureReason.MEMBERSHIP_DISABLED
+    )
+
+    lifecycle_session.delete(membership)
+    lifecycle_session.flush()
+    with pytest.raises(AuthenticationFailed) as membership_required:
+        sessions.login("boss", PASSWORD)
+    assert (
+        membership_required.value.reason
+        is AuthenticationFailureReason.MEMBERSHIP_REQUIRED
+    )
+
+
 def test_validation_uses_digest_lookup_and_constant_time_primitive(
     lifecycle_session,
     monkeypatch,
@@ -228,6 +309,57 @@ def test_validation_fails_closed_for_revoked_expired_and_disabled_state(
         (active.raw_token, active.session.token_hash),
         (active.raw_token, active.session.token_hash),
     ]
+
+
+def test_required_validation_preserves_safe_lifecycle_failure_reasons(
+    lifecycle_session,
+):
+    account, membership = _add_identity(lifecycle_session)
+    _repository, sessions = _services(lifecycle_session)
+
+    expired_token = generate_session_token()
+    lifecycle_session.add(
+        LocalSession(
+            account_id=account.account_id,
+            token_hash=hash_session_token(expired_token),
+            created_at=NOW - timedelta(days=8),
+            expires_at=NOW - timedelta(days=1),
+            auth_method="local_password",
+        )
+    )
+    lifecycle_session.flush()
+    with pytest.raises(SessionValidationFailed) as expired:
+        sessions.require_valid_session(expired_token)
+    assert expired.value.reason is SessionValidationFailureReason.SESSION_EXPIRED
+
+    active = sessions.login("boss", PASSWORD)
+    account.account_status = "disabled"
+    lifecycle_session.flush()
+    with pytest.raises(SessionValidationFailed) as account_disabled:
+        sessions.require_valid_session(active.raw_token)
+    assert (
+        account_disabled.value.reason
+        is SessionValidationFailureReason.ACCOUNT_DISABLED
+    )
+
+    account.account_status = "active"
+    membership.membership_status = "disabled"
+    lifecycle_session.flush()
+    with pytest.raises(SessionValidationFailed) as membership_disabled:
+        sessions.require_valid_session(active.raw_token)
+    assert (
+        membership_disabled.value.reason
+        is SessionValidationFailureReason.MEMBERSHIP_DISABLED
+    )
+
+    lifecycle_session.delete(membership)
+    lifecycle_session.flush()
+    with pytest.raises(SessionValidationFailed) as membership_required:
+        sessions.require_valid_session(active.raw_token)
+    assert (
+        membership_required.value.reason
+        is SessionValidationFailureReason.MEMBERSHIP_REQUIRED
+    )
 
 
 def test_login_never_revives_expired_or_revoked_sessions(lifecycle_session):

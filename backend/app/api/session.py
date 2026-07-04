@@ -15,14 +15,23 @@ from ..access_admin.actor_context import (
     ActorContextResolver,
     AuthTransport,
 )
-from ..access_admin.credential_service import AuthenticationFailed
+from ..access_admin.credential_service import (
+    AuthenticationFailed,
+    AuthenticationFailureReason,
+)
 from ..access_admin.errors import (
     AuthErrorCode,
     auth_error_response,
     request_id_for,
 )
 from ..access_admin.repository import AccessSessionRepository
-from ..access_admin.session_service import IssuedSession, SessionService, ValidatedSession
+from ..access_admin.session_service import (
+    IssuedSession,
+    SessionService,
+    SessionValidationFailed,
+    SessionValidationFailureReason,
+    ValidatedSession,
+)
 from ..database import DatabaseHandle
 
 
@@ -134,9 +143,7 @@ class DatabaseSessionApiBackend:
     ) -> ResolvedCurrentSession | None:
         with self.database.session() as database_session:
             service = SessionService(AccessSessionRepository(database_session))
-            validated = service.validate_session(raw_token)
-            if validated is None:
-                return None
+            validated = service.require_valid_session(raw_token)
             try:
                 actor = ActorContextResolver(
                     session_validator=_PrevalidatedSessionSource(validated),
@@ -197,8 +204,8 @@ def login(
             payload.password.get_secret_value(),
             client_label="browser",
         )
-    except AuthenticationFailed:
-        return auth_error_response(request, AuthErrorCode.CREDENTIAL_INVALID)
+    except AuthenticationFailed as error:
+        return auth_error_response(request, _login_error_code(error.reason))
 
     expires_at = _as_utc(issued.session.expires_at)
     response.set_cookie(
@@ -266,11 +273,14 @@ def current_session(
         return auth_error_response(request, code)
 
     request_id = request_id_for(request)
-    resolved = backend.resolve_current_session(
-        raw_token,
-        request_id=request_id,
-        transport=AuthTransport.COOKIE,
-    )
+    try:
+        resolved = backend.resolve_current_session(
+            raw_token,
+            request_id=request_id,
+            transport=AuthTransport.COOKIE,
+        )
+    except SessionValidationFailed as error:
+        return auth_error_response(request, _session_error_code(error.reason))
     if resolved is None:
         return auth_error_response(request, AuthErrorCode.SESSION_INVALID)
 
@@ -295,6 +305,43 @@ def _single_cookie_credential(request: Request) -> str | None:
     if not isinstance(raw_token, str) or not raw_token:
         return None
     return raw_token
+
+
+def _login_error_code(reason: AuthenticationFailureReason) -> AuthErrorCode:
+    return {
+        AuthenticationFailureReason.CREDENTIAL_INVALID: (
+            AuthErrorCode.CREDENTIAL_INVALID
+        ),
+        AuthenticationFailureReason.ACCOUNT_DISABLED: (
+            AuthErrorCode.ACCOUNT_DISABLED
+        ),
+        AuthenticationFailureReason.MEMBERSHIP_REQUIRED: (
+            AuthErrorCode.MEMBERSHIP_REQUIRED
+        ),
+        AuthenticationFailureReason.MEMBERSHIP_DISABLED: (
+            AuthErrorCode.MEMBERSHIP_DISABLED
+        ),
+    }.get(reason, AuthErrorCode.CREDENTIAL_INVALID)
+
+
+def _session_error_code(reason: SessionValidationFailureReason) -> AuthErrorCode:
+    return {
+        SessionValidationFailureReason.SESSION_INVALID: (
+            AuthErrorCode.SESSION_INVALID
+        ),
+        SessionValidationFailureReason.SESSION_EXPIRED: (
+            AuthErrorCode.SESSION_EXPIRED
+        ),
+        SessionValidationFailureReason.ACCOUNT_DISABLED: (
+            AuthErrorCode.ACCOUNT_DISABLED
+        ),
+        SessionValidationFailureReason.MEMBERSHIP_REQUIRED: (
+            AuthErrorCode.MEMBERSHIP_REQUIRED
+        ),
+        SessionValidationFailureReason.MEMBERSHIP_DISABLED: (
+            AuthErrorCode.MEMBERSHIP_DISABLED
+        ),
+    }.get(reason, AuthErrorCode.SESSION_INVALID)
 
 
 def _browser_cookie_secure(request: Request) -> bool:

@@ -16,7 +16,11 @@ _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 class AuthErrorCode(StrEnum):
     SESSION_REQUIRED = "AUTH_SESSION_REQUIRED"
     SESSION_INVALID = "AUTH_SESSION_INVALID"
+    SESSION_EXPIRED = "AUTH_SESSION_EXPIRED"
     CREDENTIAL_INVALID = "AUTH_CREDENTIAL_INVALID"
+    ACCOUNT_DISABLED = "AUTH_ACCOUNT_DISABLED"
+    MEMBERSHIP_REQUIRED = "AUTH_MEMBERSHIP_REQUIRED"
+    MEMBERSHIP_DISABLED = "AUTH_MEMBERSHIP_DISABLED"
     FORBIDDEN = "AUTH_FORBIDDEN"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
@@ -30,9 +34,19 @@ class ErrorDefinition:
 ERROR_DEFINITIONS = {
     AuthErrorCode.SESSION_REQUIRED: ErrorDefinition(401, "Authentication required."),
     AuthErrorCode.SESSION_INVALID: ErrorDefinition(401, "Session is invalid."),
+    AuthErrorCode.SESSION_EXPIRED: ErrorDefinition(401, "Session has expired."),
     AuthErrorCode.CREDENTIAL_INVALID: ErrorDefinition(
         401,
         "Invalid login or password.",
+    ),
+    AuthErrorCode.ACCOUNT_DISABLED: ErrorDefinition(403, "Account is disabled."),
+    AuthErrorCode.MEMBERSHIP_REQUIRED: ErrorDefinition(
+        403,
+        "Farm membership is required.",
+    ),
+    AuthErrorCode.MEMBERSHIP_DISABLED: ErrorDefinition(
+        403,
+        "Farm membership is disabled.",
     ),
     AuthErrorCode.FORBIDDEN: ErrorDefinition(403, "Request is not allowed."),
     AuthErrorCode.VALIDATION_FAILED: ErrorDefinition(

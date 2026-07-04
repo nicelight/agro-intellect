@@ -3,10 +3,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from enum import StrEnum
 import uuid
 
 from .credential_service import (
     AuthenticationFailed,
+    AuthenticationFailureReason,
     CredentialService,
     _AuthenticatedIdentity,
 )
@@ -35,6 +37,22 @@ class ValidatedSession:
     session: LocalSession
     account: Account
     membership: FarmMembership
+
+
+class SessionValidationFailureReason(StrEnum):
+    SESSION_INVALID = "session_invalid"
+    SESSION_EXPIRED = "session_expired"
+    ACCOUNT_DISABLED = "account_disabled"
+    MEMBERSHIP_REQUIRED = "membership_required"
+    MEMBERSHIP_DISABLED = "membership_disabled"
+
+
+class SessionValidationFailed(Exception):
+    """Internal typed failure with a generic, non-sensitive public message."""
+
+    def __init__(self, reason: SessionValidationFailureReason) -> None:
+        self.reason = reason
+        super().__init__("Session validation failed.")
 
 
 class SessionService:
@@ -66,10 +84,9 @@ class SessionService:
         *,
         client_label: str | None = None,
     ) -> IssuedSession:
-        current_identity = self._load_active_identity(identity.account.account_id)
+        current_identity = self._load_login_identity(identity.account.account_id)
         if (
-            current_identity is None
-            or current_identity.membership.membership_id
+            current_identity.membership.membership_id
             != identity.membership.membership_id
         ):
             raise AuthenticationFailed
@@ -93,17 +110,29 @@ class SessionService:
         )
 
     def validate_session(self, raw_token: object) -> ValidatedSession | None:
-        local_session = self._find_verified_session(raw_token)
-        if local_session is None:
-            return None
-        if local_session.revoked_at is not None:
-            return None
-        if _as_utc(local_session.expires_at) <= _as_utc(self._now()):
+        try:
+            return self.require_valid_session(raw_token)
+        except SessionValidationFailed:
             return None
 
-        identity = self._load_active_identity(local_session.account_id)
-        if identity is None:
-            return None
+    def require_valid_session(self, raw_token: object) -> ValidatedSession:
+        """Return a valid session or preserve its safe HTTP-relevant failure."""
+
+        local_session = self._find_verified_session(raw_token)
+        if local_session is None:
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.SESSION_INVALID
+            )
+        if local_session.revoked_at is not None:
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.SESSION_INVALID
+            )
+        if _as_utc(local_session.expires_at) <= _as_utc(self._now()):
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.SESSION_EXPIRED
+            )
+
+        identity = self._load_session_identity(local_session.account_id)
         return ValidatedSession(
             session=local_session,
             account=identity.account,
@@ -134,20 +163,61 @@ class SessionService:
             return None
         return local_session
 
-    def _load_active_identity(
+    def _load_login_identity(
         self,
         account_id: uuid.UUID,
-    ) -> _AuthenticatedIdentity | None:
+    ) -> _AuthenticatedIdentity:
         account = self._repository.get_account(account_id)
-        if account is None or account.account_status != "active":
-            return None
+        if account is None:
+            raise AuthenticationFailed
+        if account.account_status != "active":
+            raise AuthenticationFailed(
+                AuthenticationFailureReason.ACCOUNT_DISABLED
+            )
 
         memberships = self._repository.list_memberships(account_id)
+        if not memberships:
+            raise AuthenticationFailed(
+                AuthenticationFailureReason.MEMBERSHIP_REQUIRED
+            )
         if len(memberships) != 1:
-            return None
+            raise AuthenticationFailed
         membership = memberships[0]
         if membership.membership_status != "active":
-            return None
+            raise AuthenticationFailed(
+                AuthenticationFailureReason.MEMBERSHIP_DISABLED
+            )
+        return _AuthenticatedIdentity(account=account, membership=membership)
+
+    def _load_session_identity(
+        self,
+        account_id: uuid.UUID,
+    ) -> _AuthenticatedIdentity:
+        account = self._repository.get_account(account_id)
+        if account is None:
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.SESSION_INVALID
+            )
+        if account.account_status != "active":
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.ACCOUNT_DISABLED
+            )
+
+        memberships = self._repository.list_memberships(account_id)
+        if not memberships:
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.MEMBERSHIP_REQUIRED
+            )
+        if len(memberships) != 1:
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.SESSION_INVALID
+            )
+
+        membership = memberships[0]
+        if membership.membership_status != "active":
+            raise SessionValidationFailed(
+                SessionValidationFailureReason.MEMBERSHIP_DISABLED
+            )
         return _AuthenticatedIdentity(account=account, membership=membership)
 
 
@@ -160,6 +230,8 @@ def _as_utc(value: datetime) -> datetime:
 __all__ = [
     "DEFAULT_SESSION_TTL",
     "IssuedSession",
+    "SessionValidationFailed",
+    "SessionValidationFailureReason",
     "SessionService",
     "ValidatedSession",
 ]

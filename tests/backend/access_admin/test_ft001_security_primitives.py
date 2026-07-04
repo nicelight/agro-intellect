@@ -4,6 +4,7 @@ import hashlib
 
 from argon2 import Type, extract_parameters
 
+from backend.app.access_admin import security as security_module
 from backend.app.access_admin.security import (
     ARGON2_HASH_LENGTH,
     ARGON2_MEMORY_COST,
@@ -15,6 +16,7 @@ from backend.app.access_admin.security import (
     hash_session_token,
     redact_auth_material,
     verify_password,
+    verify_password_for_account,
     verify_session_token,
 )
 from backend.app.core import security as core_security
@@ -50,6 +52,33 @@ def test_password_verification_fails_closed_for_mismatch_and_malformed_hash():
     assert verify_password("test-only-password", "not-a-phc-hash") is False
     assert verify_password(None, password_hash) is False
     assert verify_password("test-only-password", None) is False
+
+
+def test_account_password_verification_uses_real_or_dummy_hash_once(monkeypatch):
+    observed_hashes: list[object] = []
+    real_hash = "synthetic-real-phc"
+
+    def tracked_verify(password: object, password_hash: object) -> bool:
+        observed_hashes.append(password_hash)
+        return password == "correct-password" and password_hash == real_hash
+
+    monkeypatch.setattr(security_module, "verify_password", tracked_verify)
+
+    assert verify_password_for_account("wrong-password", None) is False
+    assert verify_password_for_account("wrong-password", real_hash) is False
+    assert verify_password_for_account("correct-password", real_hash) is True
+
+    assert len(observed_hashes) == 3
+    assert isinstance(observed_hashes[0], str)
+    assert observed_hashes[0] != real_hash
+    assert observed_hashes[1:] == [real_hash, real_hash]
+    dummy_parameters = extract_parameters(observed_hashes[0])
+    assert dummy_parameters.type is Type.ID
+    assert dummy_parameters.time_cost == ARGON2_TIME_COST
+    assert dummy_parameters.memory_cost == ARGON2_MEMORY_COST
+    assert dummy_parameters.parallelism == ARGON2_PARALLELISM
+    assert dummy_parameters.hash_len == ARGON2_HASH_LENGTH
+    assert dummy_parameters.salt_len == ARGON2_SALT_LENGTH
 
 
 def test_session_token_generation_uses_32_random_bytes(monkeypatch):
