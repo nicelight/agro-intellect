@@ -48,6 +48,7 @@ source_of_truth:
 - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): stale/missing evidence and trust promotion guardrails.
 - [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): physical-action routing and approval boundary.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-010`; it must define exact advisor inputs, freshness policy, output contract, missing-data task handoff, Safety Gate handoff, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-010` only for repair or advanced refresh without task generation.
+- Exact advisor inputs, freshness policy, output contract, missing-data task
+  handoff, Safety Gate handoff, and tests.

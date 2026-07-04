@@ -49,6 +49,7 @@ source_of_truth:
 - [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): global Safety Gate and physical-action lifecycle boundary.
 - [.memory-bank/states/companion-governance.md](../states/companion-governance.md): DecisionRecord separation from Safety Gate approval.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-011`; it must define exact action taxonomy, freshness rules, Safety Gate decision contract, approval routing, replay/stale handling, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-011` only for repair or advanced refresh without task generation.
+- Exact action taxonomy, freshness rules, Safety Gate decision contract,
+  approval routing, replay/stale handling, and tests.

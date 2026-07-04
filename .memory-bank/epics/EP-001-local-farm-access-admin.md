@@ -19,9 +19,9 @@ Establish the local Farm authority boundary so every human action and agent cont
 
 ## Features
 
-- [FT-001 Local Accounts Sessions And ActorContext](../features/FT-001-local-accounts-sessions-actor-context.md): complete identity/session/access subject-spec composition.
-- [FT-002 Farm Plant Lifecycle And Access Grants](../features/FT-002-farm-plant-lifecycle-access-grants.md): bounded resolver dependency slice; full SDD pending.
-- [FT-003 Boss Admin Surface And Admin Audit](../features/FT-003-boss-admin-surface-admin-audit.md): direct-account KISS direction; full SDD pending.
+- [FT-001 Local Accounts Sessions And ActorContext](../features/FT-001-local-accounts-sessions-actor-context.md): identity, session, and ActorContext boundary.
+- [FT-002 Farm Plant Lifecycle And Access Grants](../features/FT-002-farm-plant-lifecycle-access-grants.md): Farm, Plant lifecycle, and access-grant boundary.
+- [FT-003 Boss Admin Surface And Admin Audit](../features/FT-003-boss-admin-surface-admin-audit.md): Boss administration and audit boundary.
 
 ## Success Metrics
 

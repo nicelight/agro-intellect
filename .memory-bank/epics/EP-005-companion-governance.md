@@ -44,5 +44,3 @@ Let Companion coordinate Plant-scoped discussion and workflow direction through 
 - Exact proposal/decision state machine.
 - Exact allowed workflow-effect catalog.
 - Exact compact approved governance summary schema.
-
-These are resolved by feature-level SDD design inside `/prd-to-tasks FT-013`; use standalone `/spec-improve` only for repair or advanced refresh.

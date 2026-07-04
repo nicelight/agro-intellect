@@ -4,6 +4,14 @@ status: active
 ---
 # Changelog
 
+## [2026-07-04] Testing router and strategy separation
+- Reduced `.memory-bank/testing/index.md` to annotated navigation links.
+- Moved stable quality gates, test-level guidance, anti-cheat rules, and risk
+  surfaces to the canonical `.memory-bank/testing/strategy.md` document.
+- Registered the strategy in `spec-index.md`, updated the testing backbone
+  route, and redirected active testing-policy references without rewriting
+  historical task records.
+
 ## [2026-07-03] Advisory T2/T3 execution policy
 - Amended Constitution version 3 so T2/T3 tiers classify risk and recommend
   rigor without creating automatic closure gates.

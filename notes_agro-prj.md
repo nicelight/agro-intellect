@@ -32,10 +32,6 @@ sleep 120m && codex -c model_reasoning_effort=xhigh resume 019eebb6-9237-7263-83
 ----------------------
 ----------------------
 
-
-
-
-
 #tags  
 ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
 

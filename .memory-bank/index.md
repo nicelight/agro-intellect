@@ -23,13 +23,6 @@ status: active
 - [Foundation Runtime Runbook](runbooks/foundation-local-runtime.md): local setup/start/smoke.
 - [Changelog](changelog.md): durable change history.
 
-## Active EP-001 compositions
-
-- [FT-001](features/FT-001-local-accounts-sessions-actor-context.md): identity, sessions, ActorContext.
-- [FT-002](features/FT-002-farm-plant-lifecycle-access-grants.md): Farm, Plant, access grants.
-- [FT-003](features/FT-003-boss-admin-surface-admin-audit.md): Boss direct Account creation and audit direction.
-- [FT-001 implementation plan](tasks/plans/IMPL-FT-001.md): active task sequence.
-
 ## Operational roots
 
 - [Task Index](tasks/index.json): authoritative task-card registry.

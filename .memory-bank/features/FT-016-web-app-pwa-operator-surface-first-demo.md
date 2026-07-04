@@ -50,6 +50,7 @@ source_of_truth:
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs shown in history.
 - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md), [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md), [.memory-bank/states/companion-governance.md](../states/companion-governance.md), and [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md): first-demo state surfaces.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-016`; it must define exact route/view set, API dependency map, role-aware UI behavior, first-demo smoke flow, UI Feed projections, and e2e checks during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-016` only for repair or advanced refresh without task generation.
+- Exact route/view set, API dependency map, role-aware UI behavior, first-demo
+  smoke flow, UI Feed projections, and e2e checks.

@@ -48,6 +48,7 @@ source_of_truth:
 - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): human-facing projection boundary that remains unavailable as agent context.
 - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): observation/hypothesis promotion rules.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-007`; it must define exact runtime decision model, adapter contract, MessageEnvelope schema, audit behavior, provider configuration, and anti-cheat tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-007` only for repair or advanced refresh without task generation.
+- Exact runtime decision model, adapter contract, MessageEnvelope schema, audit
+  behavior, provider configuration, and anti-cheat tests.

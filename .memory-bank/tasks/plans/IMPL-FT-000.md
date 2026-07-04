@@ -30,16 +30,13 @@ local runtime roots, redaction baseline, and a final gate.
 
 ## Task Queue
 
-| Task | Tier | Status | Purpose |
-|---|---|---|---|
-| `TASK-000-T1-FT-000-W0` | T1 | done | Align task schema/protocol evidence and backend scaffold/package anchors. |
-| `TASK-001-T2-FT-000-W0` | T2 | done | Implement Linux Mint local bootstrap and local runtime configuration roots. |
-| `TASK-002-T2-FT-000-W0` | T2 | done | Implement local PostgreSQL init, Alembic migration, and DB readiness baseline. |
-| `TASK-003-T3-FT-000-W0` | T3 | done | Implement secret redaction baseline for bootstrap, settings, errors, and evidence. |
-| `TASK-004-T2-FT-000-W0` | T2 | done | Run final Foundation gate and record build/start/bootstrap/db/migration/test evidence. |
-
-All `FT-000/W0` tasks are done. W0 semantic red-verification is
-`semantic-pass`. `/mb-sync` does not generate or promote product tasks.
+| Task | Tier | Purpose |
+|---|---|---|
+| `TASK-000-T1-FT-000-W0` | T1 | Align task schema/protocol evidence and backend scaffold/package anchors. |
+| `TASK-001-T2-FT-000-W0` | T2 | Implement Linux Mint local bootstrap and local runtime configuration roots. |
+| `TASK-002-T2-FT-000-W0` | T2 | Implement local PostgreSQL init, Alembic migration, and DB readiness baseline. |
+| `TASK-003-T3-FT-000-W0` | T3 | Implement secret redaction baseline for bootstrap, settings, errors, and evidence. |
+| `TASK-004-T2-FT-000-W0` | T2 | Run final Foundation gate and record build/start/bootstrap/db/migration/test evidence. |
 
 ## Dependency Order
 

@@ -48,6 +48,7 @@ source_of_truth:
 - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): global presentation-only UI Feed contract.
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs that cannot publish directly to Bus.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-008`; it must define exact Bus/UI contracts, context-builder filters, UI Feed projection rules, event payloads, and anti-cheat verification during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-008` only for repair or advanced refresh without task generation.
+- Exact Bus/UI contracts, context-builder filters, UI Feed projection rules,
+  event payloads, and anti-cheat verification.

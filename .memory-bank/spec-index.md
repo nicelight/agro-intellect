@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-04
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -55,7 +55,8 @@ source_of_truth:
 | state_spec | [.memory-bank/states/dataset-governance.md](states/dataset-governance.md) | active | Dataset trainability lifecycle | `/spec-design` |
 | state_spec | [.memory-bank/states/auth/session-lifecycle.md](states/auth/session-lifecycle.md) | active | Password session expiry/revocation | `/prd-to-tasks` or `/spec-design` |
 | state_spec | [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | active | Bounded Plant/grant status effects for FT-001 | `/prd-to-tasks` or `/spec-design` |
-| testing | [.memory-bank/testing/index.md](testing/index.md) | active | Global testing router | `/spec-design` |
+| testing | [.memory-bank/testing/index.md](testing/index.md) | active | Testing document router | `/spec-design` |
+| testing_strategy | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Global risk-based testing strategy | `/spec-design` |
 | testing_spec | [.memory-bank/testing/foundation-test-harness.md](testing/foundation-test-harness.md) | active | Foundation executable harness | `/foundation-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/auth/session-and-access.md](testing/auth/session-and-access.md) | active | Identity/session/access verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/admin/boss-admin-and-audit.md](testing/admin/boss-admin-and-audit.md) | active | Boss admin/audit verification | `/prd-to-tasks` or `/spec-design` |

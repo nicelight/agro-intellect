@@ -51,6 +51,7 @@ source_of_truth:
 - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): storage prompt projection without agent-context leakage.
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): redacted audit/export surface.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-015`; it must define exact local security controls, redaction rules, storage accounting, LAN mode, storage prompt UI behavior, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-015` only for repair or advanced refresh without task generation.
+- Exact local security controls, redaction rules, storage accounting, LAN mode,
+  storage-prompt UI behavior, and tests.

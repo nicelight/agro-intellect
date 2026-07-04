@@ -66,7 +66,7 @@ source_of_truth:
 - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): DB/session/Alembic substrate for FT-001 tables and migrations.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): ActorContext and backend authorization requirements.
 - [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md): redaction rules for auth/session evidence and reports.
-- [.memory-bank/testing/index.md](../testing/index.md): risk-based verification surfaces for auth/session/ActorContext work.
+- [.memory-bank/testing/strategy.md](../testing/strategy.md): risk-based verification policy for auth/session/ActorContext work.
 - [.memory-bank/domains/identity/account-membership.md](../domains/identity/account-membership.md): Account/FarmMembership storage.
 - [.memory-bank/domains/auth/session-storage.md](../domains/auth/session-storage.md): LocalSession storage.
 - [.memory-bank/contracts/auth/session-security.md](../contracts/auth/session-security.md): credential/token/transport security.

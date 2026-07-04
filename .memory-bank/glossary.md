@@ -70,7 +70,8 @@ source_of_truth:
 - `PRD`: product requirements document defining MVP scope, requirements, non-goals, and acceptance criteria.
 - `RTM`: requirements traceability matrix linking requirements to epics, features, and verification targets.
 - `epic`: C4 L2 product slice grouping related features.
-- `feature`: C4 L3 functional slice whose feature-level SDD design is completed inside `/prd-to-tasks FT-<NNN>` before task slicing; `/spec-improve FT-<NNN>` is a repair or advanced refresh route.
+- `feature`: C4 L3 functional slice that composes applicable canonical subject
+  specs and maps product behavior to task-scoped implementation work.
 - `task record`: schema-backed JSON `TASK-*` work item and the single
   authoritative task-scoped planning/execution/verification handoff.
 - `Memory Bank greenfield flow`: canonical route from analysis/brief/PRD/specs to tasks, execute, verify, and sync.

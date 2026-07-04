@@ -47,5 +47,3 @@ Make authorized Plant care workflows useful and traceable while preserving the s
 - Exact storage layout and manifest fields.
 - Exact timeline event taxonomy.
 - Exact daily check-in state model and persistence sequence.
-
-These are resolved by feature-level SDD design inside `/prd-to-tasks FT-004..FT-006`; use standalone `/spec-improve` only for repair or advanced refresh.

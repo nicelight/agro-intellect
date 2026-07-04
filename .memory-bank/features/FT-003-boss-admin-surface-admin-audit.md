@@ -64,8 +64,6 @@ spec_design_links:
 
 ## Specification Composition
 
-Status: preliminary KISS direction; final FT-003 SDD remains pending.
-
 - Existing identity/session/ActorContext specs define login and authorization.
 - [Admin audit](../domains/admin/admin-audit.md) defines durable transaction
   evidence; [Boss admin HTTP](../contracts/admin/boss-admin-http.md) defines
@@ -74,9 +72,8 @@ Status: preliminary KISS direction; final FT-003 SDD remains pending.
   policy, security, audit, isolation, and E2E evidence.
 
 UI composition and product use cases remain here; concrete contracts remain in
-the linked subject specs. Exact first-Boss one-shot CLI and full FT-003 task
-design remain deferred to `/prd-to-tasks FT-003` after FT-002 Farm authority is
-ready.
+the linked subject specs. Exact first-Boss one-shot CLI and implementation
+design are outside this composition.
 
 ## Non-Goals
 
@@ -85,5 +82,3 @@ ready.
 - Broad HR/personnel management.
 - Complex audit search/export beyond the minimal admin audit view.
 - A complete Consultant UI path in the first demo.
-
-Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-003 implementation plan or `TASK-*` record is active.

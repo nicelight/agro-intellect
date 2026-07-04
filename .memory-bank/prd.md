@@ -126,9 +126,7 @@ The PRD-level domain model includes:
 - Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
 
 Detailed schemas, payload fields, state machines, and event matrices belong to
-global `/spec-design` and feature-level SDD design inside `/prd-to-tasks
-FT-<NNN>`, not to this PRD. Standalone `/spec-improve FT-<NNN>` remains a
-repair or advanced refresh route.
+the applicable canonical subject specs, not to this PRD.
 
 ## UX / Interaction Flow
 

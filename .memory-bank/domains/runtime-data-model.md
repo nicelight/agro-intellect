@@ -22,10 +22,8 @@ source_of_truth:
 
 This document defines global runtime authority and entity responsibility for MVP v2.
 It is not a database schema, migration plan, or field catalog. Concrete tables,
-columns, indexes, and migrations belong to feature-level SDD design inside
-`/prd-to-tasks FT-<NNN>` and the resulting task decomposition. Standalone
-`/spec-improve FT-<NNN>` is reserved for repair or advanced refresh without task
-generation.
+columns, indexes, and migrations belong to the applicable canonical subject
+specs and task-scoped implementation handoffs.
 
 ## Scope Boundaries
 

@@ -54,8 +54,6 @@ source_of_truth:
 
 ## Specification Composition
 
-Status: bounded dependency slice only; full FT-002 SDD is pending.
-
 - [Farm/Plant/access storage](../domains/farm/farm-plant-access-storage.md)
   defines only the identity/status relationships required by the FT-001 seam.
 - [Plant/access lifecycle](../states/plants/plant-and-access-lifecycle.md)
@@ -65,7 +63,7 @@ Status: bounded dependency slice only; full FT-002 SDD is pending.
 
 This slice exists only to stabilize FT-001. Full storage/migrations, seeds,
 mutation/API/error contracts, retained-history services, audit integration,
-verification plan, and task queue require later `/prd-to-tasks FT-002`.
+verification plan, and task queue are outside this composition.
 
 ## Non-Goals
 
@@ -74,5 +72,3 @@ verification plan, and task queue require later `/prd-to-tasks FT-002`.
   history rendering beyond access/lifecycle hooks.
 - Agent output generation, MessageEnvelope/UI Feed projection, Safety Gate
   policy, or physical-action task execution.
-
-Generated task-decomposition artifacts for this feature have been intentionally removed. No FT-002 implementation plan or `TASK-*` record is active.

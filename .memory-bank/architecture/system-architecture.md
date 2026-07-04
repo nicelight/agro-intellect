@@ -224,9 +224,7 @@ flowchart LR
 
 Detailed table/field layouts belong to
 [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md)
-and feature-level SDD design inside `/prd-to-tasks FT-<NNN>`. Standalone
-`/spec-improve FT-<NNN>` is a repair or advanced refresh route, not the default
-task-generation gate.
+and the applicable canonical subject specs.
 
 ## API / Contract Boundaries
 
@@ -305,10 +303,8 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 No global blocker remains after the brownfield-aware `/spec-design --all`
 refresh.
 
-Feature-level SDD design inside `/prd-to-tasks FT-<NNN>` must still define exact
-auth/session lifecycle, route schemas, DB migrations, event payloads,
-MessageEnvelope fields, Bus/UI projections, photo storage layout, state
-machines, freshness windows, action taxonomy, dataset transition details,
-provider configuration, and UI route/view details before task slicing. Use
-standalone `/spec-improve FT-<NNN>` only for repair or advanced refresh when no
-task generation should occur.
+Applicable feature-level subject specs must still define exact auth/session
+lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope
+fields, Bus/UI projections, photo storage layout, state machines, freshness
+windows, action taxonomy, dataset transition details, provider configuration,
+and UI route/view details.

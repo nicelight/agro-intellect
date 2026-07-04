@@ -49,6 +49,7 @@ source_of_truth:
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): upload validation and local-only semantics.
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export event refs for accepted photos.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-005`; it must define exact photo storage layout, manifest schema, validation rules, file/catalog/manifest atomicity, failure recovery, and audit/export refs during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-005` only for repair or advanced refresh without task generation.
+- Exact photo storage layout, manifest schema, validation rules,
+  file/catalog/manifest atomicity, failure recovery, and audit/export refs.

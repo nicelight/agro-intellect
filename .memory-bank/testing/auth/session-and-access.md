@@ -2,7 +2,7 @@
 description: Cross-contract verification for identity, sessions, ActorContext, and authorization.
 status: active
 type: testing_spec
-last_updated: 2026-06-30
+last_updated: 2026-07-04
 source_of_truth:
   - .memory-bank/domains/identity/account-membership.md
   - .memory-bank/domains/auth/session-storage.md
@@ -73,4 +73,4 @@ prerequisite.
 
 ## Related specs
 
-- [.memory-bank/testing/index.md](../index.md)
+- [.memory-bank/testing/strategy.md](../strategy.md)

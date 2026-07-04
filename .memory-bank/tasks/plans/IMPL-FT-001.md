@@ -12,7 +12,7 @@ source_of_truth:
   - .memory-bank/architecture/foundation-runtime-substrate.md
   - .memory-bank/domains/foundation-data-substrate.md
   - .memory-bank/contracts/evidence-redaction.md
-  - .memory-bank/testing/index.md
+  - .memory-bank/testing/strategy.md
   - .memory-bank/workflows/tier-policy.md
 ---
 # IMPL-FT-001 Local Accounts Sessions And ActorContext
@@ -67,30 +67,9 @@ needed by later Farm/Plant, admin, and agent-context features.
 - `.memory-bank/domains/farm/farm-plant-access-storage.md`
 - `.memory-bank/states/plants/plant-and-access-lifecycle.md`
 - `.memory-bank/domains/admin/admin-audit.md`
-- `.memory-bank/testing/index.md`
+- `.memory-bank/testing/strategy.md`
 - `.memory-bank/testing/foundation-test-harness.md`
 - `.memory-bank/workflows/tier-policy.md`
-
-## Refresh Note
-
-On 2026-06-30 the queue migrated to the framework single-card handoff and
-subject-based SDD model. Task IDs, tiers, waves, dependencies, statuses,
-outcomes, gates, evidence, and scope are unchanged. Persisted packets were
-removed after their success checks were confirmed in task cards. Each task now
-links only its applicable canonical specs.
-
-On 2026-07-01 the queue was reconciled to the KISS direct-Account decision and
-the bounded FT-002 permission dependency. Invite/activation state and the
-session activation primitive were removed; Account/Membership states are now
-`active|disabled`, `password_hash` is required, and LocalSession uses only
-`local_password`. No task identity, tier, wave, dependency, lifecycle status,
-or independent outcome changed.
-
-A follow-up `/prd-to-tasks FT-001` link audit on 2026-07-01 confirmed that no
-new spec is required. It linked the existing cross-contract verification spec
-directly to every applicable implementation card and linked session lifecycle
-plus session HTTP directly to the protected-dependency task. Task topology and
-lifecycle state remain unchanged.
 
 ## Constraints
 

@@ -48,5 +48,3 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 - Exact MessageEnvelope, BusEventEnvelope, and UIFeedEvent contracts.
 - Exact adapter validation and runtime decision flow.
 - Exact agent context-builder filters and anti-cheat verification.
-
-These are resolved by feature-level SDD design inside `/prd-to-tasks FT-007..FT-010`; use standalone `/spec-improve` only for repair or advanced refresh.

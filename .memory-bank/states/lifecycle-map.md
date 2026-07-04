@@ -10,8 +10,7 @@ source_of_truth:
 # Lifecycle Map
 
 This is a pre-PRD framing artifact only. It records lifecycle hints that affect epic
-and feature cuts. Detailed state machines belong to `/spec-design` or feature-local
-`/spec-improve`.
+and feature cuts. Detailed state machines belong to canonical state specs.
 
 | Entity | Lifecycle Summary | States | Transitions Needing Later Detail | Questions |
 |---|---|---|---|---|

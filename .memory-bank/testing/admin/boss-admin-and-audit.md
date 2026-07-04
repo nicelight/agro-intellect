@@ -2,7 +2,7 @@
 description: Verification contract for Boss direct Account creation, admin policy, audit, and first-demo provisioning.
 status: active
 type: testing_spec
-last_updated: 2026-06-30
+last_updated: 2026-07-04
 source_of_truth:
   - .memory-bank/contracts/admin/boss-admin-http.md
   - .memory-bank/contracts/auth/session-security.md
@@ -44,5 +44,5 @@ evidence for the Boss admin boundary.
 
 ## Related specs
 
-- [.memory-bank/testing/index.md](../index.md)
+- [.memory-bank/testing/strategy.md](../strategy.md)
 - [.memory-bank/testing/auth/session-and-access.md](../auth/session-and-access.md)

@@ -2,10 +2,10 @@
 description: Foundation test harness and evidence contract for the verified FT-000 baseline.
 status: active
 type: testing
-last_updated: 2026-06-30
+last_updated: 2026-07-04
 source_of_truth:
   - .memory-bank/foundation.md
-  - .memory-bank/testing/index.md
+  - .memory-bank/testing/strategy.md
   - .memory-bank/contracts/evidence-redaction.md
   - tests/backend/
 ---

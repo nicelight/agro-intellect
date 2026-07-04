@@ -49,6 +49,7 @@ source_of_truth:
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs that cannot grant trainability.
 - [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md): trainability default, evidence gates, and lifecycle boundary.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-014`; it must define exact dataset fields, lifecycle, transition authority, evidence refs, trainability recomputation, export constraints, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-014` only for repair or advanced refresh without task generation.
+- Exact dataset fields, lifecycle, transition authority, evidence refs,
+  trainability recomputation, export constraints, and tests.

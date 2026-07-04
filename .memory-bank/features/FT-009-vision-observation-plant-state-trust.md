@@ -48,6 +48,7 @@ source_of_truth:
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): observation/hypothesis output boundary.
 - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): trust status and promotion guardrails.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-009`; it must define exact vision input refs, observation schema, trust statuses, promotion gates, contradiction handling, real vision/provider configuration, and tests during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-009` only for repair or advanced refresh without task generation.
+- Exact vision input refs, observation schema, trust statuses, promotion gates,
+  contradiction handling, real vision/provider configuration, and tests.

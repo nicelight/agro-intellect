@@ -16,10 +16,8 @@ source_of_truth:
 ## Scope
 
 This document defines global HTTP/API guardrails. It does not define
-endpoint-by-endpoint schemas. Concrete route contracts belong to feature-level
-SDD design inside `/prd-to-tasks FT-<NNN>` and later FastAPI/Pydantic schemas.
-Standalone `/spec-improve FT-<NNN>` is reserved for repair or advanced refresh
-without task generation.
+endpoint-by-endpoint schemas. Concrete route contracts belong to the applicable
+canonical subject specs and later FastAPI/Pydantic schemas.
 
 ## Contract Scope
 
@@ -114,9 +112,8 @@ Minimum error shape:
 ## Compatibility
 
 - MVP can evolve quickly, but breaking changes must be synchronized across API consumers, tests, and Memory Bank docs.
-- Feature-level SDD design inside `/prd-to-tasks FT-<NNN>` decides versioning
-  only when a boundary needs it. Standalone `/spec-improve` may repair that
-  decision without generating tasks.
+- Applicable canonical subject specs define versioning only when a boundary
+  needs it.
 
 ## Verification
 

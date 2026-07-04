@@ -48,6 +48,7 @@ source_of_truth:
 - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): Plant trust and promotion boundary for history views.
 - [.memory-bank/contracts/api-guidelines.md](../contracts/api-guidelines.md): authorized history access and redacted errors.
 
-## SDD Design Gate
+## Feature-Local Design Pressure
 
-Global `/spec-design` is complete for shared backbone/spec routing. Then run `/prd-to-tasks FT-006`; it must define exact runtime state ownership, timeline event taxonomy, history projections, export refs, retained-history authorization, and retention behavior during its feature-level SDD design phase before writing tasks. Use standalone `/spec-improve FT-006` only for repair or advanced refresh without task generation.
+- Exact runtime-state ownership, timeline event taxonomy, history projections,
+  export refs, retained-history authorization, and retention behavior.

@@ -11,7 +11,7 @@ source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/foundation-smoke-api.md
   - .memory-bank/contracts/evidence-redaction.md
-  - .memory-bank/testing/index.md
+  - .memory-bank/testing/strategy.md
   - .memory-bank/testing/foundation-test-harness.md
   - .memory-bank/runbooks/foundation-local-runtime.md
   - .memory-bank/workflows/tier-policy.md
@@ -139,7 +139,7 @@ verifies these packages.
 | Product auth/session schema | FT-001 already owns exact local account/session lifecycle and route contracts. | `/prd-to-tasks FT-001`. |
 | Single Farm and `tomato_001` seed implementation | FT-002 owns product seed semantics. Foundation only proves DB/migration capability. | `/prd-to-tasks FT-002`. |
 | Admin Account creation/audit tables | FT-003 owns direct local Account creation and admin audit semantics. | `/prd-to-tasks FT-003`. |
-| Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | `/prd-to-tasks FT-005/FT-006`; use `/spec-improve` only for repair or advanced refresh. |
+| Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | Applicable feature-level subject specs. |
 | Agent/provider configuration | MVP runtime requires real model-backed flows, but provider secrets/config must not be invented in Foundation. | `/prd-to-tasks FT-007` or explicit provider decision. |
 | Frontend scaffold | Backend/local DB foundation is the immediate blocker; UI belongs to FT-016. | `/prd-to-tasks FT-016`. |
 | Docker-based database path | User target is local Linux Mint. Docker may be optional later, not required by Foundation. | Explicit operator request or deployment spec update. |
