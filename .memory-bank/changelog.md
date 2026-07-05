@@ -4,6 +4,25 @@ status: active
 ---
 # Changelog
 
+## [2026-07-05] Wave W3 — TASK-011 execution handoff
+- Applied the owner-requested code-only repr hardening for ActorContext and its
+  Plant snapshot provider; verification remains pending by explicit request.
+- Fixed default protected-route composition by registering the existing denial
+  handler in `create_app()`; protected-route tests now exercise the standard app
+  without manual fixture registration.
+- Integrated FT-001 evidence across TASK-005 through TASK-010 and mapped the
+  security, session HTTP, ActorContext, context-builder, and behavior-spec
+  coverage into the TASK-011 protocol.
+- Ran the focused FT-001 suite with `77 passed` and one PostgreSQL check
+  deselected; ran the complete non-environment suite with `105 passed` and
+  three local PostgreSQL/`psql` checks deselected.
+- Recorded the unavailable database/tooling checks as an environment gap and
+  retained prior PostgreSQL evidence without representing it as rerun.
+- Updated FT-001, EP-001, and RTM evidence notes without changing their
+  `planned` lifecycles or claiming FT-002/FT-003 completion.
+- Left TASK-011 independent `/verify`, optional semantic review, explicit owner
+  closure, and wave-boundary `/mb-sync` as separate next-owner actions.
+
 ## [2026-07-04] Testing router and strategy separation
 - Reduced `.memory-bank/testing/index.md` to annotated navigation links.
 - Moved stable quality gates, test-level guidance, anti-cheat rules, and risk

@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-06-25
+last_updated: 2026-07-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -85,3 +85,14 @@ source_of_truth:
 | REQ-020 | EP-006 | FT-015 | integration: loopback/LAN controls, secret redaction, storage prompt | planned |
 | REQ-021 | EP-006, EP-001, EP-002, EP-003, EP-004, EP-005 | FT-016, FT-001, FT-004, FT-005, FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014, FT-015 | e2e: first-demo happy path plus safety/context checks | planned |
 | REQ-022 | EP-001, EP-006 | FT-001, FT-016 | integration: Consultant read/comment scope and no approval/action authority | planned |
+
+## Current FT-001 Evidence Note
+
+- TASK-005 through TASK-010 implementation evidence covers the FT-001-owned
+  portions of REQ-002, REQ-003, REQ-004, REQ-020, REQ-021, and REQ-022.
+- TASK-011 integration execution reports `77 passed` focused and `105 passed`
+  full non-environment checks. One PostgreSQL integration check and two
+  `psql`-dependent Foundation checks could not run in the current environment.
+- RTM lifecycles remain `planned`: TASK-011 independent verification/closure is
+  not part of `/execute`, and REQ-003/004/020/021/022 also depend on later
+  features or cross-feature E2E.

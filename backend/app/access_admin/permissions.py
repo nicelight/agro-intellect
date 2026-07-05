@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from types import MappingProxyType
 from typing import Protocol
@@ -154,7 +154,7 @@ class _BoundedPlantPermissionResolver:
     _membership_id: uuid.UUID
     _membership_status: MembershipStatus | str
     _role_preset: RolePreset | str
-    _snapshot_provider: PlantAccessSnapshotProvider
+    _snapshot_provider: PlantAccessSnapshotProvider = field(repr=False)
 
     def __init__(
         self,

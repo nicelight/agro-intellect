@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
@@ -62,7 +62,7 @@ class ActorContext:
     role_preset: RolePreset
     membership_status: MembershipStatus
     auth_provenance: AuthProvenance
-    plant_permission_resolver: PlantPermissionResolver
+    plant_permission_resolver: PlantPermissionResolver = field(repr=False)
 
     @classmethod
     def _from_validated(

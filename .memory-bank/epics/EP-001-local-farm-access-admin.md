@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-001
 lifecycle: planned
-last_updated: 2026-07-04
+last_updated: 2026-07-05
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -43,3 +43,12 @@ Establish the local Farm authority boundary so every human action and agent cont
 - `tomato_001` is the initial Plant, not a permanent product limit.
 - MVP permission overrides are limited to `plant_approve_actions`.
 - No SaaS tenancy, enterprise identity, hosted recovery, or email delivery requirement.
+
+## Current Implementation State
+
+- FT-001 implementation tasks TASK-005 through TASK-010 are recorded `done`.
+- TASK-011 integration execution has passing focused/full non-environment
+  suites and a documented local PostgreSQL/`psql` environment gap; independent
+  verification and owner closure remain pending.
+- EP-001 lifecycle remains `planned`. This evidence does not implement or close
+  FT-002 Farm/Plant lifecycle or FT-003 Boss administration/audit.

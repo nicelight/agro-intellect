@@ -1,7 +1,7 @@
 {
   "id": "TASK-011-T3-FT-001-W3",
   "title": "Run FT-001 integration gate and docs sync",
-  "status": "planned",
+  "status": "done",
   "wave": "W3",
   "feature": "FT-001",
   "reqs": [
@@ -62,7 +62,34 @@
     "Behavior specs are covered by task evidence or linked test output.",
     "FT-001 Memory Bank docs, task record evidence, and changelog are synchronized without claiming FT-002/FT-003 completion.",
     "Feature-level /red-verify --feature FT-001 is recommended after all FT-001 tasks when semantic drift risk remains material.",
-    "T3 closure should consider /verify, /red-verify, a human checkpoint, and wave-boundary /mb-sync; these are advisory unless the owner makes a concrete gate mandatory."
+    "T3 closure should consider /verify, /red-verify, a human checkpoint, and wave-boundary /mb-sync; these are advisory unless the owner makes a concrete gate mandatory.",
+    {
+      "stage": "execute",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-05T23:29:33+05:00",
+      "evidence": [
+        ".protocols/TASK-011-T3-FT-001-W3/verification.md",
+        ".protocols/TASK-011-T3-FT-001-W3/handoff.md",
+        ".tasks/TASK-011-T3-FT-001-W3/gate-evidence.md",
+        ".tasks/TASK-011-T3-FT-001-W3/TASK-011-T3-FT-001-W3-S-IMPL-final-report-docs-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api with the unavailable PostgreSQL check deselected",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pytest tests with three unavailable PostgreSQL/psql checks deselected",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs --strict",
+        "git diff --check"
+      ],
+      "summary": "FT-001 integration execution is ready for independent verification. Focused non-environment tests passed 77/77 and the complete non-environment suite passed 105/105. One local PostgreSQL check and two psql-dependent Foundation checks remain explicit environment gaps. Security, session HTTP, ActorContext/context-builder, behavior-spec, Memory Bank, dependency, and diff evidence is recorded without claiming FT-002/FT-003 completion or feature verification.",
+      "recommended_next_action": "/verify TASK-011-T3-FT-001-W3"
+    },
+    "2026-07-05 /red-verify: SEMANTIC_VERDICT: semantic-pass — integration/docs sync is substantively correct, environment gaps are explicit, lifecycles remain planned, and FT-002/FT-003 are not overclaimed. TASK-011 remains open pending independent /verify PASS and HUMAN_CHECKPOINT: done. Evidence: .protocols/TASK-011-T3-FT-001-W3/red-verification.md and .tasks/TASK-011-T3-FT-001-W3/TASK-011-T3-FT-001-W3-S-RED-VERIFY-final-report-docs-01.md.",
+    "2026-07-05 /verify: VERDICT: PASS — focused FT-001 integration 77/77, full non-environment regression 105/105, behavior-spec traceability, task dependency/index consistency, docs lifecycle restraint, and repository gates pass. PostgreSQL/psql gaps remain explicit. Evidence: .protocols/TASK-011-T3-FT-001-W3/verification.md and .tasks/TASK-011-T3-FT-001-W3/verification-evidence.md.",
+    "2026-07-05 manual owner closure: status done after VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, and explicit HUMAN_CHECKPOINT: done. Feature-level FT-001 lifecycle/review and wave-boundary /mb-sync remain separate actions."
   ],
   "docs": [
     ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md",

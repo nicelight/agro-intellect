@@ -5,6 +5,7 @@ from typing import Final
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from .access_admin.dependencies import install_protected_route_error_handler
 from .access_admin.errors import install_error_handlers
 from .api import session_router
 from .config import AppSettings
@@ -23,6 +24,7 @@ def create_app(
     app.state.database = resolved_database
     app.state.readiness_check_database = readiness_check_database
     install_error_handlers(app)
+    install_protected_route_error_handler(app)
     app.include_router(session_router)
 
     @app.get("/health")

@@ -22,6 +22,7 @@ class AuthErrorCode(StrEnum):
     MEMBERSHIP_REQUIRED = "AUTH_MEMBERSHIP_REQUIRED"
     MEMBERSHIP_DISABLED = "AUTH_MEMBERSHIP_DISABLED"
     FORBIDDEN = "AUTH_FORBIDDEN"
+    PLANT_FORBIDDEN = "AUTH_PLANT_FORBIDDEN"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
 
@@ -49,6 +50,7 @@ ERROR_DEFINITIONS = {
         "Farm membership is disabled.",
     ),
     AuthErrorCode.FORBIDDEN: ErrorDefinition(403, "Request is not allowed."),
+    AuthErrorCode.PLANT_FORBIDDEN: ErrorDefinition(404, "Plant is not available."),
     AuthErrorCode.VALIDATION_FAILED: ErrorDefinition(
         422,
         "Request validation failed.",
