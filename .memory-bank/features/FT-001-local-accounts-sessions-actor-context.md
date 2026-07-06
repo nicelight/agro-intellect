@@ -1,11 +1,11 @@
 ---
 description: FT-001 Local Accounts Sessions And ActorContext.
-status: draft
+status: active
 type: feature
 feature_id: FT-001
 epic: EP-001
-lifecycle: planned
-last_updated: 2026-07-05
+lifecycle: verified
+last_updated: 2026-07-06
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/identity/account-membership.md
@@ -103,7 +103,7 @@ fields, schemas, errors, transitions, or verification rules.
 
 ## Current Implementation Evidence
 
-- `TASK-005` through `TASK-010` are recorded `done` with task-scoped evidence
+- `TASK-005` through `TASK-011` are recorded `done` with task-scoped evidence
   for persistence, security primitives, session lifecycle, ActorContext,
   session HTTP, and protected route/context-builder authorization seams.
 - `TASK-011-T3-FT-001-W3` integration execution confirms the complete runnable
@@ -113,19 +113,21 @@ fields, schemas, errors, transitions, or verification rules.
 - The unavailable local PostgreSQL/`psql` checks remain an environment gap;
   earlier task-scoped PostgreSQL evidence is retained and this integration run
   does not represent those checks as newly executed.
-- Feature document status and lifecycle remain `draft` / `planned` until the
-  TASK-011 owner records independent verification/closure and any selected
-  feature-level semantic review. FT-002 and FT-003 remain separate scope.
+- Feature document status and lifecycle are synchronized as `active` /
+  `verified` after all FT-001 tasks closed and feature-level red-verification
+  returned `semantic-pass`. FT-002 and FT-003 remain separate scope.
 
 ## Semantic Verification
 
-SEMANTIC_VERDICT: semantic-concern
+SEMANTIC_VERDICT: semantic-pass
 
-Feature-level adversarial review reproduced provider internals entering
-`repr(ActorContext)`. Follow-up code now excludes the resolver/provider from
-generated repr output; per explicit owner request this code-only repair was not
-tested. The separately discovered protected-route composition issue is also
-repaired. FT-001 remains `planned` pending repeated semantic review.
+Repeated feature-level adversarial review confirms both prior concerns are
+repaired: provider internals are excluded from `repr(ActorContext)`, and the
+standard app composition returns stable protected-route auth errors. Direct
+hostile probes pass and the complete non-environment suite passes `105/105`.
+The owner explicitly accepts the absence of a dedicated hostile-provider
+regression test. This `/mb-sync` records the owner-controlled FT-001 lifecycle
+as `verified` without claiming FT-002/FT-003 completion.
 
 Report:
 [.tasks/FT-001/FT-001-S-RED-VERIFY-final-report-docs-01.md](../../.tasks/FT-001/FT-001-S-RED-VERIFY-final-report-docs-01.md).

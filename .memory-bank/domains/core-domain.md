@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD core domain framing for MVP v2 decomposition.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -27,8 +27,8 @@ source_of_truth:
 
 ## User Roles
 
-- `Boss`: Farm owner/admin role. Owns personnel, role, Plant lifecycle, per-Plant access, admin audit, and may approve physical-action proposals only through Safety Gate rules.
-- `Engineer`: operational role for assigned Plants. Performs check-ins, uploads photos, records measurements and observations, manages allowed tasks/follow-up, and may approve physical actions only with `plant_approve_actions`.
+- `Boss`: Farm owner/admin role. Owns personnel, role, Plant archive/restore, per-Plant access, admin audit, may create Plants, and may approve physical-action proposals only through Safety Gate rules.
+- `Engineer`: operational role that may create a Plant and otherwise works only with granted Plants. Performs check-ins, uploads photos, records measurements and observations, manages allowed tasks/follow-up, and may approve physical actions only with `plant_approve_actions`.
 - `Consultant`: advisory/read/comment role for granted Plant context. No operational authority, governance approval authority, or physical-action approval authority by default.
 - `Companion`: product agent role for governance coordination through typed state. Companion has no hidden authority and cannot authorize physical actions.
 
@@ -36,7 +36,13 @@ source_of_truth:
 
 - MVP has exactly one local Farm workspace.
 - MVP supports multiple Plants; `tomato_001` is the initial Plant.
+- Active Boss and Engineer memberships may create Plants. Engineer creation
+  atomically creates an active creator PlantAccessGrant with
+  `plant_approve_actions=false`; this does not grant archive/restore or access
+  management authority.
 - Plant removal is archive/restore only; hard delete is out of MVP.
+- Archive/restore preserves PlantAccessGrant records unchanged; Plant status
+  temporarily gates otherwise active grants.
 - Every Farm/Plant read, mutation, context-builder path, task, approval, and audit record must be actor-scoped through ActorContext.
 - Backend authorization enforces Farm/Plant access; UI visibility controls are presentation only.
 - MVP permission overrides are limited to `plant_approve_actions`; other permissions come from role presets and PlantAccessGrant.
@@ -64,7 +70,8 @@ source_of_truth:
 ## Lifecycles
 
 - Local access lifecycle: Account -> FarmMembership -> role preset -> PlantAccessGrant -> ActorContext -> authorized route/context/action.
-- Plant lifecycle: create -> active operations -> archive -> retained history/audit/export -> restore when authorized.
+- Plant lifecycle: Boss or active Engineer create -> active operations ->
+  Boss-only archive -> retained history/audit/export -> Boss-only restore.
 - Daily Plant operation lifecycle: select Plant -> check-in -> observation/photo/measurement -> persistence/audit -> agent publication boundary -> UI Feed display -> tasks/approvals/follow-up.
 - Photo lifecycle: upload -> local file -> catalog item -> sha256 -> initial capture manifest -> timeline refs -> future export/dataset refs.
 - Physical-action lifecycle: agent/advisor wording -> Safety Gate route/block -> authorized human decision -> human-performed action task -> follow-up outcome.

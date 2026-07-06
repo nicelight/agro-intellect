@@ -2,7 +2,7 @@
 description: Global HTTP/API guardrails for MVP v2.
 status: active
 type: contract
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -78,6 +78,13 @@ Exact path names are feature-local design work.
 - Every Farm/Plant route must enforce backend authorization using FarmMembership, role preset, PlantAccessGrant, and optional `plant_approve_actions`.
 - Frontend hide/show is never an authorization substitute.
 - Context builders follow the same authorization rules as user-facing reads.
+- Every Plant-scoped state-advancing endpoint must verify current
+  `Plant.status=active` in the same transactional authorization boundary as
+  its write. A stale UI/context snapshot cannot authorize a command after
+  archive.
+- Restore removes only the archive deny; it must not replay or resume a prior
+  command. The caller submits a new attempt that passes all current owning
+  guards.
 
 ## Error And Response Rules
 
@@ -120,6 +127,8 @@ Minimum error shape:
 Tests must prove:
 
 - protected Farm/Plant endpoints resolve ActorContext before business logic;
+- state-advancing Plant endpoints reject archived Plant without changing the
+  dependent record and revalidate all owning guards after restore;
 - service/public endpoints do not expose Farm/Plant data or auth material;
 - errors use stable codes and redacted messages;
 - uploads validate ActorContext, Plant access, content type, size, and path

@@ -1,7 +1,7 @@
 ---
 description: Глобальные инварианты и запреты проекта (MUST/NEVER).
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -24,6 +24,9 @@ their canonical domain, contract, state, runbook, or other subject spec.
 - UI Feed and `ui_spoiler_note` MUST stay presentation-only and unavailable as agent working context.
 - Governance `DecisionRecord` MUST stay separate from Safety Gate physical-action approval.
 - Physical-action advice MUST pass Safety Gate and authorized human approval before becoming cleared user-visible action wording or an action task.
+- Archived Plant MUST be a global operational deny: dependent records remain
+  retained without automatic transition, and restore MUST NOT resume or
+  execute them without current authorization and owning lifecycle checks.
 - pH/EC provenance and freshness MUST follow their owning runtime/state/safety specs; fresh data is never sufficient by itself for physical action.
 - Dataset trainability MUST follow its owning dataset governance lifecycle; UI Feed, timeline snapshots, manifests, and raw agent output never grant trainability by themselves.
 - MVP data and artifacts MUST remain local/private by default, and sync status MUST remain `local_only` until a later server-sync spec exists.

@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -15,6 +15,7 @@ source_of_truth:
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/contracts/timeline-event.md
   - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
   - .memory-bank/states/dataset-governance.md
 ---
 # System Architecture
@@ -126,6 +127,29 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Source: [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md),
   [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md),
   [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md).
+
+#### AD-007 - Archived Plant is a global operational deny
+- Binds: Plant lifecycle, Plant Operations, agent/context builders, Safety &
+  Task Loop, Companion Governance, retained history, and Operator PWA.
+- Prevents: already-open tasks, approvals, proposals, or agent workflows from
+  progressing while a Plant is archived, and restore from bypassing current
+  authorization, evidence freshness, Safety Gate, or owning lifecycle guards.
+- Rule: archive mutates only `Plant.status` at the shared boundary and retains
+  dependent records without automatically completing, cancelling, deleting,
+  executing, or superseding them. While archived, every new or existing
+  Plant-scoped state-advancing command fails closed. Boss lifecycle and grant
+  administration plus authorized retained-history reads remain explicit
+  exceptions; grants stay non-operative. Restore removes only the archive deny
+  and never resumes a record automatically; the next command must revalidate
+  current ActorContext, grant, record state/version, freshness, and applicable
+  safety/governance rules.
+- Verification: cross-feature tests archive a Plant with open task, approval,
+  and Companion proposal records; prove no transition or agent publication is
+  possible while archived; restore it; and prove each subsequent transition
+  still passes its current guards before succeeding.
+- Source: [.memory-bank/states/plants/plant-and-access-lifecycle.md](../states/plants/plant-and-access-lifecycle.md),
+  [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md),
+  [.memory-bank/states/companion-governance.md](../states/companion-governance.md).
 
 ## Architecture Style
 
@@ -267,6 +291,8 @@ Shared state/data guardrails:
 - Physical-action advice fails closed unless fresh evidence, Safety Gate pass, authorized human approval, and task/action tracking exist.
 - Human approval unlocks only human-performed task tracking, never automated execution.
 - Companion governance approval is not Safety Gate approval.
+- Archived Plant is a fail-closed operational boundary for new and already-open
+  Plant-scoped workflows; restore never implies automatic resumption.
 - Dataset candidates are non-trainable by default and require evidence refs for
   any future trainability transition.
 
@@ -277,6 +303,9 @@ Use risk-based testing:
 - Unit tests for permissions, state policies, safety gates, trainability, redaction, and context filters.
 - Integration tests for ActorContext propagation, photo artifacts, runtime authority vs timeline, real model adapter boundaries, Bus/UI Feed separation, and Companion DecisionRecord semantics.
 - E2E tests for Boss setup, Engineer daily workflow, Safety Gate approval, follow-up, Companion governance, unauthorized access, archive/restore, and storage prompt.
+- Cross-feature archive tests prove open tasks, approvals, proposals, and agent
+  publications remain retained but non-operative until restore and fresh
+  revalidation.
 - Anti-cheat tests prove runtime/demo agents are not fake/stubbed and UI Feed/raw chat never enter agent context.
 
 The testing router is [.memory-bank/testing/index.md](../testing/index.md).
@@ -297,11 +326,14 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 - UI Feed or unapproved proposal content could leak into agent context.
 - Real model-backed agent requirement adds integration risk.
 - Accounts/Farm/Admin scope could expand into broad farm management.
+- A stale UI or worker could advance an already-open Plant workflow after
+  archive unless every state-changing service checks current Plant status at
+  the commit boundary.
 
 ## Open Questions
 
 No global blocker remains after the brownfield-aware `/spec-design --all`
-refresh.
+refresh and the 2026-07-06 FT-002-triggered archived-Plant guard repair.
 
 Applicable feature-level subject specs must still define exact auth/session
 lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope

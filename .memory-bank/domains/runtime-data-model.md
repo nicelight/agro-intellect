@@ -2,7 +2,7 @@
 description: Global runtime data authority model for MVP v2.
 status: active
 type: domain
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -136,11 +136,20 @@ Verification target:
 ## Runtime Invariants
 
 - Every Farm/Plant mutable record is scoped to the single local Farm and, when relevant, Plant.
+- Engineer Plant creation commits the new Plant, active creator
+  PlantAccessGrant (`plant_approve_actions=false`), and required audit records
+  in one PostgreSQL transaction; any failure rolls back the full write set.
 - Every protected product read, mutation, and context-builder path has
   ActorContext before business logic. Service health/readiness endpoints and
   explicitly public auth endpoints are not runtime authority and must not expose
   Farm/Plant data.
 - Plant archive removes the Plant from normal operations but does not delete history, photos, tasks, outcomes, timeline, or admin audit.
+- Plant archive/restore changes only Plant status at this boundary and preserves
+  PlantAccessGrant identities, statuses, and permission flags unchanged.
+- Plant archive preserves dependent operational/governance record rows and
+  states but globally denies their state-advancing commands. Restore changes no
+  dependent record and every later transition revalidates current Plant,
+  authorization, record-version, freshness, safety, and governance guards.
 - Photo files/manifests can be referenced by runtime records but cannot override runtime state.
 - Timeline events can reference runtime records but cannot become mutable state authority.
 - Agent output can create publishable events/tasks only through project-owned adapters and safety/task boundaries.

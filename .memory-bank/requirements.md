@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-05
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -26,11 +26,24 @@ source_of_truth:
 - `REQ-003` ActorContext authority: every Farm/Plant read, mutation, context-builder path, task, approval, and audit record MUST resolve Account, Farm, role/membership, Plant permissions, and session/auth provenance through ActorContext.
 - `REQ-004` Role presets and PlantAccessGrant: MVP MUST support Boss, Engineer, and Consultant role presets plus per-Plant PlantAccessGrant; the only MVP permission override is `plant_approve_actions`.
 - `REQ-005` Boss Admin Surface and admin audit: Boss MUST directly create local
-  active Accounts with an initial password, manage personnel and roles, Plants,
-  Plant access, Plant archive/restore, and durable admin audit records; Account,
+  active Accounts with an initial password, manage personnel and roles, the
+  Plant list, Plant access, Plant archive/restore, and durable admin audit records; Account,
   membership, and exactly one safe creation audit record MUST commit atomically.
-- `REQ-006` Multiple Plants and `tomato_001`: MVP MUST support multiple Plants in the local Farm, with `tomato_001` as the initial Plant.
-- `REQ-007` Plant lifecycle retention: MVP MUST support create, archive, and restore; archive is the only removal action and history/photos/tasks/outcomes/timeline/admin audit remain retained for authorized access.
+- `REQ-006` Multiple Plants and `tomato_001`: MVP MUST support multiple Plants
+  in the local Farm, with `tomato_001` as the initial Plant. Active Boss and
+  Engineer memberships MUST be allowed to create Plants; Engineer creation
+  MUST atomically create an active creator PlantAccessGrant with
+  `plant_approve_actions=false`, giving immediate read/operate authority for
+  the new active Plant. Plant archive/restore and PlantAccessGrant management
+  remain Boss-only.
+- `REQ-007` Plant lifecycle retention: MVP MUST support create, archive, and
+  restore; archive is the only removal action and
+  history/photos/tasks/outcomes/timeline/admin audit remain retained for
+  authorized access. Archive/restore MUST preserve PlantAccessGrant records
+  unchanged: active grants resume after restore and revoked grants remain
+  revoked. Open Plant-scoped operational/governance records MUST remain
+  unchanged and non-operative while archived; restore MUST NOT resume or replay
+  them without current authorization and owning lifecycle checks.
 - `REQ-008` Authorized Plant operations: authorized users MUST select only authorized Plants and complete daily check-in, observations, manual pH/EC, Plant card/history, tasks, approvals, and follow-up workflows.
 - `REQ-009` Photo intake and local artifacts: photo intake MUST store local photo files, accepted catalog metadata, `sha256`, initial capture manifest, export-ready refs, and timeline audit refs.
 - `REQ-010` Runtime authority and timeline audit: PostgreSQL/read model MUST remain mutable operational state authority unless a later active architecture spec replaces it; `timeline.jsonl` remains append-only audit/export only.
@@ -64,12 +77,12 @@ source_of_truth:
 |---|---|---|---|---|
 | REQ-000 | Foundation | FT-000 | gate: final Foundation Dev Path build/start/bootstrap/db/migration/test/MB checks | verified |
 | REQ-001 | EP-001 | FT-002 | integration: single Farm workspace; e2e: Boss setup | planned |
-| REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | planned |
+| REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | verified |
 | REQ-003 | EP-001 | FT-001, FT-002, FT-003 | integration: ActorContext on every Farm/Plant route and context builder | planned |
 | REQ-004 | EP-001 | FT-001, FT-002 | unit: role/permission matrix; integration: PlantAccessGrant filtering | planned |
 | REQ-005 | EP-001 | FT-003 | e2e: Boss personnel/role/Plant/access/admin audit flow | planned |
-| REQ-006 | EP-001, EP-002 | FT-002, FT-004 | integration: multiple Plants and `tomato_001` migration seed | planned |
-| REQ-007 | EP-001, EP-002 | FT-002, FT-006 | integration: archive/restore retention and authorized history | planned |
+| REQ-006 | EP-001, EP-002 | FT-002, FT-004 | integration: multiple Plants, `tomato_001` bootstrap, Boss/Engineer create policy, atomic Engineer creator grant | planned |
+| REQ-007 | EP-001, EP-002, EP-003, EP-004, EP-005 | FT-002, FT-006, FT-007, FT-008, FT-011, FT-012, FT-013 | integration: archive/restore retention, unchanged grants/records, denied transitions/publication while archived, current-guard revalidation after restore, and authorized history | planned |
 | REQ-008 | EP-002, EP-004 | FT-004, FT-012 | e2e: Engineer authorized daily workflow and follow-up | planned |
 | REQ-009 | EP-002 | FT-005 | integration: photo file/catalog/sha256/manifest/timeline refs | planned |
 | REQ-010 | EP-002 | FT-006 | integration: PostgreSQL authority vs append-only timeline audit/export | planned |
@@ -88,11 +101,12 @@ source_of_truth:
 
 ## Current FT-001 Evidence Note
 
-- TASK-005 through TASK-010 implementation evidence covers the FT-001-owned
+- TASK-005 through TASK-011 completion evidence covers the FT-001-owned
   portions of REQ-002, REQ-003, REQ-004, REQ-020, REQ-021, and REQ-022.
-- TASK-011 integration execution reports `77 passed` focused and `105 passed`
-  full non-environment checks. One PostgreSQL integration check and two
-  `psql`-dependent Foundation checks could not run in the current environment.
-- RTM lifecycles remain `planned`: TASK-011 independent verification/closure is
-  not part of `/execute`, and REQ-003/004/020/021/022 also depend on later
-  features or cross-feature E2E.
+- TASK-011 independent verification passes, repeated feature-level red-verify
+  returns `semantic-pass`, and the full non-environment suite reports
+  `105/105`; one PostgreSQL and two `psql`-dependent checks remain an explicit
+  environment gap backed by earlier task-scoped evidence.
+- REQ-002 is synchronized as `verified`. REQ-003/004/020/021/022 remain
+  `planned` because their complete outcomes also depend on later features or
+  deferred cross-feature E2E.

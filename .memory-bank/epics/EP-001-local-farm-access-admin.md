@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-001
 lifecycle: planned
-last_updated: 2026-07-05
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -46,9 +46,10 @@ Establish the local Farm authority boundary so every human action and agent cont
 
 ## Current Implementation State
 
-- FT-001 implementation tasks TASK-005 through TASK-010 are recorded `done`.
-- TASK-011 integration execution has passing focused/full non-environment
-  suites and a documented local PostgreSQL/`psql` environment gap; independent
-  verification and owner closure remain pending.
-- EP-001 lifecycle remains `planned`. This evidence does not implement or close
-  FT-002 Farm/Plant lifecycle or FT-003 Boss administration/audit.
+- FT-001 tasks TASK-005 through TASK-011 are recorded `done`; independent
+  verification and repeated feature-level adversarial review pass.
+- FT-001 is synchronized as `verified` with the local PostgreSQL/`psql`
+  environment gap and accepted missing hostile-provider regression recorded as
+  residual risks.
+- EP-001 lifecycle remains `planned` because FT-002 Farm/Plant lifecycle and
+  FT-003 Boss administration/audit are not implemented or closed.

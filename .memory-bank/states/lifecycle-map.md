@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD lifecycle hints for MVP v2 decomposition.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -16,8 +16,8 @@ and feature cuts. Detailed state machines belong to canonical state specs.
 |---|---|---|---|---|
 | Account | Local identity exists for login/session, authorization, attribution, and audit. | active, disabled. | direct create with required password hash; disable; audit attribution. | First-Boss bootstrap CLI contract remains for FT-002/FT-003 design. |
 | FarmMembership | Connects Account to the single local Farm and carries role preset. | active, disabled. | direct active creation with Account; role/status change; admin audit. | Plant grants remain a separate FT-002 flow. |
-| Plant | Farm-managed Plant can be used operationally, archived, and restored. | active, archived. | create, archive, restore, authorized history/audit/export access after archive. | Exact retained-history UI/API behavior belongs to later specs. |
-| PlantAccessGrant | Gives per-Plant visibility and work authorization. | granted, revoked style states are expected but not specified here. | grant, revoke, update `plant_approve_actions`, filtering of context builders and UI. | Exact permission representation belongs to /spec-design. |
+| Plant | Farm-managed Plant can be created by active Boss/Engineer, used operationally, and archived/restored by Boss. | active, archived. | create with Engineer creator-grant atomicity, Boss-only archive/restore, authorized history/audit/export access after archive. | Exact retained-history UI/API behavior belongs to later specs. |
+| PlantAccessGrant | Gives per-Plant visibility and work authorization; Engineer creation starts an active creator grant with `plant_approve_actions=false`. | active, revoked. | atomic creator grant, Boss grant/revoke/update `plant_approve_actions`, filtering of context builders and UI. | Exact persistence and HTTP representation belongs to `/prd-to-tasks FT-002`. |
 | Daily Check-In | Authorized actor records current Plant evidence. | started/completed style states are expected but not specified here. | observation entry, pH/EC recording, photo upload, audit refs, agent publication trigger. | Exact check-in state model belongs to feature specs. |
 | Photo Artifact | Uploaded photo becomes local artifact plus catalog/audit refs. | accepted/local artifact states are expected but not specified here. | validation, sha256, file write, catalog row, initial capture manifest, timeline refs. | Exact manifest/schema details belong to /spec-design. |
 | Agent Output | Real model-backed execution result becomes project-owned publishable output or remains silent. | speak, silent, clarify, escalate runtime decisions. | adapter validation, MessageEnvelope creation, Bus publication, UI Feed projection. | Exact envelope and adapter contracts belong to /spec-design. |

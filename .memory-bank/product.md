@@ -3,7 +3,7 @@ description: Product brief (C4 L1): что это, для кого, core value, 
 status: active
 type: product
 owner: product
-last_updated: 2026-06-14
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -25,8 +25,8 @@ The system is also an AI-first agentic development training ground: product agen
 
 ## Audience
 
-- `Boss`: local Farm owner/admin who manages Accounts, roles, Plants, Plant access, admin audit, and may approve physical-action proposals only through Safety Gate rules.
-- `Engineer`: operational user for assigned Plants who performs check-ins, uploads photos, records observations and pH/EC, handles tasks, and may approve physical actions only with per-Plant `plant_approve_actions`.
+- `Boss`: local Farm owner/admin who manages Accounts, roles, Plant archive/restore, Plant access, admin audit, and may approve physical-action proposals only through Safety Gate rules. Boss may also create Plants.
+- `Engineer`: operational user who may create a Plant in the single Farm and otherwise works only with granted Plants. Engineer performs check-ins, uploads photos, records observations and pH/EC, handles tasks, and may approve physical actions only with per-Plant `plant_approve_actions`.
 - `Consultant`: advisory/read/comment user for granted Plant context, without default operational authority, governance approval authority, or physical-action approval authority.
 - Project owner / AI-first development operator: validates the Memory Bank workflow, source-of-truth boundaries, product-agent architecture, and safety governance.
 

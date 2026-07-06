@@ -2,7 +2,7 @@
 description: Global MessageEnvelope contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -12,6 +12,7 @@ source_of_truth:
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/states/safety-action-lifecycle.md
   - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # MessageEnvelope
 
@@ -39,6 +40,8 @@ field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
     defines physical-action approval lifecycle.
   - [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md):
     defines Plant state promotion rules.
+  - [.memory-bank/states/plants/plant-and-access-lifecycle.md](../states/plants/plant-and-access-lifecycle.md):
+    defines the archived-Plant publication guard.
 
 ## Runtime Decision
 
@@ -92,6 +95,10 @@ MessageEnvelope must not contain:
 ## Bus And UI Projection
 
 - MessageEnvelope may be referenced by Agent Chat Bus events after validation.
+- A Plant-scoped envelope is publishable only after current
+  `Plant.status=active` and authorization are checked at the projection
+  boundary. Archive after model execution downgrades the result to audit-only;
+  restore never replays it automatically.
 - UI Feed may project human-facing display from MessageEnvelope.
 - UI Feed projection does not become MessageEnvelope or agent context.
 
@@ -104,3 +111,5 @@ Tests must prove:
 - raw reasoning/provider history is absent;
 - physical-action wording routes to Safety Gate;
 - UI Feed projection cannot be consumed by agents.
+- archived Plant blocks MessageEnvelope/Bus/UI operational publication even
+  when model execution began before archive.

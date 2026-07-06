@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-06-29
+last_updated: 2026-07-06
 ---
 # PRD
 
@@ -36,7 +36,7 @@ does not replace backend rules, and cannot authorize physical actions.
 - Provide a useful local Farm workspace for bounded Plant operations.
 - Support one local Farm, local Accounts, role-scoped Plant access, and multiple Plants.
 - Migrate `tomato_001` into the Farm/Plant model as the initial Plant.
-- Give Boss a minimal admin surface for personnel, roles, Plants, Plant access, and admin audit.
+- Give Boss a minimal admin surface for personnel, roles, Plant archive/restore, Plant access, and admin audit, while allowing Boss and Engineer to create Plants.
 - Let Boss and Engineer complete the first authorized Plant workflow end to end.
 - Keep every Farm/Plant workflow actor-scoped through ActorContext and backend authorization.
 - Preserve strict authority boundaries between runtime state, audit/export, UI presentation, agent context, governance decisions, and physical-action approval.
@@ -57,8 +57,8 @@ does not replace backend rules, and cannot authorize physical actions.
 
 ## Users / Actors
 
-- `Boss`: first local Account and Farm owner/admin. Boss manages Accounts, role presets, Plant lifecycle, PlantAccessGrant records, and admin audit. Boss can approve Safety Gate physical-action proposals for Farm Plants, but cannot bypass fresh data, Safety Gate pass, or backend approval rules.
-- `Engineer`: operational user for assigned Plants. Engineer performs check-ins, uploads photos, records pH/EC and observations, manages allowed tasks/follow-up, sees recommendations, and may approve physical-action proposals only when granted `plant_approve_actions` for that Plant.
+- `Boss`: first local Account and Farm owner/admin. Boss manages Accounts, role presets, Plant archive/restore, PlantAccessGrant records, and admin audit, and may create Plants. Boss can approve Safety Gate physical-action proposals for Farm Plants, but cannot bypass fresh data, Safety Gate pass, or backend approval rules.
+- `Engineer`: operational user who may create a Plant in the single Farm and otherwise operates only on granted Plants. Engineer performs check-ins, uploads photos, records pH/EC and observations, manages allowed tasks/follow-up, sees recommendations, and may approve physical-action proposals only when granted `plant_approve_actions` for that Plant.
 - `Consultant`: advisory/read/comment user for granted Plant context. Consultant may participate in discussion and give advice, but does not create domain task/recommendation records, does not approve Companion governance decisions by default, and never approves physical actions in MVP.
 - Project owner / AI-first development operator: uses the product to validate Memory Bank workflow, source-of-truth boundaries, product-agent architecture, and safety governance.
 
@@ -69,7 +69,20 @@ does not replace backend rules, and cannot authorize physical actions.
 - The system MUST support Boss, Engineer, and Consultant role presets.
 - The system MUST support FarmMembership and ActorContext for every Farm/Plant read, mutation, context-builder path, task, approval, and audit record.
 - The system MUST support multiple Plants inside the local Farm, with `tomato_001` as the initial Plant.
+- Active Boss and Engineer memberships MUST be allowed to create Plants. An
+  Engineer-created Plant and an active creator PlantAccessGrant with
+  `plant_approve_actions=false` MUST commit atomically so the creator can read
+  and operate the Plant immediately; failed creation MUST persist neither
+  record.
 - The system MUST support Plant create, archive, and restore. Archive is the only MVP removal action; history, photos, tasks, outcomes, timeline audit, and admin audit remain retained and accessible to authorized roles.
+- Plant archive/restore MUST preserve PlantAccessGrant records unchanged.
+  Active grants are non-operative while archived and resume after restore;
+  revoked grants remain revoked.
+- Plant archive MAY proceed with open tasks, approvals, follow-ups, agent work,
+  or Companion governance records. Archive MUST retain those records unchanged
+  while making every state-advancing command/publication non-operative; restore
+  MUST NOT replay or resume work without current authorization and owning
+  freshness, safety, version, and governance checks.
 - The system MUST support PlantAccessGrant for per-Plant visibility and work authorization.
 - The system MUST limit MVP permission overrides to `plant_approve_actions`; other MVP permissions come from Boss/Engineer/Consultant role presets plus PlantAccessGrant.
 - Boss Admin Surface MUST support direct local Account creation with an initial
@@ -163,7 +176,16 @@ from first demo.
 ## Edge Cases / Failure Handling
 
 - Unauthorized users MUST NOT see or mutate unauthorized Plants, photos, measurements, tasks, approvals, admin audit, or agent context.
+- Consultant, disabled membership, and unauthorized-role Plant creation MUST
+  fail before persistence. Engineer Plant creation MUST NOT grant Plant
+  archive/restore or PlantAccessGrant management authority.
 - Archived Plants MUST disappear from normal operational flows but remain retained for authorized history/audit/export access.
+- Archive/restore MUST NOT create, activate, revoke, replace, or otherwise
+  mutate a PlantAccessGrant.
+- Archive MUST NOT automatically complete, cancel, delete, execute, approve,
+  reject, supersede, publish, or otherwise transition an open Plant-scoped
+  record. Restore removes only the archive deny and cannot bypass current
+  guards.
 - Physical-action advice MUST fail closed when pH/EC or required evidence is stale/missing, Safety Gate fails, or actor approval authority is missing.
 - Governance approval MUST NOT be treated as Safety Gate approval.
 - Superseded CompanionProposal records MUST NOT be approvable and MUST NOT become agent facts.
@@ -179,12 +201,22 @@ from first demo.
 
 - Boss can create or use one local Farm workspace, directly create at least one
   active Engineer Account, and grant Plant access.
+- Boss and an active Engineer can create a Plant. Engineer creation atomically
+  creates an active creator grant with `plant_approve_actions=false`; the
+  Engineer can then read, select, and operate the Plant but still cannot
+  archive/restore it or manage access.
 - Boss and Engineer can complete the first authorized Plant workflow on `tomato_001`.
 - First demo agent behavior is produced by real LLM/model-backed agents over actual scoped Plant data, not fake, mock, hardcoded, or stubbed outputs.
 - Engineer sees only assigned Plants and cannot approve physical actions without `plant_approve_actions`.
 - Consultant, when present, is limited to authorized advisory/read/comment context.
 - Every Farm/Plant route and agent context builder can identify Account, Farm, role preset, Plant permission, and session provenance.
 - Plant archive/restore works without hard deletion and retains authorized history/audit.
+- Existing grant identity, status, and `plant_approve_actions` values remain
+  unchanged across archive/restore; active grants regain effect only after
+  restore.
+- Open operational/governance records remain unchanged and cannot transition
+  or publish while archived; after restore they advance only through a new
+  request that passes all current guards.
 - Photo upload produces a local file, catalog row, `sha256`, initial capture manifest, and audit/export refs.
 - UI Feed and unapproved proposal content are not consumed by agents.
 - Physical-action wording is blocked or routed until fresh data, Safety Gate pass, and authorized human approval exist.
@@ -200,6 +232,9 @@ from first demo.
 - Constitution check: confirm PRD remains bounded local-first MVP and does not introduce production SaaS, cloud sync, enterprise identity, automated actuation, or broad farm-management scope.
 - Requirements decomposition readiness: verify all high-impact `NEEDS CLARIFICATION` items are resolved before `/prd`.
 - Authorization tests later MUST cover Boss, Engineer, Consultant, missing PlantAccessGrant, archived Plant visibility, and context-builder filtering.
+- Cross-feature archive tests later MUST cover open task, approval, follow-up,
+  agent publication, and Companion proposal records, including no transition
+  while archived and no automatic resume after restore.
 - Safety tests later MUST cover stale data, missing approval authority, failed Safety Gate, governance-vs-safety approval separation, and action-task unlock semantics.
 - UI/context hygiene tests later MUST prove UI Feed, spoiler notes, raw chat, admin notices, and unapproved proposals do not enter agent working context.
 - Storage/export tests later MUST cover photo file/catalog/manifest/timeline refs and secret redaction.

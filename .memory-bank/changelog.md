@@ -4,6 +4,35 @@ status: active
 ---
 # Changelog
 
+## [2026-07-06] FT-002-triggered archived-Plant backbone repair
+- Added Architecture Spine `AD-007`: archived Plant is a global operational
+  deny for new and already-open Plant-scoped workflows.
+- Preserved open task, approval, follow-up, agent, and Companion governance
+  records without automatic completion, cancellation, deletion, execution, or
+  supersede on archive.
+- Required current transactional Plant status for state-advancing commands and
+  full owning-guard revalidation after restore; restore never auto-resumes work.
+- Kept Boss lifecycle/grant administration and authorized retained-history
+  reads as explicit exceptions, with archived grants remaining non-operative.
+- Synchronized FT-002, FT-011, FT-012, FT-013, global lifecycle specs, testing,
+  spec registry/backbone, and Foundation sufficiency without creating tasks or
+  changing the verified FT-000 gate.
+
+## [2026-07-06] Wave W3 — FT-001 completion sync
+- Reconciled authoritative TASK-005 through TASK-011 records as `done` without
+  rewriting their closure decisions or promoting any dependent task.
+- Recorded repeated feature-level `SEMANTIC_VERDICT: semantic-pass` after the
+  safe-repr and standard protected-route composition repairs; the owner accepts
+  the missing dedicated hostile-provider regression test as residual risk.
+- Synchronized FT-001 document status/lifecycle to `active` / `verified` and
+  REQ-002 RTM lifecycle to `verified`.
+- Kept EP-001 and cross-feature REQ-003/004/020/021/022 `planned`; FT-002,
+  FT-003, FT-007, and FT-008 boundaries remain deferred to their owning work.
+- Preserved the explicit PostgreSQL/`psql` environment gap and prior
+  task-scoped evidence; no unavailable check is represented as newly passing.
+- Updated the FT-001 feature router and current evidence notes. No SDD registry
+  or global backbone decision changed.
+
 ## [2026-07-05] Wave W3 — TASK-011 execution handoff
 - Applied the owner-requested code-only repr hardening for ActorContext and its
   Plant snapshot provider; verification remains pending by explicit request.

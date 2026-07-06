@@ -2,7 +2,7 @@
 description: Global Agent Chat Bus contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -11,6 +11,7 @@ source_of_truth:
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/contracts/message-envelope.md
   - .memory-bank/states/companion-governance.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Agent Chat Bus
 
@@ -41,6 +42,12 @@ field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
 
 Only backend/domain adapters may publish Bus events. Raw Agno/model output, provider history, raw reasoning, UI Feed content, raw chat, admin UI text, unapproved Companion proposals, and timeline replay cannot publish directly to the Bus.
 
+For a Plant-scoped event, the publisher must verify current
+`Plant.status=active` and authorization at the publication boundary. An event
+prepared before archive cannot be published after archive. Existing retained
+events may remain audit/reference data but are excluded from archived Plant
+working context.
+
 ## BusEventEnvelope Minimum
 
 Feature-local specs may add fields, but every Bus event must have:
@@ -68,6 +75,9 @@ Feature-local specs may add fields, but every Bus event must have:
 ## Context Builders
 
 - Context builders must resolve ActorContext and PlantAccessGrant before returning events.
+- Context builders must exclude archived Plant operational context; only an
+  explicit retained-history projection may read retained events, and it is not
+  agent working context.
 - Agents may receive only scoped Plant/Farm context they are authorized to process.
 - Context builders must exclude UI Feed, spoiler notes, raw model reasoning, raw chat, admin notices, and unapproved Companion content.
 
@@ -92,3 +102,5 @@ Tests must prove:
 - UI Feed/raw chat/unapproved proposal content is absent from agent context;
 - raw provider output cannot bypass adapters;
 - Safety Gate and DecisionRecord authority remain separate.
+- archive between model execution and Bus publication fails closed without a
+  Plant-scoped Bus event, and restore does not replay the blocked publication.

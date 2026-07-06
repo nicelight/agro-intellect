@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-06-29
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -28,6 +28,8 @@ source_of_truth:
 - DecisionRecord may direct Plant-scoped discussion/workflow and safe check/measurement/follow-up task requests through backend rules.
 - DecisionRecord cannot mutate Plant state, create action_task, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
 - Agents may consume only compact approved governance summary facts and refs.
+- Archived Plant preserves governance records but blocks proposal decisions,
+  DecisionRecord workflow effects, and agent-consumable publication.
 
 ## Edge Cases & Failure Modes
 
@@ -35,11 +37,15 @@ source_of_truth:
 - Raw proposal text, raw rationale, UI markdown, raw chat, and unapproved discussion content remain non-consumable.
 - Companion cannot bypass backend authorization or Safety Gate.
 - Farm-level issue governance remains out of MVP.
+- Archive does not approve, reject, supersede, close, or publish an open
+  governance record; restore requires current authorization/state checks.
 
 ## Verification Targets
 
 - Unit: proposal supersede and DecisionRecord authority rules.
 - Integration: approved governance summary context builder includes only compact allowed fields and explicit `safety_gate_authority=not_granted`.
+- Integration: pending proposal remains unchanged and non-operative during
+  archive and does not auto-resume after restore.
 - E2E: Companion HumanAttentionNeeded plus proposal/decision path appears without unlocking physical action.
 
 ## Normative Backbone Links
@@ -50,8 +56,16 @@ source_of_truth:
 - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): human-facing Companion projection rules.
 - [.memory-bank/states/companion-governance.md](../states/companion-governance.md): IssueStack/proposal/DecisionRecord lifecycle boundary.
 - [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md): governance approval separation from physical-action approval.
+- [.memory-bank/states/plants/plant-and-access-lifecycle.md](../states/plants/plant-and-access-lifecycle.md): global archived-Plant operational guard.
 
 ## Feature-Local Design Pressure
 
 - Exact IssueStack/proposal/decision state machines, workflow-effect catalog,
   approved-summary schema, UI projection behavior, and tests.
+
+## SDD Design Gate
+
+- Global/shared status: ready; `AD-007`, Plant lifecycle, and Companion
+  Governance define archived proposal/decision/publication behavior.
+- Feature-local status: pending `/prd-to-tasks FT-013` for exact governance
+  schemas, transitions, workflow effects, API/UI projections, and tests.

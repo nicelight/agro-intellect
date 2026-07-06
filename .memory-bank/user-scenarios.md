@@ -2,7 +2,7 @@
 description: Pre-PRD user scenarios for MVP v2 decomposition.
 status: active
 owner: product
-last_updated: 2026-06-29
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - project_dossier_v2.md
@@ -11,8 +11,8 @@ source_of_truth:
 
 ## Primary Actors
 
-- `Boss`: local Farm owner/admin. Manages local Accounts, role presets, Plant lifecycle, Plant access, admin audit, and may approve physical-action proposals for Farm Plants only through Safety Gate rules.
-- `Engineer`: operational user for assigned Plants. Runs check-ins, uploads photos, records measurements and observations, works tasks/follow-up, and approves physical-action proposals only when granted `plant_approve_actions`.
+- `Boss`: local Farm owner/admin. Manages local Accounts, role presets, Plant archive/restore, Plant access, admin audit, may create Plants, and may approve physical-action proposals for Farm Plants only through Safety Gate rules.
+- `Engineer`: operational user who may create a Plant and otherwise works only with granted Plants. Runs check-ins, uploads photos, records measurements and observations, works tasks/follow-up, and approves physical-action proposals only when granted `plant_approve_actions`.
 - `Consultant`: advisory/read/comment user for granted Plant context. Consultant does not create domain task/recommendation records and never approves physical actions in MVP.
 - `Companion`: governance coordinator. Maintains typed Plant-scoped discussion state and proposals, but does not replace backend rules, Safety Gate approval, or human authority.
 - Project owner / AI-first development operator: validates the product workflow, Memory Bank process, source-of-truth boundaries, and agent architecture.
@@ -32,12 +32,15 @@ Decomposition implication: account/session/authz, Farm/Plant lifecycle, PlantAcc
 ### 2. Engineer Performs Authorized Plant Operations
 
 1. Engineer logs in or opens a local authorized session.
-2. System resolves Account, Farm, role preset, PlantAccessGrant, and ActorContext.
-3. Engineer selects only authorized Plants, initially `tomato_001`.
-4. Engineer records observations, uploads a photo, and/or enters pH/EC measurements.
-5. Backend persists runtime state, local photo artifacts, catalog refs, and timeline audit/export refs.
-6. Real LLM/model-backed product agents process actual scoped Plant data and publish only through project-owned boundaries.
-7. UI Feed displays human-facing cards, prompts, tasks, approvals, history, and storage warnings while remaining unavailable as agent working context.
+2. Engineer may create a Plant in the single Farm; the system atomically creates
+   an active creator PlantAccessGrant with `plant_approve_actions=false`.
+3. System resolves Account, Farm, role preset, PlantAccessGrant, and ActorContext.
+4. Engineer selects only authorized Plants, initially `tomato_001` or a Plant
+   created by that Engineer.
+5. Engineer records observations, uploads a photo, and/or enters pH/EC measurements.
+6. Backend persists runtime state, local photo artifacts, catalog refs, and timeline audit/export refs.
+7. Real LLM/model-backed product agents process actual scoped Plant data and publish only through project-owned boundaries.
+8. UI Feed displays human-facing cards, prompts, tasks, approvals, history, and storage warnings while remaining unavailable as agent working context.
 
 Decomposition implication: daily operations, photo intake, runtime state, agent publication, UI Feed, and context hygiene must be cut with ActorContext and Plant authorization in mind.
 
@@ -79,6 +82,9 @@ Decomposition implication: Companion governance is a typed state/workflow slice 
 - Timeline, photo files, and manifests are audit/export or local artifact layers, not mutable runtime authority.
 - Agent Chat Bus is the agent-consumable working stream; UI Feed is human presentation only.
 - Companion governance approval and Safety Gate approval are separate approval classes with different semantics.
+- Archived Plant is a global operational deny: open tasks, approvals, and
+  proposals remain retained but cannot transition, and restore never bypasses
+  current authorization, freshness, Safety Gate, or governance checks.
 
 ## Review Status
 

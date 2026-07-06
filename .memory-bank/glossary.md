@@ -1,7 +1,7 @@
 ---
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -27,7 +27,9 @@ source_of_truth:
 - `Account`: local user identity used for login, authorization, attribution, and audit.
 - `Farm`: bounded local workspace and data-ownership boundary containing Plants, memberships, access grants, and admin audit.
 - `Plant`: farm-managed plant or crop unit; `tomato_001` is the initial Plant until migration details are specified.
-- `Boss`: farm owner/admin role for personnel, role, Plant lifecycle, per-Plant access, and admin audit; cannot bypass Safety Gate.
+- `Boss`: farm owner/admin role for personnel, role, Plant archive/restore,
+  per-Plant access, and admin audit; may create Plants but is not the only
+  Plant-creation role; cannot bypass Safety Gate.
 - `Boss Admin Surface`: UI/workflow area where Boss manages personnel, roles, Plants, access, and admin audit.
 - `Engineer`: operational role for assigned Plants, responsible for check-ins, photos, measurements, tasks, and action approvals only when granted.
 - `Consultant`: advisory/read/comment role for assigned Plant context; no operational authority or binding decision authority by default.

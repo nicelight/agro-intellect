@@ -2,12 +2,13 @@
 description: Global Companion governance lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Companion Governance
 
@@ -35,6 +36,8 @@ belong to `/prd-to-tasks FT-013`.
     human-facing projection.
   - [.memory-bank/states/safety-action-lifecycle.md](safety-action-lifecycle.md):
     defines physical-action approval separation.
+  - [.memory-bank/states/plants/plant-and-access-lifecycle.md](plants/plant-and-access-lifecycle.md):
+    defines the archived-Plant operational guard.
 
 ## Lifecycle Shape
 
@@ -80,12 +83,25 @@ Decision records must include:
   physical action, replace Safety Gate approval, or turn raw chat into fact.
 - Agents may consume only compact approved governance summary facts and refs,
   never raw proposal text, rationale, UI markdown, or raw chat.
+- Every proposal decision, DecisionRecord creation/workflow effect, and
+  agent-consumable governance publication requires current
+  `Plant.status=active` at its transactional authorization boundary.
+- Archive preserves IssueStack, HumanAttentionNeeded, CompanionProposal,
+  CompanionConclusion, and DecisionRecord records without approving,
+  rejecting, superseding, closing, publishing, or otherwise transitioning
+  them.
+- Restore does not resume governance automatically; each next transition must
+  revalidate ActorContext/grant, current proposal/issue state and version, and
+  the allowed workflow-effect rules.
 
 ## Edge Cases And Errors
 
 - Farm-level issue governance is out of MVP.
 - Missing Plant scope blocks governance record creation.
 - Invalid, stale, or superseded proposal decisions fail closed.
+- Archived Plant blocks new governance records and transitions of existing
+  records while leaving retained governance history readable to authorized
+  actors.
 - If a governance decision requests a workflow effect outside the allowed
   catalog, it must be rejected or downgraded to human-visible discussion.
 
@@ -98,3 +114,6 @@ Tests must prove:
 - DecisionRecord cannot authorize Safety Gate or physical action.
 - Approved summary has `safety_gate_authority=not_granted`.
 - Raw proposal/rationale/chat content is excluded from agent context.
+- Archiving with a pending proposal leaves it pending but non-operative;
+  decision/publication attempts fail while archived, and restore requires
+  current authorization/state checks before any later transition.

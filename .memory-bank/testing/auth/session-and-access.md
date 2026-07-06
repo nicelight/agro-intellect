@@ -2,7 +2,7 @@
 description: Cross-contract verification for identity, sessions, ActorContext, and authorization.
 status: active
 type: testing_spec
-last_updated: 2026-07-04
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/domains/identity/account-membership.md
   - .memory-bank/domains/auth/session-storage.md
@@ -44,6 +44,13 @@ HTTP, ActorContext, Plant permission, and protected-context behavior.
 - ActorContext: fixed role policy, complete PlantPermissionContext output,
   bounded active/archived permission effects, deferred retained-history
   workflow ownership, no-existence-leak denials, and resolver compatibility.
+- Farm-scoped create policy permits active Boss/Engineer before a Plant exists,
+  denies Consultant/disabled membership, and keeps Engineer
+  archive/restore/access management denied. After Engineer create, the normal
+  resolver must return the active creator grant with approval override false.
+- Resolver/lifecycle compatibility proves archive suppresses normal effects
+  without changing the grant and restore reuses the same grant status/flags;
+  revoked grants remain denied.
 - Protected routes resolve ActorContext before business logic. Context builders
   have authorization parity and exclude auth material/unauthorized Plants.
 - `/api/session/me` returns a safe scoped summary.
@@ -56,9 +63,10 @@ HTTP, ActorContext, Plant permission, and protected-context behavior.
 After FT-002 and FT-003 receive their own completed SDD/task queues, E2E must
 prove granted Engineer access, Consultant advisory-only behavior, and direct
 Account creation followed by login with correctly scoped Farm/Plant access.
-These checks do not
-block FT-001 task execution because their required persistence/UI does not yet
-exist.
+It must also prove atomic Engineer Plant creation, immediate creator access,
+and denial of Engineer archive/restore and grant management.
+These checks do not block FT-001 task execution because their required
+persistence/UI does not yet exist.
 
 ## Quality gates
 

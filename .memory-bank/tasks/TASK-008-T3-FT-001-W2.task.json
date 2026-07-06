@@ -123,6 +123,21 @@
       ],
       "summary": "TASK-008 is closed by the explicit manual owner. The repaired authorization boundary blocks ordinary post-resolution authority mutation and passes 16 focused tests plus 60 non-environment tests. The owner accepts the remaining provider-repr concern and stale independent verify as non-blocking under the advisory policy.",
       "recommended_next_action": "Keep TASK-009 planned until a separate readiness decision; perform /mb-sync at the W2 boundary if useful."
+    },
+    {
+      "stage": "red-verify",
+      "scope": "feature-repair-reconciliation",
+      "mode": "manual",
+      "verdict": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-06T11:37:24+05:00",
+      "owner_decision": "The owner accepts the absence of a dedicated hostile-provider regression test as residual risk for the centralized repr repair.",
+      "evidence": [
+        ".tasks/TASK-008-T3-FT-001-W2/TASK-008-T3-FT-001-W2-S-RED-VERIFY-final-report-docs-02.md",
+        ".tasks/FT-001/FT-001-S-RED-VERIFY-final-report-docs-01.md",
+        ".memory-bank/features/FT-001-local-accounts-sessions-actor-context.md"
+      ],
+      "summary": "Repeated FT-001 feature-level adversarial review confirms the historical TASK-008 provider-repr concern is repaired: ActorContext and its nested snapshot provider are excluded from generated repr output, the direct hostile probe passes, and the full non-environment suite passes 105/105. This reconciles current code/evidence without rewriting the historical task verdicts or closure decision.",
+      "recommended_next_action": "Complete the FT-001 wave-boundary Memory Bank sync; preserve FT-002 and FT-007/FT-008 deferred boundaries."
     }
   ],
   "docs": [

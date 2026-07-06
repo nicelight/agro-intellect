@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-003
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -28,13 +28,15 @@ spec_design_links:
 - Boss directly creates a local active Account with login, initial password,
   and role.
 - Boss assigns role presets.
-- Boss manages Plant list, archive/restore, and Plant access.
+- Boss manages Plant list, archive/restore, and Plant access; Plant creation is
+  also available to active Engineers through FT-002 and is not an admin grant.
 - Boss views minimal durable admin audit records.
 
 ## Acceptance Criteria
 
 - Boss Admin Surface supports personnel, direct Account creation, role
-  assignment, Plant list, Plant lifecycle, access grants, and admin audit view.
+  assignment, Plant list, Plant archive/restore, access grants, and admin audit
+  view.
 - Account, active FarmMembership, and exactly one safe `account_created` audit
   record are committed atomically; password material is never returned or
   audited.
@@ -44,7 +46,9 @@ spec_design_links:
 
 ## Edge Cases & Failure Modes
 
-- Non-Boss actors cannot access admin mutations.
+- Non-Boss actors cannot access admin mutations. The FT-002 Engineer Plant-
+  creation command is a Farm-scoped Plant mutation, not an admin mutation, and
+  grants no access to this surface.
 - Admin UI notices do not become agent facts.
 - Admin changes cannot bypass backend authorization.
 - Direct local creation does not imply SaaS tenancy, email delivery, password

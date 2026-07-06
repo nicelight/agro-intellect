@@ -2,12 +2,13 @@
 description: Global Safety Gate and physical-action lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
   - .memory-bank/architecture/system-architecture.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Safety Action Lifecycle
 
@@ -34,6 +35,8 @@ and UI prompts belong to `/prd-to-tasks FT-011` and `/prd-to-tasks FT-012`.
     prompt projection.
   - [.memory-bank/states/companion-governance.md](companion-governance.md):
     defines governance decisions that must not replace Safety Gate approval.
+  - [.memory-bank/states/plants/plant-and-access-lifecycle.md](plants/plant-and-access-lifecycle.md):
+    defines the archived-Plant operational guard.
 
 ## Lifecycle Shape
 
@@ -76,11 +79,21 @@ Every safety/action record must carry:
   `requires_human_approval=true`, and Bus publication are not Safety Gate
   approval.
 - Superseded, stale, or replayed approvals cannot create an action task.
+- Every Safety Gate, approval, task, follow-up, and outcome transition requires
+  current `Plant.status=active` at its transactional authorization boundary.
+- Archive preserves existing safety/task records and their states but blocks
+  every transition, including approval/rejection, action-task creation,
+  completion, follow-up, and outcome recording.
+- Restore does not refresh evidence or approvals and does not resume a record;
+  the next transition revalidates ActorContext/grant, record state/version,
+  evidence freshness, Safety Gate status, and approval authority.
 
 ## Edge Cases And Errors
 
 - Missing/stale evidence routes to `needs_fresh_evidence` or blocked output.
 - Missing approver authority fails closed.
+- Archived Plant returns a fail-closed non-operative result without mutating
+  the safety/task record.
 - Governance approval cannot be converted into physical-action approval.
 - Unsafe classifier uncertainty must prefer block/clarify over cleared wording.
 - Any implementation path that would issue pump, dosing, pH/EC correction,
@@ -96,3 +109,6 @@ Tests must prove:
 - Governance DecisionRecord does not unlock physical action.
 - UI prompt display does not unlock physical action.
 - No code path performs automated actuation.
+- Archiving with open safety/task records leaves those records unchanged,
+  blocks every transition while archived, and restore does not bypass current
+  freshness, replay, authorization, or Safety Gate checks.

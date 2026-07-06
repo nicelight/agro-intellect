@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-008
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -26,6 +26,8 @@ source_of_truth:
 - UI Feed is presentation-only.
 - UI Feed, spoiler notes, UI markdown, raw chat, admin notices, and unapproved Companion proposals do not enter agent working context.
 - MessageEnvelope and Bus/UI projections preserve source refs and consumability boundaries.
+- Archived Plant produces no operational Bus/agent context or new operational
+  projection; explicit retained-history UI remains presentation-only.
 
 ## Edge Cases & Failure Modes
 
@@ -33,11 +35,15 @@ source_of_truth:
 - Unauthorized Plant context cannot leak through Bus or UI projections.
 - Raw CompanionProposal content remains human-visible only until a valid DecisionRecord produces compact approved governance summary facts.
 - UI spoiler notes remain `visible_to_agents=false` and `consumable_by_agents=false` when represented.
+- An event prepared before archive cannot publish after archive, and restore
+  does not replay it.
 
 ## Verification Targets
 
 - Unit: context filtering and consumability flags.
 - Integration: BusEventEnvelope and UIFeedEvent projection boundaries after specs define them.
+- Integration: archive race blocks Bus publication and agent context while
+  preserving authorized retained-history presentation.
 - Anti-cheat: UI Feed and raw chat are absent from agent context builder fixtures.
 
 ## Normative Backbone Links
@@ -47,8 +53,16 @@ source_of_truth:
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): MessageEnvelope projection boundary.
 - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): global presentation-only UI Feed contract.
 - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): audit/export refs that cannot publish directly to Bus.
+- [.memory-bank/states/plants/plant-and-access-lifecycle.md](../states/plants/plant-and-access-lifecycle.md): archived-Plant publication/context guard.
 
 ## Feature-Local Design Pressure
 
 - Exact Bus/UI contracts, context-builder filters, UI Feed projection rules,
   event payloads, and anti-cheat verification.
+
+## SDD Design Gate
+
+- Global/shared status: ready; `AD-007` and linked Bus/Message/Plant lifecycle
+  contracts define archived context and publication behavior.
+- Feature-local status: pending `/prd-to-tasks FT-008` for concrete envelopes,
+  filters, projections, ordering, and verification.

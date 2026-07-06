@@ -2,7 +2,7 @@
 description: ActorContext, role policy, bounded PlantPermissionContext seam, and context-builder authorization contract.
 status: active
 type: interface_contract
-last_updated: 2026-06-30
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/contracts/api-guidelines.md
@@ -26,8 +26,8 @@ mutation, retained-history workflows, Safety Gate clearance, and Plant HTTP.
 
 | Role | Base authority |
 |---|---|
-| `boss` | Farm admin; all Farm Plant visibility/operations; action approval authority only through Safety Gate. |
-| `engineer` | Granted Plant read/operate/tasks; action approval only when active grant has `plant_approve_actions=true` and Safety Gate passes. |
+| `boss` | Farm admin; may create Plants; all Farm Plant visibility/operations; action approval authority only through Safety Gate. |
+| `engineer` | May create a Plant in the single Farm; granted Plant read/operate/tasks; action approval only when active grant has `plant_approve_actions=true` and Safety Gate passes. |
 | `consultant` | Granted Plant read/comment/advice only; no domain-task creation, governance approval by default, or physical-action approval. |
 
 The only per-Plant override is `plant_approve_actions`; no general ACL engine.
@@ -69,6 +69,14 @@ agent/context builder resolves before business logic:
 
 ## Resolver rules
 
+- Plant creation is a Farm-scoped authorization decision made from active
+  ActorContext membership and `boss|engineer` role before a `plant_id` exists;
+  it does not use or manufacture a `PlantPermissionContext` for the candidate
+  Plant. Consultant and disabled membership are denied before persistence.
+- Successful Engineer creation must atomically produce an active creator grant
+  before subsequent Plant resolution. This grant resolves through the normal
+  `source=plant_access_grant` path and starts with
+  `plant_approve_actions=false`.
 - Boss resolves with `source=boss_role` and no grant.
 - Engineer/Consultant require an active grant for normal and retained-history
   reads; missing/revoked grant resolves `source=denied`.
@@ -79,6 +87,9 @@ agent/context builder resolves before business logic:
 - `can_create_domain_tasks=true` only for Boss or granted Engineer during
   active normal-operation access.
 - Consultant never receives operate/task/manage/action authority.
+- Engineer Plant creation does not set `can_manage_access` and does not grant
+  lifecycle-management authority; archive/restore and grant management remain
+  Boss-only.
 - Generic FT-001 protected seams may use `AUTH_PLANT_FORBIDDEN`; it must hide
   whether the Plant exists. The concrete FT-002 HTTP error catalog is deferred.
 - Context builders exclude denied and archived-normal-operation records before
@@ -102,13 +113,17 @@ agent/context builder resolves before business logic:
 
 - Unit tests cover roles, all output fields, archived access, revoked/missing
   grants, denied source, comment/task flags, and action approval derivation.
+- Policy tests cover Farm-scoped Plant creation for active Boss/Engineer and
+  denial for Consultant/disabled membership without requiring a pre-existing
+  Plant grant.
 - Compatibility tests prove one resolver shape across FT-001 protected seams
   and future FT-002 adapters.
 - Integration tests prove ActorContext-before-business-logic and authorization
   parity between reads and context builders.
 - Bus/model context tests exclude auth material and unauthorized Plants.
 - Deferred cross-feature E2E after FT-002 tasking proves Engineer sees only
-  granted Plants and Consultant remains read/comment/advice only.
+  granted Plants, immediately sees an atomically granted self-created Plant,
+  and Consultant remains read/comment/advice only.
 
 ## Related specs
 

@@ -2,7 +2,7 @@
 description: Global risk-based testing strategy and cross-cutting verification rules for MVP v2.
 status: active
 type: testing_strategy
-last_updated: 2026-07-04
+last_updated: 2026-07-06
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -43,8 +43,13 @@ evidence belong to subject verification specs, code, and operational artifacts.
 ## Unit Test Areas
 
 - Role, membership, Plant access, and action-approval authority policies.
+- Farm-scoped Plant creation permits active Boss/Engineer, denies
+  Consultant/disabled membership, and does not widen Engineer lifecycle/access
+  administration authority.
 - ActorContext construction and fail-closed authorization.
 - Plant lifecycle, retained-history, provenance, freshness, and trust rules.
+- Archived-Plant policy leaves dependent records unchanged, denies all
+  state-advancing commands, and makes restore require current guards.
 - Runtime decision, MessageEnvelope validation, and publish/block behavior.
 - Agent-context filtering and UI Feed isolation.
 - Safety Gate classification, approval authority, and no-device-execution rules.
@@ -55,6 +60,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
 ## Integration Test Areas
 
 - Farm/Plant routes and context builders enforce backend authorization.
+- Engineer Plant creation atomically persists the Plant, active creator grant
+  with `plant_approve_actions=false`, and required audit records; failure leaves
+  no partial state.
 - Administrative mutations produce durable audit evidence.
 - Photo intake preserves file, catalog, checksum, manifest, and timeline refs.
 - PostgreSQL/read-model authority remains separate from timeline audit/export.
@@ -62,6 +70,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
 - Agent Chat Bus and UI Feed preserve consumability boundaries.
 - Timeline replay cannot mutate runtime state or publish directly to the Bus.
 - Safety approval remains separate from Companion governance decisions.
+- Archive/restore contract tests span open tasks, approvals, follow-ups, and
+  Companion proposals: no transition while archived and no automatic resume
+  after restore.
 - Dataset/export context stays Plant-scoped and non-trainable by default.
 - Loopback/LAN, local-only, redaction, and storage-prompt controls hold.
 
@@ -70,12 +81,19 @@ evidence belong to subject verification specs, code, and operational artifacts.
 - Boss administration, Account creation, Plant access, and admin audit.
 - Engineer authorized Plant selection, check-in, photo upload, measurements,
   history, tasks, approvals, and follow-up.
+- Engineer creates a Plant, immediately selects it through the creator grant,
+  and remains unable to archive/restore it or manage its grants.
 - Real agent output through validated Bus/UI boundaries.
 - Missing or stale evidence produces clarification instead of invented facts.
 - Physical-action advice passes Safety Gate and authorized approval before a
   human-performed action task is created.
 - Companion proposal/decision behavior does not authorize physical action.
 - Plant archive/restore preserves authorized retained history.
+- Plant archive/restore preserves grant identity/status/approval flags; active
+  grants resume after restore and revoked grants remain denied.
+- Plant archive with open operational/governance records preserves their state,
+  blocks execution/decision/publication, and restore revalidates current
+  authorization, version, freshness, Safety Gate, and governance rules.
 - Local storage prompts do not imply upload or server availability.
 
 ## Anti-Cheat Rules
