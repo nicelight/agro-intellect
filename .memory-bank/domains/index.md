@@ -19,7 +19,7 @@ source_of_truth:
 
 - [Account And FarmMembership](identity/account-membership.md): local identity and membership persistence.
 - [Session Storage](auth/session-storage.md): digest-only LocalSession persistence.
-- [Farm Plant And Access Storage](farm/farm-plant-access-storage.md): bounded Plant/grant identity and status assumptions for the permission seam.
+- [Farm Plant And Access Storage](farm/farm-plant-access-storage.md): exact Farm/Plant/grant persistence, migration, bootstrap, and transaction rules.
 - [Admin Audit](admin/admin-audit.md): durable audited mutation records.
 
 ## Routing

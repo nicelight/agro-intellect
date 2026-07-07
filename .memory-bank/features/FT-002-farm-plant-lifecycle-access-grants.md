@@ -9,10 +9,14 @@ last_updated: 2026-07-06
 clarification_status: complete
 last_clarified: 2026-07-06
 clarification_questions: 12
+spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/farm/farm-plant-access-storage.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
   - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/admin/admin-audit.md
+  - .memory-bank/contracts/farm/plant-management-http.md
+  - .memory-bank/testing/farm/plant-lifecycle-and-access.md
   - .memory-bank/states/safety-action-lifecycle.md
   - .memory-bank/states/companion-governance.md
 source_of_truth:
@@ -126,6 +130,12 @@ source_of_truth:
   it or manage grants; Boss archives/restores it and the same active creator
   grant becomes non-operative then operative again.
 
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-002-BHV-001-idempotent-canonical-bootstrap.behavior.json`
+- `.memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json`
+- `.memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json`
+
 ## Normative Backbone Links
 
 - [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): module boundaries and runtime authority.
@@ -143,22 +153,27 @@ source_of_truth:
   preservation effects.
 - [ActorContext](../contracts/access/actor-context.md) defines concrete Plant
   permission resolution and fail-closed output.
+- [Admin audit](../domains/admin/admin-audit.md) defines the shared exact audit
+  schema, taxonomy, redaction, and same-transaction requirements.
+- [Plant management HTTP](../contracts/farm/plant-management-http.md) defines
+  concrete Farm/Plant/access routes, payloads, authorization, and errors.
+- [Plant lifecycle and access verification](../testing/farm/plant-lifecycle-and-access.md)
+  defines migration, bootstrap, service, API, and integrated evidence.
 - [Safety Action Lifecycle](../states/safety-action-lifecycle.md) and
   [Companion Governance](../states/companion-governance.md) compose the shared
   archive guard for already-open dependent records.
 
-Full storage/migrations, bootstrap implementation, mutation/API/error
-contracts, retained-history services, complete verification plan, and task
-queue remain outside this clarification composition and route through
-`/prd-to-tasks FT-002`.
+Retained-history payloads/services and downstream task, approval, agent, and
+governance schemas remain with their owning features. FT-002 supplies the
+shared archive guard and must not create placeholder implementations for them.
 
 ## SDD Design Gate
 
 - Global/shared status: ready. Architecture Spine `AD-007` and the linked
   lifecycle specs define the archived-Plant operational guard.
-- Feature-local status: pending `/prd-to-tasks FT-002` for exact persistence,
-  bootstrap, mutation/API/error, audit, retained-history, and verification
-  contracts before task creation.
+- Feature-local status: complete. Exact persistence/bootstrap, lifecycle,
+  audit, HTTP/error, ActorContext adapter, and verification contracts are
+  linked above. Retained-history contents are explicitly not part of FT-002.
 
 ## Non-Goals
 
@@ -167,6 +182,11 @@ queue remain outside this clarification composition and route through
   history rendering beyond access/lifecycle hooks.
 - Agent output generation, MessageEnvelope/UI Feed projection, Safety Gate
   policy, or physical-action task execution.
+
+## Implementation
+
+- [Implementation plan](../tasks/plans/IMPL-FT-002.md): ordered task queue,
+  dependencies, verification strategy, and UAT.
 
 ## Clarifications
 

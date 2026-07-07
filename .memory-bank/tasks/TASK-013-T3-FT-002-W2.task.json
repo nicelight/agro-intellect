@@ -1,0 +1,142 @@
+{
+  "id": "TASK-013-T3-FT-002-W2",
+  "title": "Implement FT-002 lifecycle grant services and persisted permission adapter",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-002",
+  "reqs": [
+    "REQ-003",
+    "REQ-004",
+    "REQ-006",
+    "REQ-007"
+  ],
+  "depends_on": [
+    "TASK-012-T3-FT-002-W1"
+  ],
+  "touched_files": [
+    "backend/app/access_admin/farm_repository.py",
+    "backend/app/access_admin/farm_service.py",
+    "backend/app/access_admin/permissions.py",
+    "backend/app/access_admin/dependencies.py",
+    "tests/backend/access_admin/test_ft002_farm_plant_services.py",
+    "tests/backend/access_admin/test_ft002_grant_lifecycle.py",
+    "tests/backend/access_admin/test_ft002_persisted_actor_context.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft002-service-permission-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/access_admin/test_ft002_grant_lifecycle.py tests/backend/access_admin/test_ft002_persisted_actor_context.py",
+      "required": false
+    },
+    {
+      "name": "access-admin-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Farm display, Plant create/rename/archive/restore, and grant create/reactivate/update/revoke follow the canonical role and lifecycle matrices.",
+    "Engineer creation commits Plant, stable active creator grant with approval false, and both required audit records atomically; injected failures roll back all four.",
+    "Archive/restore and grant mutations lock and recheck current DB state and ActorContext in the write transaction; stale snapshots cannot authorize a change.",
+    "Archive/restore preserves every grant ID/status/approval flag; grant changes while archived remain non-operative until restore.",
+    "Persisted snapshot provider feeds the existing FT-001 resolver and fails closed on missing, mismatched, revoked, archived-normal, and repository-error paths.",
+    "FT-002-BHV-002 and FT-002-BHV-003 are covered by executable evidence."
+  ],
+  "docs": [
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md"
+  ],
+  "evidence_required": [
+    "role and lifecycle policy test output",
+    "Engineer atomic create success and injected rollback evidence",
+    "grant stable-identity/reactivation/update/revoke/no-op evidence",
+    "archive row-lock/current-state and grant preservation evidence",
+    "persisted ActorContext snapshot and fail-closed evidence",
+    "focused access-admin and full pytest output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json",
+    ".memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md",
+    ".memory-bank/testing/auth/session-and-access.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Extend the existing FT-001 PlantPermissionContext DTO and resolver contract; do not create a second permission model.",
+    "Use same-transaction AdminAuditRecord writes and current-state row locks for every actual mutation.",
+    "Do not implement HTTP, FT-003 account/admin behavior, retained-history payloads, downstream workflow tables, or Safety Gate logic.",
+    "Do not weaken no-existence-leak denial on repository errors or relationship mismatch."
+  ],
+  "invariants": [
+    "Boss permission is role/Farm based; Engineer and Consultant require an active matching grant.",
+    "Engineer creator access is immediate but never includes lifecycle/access management or Safety Gate clearance.",
+    "Archive changes only Plant status and grants remain stable/non-operative until current restore and authorization.",
+    "Failed and no-op commands write no misleading or duplicate success audit."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/access_admin/test_ft002_grant_lifecycle.py tests/backend/access_admin/test_ft002_persisted_actor_context.py",
+    ".venv/bin/python -m pytest tests/backend/access_admin",
+    ".venv/bin/python -m pytest tests",
+    "git diff --check",
+    "Prove persisted ActorContext parity for Boss, Engineer, Consultant, active/revoked grants, and active/archived Plants.",
+    "Prove every actual service mutation has the exact same-transaction audit count and every failure/no-op has none."
+  ],
+  "purpose": "Implement the single transactional service boundary that makes the FT-002 authority schema usable through the verified FT-001 ActorContext seam.",
+  "success_outcome": "Authorized Farm/Plant/grant transitions are atomic, audited, race-aware, and immediately reflected by one fail-closed persisted Plant permission adapter.",
+  "anti_goals": [
+    "No parallel permission or audit model.",
+    "No HTTP or UI implementation.",
+    "No downstream workflow placeholders."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/access_admin/farm_repository.py",
+      "backend/app/access_admin/farm_service.py",
+      "backend/app/access_admin/permissions.py",
+      "backend/app/access_admin/dependencies.py",
+      "tests/backend/access_admin/test_ft002_farm_plant_services.py",
+      "tests/backend/access_admin/test_ft002_grant_lifecycle.py",
+      "tests/backend/access_admin/test_ft002_persisted_actor_context.py",
+      ".protocols/TASK-013-T3-FT-002-W2/",
+      ".tasks/TASK-013-T3-FT-002-W2/",
+      ".memory-bank/tasks/TASK-013-T3-FT-002-W2.task.json"
+    ],
+    "forbidden_scope": [
+      "Farm/Plant HTTP and PWA",
+      "FT-003 Account/admin workflows",
+      "retained-history and downstream workflow persistence",
+      "Safety Gate implementation"
+    ],
+    "stop_conditions": [
+      "TASK-012-T3-FT-002-W1 is not done or its schema differs from the canonical storage spec.",
+      "A mutation cannot recheck current authority/state in the same transaction.",
+      "The existing FT-001 ActorContext seam must be broken or duplicated to proceed.",
+      "Atomic audit/rollback or no-leak behavior cannot be proven."
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "FT-002-BHV-003",
+  "feature_id": "FT-002",
+  "title": "Archived Plant keeps grant identity while grant changes remain non-operative",
+  "given": {
+    "plant": "active Plant with an active Engineer grant",
+    "grant": "plant_approve_actions=false"
+  },
+  "when": {
+    "actions": [
+      "Boss archives the Plant",
+      "Boss re-grants the same membership with plant_approve_actions=true while archived",
+      "Boss restores the Plant"
+    ]
+  },
+  "then": {
+    "identity": "the same grant ID is retained",
+    "archived_effect": "normal read, operate, task, and action approval stay denied before restore",
+    "restore_effect": "the stored active grant becomes operative only after restore",
+    "safety": "can_approve_actions is actor authority only and does not grant Safety Gate clearance"
+  }
+}

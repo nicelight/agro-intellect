@@ -1,0 +1,16 @@
+{
+  "id": "FT-002-BHV-001",
+  "feature_id": "FT-002",
+  "title": "Idempotent canonical Farm and tomato bootstrap",
+  "given": {
+    "database": "migrated FT-002 schema with no Farm or Plant rows"
+  },
+  "when": {
+    "action": "run the canonical Farm bootstrap twice"
+  },
+  "then": {
+    "farm": "one local_farm with stable ID and Local Farm display name",
+    "plant": "one active tomato_001 with stable ID and Tomato 001 display name",
+    "second_run": "no record, timestamp, status, display name, or audit change"
+  }
+}

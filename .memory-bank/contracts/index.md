@@ -25,6 +25,7 @@ source_of_truth:
 - [Session HTTP](auth/session-http.md): login/logout/current-session API.
 - [ActorContext](access/actor-context.md): actor and Plant authorization context.
 - [Boss Admin HTTP](admin/boss-admin-http.md): direct Account creation and personnel/admin/audit API.
+- [Plant Management HTTP](farm/plant-management-http.md): Farm/Plant lifecycle and PlantAccessGrant API.
 
 ## Routing
 

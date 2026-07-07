@@ -73,8 +73,9 @@ authoritative.
 
 ## First Boss bootstrap boundary
 
-The Boss-only API cannot create the first Boss. A later FT-002/FT-003 design
-must define one local one-shot CLI that reads the password through `getpass`
+The Boss-only API cannot create the first Boss. FT-002 defines the prerequisite
+canonical Farm/`tomato_001` bootstrap. FT-003 must define one local one-shot CLI
+that reads the password through `getpass`
 (not argv/env), creates the first active Boss membership after the single Farm
 exists, writes `account_created` with system/bootstrap provenance, and refuses
 to run once an active Boss exists. Exact CLI commands and storage sequencing are

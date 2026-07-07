@@ -58,9 +58,9 @@ lifecycle, Boss account-creation service, and admin audit records.
 - The first identity migration creates non-null UUID `farm_id` without a Farm
   FK and must not create `farms`. Before the Farm spec closes this relation, no
   released path may create durable memberships; rollback-scoped fixtures may.
-- A later full FT-002 design must define and verify the final Farm relation
-  before product membership writes are enabled. FT-001 does not select its
-  migration/reconciliation algorithm.
+- The FT-002 Farm storage spec defines the final restrictive Farm FK and
+  zero/one/multiple legacy Farm-ID reconciliation. The first FT-002 migration
+  task must close and verify it before product membership writes are enabled.
 - Required indexes are exactly one unique normalized account login lookup and
   one unique `farm_memberships(account_id, farm_id)` lookup. Do not add
   duplicate indexes with the same leading columns.

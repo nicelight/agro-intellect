@@ -1,0 +1,146 @@
+{
+  "id": "TASK-012-T3-FT-002-W1",
+  "title": "Implement FT-002 authority schema and canonical Farm bootstrap",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-002",
+  "reqs": [
+    "REQ-001",
+    "REQ-004",
+    "REQ-006",
+    "REQ-007"
+  ],
+  "depends_on": [
+    "TASK-011-T3-FT-001-W3"
+  ],
+  "touched_files": [
+    "backend/app/access_admin/__init__.py",
+    "backend/app/access_admin/models.py",
+    "backend/app/access_admin/farm_repository.py",
+    "backend/app/access_admin/farm_bootstrap.py",
+    "backend/migrations/versions/ft002_farm_plant_access.py",
+    "scripts/bootstrap-farm-local.sh",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/access_admin/test_ft002_farm_bootstrap.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft002-schema-bootstrap-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/access_admin/test_ft002_farm_bootstrap.py",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "The existing Foundation DatabaseHandle, Access & Admin metadata, and Alembic command path are extended rather than replaced.",
+    "PostgreSQL migration evidence proves exact native-UUID tables, checks, indexes, restrictive FKs, JSON audit shape, and the final FarmMembership Farm FK.",
+    "Zero and one legacy Farm-ID migration paths preserve valid data; multiple distinct IDs fail before committed mutation; guarded downgrade does not destroy authority data.",
+    "Canonical bootstrap creates or reuses local_farm and tomato_001 exactly as specified, preserves existing/archived state, writes only applicable audits, and is a no-op on repeat.",
+    "Injected migration/bootstrap/audit failures leave no partial authority state or misleading audit and expose no credentials or raw DB errors.",
+    "FT-002-BHV-001 is covered by executable evidence."
+  ],
+  "docs": [
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md"
+  ],
+  "evidence_required": [
+    "PostgreSQL upgrade/model/constraint/index/FK output",
+    "zero/one/multiple legacy Farm-ID reconciliation evidence",
+    "guarded downgrade evidence",
+    "canonical bootstrap first-run, partial-run, repeated-run, archived-preservation, and conflict evidence",
+    "atomic rollback and audit-count evidence",
+    "focused and full pytest output",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/behavior-specs/FT-002-BHV-001-idempotent-canonical-bootstrap.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/domains/identity/account-membership.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use the verified Foundation DB/session/Alembic path and existing Access & Admin metadata; do not create parallel infrastructure.",
+    "Do not rewrite, merge, select, or delete conflicting legacy Farm identities.",
+    "Do not create Accounts, first-Boss CLI behavior, admin UI, retained-history services, or downstream operational records.",
+    "Do not claim PostgreSQL behavior from SQLite-only evidence."
+  ],
+  "invariants": [
+    "PostgreSQL/read model is mutable Farm/Plant/grant/audit authority.",
+    "Exactly one local_farm key is possible and authority relationships never cascade delete.",
+    "farm_key and plant_key are immutable; bootstrap never overwrites existing display or lifecycle state.",
+    "Secrets, auth material, and credential-bearing DB URLs never enter diagnostics or evidence."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/access_admin/test_ft002_farm_bootstrap.py",
+    ".venv/bin/python -m pytest tests",
+    "bash scripts/db-migrate-local.sh",
+    "bash scripts/bootstrap-farm-local.sh",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Inspect the migrated PostgreSQL schema and prove the exact FarmMembership FK and non-cascading authority relations.",
+    "Prove repeated bootstrap changes no ID, display name, status, timestamp, grant, or audit count."
+  ],
+  "purpose": "Establish the exact persisted Farm/Plant/access/audit authority and canonical local seed before lifecycle or HTTP behavior is enabled.",
+  "success_outcome": "The FT-002 schema is safely migrated, the deferred Farm FK is closed, and local_farm plus tomato_001 can be bootstrapped idempotently without data loss or secret leakage.",
+  "anti_goals": [
+    "No Farm/Plant HTTP routes.",
+    "No generic ACL or multi-Farm abstraction.",
+    "No destructive reconciliation or downgrade."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/access_admin/__init__.py",
+      "backend/app/access_admin/models.py",
+      "backend/app/access_admin/farm_repository.py",
+      "backend/app/access_admin/farm_bootstrap.py",
+      "backend/migrations/versions/ft002_farm_plant_access.py",
+      "scripts/bootstrap-farm-local.sh",
+      "tests/backend/access_admin/test_ft002_schema_migration.py",
+      "tests/backend/access_admin/test_ft002_farm_bootstrap.py",
+      ".protocols/TASK-012-T3-FT-002-W1/",
+      ".tasks/TASK-012-T3-FT-002-W1/",
+      ".memory-bank/tasks/TASK-012-T3-FT-002-W1.task.json"
+    ],
+    "forbidden_scope": [
+      "Farm/Plant HTTP",
+      "FT-003 first-Boss or Account administration",
+      "retained-history and downstream operational schemas",
+      "destructive legacy Farm reconciliation"
+    ],
+    "stop_conditions": [
+      "TASK-011-T3-FT-001-W3 is not done or verified FT-001 schema assumptions no longer hold.",
+      "More than one legacy Farm identity requires a product/data decision.",
+      "Migration or bootstrap cannot preserve authority data transactionally.",
+      "A PostgreSQL-specific claim cannot be evidenced on PostgreSQL.",
+      "Diagnostics or evidence contain unredacted secrets or auth material."
+    ]
+  }
+}

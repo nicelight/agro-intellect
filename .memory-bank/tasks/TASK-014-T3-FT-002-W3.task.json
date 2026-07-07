@@ -1,0 +1,143 @@
+{
+  "id": "TASK-014-T3-FT-002-W3",
+  "title": "Implement FT-002 protected Farm Plant and access HTTP",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-002",
+  "reqs": [
+    "REQ-001",
+    "REQ-003",
+    "REQ-004",
+    "REQ-006",
+    "REQ-007"
+  ],
+  "depends_on": [
+    "TASK-013-T3-FT-002-W2"
+  ],
+  "touched_files": [
+    "backend/app/access_admin/dependencies.py",
+    "backend/app/access_admin/errors.py",
+    "backend/app/api/__init__.py",
+    "backend/app/api/plants.py",
+    "backend/app/main.py",
+    "tests/backend/api/test_ft002_plant_routes.py",
+    "tests/backend/api/test_ft002_plant_openapi.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft002-api-contract-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+      "required": false
+    },
+    {
+      "name": "api-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/api",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Every concrete Farm/Plant/access route, request, response, status, stable error, and generated OpenAPI shape matches the canonical HTTP contract.",
+    "Every route resolves ActorContext before business logic; Farm-scoped creation and Plant-scoped operations apply the exact role/operation guard.",
+    "Normal list/detail excludes unauthorized and archived Plants through the persisted resolver, not frontend filtering or an allow-all fixture.",
+    "Engineer create returns immediate creator-grant permissions but archive/restore/access remain denied; Consultant stays read/comment only.",
+    "Boss lifecycle/access operations work for archived Plants without making them normally readable or operative; retries preserve audit semantics.",
+    "No-leak errors, cache-control, validation, conflict rollback, and credential/DB-error redaction are executable and regression-tested."
+  ],
+  "docs": [
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md"
+  ],
+  "evidence_required": [
+    "route and generated OpenAPI contract output",
+    "ActorContext-before-business and persisted list-filter evidence",
+    "Boss/Engineer/Consultant/disabled authorization matrix evidence",
+    "archived Plant lifecycle/access route evidence",
+    "stable no-leak error and redaction evidence",
+    "focused API, API regression, and full pytest output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md",
+    ".memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json",
+    ".memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-002.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Reuse the existing FastAPI app factory, FT-001 session/ActorContext dependencies, error envelope, and persisted FT-002 services.",
+    "Do not expose a bootstrap HTTP endpoint or implement FT-003 admin projections, retained history, UI, downstream operations, or agent flows.",
+    "Do not return raw model objects, SQL errors, auth material, or existence-revealing Plant errors.",
+    "Request models must forbid immutable/server-owned fields and unknown fields."
+  ],
+  "invariants": [
+    "Backend authorization is authoritative; frontend visibility is presentation only.",
+    "Unknown, unauthorized, revoked/missing-grant, and archived normal Plant paths share the safe no-leak denial.",
+    "Archived Plant lifecycle/access administration is a narrow Boss exception and never normal operational access.",
+    "can_approve_actions is actor authority only and never Safety Gate clearance."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+    ".venv/bin/python -m pytest tests/backend/api",
+    ".venv/bin/python -m pytest tests",
+    "git diff --check",
+    "Inspect generated OpenAPI against every canonical FT-002 path, body, response, enum, UUID, timestamp, and error status.",
+    "Prove route results and denial filtering use persisted Plant/grant rows through ActorContext."
+  ],
+  "purpose": "Expose the completed FT-002 authority and lifecycle services through one exact protected HTTP boundary usable by later admin and PWA features.",
+  "success_outcome": "Authorized actors can use the canonical Farm, Plant lifecycle, and access-grant API with exact no-leak errors and no frontend-only authorization dependency.",
+  "anti_goals": [
+    "No FT-003 admin/personnel API duplication.",
+    "No retained-history or downstream operations routes.",
+    "No public bootstrap endpoint."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/access_admin/dependencies.py",
+      "backend/app/access_admin/errors.py",
+      "backend/app/api/__init__.py",
+      "backend/app/api/plants.py",
+      "backend/app/main.py",
+      "tests/backend/api/test_ft002_plant_routes.py",
+      "tests/backend/api/test_ft002_plant_openapi.py",
+      ".protocols/TASK-014-T3-FT-002-W3/",
+      ".tasks/TASK-014-T3-FT-002-W3/",
+      ".memory-bank/tasks/TASK-014-T3-FT-002-W3.task.json"
+    ],
+    "forbidden_scope": [
+      "bootstrap HTTP",
+      "FT-003 admin and first-Boss workflows",
+      "retained-history and downstream operations",
+      "frontend/PWA and agent publication"
+    ],
+    "stop_conditions": [
+      "TASK-013-T3-FT-002-W2 is not done or its service/permission contract differs from canonical specs.",
+      "A route would require frontend-only authorization or existence-revealing errors.",
+      "The canonical HTTP contract cannot be represented by generated schemas/OpenAPI.",
+      "A response or error would expose auth material, raw SQL, or credential-bearing configuration."
+    ]
+  }
+}

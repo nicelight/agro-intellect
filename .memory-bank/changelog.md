@@ -4,6 +4,21 @@ status: active
 ---
 # Changelog
 
+## [2026-07-06] FT-002 SDD closure and task queue
+- Confirmed completed Foundation gate `TASK-004-T2-FT-000-W0` and the full
+  completed FT-001 chain through `TASK-011-T3-FT-001-W3` as the brownfield
+  prerequisite for FT-002.
+- Closed exact Farm/Plant/grant persistence, legacy Farm-ID reconciliation,
+  canonical `local_farm`/`tomato_001` bootstrap, lifecycle, stable grant,
+  AdminAuditRecord, HTTP/error, and verification contracts.
+- Added three behavior specs for idempotent bootstrap, atomic Engineer create
+  with immediate access, and archive/grant/restore semantics.
+- Marked FT-002 feature design `complete` and created implementation plan plus
+  indexed dependency-ordered T3 tasks `TASK-012` through `TASK-015`.
+- Kept first-Boss/Account administration in FT-003 and retained-history,
+  downstream archive integration, UI, agents, tasks, approvals, and governance
+  behavior with their owning features.
+
 ## [2026-07-06] FT-002-triggered archived-Plant backbone repair
 - Added Architecture Spine `AD-007`: archived Plant is a global operational
   deny for new and already-open Plant-scoped workflows.

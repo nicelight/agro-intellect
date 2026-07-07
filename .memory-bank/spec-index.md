@@ -36,7 +36,7 @@ source_of_truth:
 | data_spec | [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md) | active | Local photo artifact authority | `/spec-design` or `/prd-to-tasks` |
 | data_spec | [.memory-bank/domains/identity/account-membership.md](domains/identity/account-membership.md) | active | Account and FarmMembership persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/auth/session-storage.md](domains/auth/session-storage.md) | active | LocalSession digest-only persistence | `/prd-to-tasks` or `/spec-design` |
-| data_spec | [.memory-bank/domains/farm/farm-plant-access-storage.md](domains/farm/farm-plant-access-storage.md) | active | Bounded Plant/access identity and status assumptions for FT-001 | `/prd-to-tasks` or `/spec-design` |
+| data_spec | [.memory-bank/domains/farm/farm-plant-access-storage.md](domains/farm/farm-plant-access-storage.md) | active | Exact Farm/Plant/grant persistence, migration, bootstrap, and transaction rules | `/prd-to-tasks` or `/spec-design` |
 | data_contract | [.memory-bank/domains/admin/admin-audit.md](domains/admin/admin-audit.md) | active | Durable admin audit record and transaction semantics | `/prd-to-tasks` or `/spec-design` |
 | api_guidelines | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | active | Global HTTP/auth/error/origin rules | `/spec-design` |
 | api_contract | [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md) | active | `/health` and `/ready` substrate boundary | `/foundation-to-tasks` or `/spec-design` |
@@ -49,6 +49,7 @@ source_of_truth:
 | api_contract | [.memory-bank/contracts/auth/session-http.md](contracts/auth/session-http.md) | active | Login/logout/current-session HTTP | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/access/actor-context.md](contracts/access/actor-context.md) | active | ActorContext and Plant permission resolution | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/admin/boss-admin-http.md](contracts/admin/boss-admin-http.md) | active | Boss direct Account creation and admin HTTP boundary | `/prd-to-tasks` or `/spec-design` |
+| api_contract | [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md) | active | Farm/Plant lifecycle and PlantAccessGrant HTTP boundary | `/prd-to-tasks` or `/spec-design` |
 | state_spec | [.memory-bank/states/plant-state-trust.md](states/plant-state-trust.md) | active | Plant evidence trust promotion | `/spec-design` |
 | state_spec | [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | active | Safety/action approval lifecycle | `/spec-design` |
 | state_spec | [.memory-bank/states/companion-governance.md](states/companion-governance.md) | active | Companion governance lifecycle | `/spec-design` |
@@ -60,6 +61,7 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/foundation-test-harness.md](testing/foundation-test-harness.md) | active | Foundation executable harness | `/foundation-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/auth/session-and-access.md](testing/auth/session-and-access.md) | active | Identity/session/access verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/admin/boss-admin-and-audit.md](testing/admin/boss-admin-and-audit.md) | active | Boss admin/audit verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/farm/plant-lifecycle-and-access.md](testing/farm/plant-lifecycle-and-access.md) | active | Farm bootstrap, Plant lifecycle/access, audit, migration, and HTTP verification | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 
 ## Planned Specs

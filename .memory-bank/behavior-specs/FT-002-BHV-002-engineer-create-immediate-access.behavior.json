@@ -1,0 +1,18 @@
+{
+  "id": "FT-002-BHV-002",
+  "feature_id": "FT-002",
+  "title": "Engineer creates a Plant and immediately receives normal access",
+  "given": {
+    "actor": "active Engineer membership in local_farm",
+    "plant_key": "lettuce_001 is valid and unused"
+  },
+  "when": {
+    "action": "Engineer creates lettuce_001"
+  },
+  "then": {
+    "transaction": "Plant, active creator grant, plant_created audit, and plant_access_granted audit commit atomically",
+    "grant": "stable grant ID with plant_approve_actions=false",
+    "permission": "normal ActorContext resolver returns read and operate authority",
+    "management": "archive, restore, and access management remain denied"
+  }
+}

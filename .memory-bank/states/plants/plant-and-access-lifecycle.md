@@ -13,16 +13,15 @@ source_of_truth:
 
 ## Scope
 
-Defines Plant/PlantAccessGrant status vocabulary, the global archived-Plant
-operational guard, permission effects, and the bounded creation and
-creator-grant transitions accepted for FT-002.
+Defines Plant/PlantAccessGrant status vocabulary, create/rename/archive/restore
+and grant transitions, the global archived-Plant operational guard, permission
+effects, stable grant identity, and retry semantics.
 
 ## Out of scope
 
-General create/archive/restore and grant/update/revoke command payloads,
-retained-history presentation, HTTP errors/routes, persistence migrations, and
-bootstrap implementation. Shared archive/restore effects and Engineer-creation
-role/atomicity are in scope below.
+HTTP request/response payloads and error codes, persistence fields and migration
+order, retained-history payloads, and downstream operational record state
+machines.
 
 ## Plant lifecycle
 
@@ -34,6 +33,10 @@ role/atomicity are in scope below.
   writes fail, the Plant does not enter `active`.
 - Creation grants no archive/restore authority. Only Boss may transition an
   existing Plant between `active` and `archived`.
+- Active Boss or Engineer with an active grant may change `display_name` only
+  while the Plant is active. Consultant, disabled membership, missing/revoked
+  grant, and archived Plant fail before mutation.
+- `plant_key` is assigned only at creation and has no rename transition.
 - `active` permits normal operations only when ActorContext grants the
   requested capability.
 - `archived` denies normal read, operate, domain-task creation, and action
@@ -43,6 +46,9 @@ role/atomicity are in scope below.
   combines Plant and grant status on every decision.
 - Restore does not mutate grants either: a previously active grant becomes
   operative again, while a previously revoked grant remains revoked.
+- Repeating archive for an archived Plant or restore for an active Plant is a
+  successful no-op: return current state, change no timestamp, and write no
+  duplicate audit row.
 
 ## Archived Plant operational guard
 
@@ -80,6 +86,23 @@ role/atomicity are in scope below.
 - Engineer action approval requires an active grant with the override and a
   separate Safety Gate pass; Consultant never receives approval authority.
 - Boss does not require a grant and resolves with `source=boss_role`.
+- Boss may create or reactivate a grant only for an active Engineer or
+  Consultant membership in the same Farm. Boss memberships never receive a
+  synthetic grant. `plant_approve_actions=true` is valid only for Engineer;
+  Consultant grants must keep it false.
+- Grant/upsert transition rules preserve the original `grant_id`:
+  - missing -> active with requested approval flag and `plant_access_granted`;
+  - revoked -> active with requested approval flag and
+    `plant_access_granted`;
+  - active with changed approval flag -> active and
+    `plant_approve_actions_changed`;
+  - active with identical flag -> no-op and no audit.
+- Revocation changes active -> revoked and writes `plant_access_revoked`.
+  Repeated revocation is a no-op and writes no audit.
+- Grant administration is allowed while the Plant is archived, but the
+  resulting active grant remains non-operative until restore.
+- Revoking an Engineer creator grant is allowed and removes their normal
+  visibility/operate authority just like any other grant.
 
 ## Effects and failures
 
@@ -91,6 +114,9 @@ role/atomicity are in scope below.
 - Open dependent records remain unchanged on archive; all operational
   transitions fail closed until restore and current-guard revalidation.
 - Denied records are filtered before Bus/model context preparation.
+- Every actual Farm-display, Plant-display, Plant lifecycle, or grant mutation
+  writes its canonical AdminAuditRecord in the same transaction. No-op retries
+  and failed commands write none.
 
 ## Verification
 
@@ -105,12 +131,13 @@ role/atomicity are in scope below.
   unchanged by archive, cannot advance while archived, do not auto-resume on
   restore, and can advance only after current guards pass.
 - Compatibility tests prove these effects map to the canonical
-  `PlantPermissionContext` fields without implementing FT-002 persistence or
-  mutation workflows.
+  `PlantPermissionContext` fields through the persisted FT-002 adapter.
 
 ## Related specs
 
 - [.memory-bank/domains/farm/farm-plant-access-storage.md](../../domains/farm/farm-plant-access-storage.md)
 - [.memory-bank/contracts/access/actor-context.md](../../contracts/access/actor-context.md)
+- [.memory-bank/contracts/farm/plant-management-http.md](../../contracts/farm/plant-management-http.md)
+- [.memory-bank/domains/admin/admin-audit.md](../../domains/admin/admin-audit.md)
 - [.memory-bank/states/safety-action-lifecycle.md](../safety-action-lifecycle.md)
 - [.memory-bank/states/companion-governance.md](../companion-governance.md)

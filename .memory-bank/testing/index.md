@@ -21,6 +21,9 @@ source_of_truth:
   sessions, ActorContext, and authorization.
 - [Boss Admin And Audit Verification](admin/boss-admin-and-audit.md): Boss
   administration, audit, isolation, and end-to-end evidence.
+- [Plant Lifecycle And Access Verification](farm/plant-lifecycle-and-access.md):
+  Farm bootstrap, Plant lifecycle/grants, ActorContext, audit, migration, and
+  HTTP evidence.
 
 ## Archive
 

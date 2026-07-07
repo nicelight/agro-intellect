@@ -16,7 +16,7 @@ source_of_truth:
 ## EP-001 Local Farm Access And Admin
 
 - [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): verified local identity, session, and ActorContext boundary.
-- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): Farm, Plant lifecycle, and access-grant boundary.
+- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): design-complete Farm/Plant lifecycle and access-grant task queue.
 - [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): Boss administration and durable audit boundary.
 
 ## EP-002 Plant Operations Evidence Authority
