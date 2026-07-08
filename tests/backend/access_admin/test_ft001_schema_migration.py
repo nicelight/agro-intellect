@@ -102,7 +102,7 @@ def test_ft001_revision_is_postgresql_native_and_rollback_scoped():
 
         config = build_alembic_config(settings)
         script = ScriptDirectory.from_config(config)
-        script_revision = script.get_revision("head")
+        script_revision = script.get_revision("ft001_access_sessions")
         assert script_revision is not None
         assert script_revision.revision == "ft001_access_sessions"
 

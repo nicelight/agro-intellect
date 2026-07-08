@@ -46,6 +46,8 @@ class PermissionSource(StrEnum):
 @dataclass(frozen=True, slots=True)
 class RolePolicy:
     requires_plant_grant: bool
+    can_create_plants: bool
+    can_manage_lifecycle: bool
     can_read: bool
     can_comment: bool
     can_operate: bool
@@ -59,6 +61,8 @@ ROLE_POLICIES = MappingProxyType(
     {
         RolePreset.BOSS: RolePolicy(
             requires_plant_grant=False,
+            can_create_plants=True,
+            can_manage_lifecycle=True,
             can_read=True,
             can_comment=True,
             can_operate=True,
@@ -69,6 +73,8 @@ ROLE_POLICIES = MappingProxyType(
         ),
         RolePreset.ENGINEER: RolePolicy(
             requires_plant_grant=True,
+            can_create_plants=True,
+            can_manage_lifecycle=False,
             can_read=True,
             can_comment=True,
             can_operate=True,
@@ -79,6 +85,8 @@ ROLE_POLICIES = MappingProxyType(
         ),
         RolePreset.CONSULTANT: RolePolicy(
             requires_plant_grant=True,
+            can_create_plants=False,
+            can_manage_lifecycle=False,
             can_read=True,
             can_comment=True,
             can_operate=False,

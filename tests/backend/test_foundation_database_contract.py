@@ -101,7 +101,7 @@ def test_alembic_baseline_discovers_product_head_without_running_it_on_sqlite(
         assert "alembic_version" in tables
         assert {"accounts", "farms", "plants"}.isdisjoint(tables)
         assert current_revision is None
-        assert script.get_heads() == ["ft001_access_sessions"]
+        assert script.get_heads() == ["ft002_farm_plant_access"]
     finally:
         database.dispose()
 

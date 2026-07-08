@@ -1,7 +1,7 @@
 {
   "id": "TASK-012-T3-FT-002-W1",
   "title": "Implement FT-002 authority schema and canonical Farm bootstrap",
-  "status": "planned",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-002",
   "reqs": [
@@ -21,7 +21,9 @@
     "backend/migrations/versions/ft002_farm_plant_access.py",
     "scripts/bootstrap-farm-local.sh",
     "tests/backend/access_admin/test_ft002_schema_migration.py",
-    "tests/backend/access_admin/test_ft002_farm_bootstrap.py"
+    "tests/backend/access_admin/test_ft002_farm_bootstrap.py",
+    "tests/backend/access_admin/test_ft001_schema_migration.py",
+    "tests/backend/test_foundation_database_contract.py"
   ],
   "tier": "T3",
   "gates": [
@@ -52,7 +54,33 @@
     "Zero and one legacy Farm-ID migration paths preserve valid data; multiple distinct IDs fail before committed mutation; guarded downgrade does not destroy authority data.",
     "Canonical bootstrap creates or reuses local_farm and tomato_001 exactly as specified, preserves existing/archived state, writes only applicable audits, and is a no-op on repeat.",
     "Injected migration/bootstrap/audit failures leave no partial authority state or misleading audit and expose no credentials or raw DB errors.",
-    "FT-002-BHV-001 is covered by executable evidence."
+    "FT-002-BHV-001 is covered by executable evidence.",
+    {
+      "stage": "execute",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-07T18:11:23+05:00",
+      "evidence": [
+        ".protocols/TASK-012-T3-FT-002-W1/verification.md",
+        ".protocols/TASK-012-T3-FT-002-W1/handoff.md",
+        ".tasks/TASK-012-T3-FT-002-W1/gate-evidence.md",
+        ".tasks/TASK-012-T3-FT-002-W1/TASK-012-T3-FT-002-W1-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/access_admin/test_ft002_farm_bootstrap.py",
+        "bash scripts/db-migrate-local.sh",
+        "bash scripts/bootstrap-farm-local.sh (twice)",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "TASK-012 schema, migration, audit authority, and canonical bootstrap are implemented and pass 10/10 focused real-PostgreSQL tests. Migration/bootstrap scripts, repeat-state assertions, the 18-test targeted migration/Foundation regression, and the complete 118-test suite pass. The operator explicitly authorized the two stale Alembic-head assertion updates.",
+      "recommended_next_action": "/verify TASK-012-T3-FT-002-W1"
+    },
+    "2026-07-08 /verify: VERDICT: PASS — point-of-use preflight, focused real-PostgreSQL suite 10/10, full regression 118/118, migration/bootstrap command path, independent no-op authority-state probe, redaction, scope, dependency, mb-lint, pip, and diff checks pass. Task status remains unchanged; recommended next action is /red-verify TASK-012-T3-FT-002-W1. Evidence: .protocols/TASK-012-T3-FT-002-W1/verification.md and .tasks/TASK-012-T3-FT-002-W1/verification-evidence.md.",
+    "2026-07-08 /red-verify: SEMANTIC_VERDICT: semantic-pass — authority schema, legacy reconciliation, guarded downgrade, canonical bootstrap, audit/redaction, Foundation/FT-001 compatibility, anti-goals, and cross-boundary responsibility are substantively correct. Concurrent first bootstrap remains fail-safe and outside current scope. HUMAN_CHECKPOINT: done is absent and must not be implied by autonomous closure. Evidence: .protocols/TASK-012-T3-FT-002-W1/red-verification.md and .tasks/TASK-012-T3-FT-002-W1/TASK-012-T3-FT-002-W1-S-RED-VERIFY-final-report-docs-01.md.",
+    "2026-07-08 manual owner closure: HUMAN_CHECKPOINT: done — operator confirmed review and explicitly requested closure after VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass. Status set to done. TASK-013 promotion and wave-boundary /mb-sync remain separate actions."
   ],
   "docs": [
     ".memory-bank/domains/farm/farm-plant-access-storage.md",
@@ -125,6 +153,8 @@
       "scripts/bootstrap-farm-local.sh",
       "tests/backend/access_admin/test_ft002_schema_migration.py",
       "tests/backend/access_admin/test_ft002_farm_bootstrap.py",
+      "tests/backend/access_admin/test_ft001_schema_migration.py",
+      "tests/backend/test_foundation_database_contract.py",
       ".protocols/TASK-012-T3-FT-002-W1/",
       ".tasks/TASK-012-T3-FT-002-W1/",
       ".memory-bank/tasks/TASK-012-T3-FT-002-W1.task.json"

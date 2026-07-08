@@ -16,6 +16,7 @@ from .actor_context import (
 )
 from .context_builders import plant_permission_allows
 from .errors import AuthErrorCode, auth_error_response, request_id_for
+from .farm_repository import PersistedPlantAccessSnapshotProvider
 from .permissions import (
     OperationKind,
     PlantAccessSnapshot,
@@ -72,6 +73,9 @@ def get_plant_access_snapshot_provider(
     provider = getattr(request.app.state, "plant_access_snapshot_provider", None)
     if callable(provider):
         return provider
+    database = getattr(request.app.state, "database", None)
+    if database is not None and callable(getattr(database, "session", None)):
+        return PersistedPlantAccessSnapshotProvider(database)
     return _deny_all_plant_snapshots
 
 

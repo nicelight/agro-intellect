@@ -1,7 +1,7 @@
 {
   "id": "TASK-013-T3-FT-002-W2",
   "title": "Implement FT-002 lifecycle grant services and persisted permission adapter",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-002",
   "reqs": [
@@ -51,7 +51,54 @@
     "Archive/restore and grant mutations lock and recheck current DB state and ActorContext in the write transaction; stale snapshots cannot authorize a change.",
     "Archive/restore preserves every grant ID/status/approval flag; grant changes while archived remain non-operative until restore.",
     "Persisted snapshot provider feeds the existing FT-001 resolver and fails closed on missing, mismatched, revoked, archived-normal, and repository-error paths.",
-    "FT-002-BHV-002 and FT-002-BHV-003 are covered by executable evidence."
+    "FT-002-BHV-002 and FT-002-BHV-003 are covered by executable evidence.",
+    {
+      "stage": "execute",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-08T09:39:59+05:00",
+      "evidence": [
+        ".protocols/TASK-013-T3-FT-002-W2/verification.md",
+        ".protocols/TASK-013-T3-FT-002-W2/handoff.md",
+        ".tasks/TASK-013-T3-FT-002-W2/gate-evidence.md",
+        ".tasks/TASK-013-T3-FT-002-W2/TASK-013-T3-FT-002-W2-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/access_admin/test_ft002_grant_lifecycle.py tests/backend/access_admin/test_ft002_persisted_actor_context.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "TASK-013 transactional Farm/Plant/grant services, exact same-transaction audits, current-state row locks, stable grant lifecycle, and persisted FT-001 snapshot adapter are implemented. Focused PostgreSQL 15/15, Access & Admin 69/69, full regression 133/133, pip, Memory Bank lint, and diff gates pass.",
+      "recommended_next_action": "/verify TASK-013-T3-FT-002-W2"
+    },
+    "2026-07-08 /verify: VERDICT: PASS — point-of-use preflight, focused real-PostgreSQL suite 15/15, Access & Admin 69/69, full regression 133/133, independent lifecycle/permission runtime flow, exact audit counts, atomic rollback, row-lock/current-state, persisted resolver, scope, pip, mb-lint, and diff checks pass. Task status remains unchanged; recommended next action is /red-verify TASK-013-T3-FT-002-W2. Evidence: .protocols/TASK-013-T3-FT-002-W2/verification.md and .tasks/TASK-013-T3-FT-002-W2/verification-evidence.md.",
+    "2026-07-08 /red-verify: SEMANTIC_VERDICT: semantic-fail — real PostgreSQL interleaving proved that the three-query persisted snapshot can combine a pre-archive active Plant with a grant created while archived, causing the FT-001 resolver to return can_read=true while the authoritative Plant is archived. Repair in TASK-013 scope with one statement-level joined snapshot and a concurrency regression; do not promote TASK-014. Evidence: .protocols/TASK-013-T3-FT-002-W2/red-verification.md and .tasks/TASK-013-T3-FT-002-W2/TASK-013-T3-FT-002-W2-S-RED-VERIFY-final-report-docs-01.md.",
+    {
+      "stage": "execute-repair",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: repaired_pending_reverification",
+      "executed_at": "2026-07-08T11:53:22+05:00",
+      "evidence": [
+        ".protocols/TASK-013-T3-FT-002-W2/verification.md",
+        ".protocols/TASK-013-T3-FT-002-W2/handoff.md",
+        ".tasks/TASK-013-T3-FT-002-W2/gate-evidence.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/access_admin/test_ft002_grant_lifecycle.py tests/backend/access_admin/test_ft002_persisted_actor_context.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Replaced the three-query READ COMMITTED permission snapshot with one joined Account/membership/Plant/optional-grant statement. A deterministic concurrent archive plus archived-grant interleaving now returns archived Plant state and denies normal read/operate/approval. Focused 16/16, Access & Admin 70/70, full 134/134, pip, mb-lint, and diff checks pass.",
+      "recommended_next_action": "Rerun /verify TASK-013-T3-FT-002-W2, then /red-verify TASK-013-T3-FT-002-W2."
+    },
+    "2026-07-08 repeated /red-verify: SEMANTIC_VERDICT: semantic-pass — the prior hybrid READ COMMITTED snapshot defect is resolved by one joined statement. Real PostgreSQL concurrency regression and an independent opposite-side statement-snapshot probe both deny normal access; focused 16/16 and full 134/134 pass. This supersedes the earlier semantic-fail, but the pre-repair /verify PASS remains stale; rerun /verify before owner closure or TASK-014 promotion. Evidence: .protocols/TASK-013-T3-FT-002-W2/red-verification.md and .tasks/TASK-013-T3-FT-002-W2/TASK-013-T3-FT-002-W2-S-RED-VERIFY-final-report-docs-01.md.",
+    "2026-07-08 manual owner closure: HUMAN_CHECKPOINT: done — operator explicitly waived repeated post-repair /verify and accepted focused PostgreSQL 16/16, Access & Admin 70/70, full regression 134/134, concurrency regression, independent opposite-side snapshot probe, and repeated SEMANTIC_VERDICT: semantic-pass as sufficient closure evidence. The stale pre-repair /verify PASS is retained as history and is not relied on for this decision. Status set to done. TASK-014 promotion and wave-boundary /mb-sync remain separate actions."
   ],
   "docs": [
     ".memory-bank/domains/farm/farm-plant-access-storage.md",
