@@ -2,11 +2,12 @@
 description: Verification contract for Boss direct Account creation, admin policy, audit, and first-demo provisioning.
 status: active
 type: testing_spec
-last_updated: 2026-07-04
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/contracts/admin/boss-admin-http.md
   - .memory-bank/contracts/auth/session-security.md
   - .memory-bank/domains/admin/admin-audit.md
+  - .memory-bank/runbooks/first-boss-local-bootstrap.md
 ---
 # Boss Admin And Audit Verification
 
@@ -30,10 +31,19 @@ evidence for the Boss admin boundary.
 - Plant/access changes update ActorContext resolution without redefining Plant
   semantics.
 - Admin UI notices and audit display text are absent from agent context.
-- E2E: Boss directly creates Engineer, Engineer logs in, Boss assigns
-  `tomato_001` access/toggle, and audit shows safe entries.
-- Bootstrap contract tests are deferred until FT-002/FT-003 define the exact
-  one-shot local CLI and single-Farm sequencing.
+- First-Boss one-shot CLI reads password only through `getpass`, requires the
+  canonical Farm, refuses when an active Boss already exists, creates no
+  session, and writes exactly one `account_created` system-bootstrap audit.
+- Admin HTTP contract tests cover exact response shapes, filters, no-store
+  responses, OpenAPI, documented error statuses, audit cursor behavior, and
+  duplicate-login versus generic persistence failure classification.
+- E2E: first Boss bootstrap creates the initial Boss; Boss logs in; Boss
+  directly creates Engineer; Engineer logs in; Boss assigns `tomato_001`
+  access/toggle through the canonical Plant API; audit shows safe entries.
+- Behavior examples:
+  - `FT-003-BHV-001`: first Boss one-shot bootstrap.
+  - `FT-003-BHV-002`: Boss-created Engineer Account and audit.
+  - `FT-003-BHV-003`: non-Boss denial and last-Boss guard.
 
 ## Quality gates
 
@@ -46,3 +56,4 @@ evidence for the Boss admin boundary.
 
 - [.memory-bank/testing/strategy.md](../strategy.md)
 - [.memory-bank/testing/auth/session-and-access.md](../auth/session-and-access.md)
+- [.memory-bank/testing/farm/plant-lifecycle-and-access.md](../farm/plant-lifecycle-and-access.md)

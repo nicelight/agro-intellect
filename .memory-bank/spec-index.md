@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -63,6 +63,7 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/admin/boss-admin-and-audit.md](testing/admin/boss-admin-and-audit.md) | active | Boss admin/audit verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/farm/plant-lifecycle-and-access.md](testing/farm/plant-lifecycle-and-access.md) | active | Farm bootstrap, Plant lifecycle/access, audit, migration, and HTTP verification | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
+| runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/prd-to-tasks` or `/spec-design` |
 
 ## Planned Specs
 

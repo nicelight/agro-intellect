@@ -1,0 +1,168 @@
+{
+  "id": "TASK-018-T3-FT-003-W3",
+  "title": "Run FT-003 integrated verification and durable docs sync",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-001",
+    "REQ-003",
+    "REQ-004",
+    "REQ-005",
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-017-T3-FT-003-W2"
+  ],
+  "touched_files": [
+    "tests/backend/access_admin/test_ft003_integration.py",
+    "tests/backend/api/test_ft003_integration_flow.py",
+    ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/epics/EP-001-local-farm-access-admin.md",
+    ".memory-bank/features/index.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/TASK-018-T3-FT-003-W3.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft003-focused-suite",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+      "required": false
+    },
+    {
+      "name": "ep001-regression-suite",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k \"ft001 or ft002 or ft003\"",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "memory-bank-doctor",
+      "command": "node scripts/mb-doctor.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "All FT-003 behavior specs have direct executable traceability.",
+    "Integrated flow proves canonical Farm/tomato_001 bootstrap, first Boss bootstrap, Boss login, Boss-created Engineer, Engineer login, Boss Plant access grant through canonical Plant API, and safe admin audit entries.",
+    "Non-Boss admin route denial, last-Boss protection, password exclusion, audit safety, and no-store response behavior pass together.",
+    "Completed Foundation, FT-001, and FT-002 focused regressions remain green.",
+    "Feature, RTM, epic, changelog, and routing docs synchronize only the FT-003-owned result and do not claim FT-016 PWA, Plant operations, Safety Gate, agent, dataset, or downstream feature completion.",
+    "Feature-level /red-verify --feature FT-003 is recommended after all FT-003 tasks close because admin/security semantic drift is material."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/epics/EP-001-local-farm-access-admin.md",
+    ".memory-bank/features/index.md",
+    ".memory-bank/changelog.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "evidence_required": [
+    "complete FT-003 focused test output",
+    "EP-001 auth/admin/Farm regression output",
+    "full regression test output",
+    "behavior-spec traceability summary",
+    "integrated Boss setup/Engineer/grant/audit evidence",
+    "node scripts/mb-lint.mjs output",
+    "node scripts/mb-doctor.mjs output",
+    "git diff --check output",
+    "durable docs sync diff summary"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/behavior-specs/FT-003-BHV-001-first-boss-bootstrap-one-shot.behavior.json",
+    ".memory-bank/behavior-specs/FT-003-BHV-002-boss-creates-engineer-atomic-audit.behavior.json",
+    ".memory-bank/behavior-specs/FT-003-BHV-003-admin-denial-last-boss-guard.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/admin/boss-admin-http.md",
+    ".memory-bank/runbooks/first-boss-local-bootstrap.md",
+    ".memory-bank/testing/admin/boss-admin-and-audit.md",
+    ".memory-bank/contracts/auth/session-http.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/architecture/foundation-runtime-substrate.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/workflows/tier-policy.md",
+    ".memory-bank/workflows/mb-sync.md"
+  ],
+  "constraints": [
+    "Do not add new FT-003 product behavior during the integration/docs gate; route implementation gaps back to the owning task/spec.",
+    "Do not mark FT-016 PWA/admin UI, Plant operations, Safety Gate, agent, dataset, or downstream feature scope complete.",
+    "Record only reproducible redacted evidence and distinguish PostgreSQL authority checks from test-double-only evidence.",
+    "Keep REQ lifecycle updates limited to evidence actually owned by FT-003."
+  ],
+  "invariants": [
+    "Foundation, FT-001, and FT-002 behavior remain regression constraints.",
+    "Memory Bank lifecycle and RTM statements must match task evidence exactly.",
+    "Secrets and auth material never enter evidence or durable docs.",
+    "Admin UI notices and audit display text remain presentation-only and absent from agent context."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k \"ft001 or ft002 or ft003\"",
+    ".venv/bin/python -m pytest tests",
+    "node scripts/mb-lint.mjs",
+    "node scripts/mb-doctor.mjs",
+    "git diff --check",
+    "Trace FT-003-BHV-001 through FT-003-BHV-003 to concrete passing tests and task evidence.",
+    "Check every FT-003 card remains schema-valid, indexed once, dependency-acyclic, and linked to the direct canonical subset.",
+    "Check durable docs report only FT-003-owned requirement evidence and explicit deferred PWA/downstream scopes."
+  ],
+  "purpose": "Provide one coherent integration and durable synchronization boundary for the completed FT-003 implementation queue.",
+  "success_outcome": "FT-003 evidence is complete and internally consistent, completed Foundation/FT-001/FT-002 behavior regresses cleanly, and durable docs are ready for feature-level semantic review.",
+  "anti_goals": [
+    "No new feature implementation hidden inside the gate.",
+    "No FT-016 PWA/admin UI closure.",
+    "No Plant operations, Safety Gate, agent, or dataset feature closure.",
+    "No overclaiming unavailable PostgreSQL or cross-feature evidence."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "tests/backend/access_admin/test_ft003_integration.py",
+      "tests/backend/api/test_ft003_integration_flow.py",
+      ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",
+      ".memory-bank/requirements.md",
+      ".memory-bank/epics/EP-001-local-farm-access-admin.md",
+      ".memory-bank/features/index.md",
+      ".memory-bank/changelog.md",
+      ".memory-bank/tasks/TASK-018-T3-FT-003-W3.task.json",
+      ".protocols/TASK-018-T3-FT-003-W3/",
+      ".tasks/TASK-018-T3-FT-003-W3/"
+    ],
+    "forbidden_scope": [
+      "new FT-003 product behavior",
+      "FT-016 PWA/admin UI closure",
+      "Plant operations, Safety Gate, agent, dataset, or downstream feature implementation",
+      "unredacted or overstated evidence"
+    ],
+    "stop_conditions": [
+      "Any FT-003 prerequisite task is not done or its evidence contradicts a canonical spec.",
+      "Focused integration exposes missing behavior that requires widening an earlier task or public contract.",
+      "PostgreSQL authority claims cannot be distinguished from test-double evidence.",
+      "Docs sync would overclaim shared requirement or downstream feature completion.",
+      "Evidence contains secrets or auth material."
+    ]
+  }
+}

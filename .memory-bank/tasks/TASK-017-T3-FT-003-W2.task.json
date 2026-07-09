@@ -1,0 +1,145 @@
+{
+  "id": "TASK-017-T3-FT-003-W2",
+  "title": "Implement FT-003 Boss admin HTTP boundary",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-003",
+  "reqs": [
+    "REQ-003",
+    "REQ-004",
+    "REQ-005",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-016-T3-FT-003-W1"
+  ],
+  "touched_files": [
+    "backend/app/access_admin/errors.py",
+    "backend/app/api/__init__.py",
+    "backend/app/api/admin.py",
+    "backend/app/main.py",
+    "tests/backend/api/test_ft003_admin_openapi.py",
+    "tests/backend/api/test_ft003_admin_routes.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft003-admin-api-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/api/test_ft003_admin_routes.py tests/backend/api/test_ft003_admin_openapi.py",
+      "required": false
+    },
+    {
+      "name": "ft003-focused-suite",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "All /api/admin/* routes resolve active Boss ActorContext before business logic and deny Engineer/Consultant/disabled actors with stable safe errors.",
+    "Admin Account create, disable, membership role, personnel list, Plant projection, and audit routes match the Boss Admin HTTP response shapes, statuses, filters, no-store behavior, and error catalog.",
+    "POST /api/admin/accounts never returns password material and maps duplicate normalized login separately from generic persistence failure.",
+    "Last-active-Boss disable/demotion attempts return ADMIN_LAST_BOSS_CONFLICT without mutation or audit writes.",
+    "GET /api/admin/plants uses persisted Farm/Plant/grant state for projection and does not redefine Plant lifecycle/access mutation semantics.",
+    "GET /api/admin/audit returns reverse-chronological safe summaries, validates cursors, and never exposes auth material or raw DB errors.",
+    "Generated OpenAPI includes the admin paths, request bodies, response models, UUIDs, timestamps, enums, query filters, and documented error statuses.",
+    "FT-003-BHV-003 is covered by executable evidence."
+  ],
+  "docs": [
+    ".memory-bank/contracts/admin/boss-admin-http.md",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "evidence_required": [
+    "admin route focused pytest output",
+    "OpenAPI path/schema/status evidence",
+    "non-Boss denial and last-Boss guard evidence",
+    "safe response field and password exclusion evidence",
+    "audit pagination/cursor evidence",
+    "duplicate-login versus generic-persistence error evidence",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",
+    ".memory-bank/behavior-specs/FT-003-BHV-002-boss-creates-engineer-atomic-audit.behavior.json",
+    ".memory-bank/behavior-specs/FT-003-BHV-003-admin-denial-last-boss-guard.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-003.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/admin/boss-admin-http.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/contracts/auth/session-security.md",
+    ".memory-bank/contracts/auth/session-http.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/admin/boss-admin-and-audit.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use the admin service from TASK-016; do not duplicate account/audit transaction logic in route handlers.",
+    "Admin routes must require active Boss ActorContext before business logic.",
+    "Plant lifecycle/access mutations remain on the canonical Plant HTTP routes; /api/admin/plants is a projection only.",
+    "Protected admin responses set Cache-Control: no-store and exclude passwords, password_hash, tokens, token hashes, cookies, auth headers, and raw DB errors.",
+    "Do not introduce PWA UI, frontend-only authorization, hosted identity, email delivery, or multi-Farm behavior."
+  ],
+  "invariants": [
+    "Frontend visibility is never authorization; backend admin routes enforce ActorContext.",
+    "Admin audit is durable PostgreSQL/read-model authority and UI/admin display text is not agent context.",
+    "Secrets/auth material never enter API responses, logs, audit, Bus, UI Feed, screenshots, exports, agent context, or evidence."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/api/test_ft003_admin_routes.py tests/backend/api/test_ft003_admin_openapi.py",
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Inspect generated OpenAPI for every /api/admin path and documented response/error model.",
+    "Inject duplicate-login and unrelated persistence failures through the HTTP boundary and prove safe distinct errors."
+  ],
+  "purpose": "Expose the Boss admin backend surface through concrete protected HTTP routes without weakening the existing auth, Plant, audit, or redaction boundaries.",
+  "success_outcome": "Boss can use /api/admin routes for personnel, direct Account creation, role changes, Plant projection, and audit reads, while non-Boss actors fail closed and responses/errors remain safe and contract-compliant.",
+  "anti_goals": [
+    "No PWA/admin UI implementation.",
+    "No new Plant mutation semantics outside the Plant HTTP contract.",
+    "No raw password/hash/token fields in route responses or evidence."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/access_admin/errors.py",
+      "backend/app/api/__init__.py",
+      "backend/app/api/admin.py",
+      "backend/app/main.py",
+      "tests/backend/api/test_ft003_admin_openapi.py",
+      "tests/backend/api/test_ft003_admin_routes.py",
+      ".protocols/TASK-017-T3-FT-003-W2/",
+      ".tasks/TASK-017-T3-FT-003-W2/",
+      ".memory-bank/tasks/TASK-017-T3-FT-003-W2.task.json"
+    ],
+    "forbidden_scope": [
+      "PWA/admin UI implementation",
+      "duplicated Account/Membership/audit transaction logic in API handlers",
+      "new Plant lifecycle/access behavior",
+      "frontend-only authorization",
+      "unredacted password/hash/token evidence"
+    ],
+    "stop_conditions": [
+      "TASK-016-T3-FT-003-W1 is not done or its service contract is unstable.",
+      "Admin route implementation requires changing the public session or Plant HTTP contracts without design repair.",
+      "OpenAPI cannot represent the documented admin route shapes/statuses.",
+      "Authorization failures leak protected account, membership, Plant, password, or raw persistence details.",
+      "Diagnostics or evidence contain password, password_hash, session token, token hash, auth header, cookie, DSN credential, or raw SQL exception text."
+    ]
+  }
+}

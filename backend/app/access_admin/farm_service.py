@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 import uuid
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .actor_context import ActorContext
@@ -44,6 +45,7 @@ class MutationResult:
 
 
 RepositoryFactory = Callable[[Session], FarmRepository]
+_PLANT_KEY_UNIQUE_CONSTRAINT = "uq_plants_farm_plant_key"
 
 
 class FarmService:
@@ -369,6 +371,13 @@ class FarmService:
                 return command(self._repository_factory(self._session))
         except FarmCommandError:
             raise
+        except IntegrityError as error:
+            code = (
+                FarmCommandErrorCode.CONFLICT
+                if _is_plant_key_unique_violation(error)
+                else FarmCommandErrorCode.PERSISTENCE_FAILED
+            )
+            raise FarmCommandError(code) from None
         except Exception:
             raise FarmCommandError(FarmCommandErrorCode.PERSISTENCE_FAILED) from None
 
@@ -443,6 +452,15 @@ def _grant_summary(
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _is_plant_key_unique_violation(error: IntegrityError) -> bool:
+    original = getattr(error, "orig", None)
+    diagnostic = getattr(original, "diag", None)
+    return (
+        getattr(diagnostic, "constraint_name", None)
+        == _PLANT_KEY_UNIQUE_CONSTRAINT
+    )
 
 
 __all__ = [

@@ -1,0 +1,21 @@
+{
+  "id": "FT-003-BHV-003",
+  "feature_id": "FT-003",
+  "title": "Admin boundary denies non-Boss and protects the last active Boss",
+  "given": {
+    "farm": "canonical local_farm exists",
+    "boss_count": 1,
+    "non_boss_actor": "active Engineer or Consultant session"
+  },
+  "when": {
+    "non_boss_request": "GET or mutation under /api/admin/*",
+    "last_boss_disable": "POST /api/admin/accounts/{boss_account_id}/disable",
+    "last_boss_demote": "PATCH /api/admin/memberships/{boss_membership_id}/role"
+  },
+  "then": {
+    "non_boss_request": "fails with the stable auth/admin error envelope before business mutation",
+    "last_boss_disable": "fails with ADMIN_LAST_BOSS_CONFLICT and writes no audit",
+    "last_boss_demote": "fails with ADMIN_LAST_BOSS_CONFLICT and writes no audit",
+    "state": "the final active Boss membership remains active"
+  }
+}

@@ -21,6 +21,7 @@ status: active
 - [Domains](domains/index.md), [Contracts](contracts/index.md), [States](states/index.md), [Testing](testing/index.md): subject routers.
 - [User Scenarios](user-scenarios.md), [Core Domain](domains/core-domain.md), [Boundary Map](contracts/boundary-map.md), [Lifecycle Map](states/lifecycle-map.md): decomposition context.
 - [Foundation Runtime Runbook](runbooks/foundation-local-runtime.md): local setup/start/smoke.
+- [First Boss Bootstrap Runbook](runbooks/first-boss-local-bootstrap.md): one-shot local first-Boss setup command.
 - [Changelog](changelog.md): durable change history.
 
 ## Operational roots

@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-002 Farm, Plant lifecycle, access grants, bootstrap, audit, and HTTP.
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md
   - .memory-bank/domains/farm/farm-plant-access-storage.md
@@ -54,6 +54,7 @@ services, protected HTTP, and integrated evidence.
 - `.memory-bank/behavior-specs/FT-002-BHV-001-idempotent-canonical-bootstrap.behavior.json`
 - `.memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json`
 - `.memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json`
+- `.memory-bank/behavior-specs/FT-002-BHV-004-truthful-create-persistence-errors.behavior.json`
 - `.memory-bank/requirements.md`
 - `.memory-bank/epics/EP-001-local-farm-access-admin.md`
 
@@ -98,13 +99,24 @@ row-lock/current-state guards, and the fail-closed persisted snapshot provider.
 `TASK-014-T3-FT-002-W3` adds FastAPI schemas/routes/error mapping, composes
 ActorContext and lifecycle/access operation kinds, mounts the persisted
 provider, verifies generated OpenAPI, and proves backend-only authorization.
+Its reconciled scope also repairs the existing Farm service/API error seam so
+only a positively identified Plant-key uniqueness race becomes
+`PLANT_KEY_CONFLICT`; unrelated persistence failures remain safely distinct.
 
 ### W4 - Integrated evidence and durable sync
 
 `TASK-015-T3-FT-002-W4` runs focused/full tests and MB gates, verifies all
-three behavior specs and Foundation/FT-001 regression, and synchronizes the
+four behavior specs and Foundation/FT-001 regression, and synchronizes the
 feature, epic, RTM, changelog, and routing docs without claiming FT-003 or
 downstream feature completion.
+
+Final evidence: TASK-015 adds direct BHV-001..004 traceability plus integrated
+Engineer/Boss API flow tests. Current gates report focused FT-002 `43/43` and
+full regression `151/151` passing. TASK-015 has `/verify PASS`, per-task
+`/red-verify semantic-pass`, and manual owner `HUMAN_CHECKPOINT: done`.
+Feature-level `/red-verify --feature FT-002` returned `semantic-pass`; FT-002
+is synchronized as `verified` for its owned Farm/Plant lifecycle and access
+boundary.
 
 ## Task queue
 
@@ -159,6 +171,9 @@ TASK-004-T2-FT-000-W0
   environment path must be reported explicitly, not replaced by SQLite claims.
 - API contract checks cover status/body/OpenAPI, ActorContext-before-business,
   no-leak errors, list filtering, archived exceptions, and secret redaction.
+- Service/API failure-injection checks prove the named Plant-key unique race
+  maps to `PLANT_KEY_CONFLICT`, generic DB/audit failure maps to
+  `PLANT_PERSISTENCE_FAILED`, and neither path leaks or partially commits.
 - Integrated evidence traces `REQ-001`, `REQ-003`, `REQ-004`, `REQ-006`, and
   the FT-002-owned portion of `REQ-007` without closing cross-feature portions.
 
@@ -184,8 +199,13 @@ TASK-004-T2-FT-000-W0
 5. Consultant remains read/comment only; approval flag true is rejected.
 6. Unknown/unauthorized/archived normal Plant requests share the safe no-leak
    result; audit contains safe exact state-change records and no auth material.
+7. Inject a named Plant-key uniqueness race and an unrelated persistence
+   failure; observe distinct stable codes, full rollback, and redacted bodies.
 
-## Next workflow step
+## Current workflow state
 
-Run `/review-tasks-plan FT-002`, then use conditional `/mb-doctor` before task
-execution because this is a complex T3 migration/authorization queue.
+FT-002 task execution is complete and verified at feature level. Wave-boundary
+`/mb-sync` reconciles Memory Bank state for handoff. The next product feature
+route is FT-003 Boss admin/personnel/first-Boss scope; do not reopen FT-002
+unless new evidence contradicts the verified Farm/Plant lifecycle and access
+boundary.

@@ -1,7 +1,7 @@
 {
   "id": "TASK-015-T3-FT-002-W4",
   "title": "Run FT-002 integrated verification and durable docs sync",
-  "status": "planned",
+  "status": "done",
   "wave": "W4",
   "feature": "FT-002",
   "reqs": [
@@ -53,13 +53,90 @@
     }
   ],
   "verify": [
-    "The full FT-002 migration/bootstrap/service/permission/API suite passes together and all three behavior specs have direct executable traceability.",
+    "The full FT-002 migration/bootstrap/service/permission/API suite passes together and all four behavior specs have direct executable traceability.",
     "An integrated Engineer flow proves create, immediate list/read/rename, and denial of lifecycle/access management; Consultant remains read/comment only.",
     "An integrated Boss flow proves archive, grant mutation while archived, non-operative access, restore, stable grant identity, and current permission resolution.",
     "Foundation health/readiness and all completed FT-001 auth/session/ActorContext regressions remain green.",
     "PostgreSQL-only evidence and any environment gaps are reported truthfully; SQLite/test doubles are not represented as product authority evidence.",
     "Feature, RTM, epic, changelog, and routing docs synchronize only the FT-002-owned result and leave FT-003/downstream/cross-feature REQ-007 portions open.",
-    "Feature-level /red-verify --feature FT-002 is recommended after all FT-002 tasks close because archive/authz semantic drift is material."
+    "Feature-level /red-verify --feature FT-002 is recommended after all FT-002 tasks close because archive/authz semantic drift is material.",
+    {
+      "stage": "execute",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-09T21:26:21+05:00",
+      "evidence": [
+        ".protocols/TASK-015-T3-FT-002-W4/verification.md",
+        ".protocols/TASK-015-T3-FT-002-W4/handoff.md",
+        ".tasks/TASK-015-T3-FT-002-W4/gate-evidence.md",
+        ".tasks/TASK-015-T3-FT-002-W4/TASK-015-T3-FT-002-W4-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_integration.py tests/backend/api/test_ft002_integration_flow.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft002",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs",
+        "git diff --check"
+      ],
+      "summary": "Integrated FT-002 execution gate is implemented without production behavior changes. Added BHV-001..004 executable traceability, Engineer/Boss protected API integration flows, and durable docs sync for FT-002-owned implemented state. New tests 3/3, focused FT-002 43/43, full regression 151/151, pip, mb-lint, mb-doctor, and diff checks pass. mb-doctor reports only the expected planned-ready warning.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/verify TASK-015-T3-FT-002-W4"
+    },
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "result": "VERDICT: PASS",
+      "verified_at": "2026-07-09T21:39:49+05:00",
+      "evidence": [
+        ".protocols/TASK-015-T3-FT-002-W4/verification.md",
+        ".tasks/TASK-015-T3-FT-002-W4/TASK-015-T3-FT-002-W4-S-VERIFY-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_integration.py tests/backend/api/test_ft002_integration_flow.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft002",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "node scripts/mb-doctor.mjs",
+        "git diff --check"
+      ],
+      "summary": "Independent functional verification passed for TASK-015. TASK-015-specific integration tests passed 3/3, focused FT-002 suite passed 43/43, full regression passed 151/151, pip check, mb-lint, mb-doctor, and diff checks passed. mb-doctor warning is limited to expected TASK_PLANNED_READY_CANDIDATE for this open T3 task. Status remains unchanged pending T3 red-verify and explicit owner/scheduler closure.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/red-verify TASK-015-T3-FT-002-W4"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "manual",
+      "result": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-09T21:43:13+05:00",
+      "evidence": [
+        ".protocols/TASK-015-T3-FT-002-W4/red-verification.md",
+        ".tasks/TASK-015-T3-FT-002-W4/TASK-015-T3-FT-002-W4-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Adversarial semantic verification found no false-success, overclaiming, forbidden-scope, state/data consistency, architecture, or maintenance concern for the TASK-015 integration/docs boundary. FT-002 remains implemented, not feature-verified, and downstream/shared REQ portions remain open.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/red-verify --feature FT-002 at feature-completion boundary"
+    },
+    {
+      "stage": "closure",
+      "mode": "manual",
+      "result": "TASK_STATUS: done",
+      "closed_at": "2026-07-09T21:43:13+05:00",
+      "owner_decision": "User explicitly approved closing TASK-015 after semantic-pass.",
+      "human_checkpoint": "HUMAN_CHECKPOINT: done",
+      "evidence": [
+        ".protocols/TASK-015-T3-FT-002-W4/verification.md",
+        ".protocols/TASK-015-T3-FT-002-W4/red-verification.md",
+        ".tasks/TASK-015-T3-FT-002-W4/TASK-015-T3-FT-002-W4-S-VERIFY-final-report-code-01.md",
+        ".tasks/TASK-015-T3-FT-002-W4/TASK-015-T3-FT-002-W4-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Manual T3 closure recorded after /verify PASS, per-task /red-verify semantic-pass, and explicit user approval/human checkpoint. Feature-level semantic review remains separate before FT-002 is treated as feature-verified."
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md",
@@ -85,6 +162,7 @@
     ".memory-bank/behavior-specs/FT-002-BHV-001-idempotent-canonical-bootstrap.behavior.json",
     ".memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json",
     ".memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json",
+    ".memory-bank/behavior-specs/FT-002-BHV-004-truthful-create-persistence-errors.behavior.json",
     ".memory-bank/tasks/plans/IMPL-FT-002.md"
   ],
   "normative_inputs": [
@@ -122,7 +200,7 @@
     "node scripts/mb-lint.mjs",
     "node scripts/mb-doctor.mjs",
     "git diff --check",
-    "Trace FT-002-BHV-001 through FT-002-BHV-003 to concrete passing tests and task evidence.",
+    "Trace FT-002-BHV-001 through FT-002-BHV-004 to concrete passing tests and task evidence.",
     "Check every FT-002 card remains schema-valid, indexed once, dependency-acyclic, and linked to the direct canonical subset.",
     "Check durable docs report only FT-002-owned requirement evidence and explicit deferred cross-feature archive checks."
   ],

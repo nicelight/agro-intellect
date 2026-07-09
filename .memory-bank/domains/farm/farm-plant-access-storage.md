@@ -2,7 +2,7 @@
 description: Exact Farm, Plant, and PlantAccessGrant persistence, migration, bootstrap, and transaction contract.
 status: active
 type: data_spec
-last_updated: 2026-07-06
+last_updated: 2026-07-08
 source_of_truth:
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/domains/identity/account-membership.md
@@ -132,6 +132,23 @@ one application service using the normal Foundation DB/session path.
   Plant existence.
 - No generic ACL or additional per-Plant override is implied.
 
+## Service error classification
+
+- The Farm service owns the persistence-to-domain classification needed by the
+  HTTP adapter; the HTTP layer MUST NOT infer a uniqueness race from a generic
+  `PERSISTENCE_FAILED` result.
+- A duplicate Plant key discovered before insert, or a PostgreSQL uniqueness
+  race positively identified by the named `uq_plants_farm_plant_key`
+  constraint, produces the same explicit Plant-key conflict category after the
+  transaction rolls back.
+- Every other unexpected DB, flush, commit, audit, or unrecognized integrity
+  exception rolls back and remains a generic persistence-failure category.
+  It MUST NOT be reclassified as a business conflict from operation context
+  alone.
+- Domain errors expose no raw SQLAlchemy/driver exception, SQL text, DSN, or
+  credential-bearing detail. The original exception may remain internal
+  diagnostic context only where the project redaction boundary permits it.
+
 ## Verification
 
 - PostgreSQL migration/model tests inspect native UUIDs, timestamps,
@@ -143,6 +160,9 @@ one application service using the normal Foundation DB/session path.
   active/archived Plant, missing relations, and no-leak failure.
 - Transaction tests inject failures at Plant, grant, audit, flush, and commit
   boundaries and prove no partial authority or misleading success audit remains.
+- Classification tests inject both the named Plant-key uniqueness race and an
+  unrelated persistence failure, proving only the former becomes the explicit
+  key-conflict category while both remain atomic and redacted.
 
 ## Related specs
 

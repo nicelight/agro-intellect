@@ -1,7 +1,7 @@
 {
   "id": "TASK-014-T3-FT-002-W3",
   "title": "Implement FT-002 protected Farm Plant and access HTTP",
-  "status": "planned",
+  "status": "done",
   "wave": "W3",
   "feature": "FT-002",
   "reqs": [
@@ -17,9 +17,12 @@
   "touched_files": [
     "backend/app/access_admin/dependencies.py",
     "backend/app/access_admin/errors.py",
+    "backend/app/access_admin/farm_service.py",
     "backend/app/api/__init__.py",
     "backend/app/api/plants.py",
     "backend/app/main.py",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    "tests/backend/access_admin/test_ft002_farm_plant_services.py",
     "tests/backend/api/test_ft002_plant_routes.py",
     "tests/backend/api/test_ft002_plant_openapi.py"
   ],
@@ -28,6 +31,11 @@
     {
       "name": "ft002-api-contract-tests",
       "command": ".venv/bin/python -m pytest tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+      "required": false
+    },
+    {
+      "name": "ft002-error-boundary-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/api/test_ft002_plant_routes.py",
       "required": false
     },
     {
@@ -52,10 +60,237 @@
     "Normal list/detail excludes unauthorized and archived Plants through the persisted resolver, not frontend filtering or an allow-all fixture.",
     "Engineer create returns immediate creator-grant permissions but archive/restore/access remain denied; Consultant stays read/comment only.",
     "Boss lifecycle/access operations work for archived Plants without making them normally readable or operative; retries preserve audit semantics.",
-    "No-leak errors, cache-control, validation, conflict rollback, and credential/DB-error redaction are executable and regression-tested."
+    "No-leak errors, cache-control, validation, conflict rollback, and credential/DB-error redaction are executable and regression-tested.",
+    "Only a prechecked or positively identified uq_plants_farm_plant_key race maps to PLANT_KEY_CONFLICT; unrelated persistence failures map to PLANT_PERSISTENCE_FAILED after rollback.",
+    "PATCH /api/farm maps generic service persistence failure to FARM_PERSISTENCE_FAILED; Plant routes retain PLANT_PERSISTENCE_FAILED.",
+    {
+      "stage": "execute",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-08T14:29:40+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".protocols/TASK-014-T3-FT-002-W3/handoff.md",
+        ".tasks/TASK-014-T3-FT-002-W3/gate-evidence.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/api",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Protected Farm/Plant/access HTTP routes, typed schemas, stable redacted errors, persisted ActorContext authorization, archived administration, and generated OpenAPI are implemented. Focused 11/11, API 45/45, full 145/145, pip, mb-lint, and diff checks pass.",
+      "recommended_next_action": "/verify TASK-014-T3-FT-002-W3",
+      "superseded": true,
+      "superseded_reason": "Pre-reconciliation implementation evidence; superseded by the service/API persistence-error repair execution."
+    },
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "result": "VERDICT: PASS",
+      "verified_at": "2026-07-08T14:39:26+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".tasks/TASK-014-T3-FT-002-W3/verification-evidence.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/api",
+        ".venv/bin/python -m pytest tests",
+        "independent generated-OpenAPI contract probe",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Task-scoped protected Farm/Plant/access HTTP behavior, persisted authorization, archived administration, stable no-leak errors, generated OpenAPI, and regression safety independently pass. Focused 11/11, API 45/45, full 145/145.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/red-verify TASK-014-T3-FT-002-W3",
+      "superseded": true,
+      "superseded_reason": "Pre-reconciliation PASS did not cover generic persistence failure classification; it is not current handoff evidence."
+    },
+    {
+      "stage": "red-verify",
+      "mode": "manual",
+      "result": "SEMANTIC_VERDICT: semantic-fail",
+      "verified_at": "2026-07-08T14:42:01+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/red-verification.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Failure injection proved that generic Plant-create persistence failures are mislabeled as PLANT_KEY_CONFLICT. Happy-path tests pass, but the stable HTTP error reports a false business cause because the service error boundary does not distinguish uniqueness races from unrelated persistence failures.",
+      "recommended_next_action": "/prd-to-tasks FT-002 repair/reconciliation, then rerun /execute, /verify, and /red-verify for TASK-014 or its replacement",
+      "superseded": true,
+      "superseded_reason": "Historical defect evidence retained for traceability; the reconciled execution repairs this finding and requires fresh verification."
+    },
+    {
+      "stage": "execute-repair",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_reverification",
+      "executed_at": "2026-07-08T15:07:27+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".protocols/TASK-014-T3-FT-002-W3/handoff.md",
+        ".tasks/TASK-014-T3-FT-002-W3/gate-evidence-repair.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-IMPL-final-report-code-02.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/api",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Named Plant-key constraint conflicts and generic persistence failures are now distinct across FarmService and HTTP. Focused 19/19, API 46/46, full 147/147, pip, mb-lint, and diff checks pass.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/verify TASK-014-T3-FT-002-W3",
+      "superseded": true,
+      "superseded_reason": "Superseded by the Farm-specific persistence mapping repair execution."
+    },
+    {
+      "stage": "verify-repair",
+      "mode": "manual",
+      "result": "VERDICT: PASS",
+      "verified_at": "2026-07-08T16:48:26+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".tasks/TASK-014-T3-FT-002-W3/verification-evidence.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/api",
+        ".venv/bin/python -m pytest tests",
+        "git diff --check"
+      ],
+      "summary": "Post-repair functional verification passes. Only the named uq_plants_farm_plant_key violation maps to PLANT_KEY_CONFLICT; unknown integrity and generic persistence failures map safely to PLANT_PERSISTENCE_FAILED with rollback and redaction. Focused 19/19, API 46/46, full 147/147.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/red-verify TASK-014-T3-FT-002-W3",
+      "superseded": true,
+      "superseded_reason": "This PASS predates the Farm persistence mapping fix and is not current evidence."
+    },
+    {
+      "stage": "red-verify-repair",
+      "mode": "manual",
+      "result": "SEMANTIC_VERDICT: semantic-fail",
+      "verified_at": "2026-07-08T16:54:32+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/red-verification.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Plant-create persistence classification is repaired, but the shared HTTP mapper also returns PLANT_PERSISTENCE_FAILED and Plant-specific text for PATCH /api/farm generic persistence failures. A deterministic cross-route probe reproduced the truthful-error boundary violation.",
+      "recommended_next_action": "Add a canonical Farm/generic persistence error mapping and failure-injection test, then rerun /verify and /red-verify; no feature rebuild required",
+      "superseded": true,
+      "superseded_reason": "Historical Farm mapping defect evidence retained; superseded by the route-specific mapping repair."
+    },
+    {
+      "stage": "verify-after-latest-semantic-fail",
+      "mode": "manual",
+      "result": "VERDICT: NEEDS-CLARIFICATION",
+      "verified_at": "2026-07-08T19:23:28+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".protocols/TASK-014-T3-FT-002-W3/red-verification.md"
+      ],
+      "summary": "No implementation handoff or code change exists after the latest semantic-fail. PATCH /api/farm still receives the Plant-specific persistence fallback, so the earlier 19/46/147 results are stale for the current finding.",
+      "recommended_next_action": "/execute TASK-014-T3-FT-002-W3 after the Farm/generic persistence mapping repair",
+      "superseded": true,
+      "superseded_reason": "The requested Farm mapping implementation now exists; fresh verification is required."
+    },
+    {
+      "stage": "execute-farm-mapping-repair",
+      "mode": "manual",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_reverification",
+      "executed_at": "2026-07-08T19:27:32+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".protocols/TASK-014-T3-FT-002-W3/handoff.md",
+        ".tasks/TASK-014-T3-FT-002-W3/gate-evidence-farm-repair.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-IMPL-final-report-code-03.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/api",
+        ".venv/bin/python -m pytest tests",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "PATCH /api/farm now returns FARM_PERSISTENCE_FAILED while Plant routes retain PLANT_PERSISTENCE_FAILED. Focused 20/20, API 47/47, full 148/148, pip, mb-lint, and diff checks pass.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/verify TASK-014-T3-FT-002-W3"
+    },
+    {
+      "stage": "verify-farm-mapping-repair",
+      "mode": "manual",
+      "result": "VERDICT: PASS",
+      "verified_at": "2026-07-08T22:55:19+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".tasks/TASK-014-T3-FT-002-W3/verification-evidence.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_farm_plant_services.py tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/api",
+        ".venv/bin/python -m pytest tests",
+        "independent generated-OpenAPI contract probe",
+        ".venv/bin/python -m pip check",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Latest Farm mapping repair independently passes: PATCH /api/farm returns FARM_PERSISTENCE_FAILED HTTP 500 while Plant routes retain PLANT_PERSISTENCE_FAILED. Focused 20/20, API 47/47, full 148/148, OpenAPI, dependency, MB lint, and diff checks pass.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/red-verify TASK-014-T3-FT-002-W3"
+    },
+    {
+      "stage": "red-verify-farm-mapping-repair",
+      "mode": "manual",
+      "result": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-09T14:31:43+05:00",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/red-verification.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "commands": [
+        "targeted adversarial Farm/Plant persistence mapping probe",
+        "linked task/spec/code/artifact semantic review"
+      ],
+      "summary": "Latest repair passes adversarial semantic verification: Plant generic persistence remains PLANT_PERSISTENCE_FAILED, Farm PATCH generic persistence returns FARM_PERSISTENCE_FAILED, and named Plant-key uniqueness remains the only PLANT_KEY_CONFLICT path. No scope, boundary, authorization, rollback, redaction, or maintenance-cost semantic defect found. HUMAN_CHECKPOINT: done remains absent as a closure warning.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "Explicit owner/scheduler closure decision with HUMAN_CHECKPOINT: done if required, then wave-boundary /mb-sync"
+    },
+    {
+      "stage": "closure",
+      "mode": "manual",
+      "verdict": "CLOSURE: DONE",
+      "closed_at": "2026-07-09T17:09:43+05:00",
+      "owner_decision": "The user directly confirmed review/approval and instructed the current top-level GENERAL agent to close TASK-014 and prepare the next task.",
+      "evidence": [
+        ".protocols/TASK-014-T3-FT-002-W3/verification.md",
+        ".protocols/TASK-014-T3-FT-002-W3/red-verification.md",
+        ".protocols/TASK-014-T3-FT-002-W3/handoff.md",
+        ".tasks/TASK-014-T3-FT-002-W3/verification-evidence.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-014-T3-FT-002-W3/TASK-014-T3-FT-002-W3-S-CLOSURE-final-report-docs-01.md"
+      ],
+      "markers": [
+        "HUMAN_CHECKPOINT: done"
+      ],
+      "summary": "TASK-014 is closed after current /verify PASS, /red-verify semantic-pass, explicit human approval, scope compliance, and no forbidden-scope finding. Historical semantic failures are retained as superseded traceability and are not relied on for closure.",
+      "recommended_next_action": "Promote TASK-015-T3-FT-002-W4 as the next FT-002 task; run /execute TASK-015-T3-FT-002-W4."
+    }
   ],
   "docs": [
     ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/domains/farm/farm-plant-access-storage.md",
     ".memory-bank/contracts/access/actor-context.md",
     ".memory-bank/states/plants/plant-and-access-lifecycle.md",
     ".memory-bank/testing/farm/plant-lifecycle-and-access.md",
@@ -67,6 +302,7 @@
     "Boss/Engineer/Consultant/disabled authorization matrix evidence",
     "archived Plant lifecycle/access route evidence",
     "stable no-leak error and redaction evidence",
+    "named uniqueness-race versus generic persistence failure-injection evidence",
     "focused API, API regression, and full pytest output",
     "git diff --check output"
   ],
@@ -74,6 +310,7 @@
     ".memory-bank/features/FT-002-farm-plant-lifecycle-access-grants.md",
     ".memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json",
     ".memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json",
+    ".memory-bank/behavior-specs/FT-002-BHV-004-truthful-create-persistence-errors.behavior.json",
     ".memory-bank/tasks/plans/IMPL-FT-002.md"
   ],
   "normative_inputs": [
@@ -91,13 +328,16 @@
     "Reuse the existing FastAPI app factory, FT-001 session/ActorContext dependencies, error envelope, and persisted FT-002 services.",
     "Do not expose a bootstrap HTTP endpoint or implement FT-003 admin projections, retained history, UI, downstream operations, or agent flows.",
     "Do not return raw model objects, SQL errors, auth material, or existence-revealing Plant errors.",
-    "Request models must forbid immutable/server-owned fields and unknown fields."
+    "Request models must forbid immutable/server-owned fields and unknown fields.",
+    "FarmService must classify a Plant-key race only from a precheck or positive named-constraint match; the API must not infer conflict from a generic persistence failure."
   ],
   "invariants": [
     "Backend authorization is authoritative; frontend visibility is presentation only.",
     "Unknown, unauthorized, revoked/missing-grant, and archived normal Plant paths share the safe no-leak denial.",
     "Archived Plant lifecycle/access administration is a narrow Boss exception and never normal operational access.",
-    "can_approve_actions is actor authority only and never Safety Gate clearance."
+    "can_approve_actions is actor authority only and never Safety Gate clearance.",
+    "Stable error codes remain truthful: generic DB/audit/flush/commit failures never become PLANT_KEY_CONFLICT from route context alone.",
+    "Entity-specific persistence errors remain truthful: Farm mutations never return Plant-specific fallback codes or messages."
   ],
   "verification_targets": [
     ".venv/bin/python -m pytest tests/backend/api/test_ft002_plant_routes.py tests/backend/api/test_ft002_plant_openapi.py",
@@ -105,7 +345,9 @@
     ".venv/bin/python -m pytest tests",
     "git diff --check",
     "Inspect generated OpenAPI against every canonical FT-002 path, body, response, enum, UUID, timestamp, and error status.",
-    "Prove route results and denial filtering use persisted Plant/grant rows through ActorContext."
+    "Prove route results and denial filtering use persisted Plant/grant rows through ActorContext.",
+    "Inject the named Plant-key uniqueness race and an unrelated persistence failure; prove distinct stable codes, full rollback, no success audits, and redacted bodies.",
+    "Inject PATCH /api/farm persistence failure and prove FARM_PERSISTENCE_FAILED HTTP 500 while the Plant persistence failure path still returns PLANT_PERSISTENCE_FAILED."
   ],
   "purpose": "Expose the completed FT-002 authority and lifecycle services through one exact protected HTTP boundary usable by later admin and PWA features.",
   "success_outcome": "Authorized actors can use the canonical Farm, Plant lifecycle, and access-grant API with exact no-leak errors and no frontend-only authorization dependency.",
@@ -118,11 +360,14 @@
     "allowed_write_scope": [
       "backend/app/access_admin/dependencies.py",
       "backend/app/access_admin/errors.py",
+      "backend/app/access_admin/farm_service.py",
       "backend/app/api/__init__.py",
       "backend/app/api/plants.py",
       "backend/app/main.py",
+      ".memory-bank/contracts/farm/plant-management-http.md",
       "tests/backend/api/test_ft002_plant_routes.py",
       "tests/backend/api/test_ft002_plant_openapi.py",
+      "tests/backend/access_admin/test_ft002_farm_plant_services.py",
       ".protocols/TASK-014-T3-FT-002-W3/",
       ".tasks/TASK-014-T3-FT-002-W3/",
       ".memory-bank/tasks/TASK-014-T3-FT-002-W3.task.json"
@@ -137,7 +382,8 @@
       "TASK-013-T3-FT-002-W2 is not done or its service/permission contract differs from canonical specs.",
       "A route would require frontend-only authorization or existence-revealing errors.",
       "The canonical HTTP contract cannot be represented by generated schemas/OpenAPI.",
-      "A response or error would expose auth material, raw SQL, or credential-bearing configuration."
+      "A response or error would expose auth material, raw SQL, or credential-bearing configuration.",
+      "The service cannot positively distinguish the named Plant-key unique constraint from generic persistence failure without leaking backend exception details."
     ]
   }
 }

@@ -11,6 +11,7 @@ from alembic.script import ScriptDirectory
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.engine import make_url
+from sqlalchemy.exc import IntegrityError
 
 from backend.app import AppSettings
 from backend.app.access_admin.actor_context import ActorContextResolver, AuthTransport
@@ -357,4 +358,72 @@ def test_injected_second_audit_failure_rolls_back_engineer_create():
                 )
             ) == 0
             assert session.scalar(select(func.count(PlantAccessGrant.grant_id))) == 0
+            assert session.scalar(select(func.count(AdminAuditRecord.admin_audit_id))) == 0
+
+
+def test_named_plant_key_unique_race_is_the_only_integrity_conflict():
+    with _postgres_database() as database:
+        farm = _seed_farm(database)
+        boss, _ = _create_actor(database, farm, "boss")
+
+        class ConstraintDiagnostic:
+            constraint_name = "uq_plants_farm_plant_key"
+
+        class NamedUniqueViolation(Exception):
+            diag = ConstraintDiagnostic()
+
+        class NamedRaceRepository(FarmRepository):
+            def flush(self) -> None:
+                raise IntegrityError(
+                    "redacted statement",
+                    {},
+                    NamedUniqueViolation("secret=hidden"),
+                )
+
+        with database.session() as session:
+            with pytest.raises(FarmCommandError) as conflict:
+                FarmService(
+                    session,
+                    repository_factory=NamedRaceRepository,
+                ).create_plant(
+                    boss,
+                    plant_key="race_001",
+                    display_name="Race",
+                )
+        assert conflict.value.code is FarmCommandErrorCode.CONFLICT
+        assert "hidden" not in str(conflict.value)
+
+        class UnknownDiagnostic:
+            constraint_name = "some_other_constraint"
+
+        class UnknownIntegrityViolation(Exception):
+            diag = UnknownDiagnostic()
+
+        class UnknownIntegrityRepository(FarmRepository):
+            def flush(self) -> None:
+                raise IntegrityError(
+                    "redacted statement",
+                    {},
+                    UnknownIntegrityViolation("password=hidden"),
+                )
+
+        with database.session() as session:
+            with pytest.raises(FarmCommandError) as generic:
+                FarmService(
+                    session,
+                    repository_factory=UnknownIntegrityRepository,
+                ).create_plant(
+                    boss,
+                    plant_key="unknown_001",
+                    display_name="Unknown",
+                )
+        assert generic.value.code is FarmCommandErrorCode.PERSISTENCE_FAILED
+        assert "hidden" not in str(generic.value)
+
+        with database.session() as session:
+            assert session.scalar(
+                select(func.count(Plant.plant_id)).where(
+                    Plant.plant_key.in_(["race_001", "unknown_001"])
+                )
+            ) == 0
             assert session.scalar(select(func.count(AdminAuditRecord.admin_audit_id))) == 0

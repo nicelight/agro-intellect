@@ -1,0 +1,21 @@
+{
+  "id": "FT-002-BHV-004",
+  "feature_id": "FT-002",
+  "title": "Plant creation reports only positively classified key conflicts",
+  "given": {
+    "actor": "authorized Boss or Engineer",
+    "operation": "Plant creation reaches the transactional persistence boundary"
+  },
+  "when": {
+    "cases": [
+      "the named Farm-scoped Plant-key unique constraint loses a race",
+      "an unrelated DB, audit, flush, or commit failure occurs"
+    ]
+  },
+  "then": {
+    "key_race": "rollback and return PLANT_KEY_CONFLICT",
+    "generic_failure": "rollback and return PLANT_PERSISTENCE_FAILED",
+    "atomicity": "no Plant, creator grant, or success audit remains",
+    "redaction": "no raw SQL, driver exception, DSN, or credential detail is returned"
+  }
+}

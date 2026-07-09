@@ -5,11 +5,12 @@ type: feature
 feature_id: FT-003
 epic: EP-001
 lifecycle: planned
-last_updated: 2026-07-06
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/user-scenarios.md
+spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/identity/account-membership.md
   - .memory-bank/contracts/auth/session-security.md
@@ -18,6 +19,8 @@ spec_design_links:
   - .memory-bank/contracts/access/actor-context.md
   - .memory-bank/domains/admin/admin-audit.md
   - .memory-bank/contracts/admin/boss-admin-http.md
+  - .memory-bank/contracts/farm/plant-management-http.md
+  - .memory-bank/runbooks/first-boss-local-bootstrap.md
   - .memory-bank/testing/admin/boss-admin-and-audit.md
 ---
 # FT-003 Boss Admin Surface And Admin Audit
@@ -77,7 +80,20 @@ spec_design_links:
 
 UI composition and product use cases remain here; concrete contracts remain in
 the linked subject specs. Exact first-Boss one-shot CLI and implementation
-design are outside this composition.
+design are owned by the First Boss Local Bootstrap runbook.
+
+Feature-level not-applicable rationale:
+
+- No new event/message or agent-tool payload is introduced by FT-003.
+- No new local artifact/filesystem storage is introduced by FT-003.
+- No PWA component is implemented in this feature; role-aware UI composition
+  remains with FT-016 and consumes the admin HTTP boundary.
+
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-003-BHV-001-first-boss-bootstrap-one-shot.behavior.json`
+- `.memory-bank/behavior-specs/FT-003-BHV-002-boss-creates-engineer-atomic-audit.behavior.json`
+- `.memory-bank/behavior-specs/FT-003-BHV-003-admin-denial-last-boss-guard.behavior.json`
 
 ## Non-Goals
 

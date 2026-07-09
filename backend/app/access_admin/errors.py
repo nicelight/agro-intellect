@@ -23,6 +23,16 @@ class AuthErrorCode(StrEnum):
     MEMBERSHIP_DISABLED = "AUTH_MEMBERSHIP_DISABLED"
     FORBIDDEN = "AUTH_FORBIDDEN"
     PLANT_FORBIDDEN = "AUTH_PLANT_FORBIDDEN"
+    FARM_NOT_INITIALIZED = "FARM_NOT_INITIALIZED"
+    FARM_STATE_CONFLICT = "FARM_STATE_CONFLICT"
+    FARM_PERSISTENCE_FAILED = "FARM_PERSISTENCE_FAILED"
+    PLANT_KEY_INVALID = "PLANT_KEY_INVALID"
+    PLANT_KEY_CONFLICT = "PLANT_KEY_CONFLICT"
+    PLANT_GRANT_TARGET_INVALID = "PLANT_GRANT_TARGET_INVALID"
+    PLANT_GRANT_APPROVAL_FORBIDDEN = "PLANT_GRANT_APPROVAL_FORBIDDEN"
+    PLANT_GRANT_NOT_FOUND = "PLANT_GRANT_NOT_FOUND"
+    PLANT_STATE_CONFLICT = "PLANT_STATE_CONFLICT"
+    PLANT_PERSISTENCE_FAILED = "PLANT_PERSISTENCE_FAILED"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
 
@@ -51,6 +61,46 @@ ERROR_DEFINITIONS = {
     ),
     AuthErrorCode.FORBIDDEN: ErrorDefinition(403, "Request is not allowed."),
     AuthErrorCode.PLANT_FORBIDDEN: ErrorDefinition(404, "Plant is not available."),
+    AuthErrorCode.FARM_NOT_INITIALIZED: ErrorDefinition(
+        409,
+        "Farm is not initialized. Run the local Farm bootstrap.",
+    ),
+    AuthErrorCode.FARM_STATE_CONFLICT: ErrorDefinition(
+        409,
+        "Farm state requires manual repair.",
+    ),
+    AuthErrorCode.FARM_PERSISTENCE_FAILED: ErrorDefinition(
+        500,
+        "Farm request could not be completed.",
+    ),
+    AuthErrorCode.PLANT_KEY_INVALID: ErrorDefinition(
+        422,
+        "Plant key is invalid.",
+    ),
+    AuthErrorCode.PLANT_KEY_CONFLICT: ErrorDefinition(
+        409,
+        "Plant key is already in use.",
+    ),
+    AuthErrorCode.PLANT_GRANT_TARGET_INVALID: ErrorDefinition(
+        422,
+        "Plant access target is invalid.",
+    ),
+    AuthErrorCode.PLANT_GRANT_APPROVAL_FORBIDDEN: ErrorDefinition(
+        422,
+        "Action approval cannot be granted to this membership.",
+    ),
+    AuthErrorCode.PLANT_GRANT_NOT_FOUND: ErrorDefinition(
+        404,
+        "Plant access grant is not available.",
+    ),
+    AuthErrorCode.PLANT_STATE_CONFLICT: ErrorDefinition(
+        409,
+        "Plant state changed. Retry with current state.",
+    ),
+    AuthErrorCode.PLANT_PERSISTENCE_FAILED: ErrorDefinition(
+        500,
+        "Plant request could not be completed.",
+    ),
     AuthErrorCode.VALIDATION_FAILED: ErrorDefinition(
         422,
         "Request validation failed.",

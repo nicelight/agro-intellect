@@ -4,6 +4,41 @@ status: active
 ---
 # Changelog
 
+## [2026-07-09] FT-003 SDD closure and task queue
+- Closed FT-003 planning for Boss admin, first-Boss bootstrap, direct Account
+  creation, role changes, Plant admin projection, and admin audit reads.
+- Extended the Boss Admin HTTP and Boss Admin verification specs with concrete
+  response shapes, error behavior, OpenAPI, rollback, and redaction checks.
+- Added the First Boss Local Bootstrap runbook as the exact one-shot local CLI
+  contract and linked it from the spec registry and FT-003 feature composition.
+- Added three FT-003 behavior specs for first-Boss bootstrap, Boss-created
+  Engineer atomic audit, and non-Boss/last-Boss guard.
+- Created implementation plan `IMPL-FT-003` and indexed dependency-ordered T3
+  tasks `TASK-016` through `TASK-018`.
+- Kept PWA/admin UI implementation with FT-016 and reused FT-002 Plant
+  lifecycle/access semantics instead of redefining them in FT-003.
+
+## [2026-07-09] Wave W4 — FT-002 integrated execution handoff
+- Added integrated FT-002 API flow tests for Engineer create/select/rename and
+  Boss archive/grant/restore permission behavior.
+- Added executable BHV-001..004 traceability so behavior specs point to
+  concrete passing tests instead of prose-only evidence.
+- Ran local `/execute` gates for TASK-015: focused FT-002 `43/43` and full
+  regression `151/151` passed.
+- Initially synchronized FT-002 and REQ-001 as `implemented` while leaving
+  shared REQ-003/004/006/007, FT-003 admin, downstream archive integrations,
+  UI/PWA, Safety Gate, Companion, and agent scopes open.
+- Recorded independent `/verify TASK-015` `PASS`, per-task `/red-verify`
+  `semantic-pass`, user-approved `HUMAN_CHECKPOINT: done`, and TASK-015
+  closure as `done`.
+- Recorded feature-level `/red-verify --feature FT-002`
+  `SEMANTIC_VERDICT: semantic-pass`; synchronized FT-002 lifecycle to
+  `verified` and REQ-001 to `verified`.
+- Kept shared/downstream REQ-003/004/006/007, FT-003 admin, retained-history,
+  UI/PWA, Safety Gate, Companion, and agent scopes open.
+- Ran wave-boundary `/mb-sync`; Memory Bank lint, doctor, strict doctor, and
+  diff whitespace checks pass with no warnings.
+
 ## [2026-07-06] FT-002 SDD closure and task queue
 - Confirmed completed Foundation gate `TASK-004-T2-FT-000-W0` and the full
   completed FT-001 chain through `TASK-011-T3-FT-001-W3` as the brownfield

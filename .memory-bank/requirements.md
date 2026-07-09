@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-06
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -76,7 +76,7 @@ source_of_truth:
 | REQ | Epic | Feature | Test | Lifecycle |
 |---|---|---|---|---|
 | REQ-000 | Foundation | FT-000 | gate: final Foundation Dev Path build/start/bootstrap/db/migration/test/MB checks | verified |
-| REQ-001 | EP-001 | FT-002 | integration: single Farm workspace; e2e: Boss setup | planned |
+| REQ-001 | EP-001 | FT-002 | verified: canonical single local Farm workspace via FT-002 bootstrap/API integration; first-Boss setup remains FT-003/first-demo scope | verified |
 | REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | verified |
 | REQ-003 | EP-001 | FT-001, FT-002, FT-003 | integration: ActorContext on every Farm/Plant route and context builder | planned |
 | REQ-004 | EP-001 | FT-001, FT-002 | unit: role/permission matrix; integration: PlantAccessGrant filtering | planned |
@@ -110,3 +110,21 @@ source_of_truth:
 - REQ-002 is synchronized as `verified`. REQ-003/004/020/021/022 remain
   `planned` because their complete outcomes also depend on later features or
   deferred cross-feature E2E.
+
+## Current FT-002 Evidence Note
+
+- TASK-012 through TASK-015 are recorded `done`; TASK-015 evidence adds
+  integrated Engineer/Boss API flows, direct BHV-001..004 traceability,
+  focused FT-002 `43/43`, full regression `151/151`, independent
+  `/verify PASS`, and per-task `/red-verify semantic-pass`.
+- REQ-001 is synchronized as `verified` for the FT-002-owned single local Farm
+  workspace boundary after feature-level `/red-verify --feature FT-002`
+  returned `semantic-pass`.
+- REQ-003, REQ-004, REQ-006, and REQ-007 retain `planned` RTM lifecycle because
+  each has shared or downstream acceptance outside FT-002: FT-001/FT-003
+  ActorContext/admin scope, FT-004 Plant operations, retained-history
+  payloads, task/approval/governance/archive integrations, UI/PWA, and first
+  demo flows remain with their owning features.
+- FT-002 is synchronized as `verified` for its owned Farm/Plant lifecycle and
+  access boundary. This does not close shared/downstream portions of
+  REQ-003/004/006/007.

@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-001
 lifecycle: planned
-last_updated: 2026-07-06
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -51,5 +51,10 @@ Establish the local Farm authority boundary so every human action and agent cont
 - FT-001 is synchronized as `verified` with the local PostgreSQL/`psql`
   environment gap and accepted missing hostile-provider regression recorded as
   residual risks.
-- EP-001 lifecycle remains `planned` because FT-002 Farm/Plant lifecycle and
-  FT-003 Boss administration/audit are not implemented or closed.
+- FT-002 tasks TASK-012 through TASK-015 are recorded `done`; TASK-015
+  execution, independent verification, and per-task semantic verification pass
+  with focused FT-002 `43/43` and full regression `151/151`. Feature-level
+  `/red-verify --feature FT-002` returned `semantic-pass`, so FT-002 is
+  synchronized as `verified`.
+- EP-001 lifecycle remains `planned` because FT-003 Boss administration/audit
+  and first-Boss/personnel flows are not implemented or closed.

@@ -2,7 +2,7 @@
 description: Cross-contract verification for Farm bootstrap, Plant lifecycle, grants, ActorContext, audit, migration, and HTTP.
 status: active
 type: testing_spec
-last_updated: 2026-07-06
+last_updated: 2026-07-08
 source_of_truth:
   - .memory-bank/domains/farm/farm-plant-access-storage.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
@@ -62,6 +62,11 @@ history, task, approval, agent, Safety Gate, or Companion implementations.
 - Engineer create commits Plant, creator grant approval false, and two audits
   atomically; every injected failure leaves all four absent.
 - Boss create writes no synthetic grant. Duplicate/invalid key rolls back.
+- Plant-create failure injection proves a prechecked or positively identified
+  `uq_plants_farm_plant_key` race maps to `PLANT_KEY_CONFLICT`, while an
+  unrelated DB/audit/flush/commit failure maps to
+  `PLANT_PERSISTENCE_FAILED`; neither path persists Plant, grant, or success
+  audit rows.
 - Boss or granted Engineer can rename active Plant; keys remain immutable;
   Consultant, revoked/missing grant, and archived Plant fail unchanged.
 - Only Boss archives/restores and manages grants. Archive/restore preserves
@@ -86,6 +91,10 @@ history, task, approval, agent, Safety Gate, or Companion implementations.
   normal Plant access does not leak existence.
 - Responses, diagnostics, audit, and evidence contain no password, hash,
   session/token, cookie/header, `.env`, DB credential, or raw SQL exception.
+- The HTTP adapter never overrides generic persistence failure with a
+  route-selected business conflict. Tests assert safe status/code/body for
+  both key-conflict and generic persistence paths and reject leaked exception
+  or credential fragments.
 
 ## Behavior-spec traceability
 
@@ -93,6 +102,8 @@ history, task, approval, agent, Safety Gate, or Companion implementations.
 - `FT-002-BHV-002`: atomic Engineer creation and immediate permission.
 - `FT-002-BHV-003`: archive/grant mutation/restore with stable identity and no
   automatic operational access while archived.
+- `FT-002-BHV-004`: named Plant-key uniqueness race remains distinct from
+  unrelated rollback-safe persistence failure and both paths stay redacted.
 
 ## Deferred cross-feature checks
 

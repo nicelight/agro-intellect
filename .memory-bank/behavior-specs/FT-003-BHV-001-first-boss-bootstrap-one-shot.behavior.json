@@ -1,0 +1,20 @@
+{
+  "id": "FT-003-BHV-001",
+  "feature_id": "FT-003",
+  "title": "First Boss one-shot bootstrap creates exactly one active Boss",
+  "given": {
+    "farm": "canonical local_farm exists from FT-002 bootstrap",
+    "active_boss_memberships": 0,
+    "password_source": "interactive getpass prompt only"
+  },
+  "when": {
+    "command": "bash scripts/bootstrap-first-boss-local.sh --login-name boss --display-name Boss"
+  },
+  "then": {
+    "account": "one active Account with normalized login and Argon2id password_hash exists",
+    "membership": "one active boss FarmMembership exists for local_farm",
+    "audit": "exactly one account_created AdminAuditRecord uses system_bootstrap provenance",
+    "secrets": "password and password_hash are absent from stdout, audit, logs, and evidence",
+    "repeat": "a second run refuses before mutation because an active Boss exists"
+  }
+}

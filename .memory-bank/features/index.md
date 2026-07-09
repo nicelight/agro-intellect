@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-09
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -16,7 +16,7 @@ source_of_truth:
 ## EP-001 Local Farm Access And Admin
 
 - [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): verified local identity, session, and ActorContext boundary.
-- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): design-complete Farm/Plant lifecycle and access-grant task queue.
+- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): verified Farm/Plant lifecycle and access-grant boundary; downstream retained-history/UI/Safety/agent scopes remain with later features.
 - [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): Boss administration and durable audit boundary.
 
 ## EP-002 Plant Operations Evidence Authority

@@ -1,11 +1,11 @@
 ---
 description: FT-002 Farm Plant Lifecycle And Access Grants.
-status: draft
+status: active
 type: feature
 feature_id: FT-002
 epic: EP-001
-lifecycle: planned
-last_updated: 2026-07-06
+lifecycle: verified
+last_updated: 2026-07-09
 clarification_status: complete
 last_clarified: 2026-07-06
 clarification_questions: 12
@@ -116,6 +116,9 @@ source_of_truth:
   cannot update `display_name`.
 - Consultant, disabled membership, or any Engineer create failure writes no
   Plant, creator grant, or success audit.
+- A confirmed Farm-scoped Plant-key uniqueness race returns the stable key
+  conflict. Unrelated persistence failures remain a distinct safe generic
+  failure and are never mislabeled as a duplicate key.
 
 ## Verification Targets
 
@@ -135,6 +138,7 @@ source_of_truth:
 - `.memory-bank/behavior-specs/FT-002-BHV-001-idempotent-canonical-bootstrap.behavior.json`
 - `.memory-bank/behavior-specs/FT-002-BHV-002-engineer-create-immediate-access.behavior.json`
 - `.memory-bank/behavior-specs/FT-002-BHV-003-archive-grant-restore.behavior.json`
+- `.memory-bank/behavior-specs/FT-002-BHV-004-truthful-create-persistence-errors.behavior.json`
 
 ## Normative Backbone Links
 
@@ -187,6 +191,44 @@ shared archive guard and must not create placeholder implementations for them.
 
 - [Implementation plan](../tasks/plans/IMPL-FT-002.md): ordered task queue,
   dependencies, verification strategy, and UAT.
+
+## Current Implementation Evidence
+
+- `TASK-012-T3-FT-002-W1` is recorded `done`: exact Farm/Plant/grant schema,
+  final Farm FK, guarded downgrade, canonical `local_farm`/`tomato_001`
+  bootstrap, and bootstrap redaction/rollback evidence.
+- `TASK-013-T3-FT-002-W2` is recorded `done`: audited Farm/Plant lifecycle,
+  stable grant service behavior, persisted ActorContext snapshot provider, and
+  repaired one-statement permission snapshot evidence.
+- `TASK-014-T3-FT-002-W3` is recorded `done`: protected Farm/Plant/access HTTP,
+  generated OpenAPI, no-leak errors, truthful Plant/Farm persistence errors,
+  and current `/verify PASS` plus `/red-verify semantic-pass`.
+- `TASK-015-T3-FT-002-W4` execution evidence adds integrated API flows and
+  direct BHV-001..004 traceability. Local gates report focused FT-002
+  `43/43` and full regression `151/151` passing; independent `/verify`
+  returned `PASS` and per-task `/red-verify` returned `semantic-pass`.
+- `TASK-015-T3-FT-002-W4` is recorded `done` after manual owner approval and
+  `HUMAN_CHECKPOINT: done`.
+- Feature lifecycle is synchronized as `verified` after feature-level
+  `/red-verify --feature FT-002` returned `semantic-pass`.
+- FT-002-owned evidence covers the local Farm/Plant lifecycle/access boundary.
+  FT-003 Boss personnel/admin, retained-history payloads, downstream
+  operational records, Safety Gate, Companion governance, UI/PWA, and agent
+  behavior remain with their owning features.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+Feature-level adversarial verification completed at `2026-07-09T22:00:09+05:00`.
+Report: [.tasks/FT-002/FT-002-S-RED-VERIFY-final-report-docs-01.md](../../.tasks/FT-002/FT-002-S-RED-VERIFY-final-report-docs-01.md).
+
+The review covered TASK-012 through TASK-015 as one feature surface and found
+no semantic blocker. FT-002 is verified for the local Farm/Plant lifecycle,
+PlantAccessGrant, bootstrap, audit, persisted ActorContext, and protected HTTP
+boundary. Shared/downstream acceptance remains open for FT-003 Boss admin,
+retained-history payloads, operational records, Safety Gate, Companion,
+UI/PWA, agent behavior, and first-demo flows.
 
 ## Clarifications
 

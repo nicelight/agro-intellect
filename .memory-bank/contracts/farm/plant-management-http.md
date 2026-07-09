@@ -2,7 +2,7 @@
 description: Concrete Farm, Plant lifecycle, PlantAccessGrant, authorization, response, and error HTTP contract.
 status: active
 type: api_contract
-last_updated: 2026-07-06
+last_updated: 2026-07-08
 source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/access/actor-context.md
@@ -112,17 +112,29 @@ safe text.
 | `AUTH_PLANT_FORBIDDEN` | 404 | Plant missing, unauthorized, revoked/missing grant, or archived for a normal route |
 | `FARM_NOT_INITIALIZED` | 409 | ActorContext Farm has no canonical Farm row; run the documented bootstrap |
 | `FARM_STATE_CONFLICT` | 409 | canonical single-Farm integrity is inconsistent; manual repair required |
+| `FARM_PERSISTENCE_FAILED` | 500 | the Farm mutation rolled back because of an unclassified persistence failure |
 | `PLANT_KEY_INVALID` | 422 | key does not match the canonical lowercase pattern |
 | `PLANT_KEY_CONFLICT` | 409 | key already exists in the Farm; writes and audits roll back |
 | `PLANT_GRANT_TARGET_INVALID` | 422 | target membership is wrong-Farm, inactive, Boss, or otherwise not grantable |
 | `PLANT_GRANT_APPROVAL_FORBIDDEN` | 422 | approval flag true was requested for a non-Engineer target |
 | `PLANT_GRANT_NOT_FOUND` | 404 | revoke target has never had a grant for this Plant |
 | `PLANT_STATE_CONFLICT` | 409 | concurrent/current state no longer permits the requested mutation |
+| `PLANT_PERSISTENCE_FAILED` | 500 | the Plant mutation rolled back because of a persistence failure that is not positively classified as a documented business conflict |
 | `VALIDATION_FAILED` | 422 | malformed UUID/body, blank display name, unknown field, or other schema failure |
 
-Unexpected DB exceptions are not returned verbatim. Uniqueness races map to
-the stable conflict code after rollback; secret-bearing connection details are
-redacted.
+Unexpected DB exceptions are not returned verbatim. A Plant-create uniqueness
+race maps to `PLANT_KEY_CONFLICT` only when the service positively identifies
+the named `(farm_id, plant_key)` unique constraint after rollback. A generic
+DB, flush, commit, or audit persistence failure MUST NOT be relabeled as a key
+conflict; it maps to `PLANT_PERSISTENCE_FAILED` with safe text after rollback.
+Unknown integrity failures remain generic persistence failures. Secret-bearing
+connection details and raw exception text are always omitted.
+
+Entity-specific generic failures remain truthful at the HTTP boundary:
+`PATCH /api/farm` maps service `PERSISTENCE_FAILED` to
+`FARM_PERSISTENCE_FAILED`, while Plant lifecycle/access routes map it to
+`PLANT_PERSISTENCE_FAILED`. The shared adapter MUST NOT use a Plant-specific
+fallback for Farm mutations.
 
 ## Compatibility and verification
 
@@ -132,6 +144,9 @@ redacted.
   denial, list filtering, Engineer immediate creator access, Boss-only
   lifecycle/access, immutable-key rejection, archived grant administration,
   no-op retries, and safe errors.
+- Service/API failure-injection tests distinguish the named Plant-key unique
+  race from unrelated DB/audit persistence failures and prove both paths roll
+  back without raw exception or credential leakage.
 - Integration tests prove API results use the persisted snapshot provider, not
   an allow-all fixture or frontend filtering.
 

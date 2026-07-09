@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 from .access_admin.dependencies import install_protected_route_error_handler
 from .access_admin.errors import install_error_handlers
-from .api import session_router
+from .api import plants_router, session_router
 from .config import AppSettings
 from .database import DatabaseHandle, build_database
 
@@ -26,6 +26,7 @@ def create_app(
     install_error_handlers(app)
     install_protected_route_error_handler(app)
     app.include_router(session_router)
+    app.include_router(plants_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
