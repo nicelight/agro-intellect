@@ -9,6 +9,7 @@ from .farm_repository import FarmRepository
 from .admin_repository import AdminRepository
 from .admin_service import (
     FIRST_BOSS_REQUEST_ID,
+    AccountMembershipProjection,
     AccountMembershipResult,
     AdminCommandError,
     AdminCommandErrorCode,
@@ -29,6 +30,7 @@ from .models import (
 
 __all__ = [
     "Account",
+    "AccountMembershipProjection",
     "AccountMembershipResult",
     "AdminCommandError",
     "AdminCommandErrorCode",

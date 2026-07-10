@@ -4,6 +4,18 @@ status: active
 ---
 # Changelog
 
+## [2026-07-10] FT-003 admin internal refactor
+- Split the Boss admin API adapter into router, schemas, backend, and mapping
+  modules without changing HTTP routes, response models, OpenAPI names,
+  no-store behavior, or error envelopes.
+- Split admin service helpers into typed results/projections, policy/input
+  guards, and safe-summary builders while keeping existing public imports from
+  `backend.app.access_admin.admin_service` available.
+- Moved admin audit offset pagination behind the AdminService/AdminRepository
+  boundary and removed the admin API layer's direct audit SQL/query bypass.
+- Preserved FT-003 behavior and contract specs; this is an internal
+  no-contract-change refactor.
+
 ## [2026-07-10] Wave W3 — FT-003 integrated implementation evidence
 - Added integrated FT-003 API flow coverage for canonical Farm/`tomato_001`
   bootstrap, first Boss bootstrap, Boss login, Boss-created Engineer, Engineer

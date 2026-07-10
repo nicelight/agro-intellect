@@ -359,7 +359,9 @@ def test_duplicate_and_generic_persistence_failures_are_distinct(
         def create_account(self, *_args, **_kwargs):
             raise AdminCommandError(AdminCommandErrorCode.PERSISTENCE_FAILED)
 
-    monkeypatch.setattr("backend.app.api.admin.AdminService", FailingAdminService)
+    monkeypatch.setattr(
+        "backend.app.api.admin_backend.AdminService", FailingAdminService
+    )
     generic = client.post(
         "/api/admin/accounts",
         json={

@@ -217,7 +217,7 @@ def test_admin_reads_return_safe_personnel_plant_projection_and_audit_summary():
             projections = service.list_plant_projections(boss)
             audits = service.list_audit(boss, limit=10)
 
-        assert [item["membership"]["role_preset"] for item in personnel] == ["engineer"]
+        assert [item.membership.role_preset for item in personnel] == ["engineer"]
         assert all("password_hash" not in str(item) for item in personnel)
         assert len(projections) == 1
         assert projections[0].plant.plant_key == "mint_001"

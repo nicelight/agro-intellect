@@ -220,6 +220,7 @@ class AdminRepository:
         *,
         farm_id: uuid.UUID,
         limit: int,
+        offset: int = 0,
         target_type: str | None = None,
         target_id: uuid.UUID | None = None,
         plant_id: uuid.UUID | None = None,
@@ -231,6 +232,7 @@ class AdminRepository:
                 AdminAuditRecord.created_at.desc(),
                 AdminAuditRecord.admin_audit_id.desc(),
             )
+            .offset(offset)
             .limit(limit)
         )
         if target_type is not None:
