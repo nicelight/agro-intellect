@@ -1,0 +1,144 @@
+{
+  "id": "TASK-021-T3-FT-005-W1",
+  "title": "Implement FT-005 photo catalog, artifact storage, and manifest service",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-003",
+    "REQ-009",
+    "REQ-010",
+    "REQ-019",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-020-T3-FT-004-W2"
+  ],
+  "touched_files": [
+    "backend/app/photo_intake/",
+    "backend/app/timeline/",
+    "backend/migrations/versions/ft005_photo_intake.py",
+    "tests/backend/photo_intake/",
+    ".memory-bank/tasks/TASK-021-T3-FT-005-W1.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft005-service-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/photo_intake",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Migration/model tests prove photo_catalog_items native UUID identity, restrictive FKs, optional check_in_id ownership, accepted photo_type/content_type, size limit, local_only=true, can_train_on=false, and event_refs.",
+    "Filesystem tests prove safe relative layout, ignored user filenames, temp-write plus atomic rename, immutable accepted originals/manifests, and no absolute path leakage.",
+    "Manifest tests prove photo_manifest.v1 fields match the catalog row and store photo_id as the same UUID as photo_artifact_id.",
+    "Checksum tests prove catalog and manifest sha256 match the stored original.",
+    "Service tests prove authorized active Boss/Engineer acceptance, Consultant/unauthorized/revoked/disabled/archived denial, safe cleanup on failed file/manifest/catalog/checksum/timeline steps, and no accepted-photo success without photo_accepted event refs.",
+    "Behavior specs FT-005-BHV-001 through FT-005-BHV-003 have direct executable traceability in focused tests."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-capture-manifests.md",
+    ".memory-bank/domains/photo-artifacts.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/testing/photo-intake.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "evidence_required": [
+    "FT-005 migration/model focused test output",
+    "filesystem storage safety test output",
+    "manifest and checksum test output",
+    "service authorization and cleanup test output",
+    "timeline append success/failure evidence",
+    "behavior-spec traceability summary",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-capture-manifests.md",
+    ".memory-bank/behavior-specs/FT-005-BHV-001-accepted-photo-artifacts.behavior.json",
+    ".memory-bank/behavior-specs/FT-005-BHV-002-invalid-photo-no-accepted-artifact.behavior.json",
+    ".memory-bank/behavior-specs/FT-005-BHV-003-archived-photo-upload-denied.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/photo-artifacts.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/testing/photo-intake.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use LOCAL_ARTIFACT_ROOT and PostgreSQL/read-model authority; do not introduce object storage, remote sync, or filesystem scanning as catalog authority.",
+    "Use one accepted-photo UUID: photo_id is the storage/API name for photo_artifact_id.",
+    "Accepted photo success requires stored original, manifest, catalog row, sha256, local_only=true, can_train_on=false, and photo_accepted timeline ref.",
+    "Cleanup may remove only files created for the failed generated upload path and must not delete unrelated local data or retained history.",
+    "Do not implement Vision processing, thumbnails, annotations, export packages, dataset trainability transitions, Plant history UI, or PWA components."
+  ],
+  "invariants": [
+    "Photo artifacts are evidence refs and cannot override PostgreSQL Plant state.",
+    "Timeline events and manifests are audit/export/supporting artifacts, not mutable runtime authority.",
+    "New accepted photos are local_only=true and can_train_on=false.",
+    "Secrets, auth material, user filenames, absolute paths, provider payloads, and hidden reasoning never enter catalog rows, manifests, timeline events, logs, or evidence."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/photo_intake",
+    ".venv/bin/python -m pytest tests",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Inject file, manifest, catalog, checksum, and timeline failures and prove no accepted-photo success is returned.",
+    "Trace FT-005-BHV-001 through FT-005-BHV-003 to concrete passing tests."
+  ],
+  "purpose": "Create the local photo artifact authority boundary for accepted photo files, catalog metadata, manifests, checksums, and audit refs before HTTP exposure.",
+  "success_outcome": "FT-005 can accept a Plant photo only through authorized service logic that writes one local artifact set, one catalog identity, one manifest, sha256, trainability defaults, and a photo_accepted timeline ref.",
+  "anti_goals": [
+    "No multipart HTTP routes in this task.",
+    "No Vision processing, thumbnails, annotations, export packages, or remote sync.",
+    "No dataset trainability transition beyond default false.",
+    "No Plant history UI, timeline pagination, or PWA implementation."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/photo_intake/",
+      "backend/app/timeline/",
+      "backend/migrations/versions/ft005_photo_intake.py",
+      "tests/backend/photo_intake/",
+      ".protocols/TASK-021-T3-FT-005-W1/",
+      ".tasks/TASK-021-T3-FT-005-W1/",
+      ".memory-bank/tasks/TASK-021-T3-FT-005-W1.task.json"
+    ],
+    "forbidden_scope": [
+      "multipart HTTP route implementation",
+      "Vision processing, thumbnails, annotations, export package generation, or remote sync",
+      "dataset trainability approval or registry implementation",
+      "Plant history UI, timeline pagination, or PWA behavior",
+      "unredacted auth/session/path/evidence material"
+    ],
+    "stop_conditions": [
+      "TASK-020-T3-FT-004-W2 is not done or optional check_in_id association cannot be validated against FT-004 check-ins.",
+      "The implementation would need a second photo identity instead of the specified photo_id/photo_artifact_id UUID.",
+      "Safe cleanup cannot distinguish task-created files from unrelated local data.",
+      "Timeline append semantics conflict with .memory-bank/contracts/timeline-event.md.",
+      "Diagnostics or evidence contain secrets, auth material, absolute local paths, user-controlled destination paths, provider payloads, or hidden reasoning."
+    ]
+  }
+}

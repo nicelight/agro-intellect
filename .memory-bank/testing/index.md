@@ -1,7 +1,7 @@
 ---
 description: Router for active testing strategy and subject verification specifications.
 status: active
-last_updated: 2026-07-04
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/testing/strategy.md
@@ -24,6 +24,10 @@ source_of_truth:
 - [Plant Lifecycle And Access Verification](farm/plant-lifecycle-and-access.md):
   Farm bootstrap, Plant lifecycle/grants, ActorContext, audit, migration, and
   HTTP evidence.
+- [Plant Operations Verification](plant-operations.md): check-in, manual pH/EC,
+  freshness, and authorized operations evidence.
+- [Photo Intake Verification](photo-intake.md): photo file/catalog/manifest,
+  upload, checksum, and timeline-ref evidence.
 
 ## Archive
 

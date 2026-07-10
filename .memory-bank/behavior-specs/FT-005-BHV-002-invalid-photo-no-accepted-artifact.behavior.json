@@ -1,0 +1,16 @@
+{
+  "id": "FT-005-BHV-002",
+  "feature_id": "FT-005",
+  "title": "Invalid photo upload leaves no accepted artifact",
+  "given": {
+    "actor": "authorized actor",
+    "file": "unsupported type, oversized file, unsafe path input, or checksum mismatch"
+  },
+  "when": {
+    "request": "POST /api/plants/{plant_id}/photos"
+  },
+  "then": {
+    "result": "request fails with stable safe error",
+    "persistence": "no accepted catalog row, manifest, or photo_accepted timeline event exists"
+  }
+}

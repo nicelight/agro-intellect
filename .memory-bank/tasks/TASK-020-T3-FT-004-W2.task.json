@@ -1,0 +1,155 @@
+{
+  "id": "TASK-020-T3-FT-004-W2",
+  "title": "Implement FT-004 operations HTTP routes and integrated evidence",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-004",
+  "reqs": [
+    "REQ-003",
+    "REQ-006",
+    "REQ-008",
+    "REQ-010",
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-019-T3-FT-004-W1"
+  ],
+  "touched_files": [
+    "backend/app/api/operations.py",
+    "backend/app/api/__init__.py",
+    "backend/app/main.py",
+    "backend/app/plant_operations/",
+    "tests/backend/api/",
+    "tests/backend/plant_operations/",
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".memory-bank/tasks/TASK-020-T3-FT-004-W2.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft004-api-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/api -k ft004",
+      "required": false
+    },
+    {
+      "name": "ft004-focused-suite",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/api -k ft004",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Protected FT-004 routes match Plant Operations HTTP request/response shapes, status codes, no-store behavior, UUID/timestamp/enum handling, and stable error envelope.",
+    "API tests prove ActorContext is resolved before business logic and that Boss/Engineer can operate while Consultant, revoked grant, disabled membership, unauthorized Plant, wrong Farm, and archived Plant receive no-leak denials.",
+    "Integrated flow proves an Engineer with tomato_001 access creates an observation plus pH/EC check-in and receives a fresh PostgreSQL-derived projection and timeline refs.",
+    "Failure-injection tests prove persistence or timeline failures do not return success and do not leak raw exceptions, SQL, credentials, session material, or provider payloads.",
+    "FT-004 docs remain synchronized without claiming photo upload, Plant history UI, agents, Safety Gate, action tasks, follow-up, or PWA completion."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "evidence_required": [
+    "FT-004 API/OpenAPI test output",
+    "FT-004 focused service/API test output",
+    "integrated Engineer tomato_001 check-in evidence",
+    "authorization denial and archived-Plant denial evidence",
+    "failure-injection and redaction evidence",
+    "durable FT-004 docs sync diff summary",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".memory-bank/behavior-specs/FT-004-BHV-001-authorized-check-in-measurement.behavior.json",
+    ".memory-bank/behavior-specs/FT-004-BHV-002-missing-stale-measurement-projection.behavior.json",
+    ".memory-bank/behavior-specs/FT-004-BHV-003-archived-or-unauthorized-check-in-denied.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use the service boundary from TASK-019; do not bypass it from HTTP handlers.",
+    "Expose only the FT-004 operations routes; do not accept multipart photo uploads or implement history/timeline presentation.",
+    "Return no-leak 404-style Plant denials for missing, unauthorized, revoked, wrong-Farm, or archived normal-operation paths.",
+    "Keep response bodies free of credentials, password hashes, session tokens, cookies, headers, raw SQL errors, provider payloads, and hidden reasoning."
+  ],
+  "invariants": [
+    "ActorContext must resolve before FT-004 route business logic.",
+    "Write routes require active Plant operate authority at the same boundary as persistence.",
+    "Latest measurement projection reads PostgreSQL state, not timeline or presentation artifacts.",
+    "Timeline refs remain audit/export refs and never become runtime authority."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/api -k ft004",
+    ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/api -k ft004",
+    ".venv/bin/python -m pytest tests",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Inspect generated OpenAPI for the documented FT-004 routes, response shapes, and errors.",
+    "Trace FT-004-BHV-001 through FT-004-BHV-003 to concrete API/integration tests."
+  ],
+  "purpose": "Expose the completed FT-004 service through protected HTTP routes and prove the end-to-end authorized daily check-in behavior.",
+  "success_outcome": "FT-004 is implementable as a backend feature: protected operations routes persist authorized check-ins/measurements, return freshness projections and timeline refs, and have focused integrated evidence without closing downstream features.",
+  "anti_goals": [
+    "No photo upload or catalog route implementation.",
+    "No Plant history UI, timeline pagination, or export UI.",
+    "No agent output, Safety Gate, action task, follow-up, or PWA implementation.",
+    "No feature lifecycle overclaim beyond FT-004 backend operations."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/api/operations.py",
+      "backend/app/api/__init__.py",
+      "backend/app/main.py",
+      "backend/app/plant_operations/",
+      "tests/backend/api/",
+      "tests/backend/plant_operations/",
+      ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+      ".protocols/TASK-020-T3-FT-004-W2/",
+      ".tasks/TASK-020-T3-FT-004-W2/",
+      ".memory-bank/tasks/TASK-020-T3-FT-004-W2.task.json"
+    ],
+    "forbidden_scope": [
+      "photo upload or photo catalog API",
+      "Plant history UI, timeline pagination, or export UI",
+      "agent, Safety Gate, action task, follow-up, or PWA behavior",
+      "unredacted auth/session/evidence material",
+      "claiming photo intake, history/timeline, Safety Gate, follow-up, or PWA feature completion"
+    ],
+    "stop_conditions": [
+      "TASK-019-T3-FT-004-W1 is not done or its service contract is contradicted.",
+      "HTTP implementation requires changing public FT-004 route shapes or error semantics not covered by canonical specs.",
+      "Authorization parity cannot be proven across service and API boundaries.",
+      "Integrated evidence would claim downstream photo/history/agent/safety/UI behavior.",
+      "Diagnostics or evidence contain credentials, auth material, raw SQL errors, provider payloads, or hidden reasoning."
+    ]
+  }
+}

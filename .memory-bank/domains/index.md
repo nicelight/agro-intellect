@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical domain, persistence, migration, and internal data specifications.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/spec-backbone.md
@@ -13,7 +13,8 @@ source_of_truth:
 - [Core Domain](core-domain.md): PRD-level vocabulary and rules.
 - [Runtime Data Model](runtime-data-model.md): runtime authority and shared identity.
 - [Foundation Data Substrate](foundation-data-substrate.md): DB/session/Alembic/runtime roots.
-- [Photo Artifacts](photo-artifacts.md): local artifact authority.
+- [Plant Operations](plant-operations.md): check-in, observation, manual pH/EC, and freshness persistence.
+- [Photo Artifacts](photo-artifacts.md): local artifact authority, catalog, layout, and capture manifests.
 
 ## Subject data specs
 

@@ -4,6 +4,16 @@ status: active
 ---
 # Changelog
 
+## [2026-07-10] FT-004/FT-005 task-plan repair
+- Repaired rejected FT-004 and FT-005 task-plan gates by creating indexed
+  schema-backed T3 task records `TASK-019` through `TASK-022`.
+- Extended the Timeline Event contract with the minimal append writer seam and
+  registered current event types for Plant operations and photo intake emitters.
+- Resolved FT-005 photo identity ambiguity: `photo_id` is the storage/API name
+  for the same UUID as `photo_artifact_id`.
+- Left all new FT-004/FT-005 task records `planned`; no implementation or
+  execution evidence was produced by this planning repair.
+
 ## [2026-07-10] FT-003 admin internal refactor
 - Split the Boss admin API adapter into router, schemas, backend, and mapping
   modules without changing HTTP routes, response models, OpenAPI names,

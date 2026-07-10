@@ -1,0 +1,16 @@
+{
+  "id": "FT-005-BHV-003",
+  "feature_id": "FT-005",
+  "title": "Archived Plant denies normal photo upload but retains history",
+  "given": {
+    "plant": "archived Plant with prior accepted photos",
+    "actor": "Boss or granted user"
+  },
+  "when": {
+    "request": "POST /api/plants/{plant_id}/photos"
+  },
+  "then": {
+    "result": "normal upload fails closed",
+    "history": "previous photo refs remain available only through retained-history authorization"
+  }
+}

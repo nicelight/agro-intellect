@@ -76,6 +76,22 @@
     {
       "id": "TASK-018-T3-FT-003-W3",
       "file": "TASK-018-T3-FT-003-W3.task.json"
+    },
+    {
+      "id": "TASK-019-T3-FT-004-W1",
+      "file": "TASK-019-T3-FT-004-W1.task.json"
+    },
+    {
+      "id": "TASK-020-T3-FT-004-W2",
+      "file": "TASK-020-T3-FT-004-W2.task.json"
+    },
+    {
+      "id": "TASK-021-T3-FT-005-W1",
+      "file": "TASK-021-T3-FT-005-W1.task.json"
+    },
+    {
+      "id": "TASK-022-T3-FT-005-W2",
+      "file": "TASK-022-T3-FT-005-W2.task.json"
     }
   ]
 }

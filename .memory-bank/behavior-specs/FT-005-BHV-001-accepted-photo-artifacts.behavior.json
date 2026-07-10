@@ -1,0 +1,17 @@
+{
+  "id": "FT-005-BHV-001",
+  "feature_id": "FT-005",
+  "title": "Accepted photo creates catalog, file, manifest, checksum, and timeline refs",
+  "given": {
+    "actor": "active Boss or granted Engineer",
+    "plant": "active Plant",
+    "file": "valid JPEG, PNG, or WebP under 20 MiB"
+  },
+  "when": {
+    "request": "POST /api/plants/{plant_id}/photos"
+  },
+  "then": {
+    "result": "PhotoCatalogSummary returns local-only refs",
+    "artifacts": "stored original, initial capture manifest, sha256, catalog row, and photo_accepted timeline event agree"
+  }
+}

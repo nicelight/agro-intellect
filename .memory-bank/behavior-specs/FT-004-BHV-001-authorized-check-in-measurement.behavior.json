@@ -1,0 +1,17 @@
+{
+  "id": "FT-004-BHV-001",
+  "feature_id": "FT-004",
+  "title": "Authorized Engineer records observation and pH/EC check-in",
+  "given": {
+    "actor": "active Engineer",
+    "plant": "active tomato_001 with active PlantAccessGrant",
+    "payload": "observed text plus pH and EC values"
+  },
+  "when": {
+    "request": "POST /api/plants/{plant_id}/operations/check-ins"
+  },
+  "then": {
+    "result": "check-in and measurement rows commit with ActorContext refs, freshness projection, and timeline refs",
+    "authority": "latest pH/EC comes from PostgreSQL/read model"
+  }
+}

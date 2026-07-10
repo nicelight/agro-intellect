@@ -58,6 +58,7 @@ Full role contracts live in:
 - If present, prefer explicit normative docs such as `.memory-bank/constitution.md`, `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, `.memory-bank/invariants.md`, `.memory-bank/glossary.md`, `.memory-bank/contracts/boundary-map.md`, `.memory-bank/contracts/*`, `.memory-bank/states/*`, `.memory-bank/runbooks/*`, and `.memory-bank/testing/*`.
 - Normative docs enrich the Memory Bank; they do not invalidate valid duo docs.
 - Before serious planning/design work, read `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and follow linked SDD specs.
+- Before frontend design work, read `.agents/rules/svelte5.md`.
 - Do not create a new spec before checking `.memory-bank/spec-index.md`,
   relevant folder indexes, and plausible subject-based candidates.
 - New design specs use subject-based canonical paths without feature IDs; a

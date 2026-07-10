@@ -1,0 +1,16 @@
+{
+  "id": "FT-004-BHV-003",
+  "feature_id": "FT-004",
+  "title": "Archived or unauthorized Plant cannot receive check-in writes",
+  "given": {
+    "actor": "missing grant, revoked grant, Consultant, or archived Plant normal-operation context",
+    "payload": "otherwise valid check-in"
+  },
+  "when": {
+    "request": "POST /api/plants/{plant_id}/operations/check-ins"
+  },
+  "then": {
+    "result": "request fails closed with no existence leak",
+    "persistence": "no check-in, measurement, or timeline success event is written"
+  }
+}

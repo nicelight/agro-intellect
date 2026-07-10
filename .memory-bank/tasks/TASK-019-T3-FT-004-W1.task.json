@@ -1,0 +1,140 @@
+{
+  "id": "TASK-019-T3-FT-004-W1",
+  "title": "Implement FT-004 check-in and measurement persistence service",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-004",
+  "reqs": [
+    "REQ-003",
+    "REQ-006",
+    "REQ-008",
+    "REQ-010"
+  ],
+  "depends_on": [
+    "TASK-018-T3-FT-003-W3"
+  ],
+  "touched_files": [
+    "backend/app/plant_operations/",
+    "backend/app/timeline/",
+    "backend/migrations/versions/ft004_plant_operations.py",
+    "tests/backend/plant_operations/",
+    ".memory-bank/tasks/TASK-019-T3-FT-004-W1.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft004-service-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Migration/model tests prove daily_checkins and manual_measurements use native UUIDs, restrictive FKs, allowed states, pH/EC validation, event_refs, and no cascading authority delete.",
+    "Service tests prove Boss and granted Engineer can create check-ins and measurements while Consultant, revoked grant, disabled membership, unauthorized Plant, wrong Farm, and archived Plant fail before persistence.",
+    "Freshness projection tests prove independent 24h analysis and 2h approval-input windows from PostgreSQL measurement rows, not timeline, UI Feed, photo manifests, or agent text.",
+    "Timeline-ref tests prove daily_checkin_recorded and manual_measurement_recorded are appended through the Timeline Event helper and append failure returns TIMELINE_APPEND_FAILED without successful runtime mutation.",
+    "Behavior specs FT-004-BHV-001 through FT-004-BHV-003 have direct executable traceability in focused tests."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "evidence_required": [
+    "FT-004 migration/model focused test output",
+    "FT-004 service authorization and rollback test output",
+    "freshness projection test output",
+    "timeline append success/failure evidence",
+    "behavior-spec traceability summary",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".memory-bank/behavior-specs/FT-004-BHV-001-authorized-check-in-measurement.behavior.json",
+    ".memory-bank/behavior-specs/FT-004-BHV-002-missing-stale-measurement-projection.behavior.json",
+    ".memory-bank/behavior-specs/FT-004-BHV-003-archived-or-unauthorized-check-in-denied.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/domains/foundation-data-substrate.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use the verified Foundation DB/session/Alembic path and existing ActorContext/Plant permission resolver; do not create parallel auth or persistence infrastructure.",
+    "Implement only FT-004 check-in, manual pH/EC, freshness projection, and minimal timeline append refs; do not implement photo upload, Plant history UI, agents, Safety Gate, action tasks, follow-up, or PWA UI.",
+    "Archived Plant and unauthorized Plant paths fail before persistence and write no successful timeline event.",
+    "Timeline events are audit/export refs only and cannot become mutable runtime authority."
+  ],
+  "invariants": [
+    "PostgreSQL/read model remains the authority for check-ins, measurements, and freshness.",
+    "Fresh pH/EC evidence never authorizes physical action without Safety Gate and human approval.",
+    "Missing or stale pH/EC remains explicit and must not be invented or treated as fresh.",
+    "Secrets, auth material, raw SQL errors, provider payloads, and hidden reasoning never enter source_refs, event_refs, timeline events, logs, or evidence."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/plant_operations",
+    ".venv/bin/python -m pytest tests",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Inject persistence and timeline append failures and prove no successful check-in or measurement is claimed.",
+    "Trace FT-004-BHV-001 through FT-004-BHV-003 to concrete passing tests."
+  ],
+  "purpose": "Create the authorized runtime data and service boundary for daily check-ins, manual pH/EC measurements, freshness projections, and audit refs before HTTP exposure.",
+  "success_outcome": "FT-004 check-ins and manual measurements persist only through authorized active-Plant service calls, compute freshness from PostgreSQL, and record timeline refs without making timeline mutable authority.",
+  "anti_goals": [
+    "No photo upload or catalog storage.",
+    "No Plant history/timeline presentation.",
+    "No agent output, Safety Gate, action task, follow-up, or PWA implementation.",
+    "No generic workflow engine or new authorization subsystem."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/plant_operations/",
+      "backend/app/timeline/",
+      "backend/migrations/versions/ft004_plant_operations.py",
+      "tests/backend/plant_operations/",
+      ".protocols/TASK-019-T3-FT-004-W1/",
+      ".tasks/TASK-019-T3-FT-004-W1/",
+      ".memory-bank/tasks/TASK-019-T3-FT-004-W1.task.json"
+    ],
+    "forbidden_scope": [
+      "photo upload or catalog implementation",
+      "Plant history UI or timeline pagination",
+      "agent, Safety Gate, action task, follow-up, or PWA behavior",
+      "new auth subsystem or generic ACL engine",
+      "unredacted auth/session/evidence material"
+    ],
+    "stop_conditions": [
+      "TASK-018-T3-FT-003-W3 is not done or its ActorContext/Plant access evidence is contradicted.",
+      "The service cannot enforce Plant.status=active and can_operate in the same transactional authorization boundary as writes.",
+      "Timeline append semantics conflict with .memory-bank/contracts/timeline-event.md.",
+      "Freshness cannot be computed from PostgreSQL measurement rows.",
+      "Diagnostics or evidence contain secrets, auth material, raw SQL errors, provider payloads, or hidden reasoning."
+    ]
+  }
+}

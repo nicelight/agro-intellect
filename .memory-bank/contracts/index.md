@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-06-30
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -26,6 +26,8 @@ source_of_truth:
 - [ActorContext](access/actor-context.md): actor and Plant authorization context.
 - [Boss Admin HTTP](admin/boss-admin-http.md): direct Account creation and personnel/admin/audit API.
 - [Plant Management HTTP](farm/plant-management-http.md): Farm/Plant lifecycle and PlantAccessGrant API.
+- [Plant Operations HTTP](plant-operations-http.md): daily check-in and manual measurement API.
+- [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
 
 ## Routing
 

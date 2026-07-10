@@ -1,0 +1,16 @@
+{
+  "id": "FT-004-BHV-002",
+  "feature_id": "FT-004",
+  "title": "Missing or stale pH/EC remains explicit",
+  "given": {
+    "plant": "authorized active Plant",
+    "measurements": "pH exists outside approval freshness window and EC is missing"
+  },
+  "when": {
+    "request": "GET /api/plants/{plant_id}/operations/measurements/latest?purpose=approval_input"
+  },
+  "then": {
+    "result": "projection marks pH stale and EC missing",
+    "safety": "no physical-action approval or task is unlocked"
+  }
+}
