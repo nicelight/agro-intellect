@@ -1,0 +1,16 @@
+{
+  "id": "FT-006-BHV-003",
+  "feature_id": "FT-006",
+  "title": "Timeline replay cannot create or repair runtime history",
+  "given": {
+    "timeline": "timeline.jsonl contains an orphan Plant-scoped event without a matching PostgreSQL source row",
+    "plant": "authorized Plant history read is requested"
+  },
+  "when": {
+    "request": "GET /api/plants/{plant_id}/history"
+  },
+  "then": {
+    "result": "orphan timeline event is excluded from authoritative history entries",
+    "authority": "PostgreSQL/read model remains the only source for runtime history projection"
+  }
+}

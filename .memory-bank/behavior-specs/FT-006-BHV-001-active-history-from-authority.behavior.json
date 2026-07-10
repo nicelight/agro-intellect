@@ -1,0 +1,17 @@
+{
+  "id": "FT-006-BHV-001",
+  "feature_id": "FT-006",
+  "title": "Active Plant history is projected from authoritative runtime rows",
+  "given": {
+    "actor": "active Boss or granted Engineer",
+    "plant": "active tomato_001",
+    "evidence": "completed check-in, manual pH/EC measurement, accepted photo, and timeline refs"
+  },
+  "when": {
+    "request": "GET /api/plants/{plant_id}/history"
+  },
+  "then": {
+    "result": "history entries return safe source refs, artifact refs, and event refs",
+    "authority": "entries and Plant card are computed from PostgreSQL/read model, not timeline replay"
+  }
+}

@@ -28,6 +28,7 @@ source_of_truth:
 - [Plant Management HTTP](farm/plant-management-http.md): Farm/Plant lifecycle and PlantAccessGrant API.
 - [Plant Operations HTTP](plant-operations-http.md): daily check-in and manual measurement API.
 - [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
+- [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
 
 ## Routing
 

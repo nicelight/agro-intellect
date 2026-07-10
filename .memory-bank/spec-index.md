@@ -35,6 +35,7 @@ source_of_truth:
 | data_spec | [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md) | active | DB/session/Alembic/runtime-root substrate | `/foundation-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/plant-operations.md](domains/plant-operations.md) | active | Daily check-in, observation, manual pH/EC, and freshness persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md) | active | Local photo artifact authority, catalog, layout, and capture manifests | `/spec-design` or `/prd-to-tasks` |
+| data_spec | [.memory-bank/domains/plant-history.md](domains/plant-history.md) | active | Plant card/history projections, retained-history access, and timeline-ref authority boundaries | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/identity/account-membership.md](domains/identity/account-membership.md) | active | Account and FarmMembership persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/auth/session-storage.md](domains/auth/session-storage.md) | active | LocalSession digest-only persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/farm/farm-plant-access-storage.md](domains/farm/farm-plant-access-storage.md) | active | Exact Farm/Plant/grant persistence, migration, bootstrap, and transaction rules | `/prd-to-tasks` or `/spec-design` |
@@ -53,6 +54,7 @@ source_of_truth:
 | api_contract | [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md) | active | Farm/Plant lifecycle and PlantAccessGrant HTTP boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md) | active | Daily check-in and manual measurement HTTP boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/photo-intake-http.md](contracts/photo-intake-http.md) | active | Photo upload and catalog HTTP boundary | `/prd-to-tasks` or `/spec-design` |
+| api_contract | [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md) | active | Plant history card/list HTTP boundary and archived retained-history reads | `/prd-to-tasks` or `/spec-design` |
 | state_spec | [.memory-bank/states/plant-state-trust.md](states/plant-state-trust.md) | active | Plant evidence trust promotion | `/spec-design` |
 | state_spec | [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | active | Safety/action approval lifecycle | `/spec-design` |
 | state_spec | [.memory-bank/states/companion-governance.md](states/companion-governance.md) | active | Companion governance lifecycle | `/spec-design` |
@@ -67,6 +69,7 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/farm/plant-lifecycle-and-access.md](testing/farm/plant-lifecycle-and-access.md) | active | Farm bootstrap, Plant lifecycle/access, audit, migration, and HTTP verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/plant-operations.md](testing/plant-operations.md) | active | Check-in, manual measurement, and freshness verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/photo-intake.md](testing/photo-intake.md) | active | Photo artifact, manifest, catalog, upload, and timeline-ref verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/plant-history.md](testing/plant-history.md) | active | Plant card/history projection, retained-history, timeline-ref, and redaction verification | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/prd-to-tasks` or `/spec-design` |
 

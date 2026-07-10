@@ -15,6 +15,7 @@ source_of_truth:
 - [Foundation Data Substrate](foundation-data-substrate.md): DB/session/Alembic/runtime roots.
 - [Plant Operations](plant-operations.md): check-in, observation, manual pH/EC, and freshness persistence.
 - [Photo Artifacts](photo-artifacts.md): local artifact authority, catalog, layout, and capture manifests.
+- [Plant History](plant-history.md): Plant card/history projections, retained-history access, and timeline-ref authority boundaries.
 
 ## Subject data specs
 

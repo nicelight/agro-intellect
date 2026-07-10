@@ -1,0 +1,16 @@
+{
+  "id": "FT-006-BHV-002",
+  "feature_id": "FT-006",
+  "title": "Archived Plant retains authorized history without operational authority",
+  "given": {
+    "actor": "authorized Boss",
+    "plant": "archived Plant with prior check-in, photo, measurement, and admin audit rows"
+  },
+  "when": {
+    "request": "GET /api/plants/{plant_id}/history/card"
+  },
+  "then": {
+    "result": "retained history card is readable with archived_retained_history mode",
+    "guard": "no operate, task creation, action approval, agent publication, or governance transition authority is granted"
+  }
+}

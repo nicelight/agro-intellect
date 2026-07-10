@@ -2,7 +2,7 @@
 description: Global runtime data authority model for MVP v2.
 status: active
 type: domain
-last_updated: 2026-07-06
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -159,8 +159,8 @@ Verification target:
 ## Subject Detail Routing
 
 - FT-001..FT-003 compose registered identity/session/access/admin subject specs.
-- FT-004..FT-006 must discover or create canonical check-in, measurement,
-  photo catalog, timeline, and Plant-history specs.
+- FT-004..FT-006 compose canonical check-in, measurement, photo catalog,
+  timeline, and Plant-history specs.
 - FT-007..FT-010 must compose agent I/O and Plant-trust specs.
 - FT-011..FT-012 must compose Safety Gate, approval, task, and outcome specs.
 - FT-013..FT-016 must compose governance, dataset, local-security, and UI

@@ -4,6 +4,16 @@ status: active
 ---
 # Changelog
 
+## [2026-07-10] FT-006 SDD closure and task queue
+- Created subject-based SDD specs for Plant history projections, retained-
+  history HTTP reads, and focused verification.
+- Added three FT-006 behavior specs for active history projection, archived
+  retained history, and timeline replay non-authority.
+- Created implementation plan `IMPL-FT-006` and indexed T3 task records
+  `TASK-023` and `TASK-024`.
+- Kept raw timeline export packages, PWA UI, Vision, agents, Safety Gate,
+  tasks/follow-up, Companion, and dataset history entries outside FT-006.
+
 ## [2026-07-10] FT-004/FT-005 task-plan repair
 - Repaired rejected FT-004 and FT-005 task-plan gates by creating indexed
   schema-backed T3 task records `TASK-019` through `TASK-022`.

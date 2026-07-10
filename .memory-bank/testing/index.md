@@ -28,6 +28,8 @@ source_of_truth:
   freshness, and authorized operations evidence.
 - [Photo Intake Verification](photo-intake.md): photo file/catalog/manifest,
   upload, checksum, and timeline-ref evidence.
+- [Plant History Verification](plant-history.md): Plant card/history
+  projection, retained-history, timeline-ref, and redaction evidence.
 
 ## Archive
 
