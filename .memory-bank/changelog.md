@@ -4,6 +4,20 @@ status: active
 ---
 # Changelog
 
+## [2026-07-10] Wave W3 — FT-003 integrated implementation evidence
+- Added integrated FT-003 API flow coverage for canonical Farm/`tomato_001`
+  bootstrap, first Boss bootstrap, Boss login, Boss-created Engineer, Engineer
+  login, Boss Plant access grant through the canonical Plant API, non-Boss
+  denial, last-Boss protection, safe audit, password exclusion, and no-store
+  responses.
+- Ran TASK-018 local gates: focused FT-003 `18/18`, EP-001 auth/admin/Farm
+  regression `139/139`, and full regression `169/169`.
+- Synchronized FT-003 and REQ-005 as `implemented`, not `verified`; scheduler
+  closure, independent `/verify`, per-task `/red-verify`, and recommended
+  feature-level semantic review remain owner/scheduler decisions.
+- Kept FT-016 PWA/admin UI, Plant operations, Safety Gate, agent runtime,
+  dataset, and downstream first-demo scopes open.
+
 ## [2026-07-09] FT-003 SDD closure and task queue
 - Closed FT-003 planning for Boss admin, first-Boss bootstrap, direct Account
   creation, role changes, Plant admin projection, and admin audit reads.

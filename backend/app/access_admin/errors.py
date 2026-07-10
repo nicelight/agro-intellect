@@ -33,6 +33,12 @@ class AuthErrorCode(StrEnum):
     PLANT_GRANT_NOT_FOUND = "PLANT_GRANT_NOT_FOUND"
     PLANT_STATE_CONFLICT = "PLANT_STATE_CONFLICT"
     PLANT_PERSISTENCE_FAILED = "PLANT_PERSISTENCE_FAILED"
+    ADMIN_ACCOUNT_NOT_FOUND = "ADMIN_ACCOUNT_NOT_FOUND"
+    ADMIN_MEMBERSHIP_NOT_FOUND = "ADMIN_MEMBERSHIP_NOT_FOUND"
+    ADMIN_ACCOUNT_CONFLICT = "ADMIN_ACCOUNT_CONFLICT"
+    ADMIN_LAST_BOSS_CONFLICT = "ADMIN_LAST_BOSS_CONFLICT"
+    ADMIN_AUDIT_CURSOR_INVALID = "ADMIN_AUDIT_CURSOR_INVALID"
+    ADMIN_PERSISTENCE_FAILED = "ADMIN_PERSISTENCE_FAILED"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
 
@@ -100,6 +106,30 @@ ERROR_DEFINITIONS = {
     AuthErrorCode.PLANT_PERSISTENCE_FAILED: ErrorDefinition(
         500,
         "Plant request could not be completed.",
+    ),
+    AuthErrorCode.ADMIN_ACCOUNT_NOT_FOUND: ErrorDefinition(
+        404,
+        "Admin account target is not available.",
+    ),
+    AuthErrorCode.ADMIN_MEMBERSHIP_NOT_FOUND: ErrorDefinition(
+        404,
+        "Admin membership target is not available.",
+    ),
+    AuthErrorCode.ADMIN_ACCOUNT_CONFLICT: ErrorDefinition(
+        409,
+        "Account login is already in use.",
+    ),
+    AuthErrorCode.ADMIN_LAST_BOSS_CONFLICT: ErrorDefinition(
+        409,
+        "At least one active Boss must remain.",
+    ),
+    AuthErrorCode.ADMIN_AUDIT_CURSOR_INVALID: ErrorDefinition(
+        422,
+        "Audit cursor is invalid.",
+    ),
+    AuthErrorCode.ADMIN_PERSISTENCE_FAILED: ErrorDefinition(
+        500,
+        "Admin request could not be completed.",
     ),
     AuthErrorCode.VALIDATION_FAILED: ErrorDefinition(
         422,

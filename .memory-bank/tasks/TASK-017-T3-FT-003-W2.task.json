@@ -1,7 +1,7 @@
 {
   "id": "TASK-017-T3-FT-003-W2",
   "title": "Implement FT-003 Boss admin HTTP boundary",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-003",
   "reqs": [
@@ -52,7 +52,120 @@
     "GET /api/admin/plants uses persisted Farm/Plant/grant state for projection and does not redefine Plant lifecycle/access mutation semantics.",
     "GET /api/admin/audit returns reverse-chronological safe summaries, validates cursors, and never exposes auth material or raw DB errors.",
     "Generated OpenAPI includes the admin paths, request bodies, response models, UUIDs, timestamps, enums, query filters, and documented error statuses.",
-    "FT-003-BHV-003 is covered by executable evidence."
+    "FT-003-BHV-003 is covered by executable evidence.",
+    {
+      "stage": "execute",
+      "mode": "scheduler",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-09T23:42:11+05:00",
+      "evidence": [
+        ".protocols/TASK-017-T3-FT-003-W2/context.md",
+        ".protocols/TASK-017-T3-FT-003-W2/plan.md",
+        ".protocols/TASK-017-T3-FT-003-W2/progress.md",
+        ".protocols/TASK-017-T3-FT-003-W2/verification.md",
+        ".protocols/TASK-017-T3-FT-003-W2/handoff.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft003_admin_routes.py tests/backend/api/test_ft003_admin_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Implementer added the Boss admin HTTP router, safe admin error mapping, app router wiring, focused API/OpenAPI tests, and implementation evidence. Focused admin API/OpenAPI tests passed 6/6, FT-003 focused suite passed 16/16 selected tests, mb-lint and diff-check passed. /verify, /red-verify, and mb-doctor were intentionally not run by the implementer.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/verify TASK-017-T3-FT-003-W2"
+    },
+    {
+      "stage": "verify",
+      "mode": "scheduler",
+      "result": "VERDICT: FAIL",
+      "verified_at": "2026-07-09T23:50:23+05:00",
+      "evidence": [
+        ".protocols/TASK-017-T3-FT-003-W2/verification.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-VERIFY-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft003_admin_routes.py tests/backend/api/test_ft003_admin_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+        "git diff --check",
+        "node scripts/mb-lint.mjs",
+        "targeted in-memory TestClient probes for omitted disable body and multi-page audit cursor"
+      ],
+      "summary": "Independent functional verification failed. POST /api/admin/accounts/{account_id}/disable requires a request body even though the contract allows omitted optional reason. GET /api/admin/audit paginates by fetching only the first 100 records and filtering the cursor in memory, making older matching records unreachable across multiple pages.",
+      "scope_compliance": false,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "REQUEST_CHANGES: repair TASK-017 in place, then rerun /verify"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "scheduler",
+      "result": "SEMANTIC_VERDICT: semantic-fail",
+      "verified_at": "2026-07-09T23:50:23+05:00",
+      "evidence": [
+        ".protocols/TASK-017-T3-FT-003-W2/red-verification.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Adversarial semantic verification confirmed the functional failures are contract-significant. Scheduler must not close TASK-017 or promote TASK-018 until the two request-changes findings are repaired and reverified.",
+      "scope_compliance": false,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "REQUEST_CHANGES: repair TASK-017 in place, then rerun /verify and /red-verify"
+    },
+    {
+      "stage": "verify",
+      "mode": "scheduler",
+      "result": "VERDICT: PASS",
+      "verified_at": "2026-07-09T23:59:45+05:00",
+      "evidence": [
+        ".protocols/TASK-017-T3-FT-003-W2/verification.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-VERIFY-final-report-code-02.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft003_admin_routes.py tests/backend/api/test_ft003_admin_openapi.py",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+        "node scripts/mb-lint.mjs",
+        "git diff --check -- backend/app/api/admin.py tests/backend/api/test_ft003_admin_routes.py .protocols/TASK-017-T3-FT-003-W2 .tasks/TASK-017-T3-FT-003-W2",
+        "git diff --check",
+        "targeted in-memory TestClient probes for omitted disable body, filtered multi-page audit cursor, safe cursor payload, disabled denial, and limit validation",
+        "targeted generated OpenAPI probe for optional disable body, audit params, limit max 100, UUID filters, and hash-field exclusion"
+      ],
+      "summary": "Independent functional re-verification passed after repair. Omitted disable body is accepted and records a safe omitted reason path. Audit cursor pagination reaches 121 filtered records across three pages, preserves filters, uses a safe opaque cursor, and enforces max limit 100. Original TASK-017 acceptance and FT-003-BHV-003 evidence remain covered. Global diff-check still fails only on unrelated notes_agro-prj.md whitespace outside TASK-017 scope.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "Run/accept per-task red-verify result, then scheduler decides TASK-017 closure"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "scheduler",
+      "result": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-09T23:59:45+05:00",
+      "evidence": [
+        ".protocols/TASK-017-T3-FT-003-W2/red-verification.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-RED-VERIFY-final-report-docs-02.md"
+      ],
+      "summary": "Adversarial semantic re-verification passed. The prior disable-body and audit-pagination false-success risks are repaired. No remaining task-scoped semantic blocker, forbidden-scope drift, Plant boundary drift, or secret/auth evidence leak was found. HUMAN_CHECKPOINT was not written; scheduler owns checkpoint and closure decisions.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "Scheduler may consider TASK-017 closure eligibility from verify PASS plus semantic-pass and recorded owner waivers"
+    },
+    {
+      "stage": "closure",
+      "mode": "scheduler",
+      "result": "TASK_STATUS: done",
+      "closed_at": "2026-07-10T00:02:03+05:00",
+      "owner_decision": "Autopilot scheduler accepted repaired /verify PASS and /red-verify semantic-pass. Explicit owner waived mb-doctor and process-only HUMAN_CHECKPOINT marker for this run.",
+      "human_checkpoint": "waived_by_owner",
+      "evidence": [
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-IMPL-final-report-code-01.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-IMPL-final-report-code-02.md",
+        ".protocols/TASK-017-T3-FT-003-W2/verification.md",
+        ".protocols/TASK-017-T3-FT-003-W2/red-verification.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-VERIFY-final-report-code-02.md",
+        ".tasks/TASK-017-T3-FT-003-W2/TASK-017-T3-FT-003-W2-S-RED-VERIFY-final-report-docs-02.md"
+      ],
+      "summary": "TASK-017 closed by scheduler after separate implementer and reviewer agents completed implementation, request-changes repair, functional reverification, and semantic reverification. Global diff-check remains noted as blocked only by unrelated notes_agro-prj.md whitespace outside TASK-017 scope."
+    }
   ],
   "docs": [
     ".memory-bank/contracts/admin/boss-admin-http.md",

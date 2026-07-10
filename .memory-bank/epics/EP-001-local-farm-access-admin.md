@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-001
 lifecycle: planned
-last_updated: 2026-07-09
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -56,5 +56,14 @@ Establish the local Farm authority boundary so every human action and agent cont
   with focused FT-002 `43/43` and full regression `151/151`. Feature-level
   `/red-verify --feature FT-002` returned `semantic-pass`, so FT-002 is
   synchronized as `verified`.
-- EP-001 lifecycle remains `planned` because FT-003 Boss administration/audit
-  and first-Boss/personnel flows are not implemented or closed.
+- FT-003 implementation evidence is now present for the backend Boss
+  administration/audit boundary: first-Boss bootstrap, Boss login,
+  Boss-created Engineer, Engineer login, canonical Plant API access grant,
+  non-Boss denial, last-Boss guard, safe audit, password exclusion, and
+  no-store response behavior. TASK-018 local gates passed focused FT-003
+  `18/18`, EP-001 auth/admin/Farm regression `139/139`, and full regression
+  `169/169`.
+- EP-001 lifecycle remains `planned` until FT-003 independent verification,
+  semantic review/owner closure, and feature-boundary synchronization are
+  accepted. FT-003 does not claim FT-016 PWA/admin UI or downstream Plant
+  operations, Safety Gate, agent, dataset, or first-demo completion.

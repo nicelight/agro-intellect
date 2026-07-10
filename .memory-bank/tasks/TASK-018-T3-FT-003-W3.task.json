@@ -1,7 +1,7 @@
 {
   "id": "TASK-018-T3-FT-003-W3",
   "title": "Run FT-003 integrated verification and durable docs sync",
-  "status": "planned",
+  "status": "done",
   "wave": "W3",
   "feature": "FT-003",
   "reqs": [
@@ -63,7 +63,86 @@
     "Non-Boss admin route denial, last-Boss protection, password exclusion, audit safety, and no-store response behavior pass together.",
     "Completed Foundation, FT-001, and FT-002 focused regressions remain green.",
     "Feature, RTM, epic, changelog, and routing docs synchronize only the FT-003-owned result and do not claim FT-016 PWA, Plant operations, Safety Gate, agent, dataset, or downstream feature completion.",
-    "Feature-level /red-verify --feature FT-003 is recommended after all FT-003 tasks close because admin/security semantic drift is material."
+    "Feature-level /red-verify --feature FT-003 is recommended after all FT-003 tasks close because admin/security semantic drift is material.",
+    {
+      "stage": "execute",
+      "mode": "scheduler",
+      "result": "IMPLEMENTATION_RESULT: ready_for_independent_verification",
+      "executed_at": "2026-07-10T00:11:02+05:00",
+      "evidence": [
+        ".protocols/TASK-018-T3-FT-003-W3/context.md",
+        ".protocols/TASK-018-T3-FT-003-W3/plan.md",
+        ".protocols/TASK-018-T3-FT-003-W3/progress.md",
+        ".protocols/TASK-018-T3-FT-003-W3/verification.md",
+        ".protocols/TASK-018-T3-FT-003-W3/handoff.md",
+        ".tasks/TASK-018-T3-FT-003-W3/TASK-018-T3-FT-003-W3-S-IMPL-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft003_integration_flow.py -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k \"ft001 or ft002 or ft003\"",
+        ".venv/bin/python -m pytest tests",
+        "node scripts/mb-lint.mjs",
+        "git diff --check -- .memory-bank/tasks/TASK-018-T3-FT-003-W3.task.json .memory-bank/features/FT-003-boss-admin-surface-admin-audit.md .memory-bank/requirements.md .memory-bank/epics/EP-001-local-farm-access-admin.md .memory-bank/features/index.md .memory-bank/changelog.md",
+        "git diff --no-index --check /dev/null <new TASK-018 file> for each new integration/protocol/evidence file"
+      ],
+      "summary": "Implementer added integrated FT-003 API flow evidence and synchronized FT-003 durable docs to implemented, not verified. Focused integration passed 1/1, focused FT-003 passed 18/18, EP-001 auth/admin/Farm regression passed 139/139, full regression passed 169/169, mb-lint passed, and task-scoped diff-check passed. /verify, /red-verify, and mb-doctor were intentionally not run by owner instruction.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/verify TASK-018-T3-FT-003-W3 or scheduler-selected closure review"
+    },
+    {
+      "stage": "verify",
+      "mode": "scheduler",
+      "result": "VERDICT: PASS",
+      "verified_at": "2026-07-10T00:19:05+05:00",
+      "evidence": [
+        ".protocols/TASK-018-T3-FT-003-W3/verification.md",
+        ".tasks/TASK-018-T3-FT-003-W3/TASK-018-T3-FT-003-W3-S-VERIFY-final-report-code-01.md"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/api/test_ft003_integration_flow.py -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k ft003",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api -k \"ft001 or ft002 or ft003\"",
+        ".venv/bin/python -m pytest tests",
+        "node scripts/mb-lint.mjs",
+        "task-scoped git diff --check for TASK-018 docs"
+      ],
+      "summary": "Independent functional verification passed. Integrated FT-003 flow passed 1/1, focused FT-003 passed 18/18, EP-001 auth/admin/Farm regression passed 139/139, full regression passed 169/169, mb-lint and task-scoped diff-check passed. Global diff-check fails only on unrelated notes_agro-prj.md trailing whitespace outside TASK-018 scope.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "/red-verify TASK-018-T3-FT-003-W3"
+    },
+    {
+      "stage": "red-verify",
+      "mode": "scheduler",
+      "result": "SEMANTIC_VERDICT: semantic-pass",
+      "verified_at": "2026-07-10T00:19:05+05:00",
+      "evidence": [
+        ".protocols/TASK-018-T3-FT-003-W3/red-verification.md",
+        ".tasks/TASK-018-T3-FT-003-W3/TASK-018-T3-FT-003-W3-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Adversarial semantic verification passed. Reviewer found no downstream overclaim, forbidden scope drift, secret/auth evidence leak, or semantic inconsistency in the FT-003 integration/docs sync boundary.",
+      "scope_compliance": true,
+      "forbidden_scope_touched": false,
+      "recommended_next_action": "scheduler closure"
+    },
+    {
+      "stage": "closure",
+      "mode": "scheduler",
+      "result": "TASK_STATUS: done",
+      "closed_at": "2026-07-10T00:19:05+05:00",
+      "owner_decision": "Autopilot scheduler accepted /verify PASS and /red-verify semantic-pass. Explicit owner waived mb-doctor and process-only HUMAN_CHECKPOINT marker for this run.",
+      "human_checkpoint": "waived_by_owner",
+      "evidence": [
+        ".tasks/TASK-018-T3-FT-003-W3/TASK-018-T3-FT-003-W3-S-IMPL-final-report-code-01.md",
+        ".protocols/TASK-018-T3-FT-003-W3/verification.md",
+        ".protocols/TASK-018-T3-FT-003-W3/red-verification.md",
+        ".tasks/TASK-018-T3-FT-003-W3/TASK-018-T3-FT-003-W3-S-VERIFY-final-report-code-01.md",
+        ".tasks/TASK-018-T3-FT-003-W3/TASK-018-T3-FT-003-W3-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "TASK-018 closed by scheduler after separate implementer and reviewer agents completed integration/docs sync, functional verification, and semantic verification."
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-003-boss-admin-surface-admin-audit.md",

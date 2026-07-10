@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "mermaids/approving-DATA-for-learning.md",
+                "file": "mermaids/10-feature-roadmap.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "approving-DATA-for-learning"
+              "title": "10-feature-roadmap"
             }
           }
         ]
@@ -183,10 +183,10 @@
       "bases:Создать новую базу": false
     }
   },
-  "active": "6792b71337a0c0cb",
+  "active": "cf4df6672b3d7bb7",
   "lastOpenFiles": [
-    "mermaids/123.md",
     "mermaids/approving-DATA-for-learning.md",
+    "mermaids/123.md",
     "mermaids/10-feature-roadmap.md",
     "mermaids/README.md",
     "mermaids/approving-DATA-for-learning.md.md",

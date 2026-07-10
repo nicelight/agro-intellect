@@ -29,18 +29,22 @@ sleep 240m && codex -c model_reasoning_effort=xhigh resume 019ec059-2934-7a40-8b
 
 sleep 120m && codex -c model_reasoning_effort=xhigh resume 019eebb6-9237-7263-8309-57bb787d4eef "$(< prompt.md)" 
  
-----------------------
-----------------------
-
-#tags  
-ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
 
 
 
 
+
+**********************************************************************************
+**********************************************************************************
+$mb разберись о чем проект, подготовься к запуску $autopilot
+Береги свой контекст только для стратегического мышления и оркестрации процесса. Начинай $autopilot , все задачи отдавай сабагентам. Старайся чтобы /execute выполнял один агент а /verify + /red-verify другой.
+
+**********************************************************************************
+**********************************************************************************
 
 ----------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------
+
 фикс мемобинка тут:
 019f04f0-1f9b-7eb3-b046-cb4f269b8197
 
@@ -73,63 +77,9 @@ ESP32, API, MQTT, HomeAssistant, Python, TypeScript, JavaScript, web,
   Я бы начал с /clarify-feature, /mb-sync, /execute: это быстрые текстовые фиксы с минимальным blast radius и сразу закрывают часть SDD drift.
 
 
-
-Правка FT-001 глобальная
-----------------------------------------------------------------------------------
-----------------------------------------------------------------------------------
-
-На ночь запустить:
-Твоя основная задача - выполнить рефакторинг из файла IDEAS/specs_without_owners.md. 
-
-
-
-
 **********************************************************************************
 **********************************************************************************
-
-Кто еще может использовать не правильную модель генерации контрактов:
-```
-### Прямой генератор
-
-  - skills/_shared/references/commands/spec-auto.md:68
-      - обновляет feature spec_design_links;
-      - размещает feature-local design в tech-specs/*;
-      - рекомендует один concise feature hub;
-      - генерирует Component/API/Event/Data Contracts в рамках feature design.
-
-  ### Поддерживает модель через routing
-
-  - skills/_shared/references/commands/spec-design.md:177
-      - сам не создаёт FT-*.md;
-      - но направляет feature-local contracts/domain behavior в feature tech-spec;
-      - использует natural owner и needed_before_tasks, ведущие далее в /prd-to-tasks.
-
-  ### Особый случай
-
-  - skills/_shared/references/commands/foundation-to-tasks.md:115
-      - генерирует Component/API/Event/Data Contracts для FT-000;
-      - это substrate specs, задуманные как reusable, а не product-feature hubs;
-      - однако содержит старую terminology и разрешает /prd-to-tasks создавать feature-local specs.
-
-  ### Только сохраняют или передают старую модель
-
-  - skills/_shared/references/commands/clarify-feature.md:41: содержит пример .memory-bank/tech-specs/FT-<NNN>-<slug>.md.
-  - skills/_shared/references/commands/prd.md:101: создаёт feature routing и spec_design_links, но specs не генерирует.
-  ```
-
-
-
-подумать как оптимальнее разбивать фичи на таски, чтобы не дробить их на 1-2 часовые, а как то более оптимально для AI-first разработки. 
-
-В проекте :
-- проананлизировать, почему Текущий статус FT-001 повторяется минимум в пяти местах:
-root index, analysis index, features index, EP-001 и FT-001 feature. 
-
-
-**********************************************************************************
-**********************************************************************************
-
-  -----------------
+            -----------------
 
  SDD design specifications, описывающие устройство системы и технические контракты:
 
@@ -151,3 +101,5 @@ root index, analysis index, features index, EP-001 и FT-001 feature.
   backbone blocked -> resolve blocker, rerun /spec-design
   backbone complete + foundation changed -> /foundation-to-tasks -> /mb-doctor
   backbone complete + foundation still verified -> /prd-to-tasks FT-001 refresh
+    
+            ---------------   

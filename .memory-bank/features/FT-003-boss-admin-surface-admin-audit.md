@@ -1,11 +1,11 @@
 ---
 description: FT-003 Boss Admin Surface And Admin Audit.
-status: draft
+status: active
 type: feature
 feature_id: FT-003
 epic: EP-001
-lifecycle: planned
-last_updated: 2026-07-09
+lifecycle: implemented
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -62,6 +62,36 @@ spec_design_links:
 - Unit: admin permission checks.
 - Integration: every admin mutation creates durable audit.
 - E2E: Boss creates Engineer, assigns role, grants Plant access, and audit entry appears.
+
+## Current Implementation State
+
+- TASK-016 and TASK-017 are recorded `done` by the scheduler with functional
+  and semantic verification evidence for first-Boss bootstrap, admin service,
+  Boss-only admin HTTP routes, safe responses, OpenAPI, and audit behavior.
+- TASK-018 implementation evidence adds integrated FT-003 flow coverage:
+  canonical Farm/`tomato_001` bootstrap, first Boss bootstrap, Boss login,
+  Boss-created Engineer, Engineer login, Boss Plant access grant through the
+  canonical Plant API, non-Boss denial, last-Boss protection, safe admin audit,
+  password exclusion, and no-store response checks.
+- Local gates for TASK-018 passed: focused FT-003 `18/18`, EP-001
+  auth/admin/Farm regression `139/139`, and full regression `169/169`.
+- FT-003 is synchronized as `implemented`, not `verified`; feature-level
+  semantic review is recorded below, while lifecycle promotion remains a
+  scheduler/owner decision.
+- FT-003 does not claim FT-016 PWA/admin UI, Plant operations beyond the
+  existing canonical Plant API, Safety Gate, agent runtime, dataset, or
+  downstream feature completion.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+- Feature-level semantic review report:
+  [.tasks/FT-003/FT-003-S-RED-VERIFY-final-report-docs-01.md](../../.tasks/FT-003/FT-003-S-RED-VERIFY-final-report-docs-01.md).
+- Final FT-003 task-plan review after execution:
+  [.tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-003-final-report-docs-02.md](../../.tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-003-final-report-docs-02.md).
+- Owner explicitly waived `mb-doctor` for this autopilot run; scheduler owns
+  terminal state and lifecycle promotion decisions.
 
 ## Normative Backbone Links
 

@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-09
+last_updated: 2026-07-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -80,7 +80,7 @@ source_of_truth:
 | REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | verified |
 | REQ-003 | EP-001 | FT-001, FT-002, FT-003 | integration: ActorContext on every Farm/Plant route and context builder | planned |
 | REQ-004 | EP-001 | FT-001, FT-002 | unit: role/permission matrix; integration: PlantAccessGrant filtering | planned |
-| REQ-005 | EP-001 | FT-003 | e2e: Boss personnel/role/Plant/access/admin audit flow | planned |
+| REQ-005 | EP-001 | FT-003 | implemented: first-Boss bootstrap plus Boss personnel/Plant access/admin audit flow through canonical HTTP boundaries | implemented |
 | REQ-006 | EP-001, EP-002 | FT-002, FT-004 | integration: multiple Plants, `tomato_001` bootstrap, Boss/Engineer create policy, atomic Engineer creator grant | planned |
 | REQ-007 | EP-001, EP-002, EP-003, EP-004, EP-005 | FT-002, FT-006, FT-007, FT-008, FT-011, FT-012, FT-013 | integration: archive/restore retention, unchanged grants/records, denied transitions/publication while archived, current-guard revalidation after restore, and authorized history | planned |
 | REQ-008 | EP-002, EP-004 | FT-004, FT-012 | e2e: Engineer authorized daily workflow and follow-up | planned |
@@ -128,3 +128,18 @@ source_of_truth:
 - FT-002 is synchronized as `verified` for its owned Farm/Plant lifecycle and
   access boundary. This does not close shared/downstream portions of
   REQ-003/004/006/007.
+
+## Current FT-003 Evidence Note
+
+- TASK-016 and TASK-017 are recorded `done`; TASK-018 implementation evidence
+  adds integrated Boss setup, Engineer creation/login, `tomato_001` access
+  grant through the canonical Plant API, non-Boss denial, last-Boss guard,
+  safe audit, password exclusion, and no-store checks.
+- Local TASK-018 gates passed: focused FT-003 `18/18`, EP-001 auth/admin/Farm
+  regression `139/139`, and full regression `169/169`.
+- REQ-005 is synchronized as `implemented` for the FT-003-owned backend admin
+  and audit boundary. It remains short of `verified` until the owner/scheduler
+  accepts independent verification and semantic-review evidence.
+- REQ-003, REQ-004, and REQ-021 remain `planned` because complete outcomes
+  still depend on shared/downstream features, including FT-016 PWA/admin UI,
+  Plant operations, Safety Gate, agent runtime, dataset, and first-demo flows.
