@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-07-10
+last_updated: 2026-07-12
 ---
 # SDD Spec Backbone
 
@@ -20,12 +20,14 @@ last_updated: 2026-07-10
 - Lifecycle hints: [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md) captures Account/FarmMembership/Plant/PlantAccessGrant, daily check-in, photo artifact, agent output, physical-action proposal, CompanionProposal, DecisionRecord, and dataset candidate lifecycles.
 
 ## Open Design Questions
-- None at the global backbone level.
+- None at the global/shared design level.
+- DeepSeek/Gemini model id, credential, and egress opt-in are execution inputs;
+  FT-008/FT-011/FT-012 concrete design remains feature-owned.
 
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
 |---|---|---|---|
-| architecture_style | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/constitution.md](constitution.md) | Local modular monolith; standard architecture scaffold with AI-first guardrails; FT-000 runtime substrate defined. |
+| architecture_style | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/constitution.md](constitution.md) | Local modular monolith under strict shared-boundary architecture guardrails; FT-000 runtime substrate defined. |
 | source_of_truth | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/foundation.md](foundation.md) | Design precedence, runtime authority layers, verified FT-000 brownfield executable baseline gate, and substrate data boundaries defined. |
 | module_boundaries | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md) | Bounded modules defined inside one deployable monolith; substrate dependency direction defined. |
 | user_scenarios | authoritative | [.memory-bank/user-scenarios.md](user-scenarios.md), [.memory-bank/requirements.md](requirements.md) | Boss setup, Engineer operations, Safety Gate flow, and Companion governance covered. |
@@ -34,14 +36,14 @@ last_updated: 2026-07-10
 | domain_model | authoritative | [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/domains/index.md](domains/index.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/domains/plant-history.md](domains/plant-history.md), [.memory-bank/states/index.md](states/index.md) | Global entities, shared native-UUID/non-cascading relation compatibility, foundation substrate, photo authority, Plant history projections, archived-Plant operational guard, shared lifecycles, and runtime authority are defined; exact fields live in registered subject specs. |
 | data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/foundation.md](foundation.md) | ActorContext -> state/artifacts/audit -> Bus/agents -> Safety/UI/tasks flow defined; FT-000 runtime smoke flow defined; projection/audit layers cannot become runtime or agent authority. |
 | storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/foundation.md](foundation.md) | PostgreSQL/read model, shared UUID identity, non-cascading authority relations, DB/session/Alembic substrate, local filesystem artifacts, JSONL audit/export separation, and local bootstrap/runtime-root baseline defined. |
-| api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md) | HTTP/API guardrails plus concrete FT-000 `/health` and `/ready` smoke contract and FT-006 Plant history read boundary defined. |
-| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md) | BusEventEnvelope, MessageEnvelope, UI Feed, Timeline Event, and archive-race publication guards are defined; payload detail routes to feature specs. |
-| agent_io_contracts | authoritative | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Runtime decision, adapter, consumability, projection separation, no-raw-output, and active-Plant publication rules are defined. |
-| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/evidence-redaction.md](contracts/evidence-redaction.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/companion-governance.md](states/companion-governance.md), [.memory-bank/states/dataset-governance.md](states/dataset-governance.md) | Backend authz, archived-Plant fail-closed transitions, loopback/LAN controls, redaction, Safety Gate, governance separation, trainability default, and no automated actuation defined. |
-| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/foundation-test-harness.md](testing/foundation-test-harness.md), [.memory-bank/testing/plant-history.md](testing/plant-history.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md), [.memory-bank/states/index.md](states/index.md) | Unit/integration/e2e, anti-cheat areas, Plant history projection checks, cross-feature archive/revalidation checks, and Foundation build/start/db/migration/test harness gates defined. |
+| api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md), [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md) | HTTP/API guardrails, FT-000 smoke, unchanged Plant-create compatibility, authoritative observation-limit rejection, and FT-006 Plant history boundary are defined. |
+| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Pending MessageEnvelope, project-owned classification, guarded downstream writes, Timeline matrix, and archive no-replay rules are defined. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Sole ProviderRequestV1 allowlist, ordered AgentInputRecordV1 records/refs, strict model/outcome unions, UUIDv5 batch identity, atomic sink matrix, and active-Plant reconciliation boundary are defined. |
+| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-008 and the strict classification matrix deny model-selected safety authority, separate ordinary tasks from action_task, and require current guards at every downstream write. |
+| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Exact request/input/outcome/event/batch assertions, observation boundaries, adversarial classification compatibility, and the two accepted audited smoke outcomes are defined. |
 | deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md), [.memory-bank/foundation.md](foundation.md) | Local loopback first demo; Linux Mint local bootstrap/PostgreSQL path and runbook; optional protected LAN later; no SaaS/server sync. |
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md) | Key architecture risks recorded. |
-| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | No global blocker; the FT-002 archive gap is resolved by AD-007 and canonical lifecycle specs; feature details route through `/prd-to-tasks`. |
+| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | No global/shared design blocker remains; provider model/credential/egress values are execution inputs, and downstream feature-local details stay routed to their owning `/prd-to-tasks` runs. |
 
 ## Handoff To /prd
 - Ready: yes
@@ -60,20 +62,19 @@ last_updated: 2026-07-10
 - Downstream rule: product tasking must honor the Foundation gate recorded in the authoritative Foundation document.
 
 ## Handoff To /prd-to-tasks
-- Ready: yes.
+- Ready: yes for `/prd-to-tasks FT-007` planning reconciliation only.
 - Scope: feature-level SDD design and task slicing for the selected feature.
-- Stop conditions: PRD scope changes, a new shared/global gap appears, or feature design conflicts with the authoritative global backbone; rerun `/spec-design` for shared/global decisions.
+- Stop conditions: PRD scope changes, a new shared/global gap appears, or feature design conflicts with the authoritative global backbone; rerun `/spec-design` for shared/global decisions. TASK-028/TASK-029 execution remains forbidden until the refreshed queue receives a fresh `VERDICT: APPROVE`.
 
 ## Global Backbone Status
 - Status: complete
-- Mode: standard_architecture_scaffold
+- Mode: strict_architecture_scaffold
 - Architecture artifact strategy: single-file
 - Not applicable areas:
   - separate_handwritten_openapi_yaml: not_applicable - generated OpenAPI should come from backend FastAPI/Pydantic-style schemas after implementation exists.
   - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
-- Notes: All relevant global/shared areas have authoritative routes. The
-  archived-Plant operational guard is shared by FT-002 and FT-011 through
-  FT-013; detailed feature schemas and commands remain routed to canonical
-  subject specs through `/prd-to-tasks`.
+- Notes: Foundation remains verified. FT-007 is ready for planning
+  reconciliation only; execution requires refreshed task cards and fresh
+  `/review-tasks-plan FT-007` approval.

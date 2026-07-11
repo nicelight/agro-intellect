@@ -2,7 +2,7 @@
 description: Global Safety Gate and physical-action lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -19,24 +19,73 @@ physical-action wording to Safety Gate decision, authorized human approval,
 human-performed action task, and follow-up outcome. It is not an automated
 device-control spec.
 
-Exact action taxonomy, freshness windows, API route schemas, task table fields,
-and UI prompts belong to `/prd-to-tasks FT-011` and `/prd-to-tasks FT-012`.
+Exact domain action taxonomy, freshness windows, API route schemas, task table
+fields, and UI prompts belong to `/prd-to-tasks FT-011` and
+`/prd-to-tasks FT-012`. This shared spec owns the exact pre-safety
+classification result and route classes needed by FT-007/008/011/012.
 
 ## Scope Boundaries
 
 - Defines: global Safety Gate authority separation, lifecycle phases, allowed
   approval roles, no-actuation rules, and verification requirements.
-- Out of scope: detailed classifier implementation, exact pH/EC freshness
+- Out of scope: classifier algorithm/model choice, exact pH/EC freshness
   windows, endpoint schemas, task UI, or follow-up form fields.
 - Related specs:
   - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md):
-    defines physical-action implication and `safety_gate_route` fields.
+    defines pending output and untrusted candidate-claim fields.
   - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): defines human
     prompt projection.
   - [.memory-bank/states/companion-governance.md](companion-governance.md):
     defines governance decisions that must not replace Safety Gate approval.
   - [.memory-bank/states/plants/plant-and-access-lifecycle.md](plants/plant-and-access-lifecycle.md):
     defines the archived-Plant operational guard.
+
+## Project-owned classification contract
+
+Every non-silent MessageEnvelope starts with
+`publication_state=pending_classification` and must produce one strict
+`SafetyClassificationResultV1` before any Bus/UI/task route. The classifier
+may use implementation details chosen by FT-011, but only the project-owned
+validated result below is authority; model-selected claim labels are inputs,
+not classification.
+
+The strict result contains exactly:
+
+- `schema_version=1`;
+- lowercase canonical UUID `message_id` equal to the pending envelope;
+- project-owned `classifier_version` matching
+  `[a-z0-9][a-z0-9._-]{0,63}`;
+- `classification=safe_information|safe_task_request|physical_action|blocked_uncertain`;
+- nullable `safe_task_kind=check|measurement|follow_up`;
+- one exact `reason_code` from the matrix below.
+
+Unknown fields are rejected. The result does not copy envelope text, refs,
+Plant identity, authorization, or timestamps. `message_id` is the result key:
+one MessageEnvelope accepts one classification, an identical retry is
+idempotent, and a conflicting result fails closed. Reclassification requires a
+new Agent Runtime invocation and `message_id`.
+
+| Classification | Task kind | Reason | Permitted next boundary |
+|---|---|---|---|
+| `safe_information` | null | `non_physical_information` | guarded FT-008 UI/Bus publication |
+| `safe_task_request` | `check` | `safe_check_request` | ordinary FT-012 check task |
+| `safe_task_request` | `measurement` | `safe_measurement_request` | ordinary FT-012 measurement task |
+| `safe_task_request` | `follow_up` | `safe_follow_up_request` | ordinary FT-012 follow-up task |
+| `physical_action` | null | `physical_action_detected` | FT-011 Safety Gate |
+| `blocked_uncertain` | null | `classification_uncertain` | generic non-consumable UI block notice |
+
+`safe_information` may be projected only after the FT-008 current publication
+guard. `safe_task_request` may enter the ordinary FT-012 task service but can
+never create an `action_task`. `physical_action` enters the Safety Gate
+lifecycle and its wording remains non-operative until every later gate passes.
+`blocked_uncertain` permits only a generic human-visible block/clarification
+notice; the original candidate text remains non-consumable and non-operative.
+
+`SafetyClassificationResultV1` is routing data, not authorization. Before a
+downstream write, the owning FT-008/FT-011/FT-012 service applies its canonical
+current authorization and active-Plant guard in the same transaction/locking
+boundary. Denial creates no effect and the handoff is not replayed after
+restore; a new current-state request is required.
 
 ## Lifecycle Shape
 
@@ -76,8 +125,8 @@ Every safety/action record must carry:
 - Human approval creates only human-performed action task tracking. It never
   triggers automated device execution.
 - DecisionRecord, UI Feed prompt display, MessageEnvelope
-  `requires_human_approval=true`, and Bus publication are not Safety Gate
-  approval.
+  candidate fields, `SafetyClassificationResultV1`, and Bus publication are not
+  Safety Gate approval.
 - Superseded, stale, or replayed approvals cannot create an action task.
 - Every Safety Gate, approval, task, follow-up, and outcome transition requires
   current `Plant.status=active` at its transactional authorization boundary.
@@ -96,6 +145,10 @@ Every safety/action record must carry:
   the safety/task record.
 - Governance approval cannot be converted into physical-action approval.
 - Unsafe classifier uncertainty must prefer block/clarify over cleared wording.
+- A model-selected `observation|hypothesis|team_signal` label cannot make
+  physical-action wording safe, and a model-selected
+  `recommendation|task_request` label cannot force a genuinely non-physical
+  check/measurement request into physical-action approval.
 - Any implementation path that would issue pump, dosing, pH/EC correction,
   light-control, autowatering, or autodosing commands is out of MVP.
 
@@ -108,6 +161,9 @@ Tests must prove:
 - Boss/Engineer/Consultant approval rules are enforced.
 - Governance DecisionRecord does not unlock physical action.
 - UI prompt display does not unlock physical action.
+- Adversarial classification tests cover mislabeled physical-action wording,
+  all four result classes, exact matrix/unknown-field rejection, duplicate
+  conflict, and safe task requests that never create an `action_task`.
 - No code path performs automated actuation.
 - Archiving with open safety/task records leaves those records unchanged,
   blocks every transition while archived, and restore does not bypass current

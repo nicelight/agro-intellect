@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -27,7 +27,7 @@ source_of_truth:
 
 ## EP-003 Agent Runtime And Context Hygiene
 
-- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD-complete authorized runtime, canonical roster/bootstrap, multi-provider boundary, and planned TASK-028/TASK-029 queue.
+- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/prd-to-tasks FT-007` reconciliation and fresh review approval.
 - [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): working-context and presentation separation.
 - [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): visual evidence and state promotion.
 - [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): cautious advice and missing-data behavior.

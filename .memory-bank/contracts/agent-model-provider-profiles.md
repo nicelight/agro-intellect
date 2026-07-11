@@ -2,7 +2,7 @@
 description: Explicit Agent Runtime provider profiles, deploy-time model binding, credential boundary, and external-egress rules.
 status: active
 type: interface_contract
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -119,11 +119,11 @@ responses, credential-bearing endpoints, and raw SDK objects are forbidden.
 
 ## External-egress payload
 
-The owner permits external processing, but the provider receives only:
-
-- the resolved project-owned definition and strict output-schema instructions;
-- `AgentInputRecordV1` records from the production assembler;
-- internally derived safe source refs required by the output contract.
+The owner permits external processing, but the provider receives exactly one
+strict `ProviderRequestV1` from the Agent Runtime contract: project-owned
+definition/schema instructions, ordered `AgentInputRecordV1` records, and the
+ordered internally derived safe refs. No adjacent executor argument or hidden
+metadata may add business/context fields.
 
 It must not receive ActorContext, session/account/membership objects, tokens,
 cookies, headers, provider credentials, UI Feed, raw chat, admin notices,
@@ -160,6 +160,10 @@ cannot select `chatgpt_oauth`, cannot add a roster member, and cannot satisfy a
 product-agent binding. Deterministic tests separately prove the canonical
 `AGENT_MODEL_BINDINGS_JSON` resolver.
 
+Smoke acceptance follows the exact Agent Runtime outcome matrix: only audited
+`envelope_ready` or strict audited `model_silent` is accepted. Every other
+outcome, skip/xfail, fake, fallback, or unaudited result fails.
+
 ## Verification
 
 Tests must prove:
@@ -174,11 +178,14 @@ Tests must prove:
 - `chatgpt_oauth` uses only an approved injected adapter and never Codex,
   browser, or `OPENAI_API_KEY` credential substitution;
 - outbound object graphs contain only the typed allowlist;
+- outbound-spy snapshots match the exact `ProviderRequestV1` shape and record
+  order, and prove authorization/ActorContext/session/role/grant data is absent;
 - logs, timeline, pytest output, and task evidence contain no credentials or
   raw provider payload;
 - an explicitly enabled DeepSeek or Gemini smoke invokes exactly one real
   provider through the isolated test-only definition and cannot pass by skip,
-  xfail, mock executor, canned output, or fallback.
+  xfail, mock executor, canned output, fallback, blocked/failed outcome, or
+  unaudited result, and satisfies the Agent Runtime smoke matrix.
 
 ## External compatibility evidence
 

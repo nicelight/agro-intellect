@@ -2,7 +2,7 @@
 description: Concrete HTTP contract for daily Plant check-ins and manual pH/EC measurements.
 status: active
 type: api_contract
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/domains/plant-operations.md
   - .memory-bank/contracts/api-guidelines.md
@@ -76,7 +76,8 @@ approvals, follow-up outcomes, and frontend/PWA layout.
 
 - nullable `observed_at`; defaults to receive time.
 - `observation_state: observed|no_observation_provided`.
-- nullable `observation_text`.
+- nullable `observation_text`; after surrounding-whitespace trim the value is
+  1 through 2000 Unicode code points when `observation_state=observed`.
 - optional `measurement` object with nullable `measured_at`, nullable `ph`,
   nullable `ec_ms_cm`, nullable `provenance_note`.
 
@@ -84,6 +85,11 @@ When `observation_text` is non-blank, `observation_state` is required. If both
 observation fields are omitted, a valid measurement payload may still make the
 check-in non-empty. Text without state returns `422 VALIDATION_FAILED`; it is
 never discarded or rewritten as `no_observation_provided`.
+
+The backend rejects normalized observation text longer than 2000 Unicode code
+points with `422 OBSERVATION_TEXT_TOO_LONG` before any check-in, measurement,
+or timeline write. It never truncates or summarizes input; client validation
+does not replace this authoritative check.
 
 `POST /measurements` payload:
 
@@ -114,6 +120,7 @@ All errors use the global `{error: {code, message, request_id}}` envelope.
 | `CHECK_IN_EMPTY` | 422 | no observation state and no measurement payload |
 | `OBSERVATION_TEXT_REQUIRED` | 422 | `observed` without non-blank text |
 | `OBSERVATION_TEXT_FORBIDDEN` | 422 | `no_observation_provided` with text |
+| `OBSERVATION_TEXT_TOO_LONG` | 422 | normalized observation text exceeds 2000 Unicode code points |
 | `MEASUREMENT_VALUE_REQUIRED` | 422 | neither pH nor EC was provided |
 | `PH_INVALID` | 422 | pH outside `0..14` or wrong type |
 | `EC_INVALID` | 422 | EC negative or wrong type |
@@ -134,5 +141,8 @@ All errors use the global `{error: {code, message, request_id}}` envelope.
   projection.
 - Validation tests prove non-blank observation text without
   `observation_state` returns `422 VALIDATION_FAILED` and writes nothing.
+- Boundary tests prove normalized observation lengths 1 and 2000 succeed,
+  length 2001 returns `422 OBSERVATION_TEXT_TOO_LONG`, paste/non-UI callers
+  cannot bypass the cap, and neither request nor persisted text is truncated.
 - Failure-injection tests prove persistence or timeline failures do not return
   success and do not leak raw exception or credential details.

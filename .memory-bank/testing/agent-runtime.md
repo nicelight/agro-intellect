@@ -2,7 +2,7 @@
 description: Verification contract for FT-007 agent runtime, MessageEnvelope, real-model anti-cheat, and archive-race behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -11,7 +11,11 @@ source_of_truth:
   - .memory-bank/contracts/message-envelope.md
   - .memory-bank/contracts/timeline-event.md
   - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/auth/session-storage.md
+  - .memory-bank/domains/identity/account-membership.md
   - .memory-bank/domains/plant-operations.md
+  - .memory-bank/states/auth/session-lifecycle.md
+  - .memory-bank/states/safety-action-lifecycle.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Agent Runtime Verification
@@ -33,61 +37,28 @@ archive/authorization guard.
 
 ## Unit matrix
 
-- Validate all four runtime decisions and the exact decision/claim/safety
-  compatibility matrix.
-- Validate the exact `plant`, `daily_checkin`, and `manual_measurement`
-  `AgentInputRecordV1` union; reject unknown record/payload fields, mismatched
-  ids, non-PostgreSQL source values, non-deterministic latest selection, and
-  more than four records.
-- Reject unknown fields, malformed UUIDs/timestamps, unsafe refs, out-of-range
-  confidence, empty/oversized output, and forbidden content.
-- Prove `silent` has no MessageEnvelope and requires a safe reason code.
-- Prove message ids are generated only after validation/current permission and
-  are never reused by blocked candidates.
-- Prove authorization scope serialization excludes sessions, tokens, headers,
-  cookies, credentials, raw ActorContext objects, and provider keys.
-- Prove provider errors and parser failures expose stable safe codes only.
-- Validate the exact eight-member roster, fixed order, unique ids, immutable
-  competence/introduction metadata, and deterministic UUIDv5 introduction ids.
-- Validate strict provider binding configuration, partial maps, nonblank
-  deployment model ids, no caller override/default/fallback, and redacted safe
-  model refs.
+| Area | Required assertions |
+|---|---|
+| Provider request | Exact closed `ProviderRequestV1`; ordered records/refs; no authorization, session, role/grant, provider selection, or arbitrary metadata. |
+| Typed input | Exact record union and payloads; PostgreSQL sources; Plant/check-in/pH/EC order; pH+EC row dedup; canonical UUID/time/decimal values; maximum four records. |
+| Observation bound | Lengths 1/2000 accepted; 2001 rejected before provider I/O; no truncation, chunking, or implicit summary. |
+| Model/envelope | Exact decision/candidate matrix; unknown/malformed/unsafe content rejected; silence has no envelope; non-silent envelope is pending and non-consumable; model supplies no safety authority. |
+| Outcome/event | Every `AgentRuntimeOutcomeV1` and Timeline matrix row; exact nullability/ref/provider/audit states; no-event branches; no failure becomes silence. |
+| Security/errors | Message scope and audit attribution expose only canonical safe fields; provider/parser failures expose stable codes without secrets or raw payloads. |
+| Roster/batch | Exact roster/order/metadata, UUIDv5 namespace and names, one eight-item batch, and the 8-or-0 sink result matrix. |
+| Provider profiles | Strict bindings, nonblank model ids, no caller override/default/fallback, approved egress, and safe model refs. |
 
 ## Integration matrix
 
-- Feed an authenticated ActorContext plus `plant_id` into the production
-  assembler; prove it builds the existing `AuthorizedPlantContext` seam from
-  actual persisted Plant data, callers cannot inject candidate mappings/refs,
-  only canonical typed records reach the executor, and executor refs exactly
-  equal the typed-record refs.
-- Revalidate the original service-side session/account/membership/Plant/grant
-  after model execution; prove that identity/provenance is sufficient for
-  current authorization but never enters model input or timeline actor refs.
-- Revoke access or archive the Plant while the executor is in flight; the fresh
-  publication guard must return audit-only, no MessageEnvelope, no Bus/UI
-  publication, and no replay after restore.
-- Simulate archive/revoke after FT-007 returns `envelope_ready`; the FT-008
-  publication contract must deny the handoff in the same transactional/locking
-  boundary as its write. FT-007 must not claim this later window is atomic.
-- Append one `agent_runtime_decided` event with the correct run/source identity,
-  safe metadata, and no output text/provider payload/reasoning.
-- Inject timeline append failure and prove no envelope handoff is returned.
-- Prove FT-007 does not write PostgreSQL agent-run/provider-history tables and
-  does not read timeline as runtime or context authority.
-- Create a Plant through the production transaction seam and prove bootstrap
-  starts only after commit, builds exactly eight idempotent introduction
-  handoffs, and makes no provider call.
-- Repeat/fail the post-commit handoff and prove duplicate keys/content remain
-  deterministic, a committed Plant is not reported as rolled back, and tests
-  do not claim visible chat publication without a downstream sink.
-- Prove introductions have `visible_to_agents=false`,
-  `consumable_by_agents=false`, are not MessageEnvelope, and never enter model
-  input.
-- Prove native DeepSeek and Gemini factories construct only the configured
-  Agno adapter and a failure never selects the other provider/model.
-- Prove `chatgpt_oauth` is recognized but fails before credential discovery or
-  network I/O when no approved broker is injected; scan production code for
-  Codex/browser credential-store reads.
+| Flow | Required assertions |
+|---|---|
+| Production assembly | ActorContext plus `plant_id` loads real PostgreSQL rows; callers cannot inject records/refs; request order matches the canonical contract. A persisted oversized observation returns `context_denied/input_contract_violation` with no provider or audit call. |
+| Post-model guard | Expired/revoked session, disabled Account/Membership, role/grant change, wrong Farm, revoked grant, or archived Plant returns exact `publication_guard_denied` semantics. Identity never enters provider input; Timeline attribution is exactly `account_id`, `membership_id`, and request-time `role_preset`. |
+| Envelope/classifier boundary | FT-007 returns only immutable pending/non-consumable envelopes. Producer tests reject model safety fields and claim no Bus/UI/task effect; classifier/effect implementation remains FT-011/FT-008/FT-012 scope. |
+| Audit/storage | One sanitized event for each provider-I/O branch; append failure blocks handoff; no agent-run/provider-history table and no timeline-as-runtime read. |
+| Plant compatibility | Bootstrap starts after the existing Plant/grant/audit commit, makes no provider call, and leaves `POST /api/plants` authorization, `201 PlantSummary`, no-store, and error behavior unchanged for every sink result. |
+| Batch sink | One call with eight deterministic items; identical duplicate succeeds; conflict rejects; rejected/failed accepts zero; introductions are non-consumable and not MessageEnvelope. No FT-008 storage/projection is implemented or claimed. |
+| Provider composition | DeepSeek/Gemini construct only the selected native adapter; no cross-provider fallback; unconfigured `chatgpt_oauth` fails before credential/network access and never reads Codex/browser credentials. |
 
 ## Real-model smoke
 
@@ -101,8 +72,12 @@ The credentialed smoke must:
 3. Resolve an authorized active Plant and assemble actual persisted Plant
    context through the production assembler.
 4. Invoke the configured real `provider_profile:model_id` model.
-5. Produce either a valid MessageEnvelope or a truthful audited `silent`,
-   `blocked`, or `failed` outcome.
+5. Complete with exactly one accepted result: either
+   `outcome_kind=envelope_ready`, `status=envelope_ready`, with a valid pending
+   MessageEnvelope; or `outcome_kind=model_silent`, `status=silent`, with
+   `final_decision=silent` and
+   `reason_code=no_material_output|insufficient_evidence`. Both require the
+   configured safe `model_ref` and successful sanitized audit.
 6. Record the configured safe `provider_profile:model_id` and prove the test did not
    skip or xfail.
 7. Keep credentials, raw provider response, prompt history, and hidden reasoning
@@ -111,6 +86,10 @@ The credentialed smoke must:
 The smoke must fail, not skip or substitute a fake output, when explicit smoke
 mode is requested but model configuration, provider dependency, credential, or
 network access is unavailable.
+
+`context_denied`, `runtime_not_configured`, `provider_failed`,
+`output_invalid`, `publication_guard_denied`, `audit_failed`, an unaudited
+result, or runtime-created failure silence never count as a successful smoke.
 
 ## Anti-cheat inspection
 
@@ -128,11 +107,13 @@ network access is unavailable.
 
 ## Behavior traceability
 
-- `FT-007-BHV-001`: credentialed real provider transport -> validated speak
-  envelope without claiming downstream product-agent completion.
+- `FT-007-BHV-001`: credentialed real provider transport -> either an audited
+  validated non-silent envelope or audited strict model-declared silence, without
+  accepting failure silence or claiming downstream product-agent completion.
 - `FT-007-BHV-002`: committed Plant -> exact post-commit roster introduction
   handoff without model I/O or agent-context visibility.
-- `FT-007-BHV-003`: archive during invocation -> blocked audit only and no
+- `FT-007-BHV-003`: archive during invocation ->
+  `publication_guard_denied`, null final decision, blocked audit only, and no
   replay after restore.
 
 ## Commands
@@ -147,9 +128,6 @@ network access is unavailable.
 - Full regression: `.venv/bin/python -m pytest tests -q`
 - Memory Bank lint: `node scripts/mb-lint.mjs`
 - Diff check: `git diff --check`
-
-The real-model command is not considered passing if it reports only skipped or
-xfailed tests.
 
 Concrete roster-member prompts, triggers, and product-flow real-model evidence
 remain with the RTM-listed owning features. Before REQ-011 is claimed complete,

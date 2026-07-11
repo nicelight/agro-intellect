@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-004
 epic: EP-002
 lifecycle: verified
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/plant-operations.md
@@ -94,6 +94,14 @@ Status: complete.
 Photo upload remains with FT-005. Plant history/timeline presentation, agent
 outputs, tasks, approvals, follow-up, Safety Gate, and PWA components remain
 outside FT-004.
+
+## Post-verification Contract Delta
+
+Current contracts add a 2000-code-point UI cap/counter and authoritative backend
+`OBSERVATION_TEXT_TOO_LONG` zero-write rejection without truncation or summary.
+Existing FT-004 evidence predates this delta. `/prd-to-tasks FT-007` must route
+the missing implementation/tests through Plant Operations and Operator UI
+owners rather than treating current code as compliant.
 
 FT-004 exposes authorized evidence and freshness projections consumed by
 FT-010/FT-012. Request/task creation and every approval/follow-up transition

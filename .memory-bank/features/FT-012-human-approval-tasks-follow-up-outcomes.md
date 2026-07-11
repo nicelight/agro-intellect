@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-012
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -24,6 +24,9 @@ source_of_truth:
 
 - Human approval unlocks only human-performed task tracking, never automated execution.
 - `action_task`, `check_task`, measurement tasks, and follow-up outcomes are separated.
+- A `safe_task_request` classification may create only its ordinary
+  check/measurement/follow-up task through backend rules; it bypasses neither
+  task authorization nor evidence checks and can never create `action_task`.
 - Follow-up outcome captures improved/worsened/unchanged/no-data style results after specs define exact vocabulary.
 - Task and approval records preserve ActorContext, Plant scope, source refs, and audit refs.
 - Archived Plant preserves task/approval/follow-up records but blocks their
@@ -62,7 +65,8 @@ source_of_truth:
 
 ## SDD Design Gate
 
-- Global/shared status: ready; `AD-007`, Plant lifecycle, and Safety Action
-  Lifecycle define retained-but-frozen records and restore revalidation.
+- Global/shared status: complete; `AD-008` and Safety Action Lifecycle define the exact
+  safe-task versus physical-action route; `AD-007` and Plant lifecycle define
+  retained-but-frozen records and restore revalidation.
 - Feature-local status: pending `/prd-to-tasks FT-012` for exact task,
   approval, outcome, replay, API, and persistence contracts.

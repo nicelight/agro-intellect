@@ -2,7 +2,7 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -10,7 +10,10 @@ source_of_truth:
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/contracts/message-envelope.md
   - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/auth/session-storage.md
+  - .memory-bank/domains/identity/account-membership.md
   - .memory-bank/domains/plant-operations.md
+  - .memory-bank/states/auth/session-lifecycle.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Agent Runtime Adapter
@@ -20,8 +23,9 @@ source_of_truth:
 This contract defines the project-owned boundary around one real model-backed
 product-agent invocation. The boundary accepts already authorized Plant
 context, calls an execution adapter, validates the candidate result, performs a
-fresh publication guard, and returns either a validated `MessageEnvelope` plus
-audit ref or an audit-only outcome.
+fresh publication guard, and returns one strict `AgentRuntimeOutcomeV1`. A
+non-silent success carries a validated pre-safety `MessageEnvelope`; it is a
+handoff to the project-owned classifier, not Bus/UI publication authority.
 
 Agno and a configured model provider are execution dependencies only. They do
 not own runtime decisions, authorization, audit semantics, MessageEnvelope, or
@@ -33,7 +37,9 @@ Plant state.
   owns those concerns.
 - Vision-specific input and observation semantics; FT-009 owns them.
 - Hydroponics Advisor missing-data policy; FT-010 owns it.
-- Safety classification and action approval; FT-011 owns them.
+- Safety classifier implementation and action approval; the shared
+  `SafetyClassificationResultV1` wire contract lives in the Safety Action
+  Lifecycle, while FT-011 owns the concrete classifier/policy implementation.
 - HTTP routes or a new public agent API.
 - Agno memory, session history, Team coordination, tools, RAG, fallback models,
   or provider-result persistence.
@@ -41,13 +47,17 @@ Plant state.
 ## Related specs
 
 - [.memory-bank/contracts/message-envelope.md](message-envelope.md): exact
-  publishable output.
+  validated pre-safety output handoff.
 - [.memory-bank/contracts/agent-model-provider-profiles.md](agent-model-provider-profiles.md):
   provider/model binding, egress, credential, and no-fallback rules.
 - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
   canonical identities and post-commit Plant bootstrap handoff.
 - [.memory-bank/contracts/access/actor-context.md](access/actor-context.md):
   authorization and safe context boundary.
+- [.memory-bank/domains/auth/session-storage.md](../domains/auth/session-storage.md),
+  [.memory-bank/domains/identity/account-membership.md](../domains/identity/account-membership.md),
+  and [.memory-bank/states/auth/session-lifecycle.md](../states/auth/session-lifecycle.md):
+  exact identity/session rows and validity rules reloaded after model I/O.
 - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): downstream
   publication boundary.
 - [.memory-bank/contracts/timeline-event.md](timeline-event.md): append-only
@@ -89,7 +99,7 @@ the canonical roster and its owning feature policy:
 - `agent_id`: lowercase slug matching `[a-z][a-z0-9_]{2,63}`;
 - `competence`: one concise project-owned competence statement;
 - `instructions`: project-owned instructions, never raw UI/chat content;
-- `allowed_claim_types`: a non-empty subset of the MessageEnvelope claim
+- `allowed_candidate_claim_types`: a non-empty subset of the MessageEnvelope candidate-claim
   catalog;
 - `output_schema_version`: exactly `1` for this contract version.
 
@@ -125,9 +135,27 @@ model ids, output schemas, or authorization snapshots.
 `AgentInputAssembler` receives the service-side ActorContext and `plant_id`,
 reuses the existing `build_authorized_plant_context`/Plant permission seam, and
 loads the canonical Plant/check-in/measurement rows from PostgreSQL. It returns
-the typed input records below plus their derived safe authorization scope. The
-model input receives only that safe scope and those records; the ActorContext
-object and its session provenance never cross the executor boundary.
+the service-side safe authorization snapshot plus exactly one strict
+`ProviderRequestV1`. This pre-call authorization snapshot never enters that
+request and is not reused as the final envelope scope; the post-model guard
+builds a fresh current scope.
+
+`ProviderRequestV1` has exactly these fields; unknown fields at every nested
+level are rejected:
+
+- `schema_version=1`;
+- `agent_definition`: strict object with `agent_id`, `competence`,
+  `instructions`, ordered unique `allowed_candidate_claim_types`, and
+  `output_schema={name=AgentModelResultV1,schema_version=1,strict=true}`;
+- `records`: ordered array of 1 through 4 strict `AgentInputRecordV1` objects;
+- `source_refs`: ordered unique array exactly equal, item for item, to the
+  records' `source_ref` values.
+
+No `run_id`, ActorContext, account/membership/role/grant field, authorization
+scope, session provenance, model/provider selection, credential, arbitrary
+metadata, or caller text exists in `ProviderRequestV1`. The provider adapter
+binds the project-owned stack-native `AgentModelResultV1` schema named by the
+descriptor; callers cannot replace or extend it.
 
 Rules:
 
@@ -149,26 +177,27 @@ Rules:
 
 ## Typed input version 1
 
-Before provider invocation, each assembler output must validate as exactly one
-`AgentInputRecordV1`. Unknown record types and unknown payload fields are
-rejected:
+Every `AgentInputRecordV1` is exactly
+`{record_type, source_ref, payload}`. UUIDs use lowercase canonical strings;
+timestamps use UTC RFC 3339 strings. Unknown outer fields, record types, and
+payload fields are rejected. The discriminated payloads are:
 
-| `record_type` / source-ref kind | Exact payload | Canonical source |
+| `record_type` | `source_ref` | Exact `payload` |
 |---|---|---|
-| `plant` | `plant_id`, `status=active` | persisted Plant identity/status |
-| `daily_checkin` | `check_in_id`, `observed_at`, `recorded_at`, `observation_state`, optional non-blank `observation_text` | `.memory-bank/domains/plant-operations.md` |
-| `manual_measurement` | `measurement_id`, `measured_at`, `recorded_at`, optional `ph`, optional `ec_ms_cm`, `source_type=manual_user`, `trust_status=confirmed`; at least one measurement value is present | `.memory-bank/domains/plant-operations.md` |
+| `plant` | `plant:<plant_id>` | `plant_id`, `status=active` |
+| `daily_checkin` | `daily_checkin:<check_in_id>` | `check_in_id`, `observed_at`, `recorded_at`, `observation_state=observed|no_observation_provided`, `observation_text` as normalized 1..2000-code-point string only for `observed`, otherwise `null` |
+| `manual_measurement` | `manual_measurement:<measurement_id>` | `measurement_id`, `measured_at`, `recorded_at`, `ph` as fixed two-decimal string or `null`, `ec_ms_cm` as fixed three-decimal string or `null`, `source_type=manual_user`, `trust_status=confirmed`; at least one value is non-null |
 
 Rules:
 
-- V1 assembly contains exactly one `plant:<plant_id>` record, the latest
-  completed daily check-in when one exists, the latest pH measurement when one
-  exists, and the latest EC measurement when one exists. If one measurement
-  row is latest for both values it appears once.
+- V1 order is exact: Plant first; latest completed daily check-in second when
+  present; latest non-null pH row next when present; latest non-null EC row last
+  when present. If one measurement row is latest for both pH and EC it appears
+  once in the pH position and is omitted from the EC position.
 - The real-model FT-007 smoke requires at least one assembled check-in or
   measurement record; it cannot pass with a synthetic Plant-only payload.
-- `plant_id` must equal the authorized scope; check-in and measurement ids must
-  equal their source-ref identifiers.
+- `plant_id` must equal the service-side authorized scope; each record id must
+  equal its source-ref identifier.
 - Timestamps are timezone-aware UTC; pH/EC values use the canonical normalized
   PostgreSQL values, not user text or timeline summaries.
 - Latest records use deterministic PostgreSQL ordering: check-ins by
@@ -178,26 +207,37 @@ Rules:
 - Records are built from PostgreSQL/read-model source objects. UI Feed,
   timeline replay, HTTP response bodies, manifests, raw chat, and provider
   output cannot be adapted into these types.
+- Agent Runtime never truncates, chunks, or summarizes `observation_text` to
+  make it fit provider input. If an existing persisted row violates the current
+  2000-code-point Plant Operations contract, assembly returns the stable
+  pre-invocation `outcome_kind=context_denied` result with
+  `reason_code=input_contract_violation` and makes no provider or audit call.
 - Photo binary/metadata is not in FT-007 input v1; FT-009 must define its
   vision-specific typed boundary before sending real photo data to a model.
-- The request `source_refs` given to the executor is derived internally and is
-  exactly equal to the set of typed-record refs. Model output refs must be a
-  non-empty subset of that set for any envelope-producing decision.
+- `ProviderRequestV1.source_refs` is derived internally in record order and is
+  exactly equal to the typed-record refs. A non-silent model result uses a
+  non-empty unique subset in the same relative order as the request;
+  model-declared silence uses an empty list.
 
 ## Model execution result
 
-The model is instructed to return one object with unknown fields rejected:
+`AgentModelResultV1` is one strict object with exactly
+`{schema_version, runtime_decision, candidate_claim_type, candidate_output,
+confidence, source_refs, reason_code}` and `schema_version=1`. Unknown fields
+are rejected. Its matrix is:
 
-- `runtime_decision`: `speak | silent | clarify | escalate`;
-- `claim_type`: one MessageEnvelope claim type, or `null` only for `silent`;
-- `consumable_output`: concise plain text, or `null` only for `silent`;
-- `confidence`: number from `0` through `1`, or `null` where the envelope
-  contract permits it;
-- `source_refs`: a subset of request `source_refs`;
-- `requires_human_approval`: boolean;
-- `safety_gate_route`: `not_applicable | required`;
-- `reason_code`: `no_material_output | insufficient_evidence` for `silent`,
-  otherwise `null`.
+| Decision | Candidate claim | Output/confidence/refs | Reason |
+|---|---|---|---|
+| `speak` | `observation|hypothesis|recommendation|task_request|team_signal` | normalized plain text 1..2000 code points; confidence `0..1` except nullable for `team_signal`; 1..4 request refs | `null` |
+| `clarify` | `clarification` | normalized plain text 1..2000; confidence `null`; 1..4 request refs | `null` |
+| `escalate` | `safety_block|team_signal` | normalized plain text 1..2000; confidence `null`; 1..4 request refs | `null` |
+| `silent` | `null` | output and confidence `null`; refs exactly `[]` | `no_material_output|insufficient_evidence` |
+
+The candidate claim is untrusted model data. The provider result has no
+`requires_human_approval`, `safety_gate_route`, final physical-action class, or
+publication flag. For every non-silent result Agent Runtime creates only a
+MessageEnvelope with `publication_state=pending_classification`; the project-
+owned Safety & Task Loop classifier decides the final route.
 
 Provider metadata, messages, traces, tool calls, response objects, hidden
 reasoning, and parser diagnostics remain transient inside the executor. The
@@ -205,26 +245,34 @@ adapter copies only the validated object above.
 
 ## Invocation flow
 
-1. Resolve the project-owned definition and assemble typed authorized input
-   from current PostgreSQL records.
-2. Resolve exactly one deployment binding and invoke its configured real Agno
-   model outside any database transaction through `ModelExecutor`.
-3. Parse and validate the candidate result with the MessageEnvelope decision
-   and claim matrix.
-4. Use `RuntimeAuthorizationGuard` to reload the original session/account,
-   membership, same-Farm Plant, and PlantAccessGrant state; then resolve current
-   `normal_read` permission. The original ActorContext snapshot is insufficient.
-5. If current permission is active and authorized, create a new
-   MessageEnvelope for `speak`, `clarify`, or `escalate`; `silent` creates no
+1. Resolve the definition and assemble `ProviderRequestV1`; a pre-call scope or
+   strict-record failure returns `context_denied` with no provider/audit call.
+   Authorization/scope denial uses `reason_code=context_denied`; a selected
+   authoritative record outside the strict V1 contract uses
+   `reason_code=input_contract_violation`.
+2. Resolve exactly one deployment binding; unavailable composition returns
+   `runtime_not_configured` with no provider/audit call.
+3. Invoke the configured real model outside every database transaction. A call
+   failure becomes the pending `provider_failed` outcome.
+4. Parse `AgentModelResultV1`. Schema/matrix/ref/content failure becomes the
+   pending `output_invalid` outcome.
+5. After any schema-valid provider result, reload the original LocalSession by
+   `session_id`, require it unexpired/unrevoked and bound to the same active
+   Account, reload the exact active Membership in the same Farm, then resolve
+   current same-Farm active Plant/grant permission. Current role/grant state replaces
+   the stale snapshot and supplies the MessageEnvelope authorization scope. Any
+   denial becomes `publication_guard_denied`; no
+   synthetic `silent` decision is invented.
+6. For an authorized valid non-silent candidate, create the pending-safety
+   MessageEnvelope. For a valid model-declared silent candidate, create no
    envelope.
-6. If the Plant became archived or authorization changed, downgrade any
-   candidate to final `silent`, reason `publication_guard_denied`, and create no
-   MessageEnvelope.
-7. Append exactly one `agent_runtime_decided` timeline event for every accepted
-   request that reached model execution. Its safe `actor_ref` is exactly
-   `account_id`, `membership_id`, and `role_preset` from the service-side
-   identity; session ids and auth provenance are excluded.
-8. Return `AgentRuntimeOutcome` only after the audit append succeeds.
+7. Append exactly one sanitized `agent_runtime_decided` event for every request
+   that reached provider I/O, including provider failure, invalid output, model
+   silence, and guard denial. Safe `actor_ref` is exactly the authenticated
+   service-side `account_id`, `membership_id`, and request-time `role_preset`;
+   session/auth data is absent.
+8. Audit failure overrides the pending result with `audit_failed` and returns
+   no envelope/event ref. Otherwise return the matching strict outcome.
 
 The FT-007 guard is a pre-handoff check, not publication atomicity. Agent
 Runtime holds no database lock across the provider call, filesystem audit
@@ -238,43 +286,50 @@ FT-008 rejects the handoff; the envelope remains transient/audit-only and is
 never replayed after restore. Until FT-008 exists, FT-007 performs no Bus/UI
 publication, so this later race window cannot create an operational event.
 
-## AgentRuntimeOutcome
+## AgentRuntimeOutcomeV1
 
-The service returns:
+Every expected branch returns one strict object with exactly these fields;
+unknown fields are rejected and none is conditionally omitted:
 
-- `run_id`;
-- `final_decision`;
-- `status`: `envelope_ready | silent | blocked | failed`;
-- optional validated `message_envelope`;
-- one timeline `event_ref` when audit append succeeded;
-- safe `reason_code`;
-- safe `model_ref` in `provider_profile:model_id` form only for a real configured
-  executor.
+- `schema_version=1`, `run_id`, and discriminant `outcome_kind`;
+- `status=envelope_ready|silent|blocked|failed`;
+- nullable `final_decision=speak|silent|clarify|escalate`;
+- `reason_code` and nullable stable `error_code`;
+- nullable `message_envelope`, `event_ref`, and safe
+  `model_ref=provider_profile:model_id`;
+- `provider_call_status=not_attempted|completed|failed`;
+- `audit_status=not_attempted|appended|failed`.
 
-The service-level `reason_code` is exactly one of:
+| `outcome_kind` | Status / final decision | Reason / error | Envelope / event / model | Provider / audit |
+|---|---|---|---|---|
+| `envelope_ready` | `envelope_ready` / candidate `speak|clarify|escalate` | `envelope_ready` / `null` | present / present / present | `completed` / `appended` |
+| `model_silent` | `silent` / `silent` | `no_material_output|insufficient_evidence` / `null` | null / present / present | `completed` / `appended` |
+| `context_denied` | `blocked` / null | `context_denied|input_contract_violation` / `AGENT_CONTEXT_DENIED` | null / null / null | `not_attempted` / `not_attempted` |
+| `runtime_not_configured` | `failed` / null | `runtime_not_configured` / `AGENT_RUNTIME_NOT_CONFIGURED` | null / null / null | `not_attempted` / `not_attempted` |
+| `provider_failed` | `failed` / null | `provider_failed` / `AGENT_PROVIDER_FAILED` | null / present / present | `failed` / `appended` |
+| `output_invalid` | `blocked` / null | `output_invalid` / `AGENT_OUTPUT_INVALID` | null / present / present | `completed` / `appended` |
+| `publication_guard_denied` | `blocked` / null | `publication_guard_denied` / `AGENT_PUBLICATION_BLOCKED` | null / present / present | `completed` / `appended` |
+| `audit_failed` | `failed` / null | `audit_failed` / `AGENT_AUDIT_FAILED` | null / null / present | `completed|failed` / `failed` |
 
-- `envelope_ready` for a successful handoff;
-- `no_material_output` or `insufficient_evidence` for explicit model silence;
-- `provider_failed` for provider/executor failure;
-- `output_invalid` for adapter/schema rejection;
-- `publication_guard_denied` for post-execution Plant/authorization denial.
-
-Pre-invocation `context_denied` and `runtime_not_configured`, plus terminal
-`audit_failed`, are stable error outcomes rather than timeline payload reasons.
-
-`message_envelope` is present only when `status=envelope_ready` and the final
-decision is `speak`, `clarify`, or `escalate`. It is absent for every other
-status.
+`message_envelope` exists only for `envelope_ready`; `event_ref` exists only
+after a successful append. An `audit_failed` result may preserve whether the
+real provider call completed or failed but never exposes the discarded pending
+outcome. Its `model_ref` is present because audit is attempted only after a
+configured provider call has started. No failure/denial branch may use
+`status=silent`, `final_decision=silent`, or a model-silence reason. Expected
+branches do not use exceptions as the service contract;
+unexpected internal exceptions are redacted and fail closed at the module
+boundary without inventing another outcome kind.
 
 ## Failure catalog
 
 | Code | Condition | Result |
 |---|---|---|
-| `AGENT_CONTEXT_DENIED` | Input scope is missing, inactive, mismatched, or unauthorized before invocation. | No provider call and no MessageEnvelope. Existing authorization audit owns the denial. |
+| `AGENT_CONTEXT_DENIED` | Input scope is missing, inactive, mismatched, unauthorized, or contains a selected authoritative record that violates the strict V1 input bounds before invocation. | No provider call and no MessageEnvelope. No `agent_runtime_decided` event is created because model execution did not begin. |
 | `AGENT_RUNTIME_NOT_CONFIGURED` | Production model binding, egress opt-in, provider dependency/credential, competence policy, or approved OAuth broker is unavailable. | Safe failure; no fake/cross-provider fallback and no provider call. |
-| `AGENT_PROVIDER_FAILED` | Timeout, rate limit, network, provider, or Agno execution failure. | Audit-only `failed`; no MessageEnvelope. |
-| `AGENT_OUTPUT_INVALID` | Candidate output fails schema, decision/claim, refs, content, or safety validation. | Audit-only `blocked`; no MessageEnvelope. |
-| `AGENT_PUBLICATION_BLOCKED` | Current Plant/authorization recheck fails after model execution. | Audit-only final `silent`; no MessageEnvelope and no replay. |
+| `AGENT_PROVIDER_FAILED` | Timeout, rate limit, network, provider, or Agno execution failure. | Audited `provider_failed`; no final decision or MessageEnvelope. |
+| `AGENT_OUTPUT_INVALID` | Candidate output fails schema, decision/claim, refs, or content validation. | Audited `output_invalid`; no final decision or MessageEnvelope. |
+| `AGENT_PUBLICATION_BLOCKED` | Current session/Account/Membership/Plant/grant recheck fails after model execution. | Audited `publication_guard_denied`; no final decision, MessageEnvelope, or replay. |
 | `AGENT_AUDIT_FAILED` | Sanitized timeline append fails. | Fail closed; no MessageEnvelope handoff is returned. |
 
 Errors exposed outside the module use only the stable code and a generic safe
@@ -283,63 +338,32 @@ local paths, and parser details are never returned or logged.
 
 ## Storage decision
 
-FT-007 adds no PostgreSQL table for provider output, prompt history, model
-sessions, or runtime decisions. The decision is transient; a validated
-MessageEnvelope becomes the downstream handoff, and the sanitized
-`agent_runtime_decided` timeline event is the required audit/export evidence.
-
-This is intentionally `not_applicable` for mutable persistence: no current
-requirement needs resumable agent runs, replay, provider history, or mutable
-agent-run state. FT-008 may persist its own Bus/UI projections without turning
-timeline or raw provider output into runtime authority.
+FT-007 adds no provider-output, prompt-history, model-session, or agent-run
+table. MessageEnvelope is the transient handoff; `agent_runtime_decided` is
+audit/export evidence. FT-008 owns any downstream projection persistence.
 
 ## Production binding decision
 
-- The runtime recognizes explicit `deepseek`, `gemini`, and
-  `chatgpt_oauth` profiles.
-- Deployment selects model ids per enabled canonical agent; the SDD defines no
-  default model and planning is not blocked while those ids remain unselected.
-- External egress of the authorized typed input is owner-approved and still
-  requires the explicit runtime opt-in defined by the provider contract.
-- DeepSeek and Gemini use their native Agno adapters. `chatgpt_oauth` is a
-  recognized fail-closed external broker port because no approved generic
-  third-party ChatGPT OAuth runtime contract exists; FT-007 must not read Codex
-  credentials or pretend API-key auth is ChatGPT OAuth.
-- Plant creation activates the eight-member canonical roster and hands
-  deterministic introductions to a downstream sink only after commit; it does
-  not invoke a model. Visible/durable chat publication remains downstream and
-  is not silently implemented in FT-007.
+Provider profiles own model binding, egress, credentials, and fail-closed
+`chatgpt_oauth`; Roster Bootstrap owns post-commit introductions. Execution
+still needs an explicit DeepSeek/Gemini model id, matching credential, and
+egress opt-in.
 
-These decisions close the design gate. Execution still needs at least one
-explicit DeepSeek or Gemini model id and matching credential before the
-non-skipped real-provider smoke can pass.
+For that smoke, successful real transport is proven by exactly one of two
+audited terminal results: `outcome_kind=envelope_ready` with a valid pending
+MessageEnvelope, or strict `outcome_kind=model_silent` with
+`reason_code=no_material_output|insufficient_evidence`.
+A runtime failure, invalid output, current-publication denial, pre-call denial,
+missing configuration, or audit failure cannot be reclassified as acceptable
+silence and always fails the smoke.
 
 ## Verification
 
-Tests must prove:
+The canonical [Agent Runtime testing spec](../testing/agent-runtime.md) covers:
 
-- only authorized active-Plant safe context reaches the executor;
-- production input is assembled from PostgreSQL rows rather than caller-built
-  safe mappings, and executor refs equal the typed-record ref set;
-- the post-model guard reloads current session/account/membership/Plant/grant
-  authority while service-only identity never enters model input;
-- every decision/claim combination and MessageEnvelope field is validated;
-- silent, invalid, provider-failed, and publication-guard-denied outcomes create
-  no MessageEnvelope;
-- archive during the provider call yields audit-only behavior and restore does
-  not replay the candidate;
-- timeline audit contains safe metadata only and append failure blocks handoff;
-- an archive/revoke before the FT-007 guard blocks the envelope, while an
-  archive/revoke after it is blocked by the FT-008 transactional publisher and
-  is never replayed;
-- production composition has no fake, mock, hardcoded, or stub fallback;
-- provider resolution follows the explicit profile/binding contract, keeps
-  model selection out of caller input, and never cross-falls back;
-- DeepSeek and Gemini construct native production adapters, while unconfigured
-  `chatgpt_oauth` fails before credential discovery or network I/O;
-- Plant bootstrap runs after commit, produces the exact deterministic roster
-  handoff, performs no model call, and never makes introductions agent context;
-- a credentialed real-model smoke processes actual authorized Plant data
-  through the isolated test-only definition and reports a non-skipped DeepSeek
-  or Gemini result before FT-007 transport evidence is accepted; downstream
-  competence features retain their own REQ-011 acceptance.
+- ProviderRequest/input allowlists, order, observation bounds, and auth absence;
+- model/envelope/outcome/event matrices, current guard, and audit failure;
+- provider composition, no fallback, and the exact smoke rule above;
+- post-commit batch handoff without FT-008 implementation claims.
+
+Downstream competence features retain their own REQ-011 acceptance.

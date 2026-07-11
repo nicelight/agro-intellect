@@ -4,6 +4,19 @@ status: active
 ---
 # Changelog
 
+## [2026-07-12] FT-007 shared/global SDD repair
+- Closed D1-D6/E1 in canonical Agent I/O, MessageEnvelope, Timeline,
+  classification, Plant Operations, provider-smoke, and roster/bootstrap specs.
+- Fixed strict UUIDv5 eight-item batch/result semantics and assigned durable
+  exactly-once `UIFeedEvent` reconciliation to FT-008.
+- Returned backbone and FT-007 design to `complete`; the verified Foundation
+  gate remains sufficient and downstream feature design stays feature-owned.
+- Reconciled `IMPL-FT-007`, TASK-028, and TASK-029 without changing task ids,
+  T3 tiers, W1/W2 order, dependencies, or `planned` states. Added direct
+  identity/session, Plant Operations, and Plant-create inputs plus exact
+  request/outcome/classification/batch/smoke assertions.
+- Next: `/review-tasks-plan FT-007`; no execution before fresh `APPROVE`.
+
 ## [2026-07-11] FT-007 SDD closure and task queue
 - Finalized the project-owned Agent Runtime, strict MessageEnvelope v1,
   sanitized runtime-decision timeline audit, exact PostgreSQL typed-input

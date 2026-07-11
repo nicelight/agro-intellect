@@ -1,7 +1,7 @@
 ---
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -103,7 +103,16 @@ source_of_truth:
 - `source of truth`: artifact authorized to define a specific decision, state, contract, or lifecycle.
 - `runtime authority`: current mutable state authority; in MVP this is PostgreSQL/read model.
 - `audit/export`: trace and portability layer, not current mutable state authority.
-- `MessageEnvelope`: structured publishable agent output after runtime decision handling.
+- `MessageEnvelope`: validated immutable agent-output handoff that remains
+  pending and non-consumable until project-owned safety classification.
+- `ProviderRequestV1`: sole strict external-provider request containing only
+  project-owned definition/schema, ordered typed input records, and matching
+  safe refs.
+- `AgentInputRecordV1`: strict `{record_type, source_ref, payload}` provider
+  input record assembled only from authorized PostgreSQL authority.
+- `AgentRuntimeOutcomeV1`: closed internal result union for envelope success,
+  model silence, denial/configuration/provider/schema/guard failure, and audit
+  failure.
 - `BusEventEnvelope`: required wrapper for Agent Chat Bus events.
 - `UIFeedEvent`: required wrapper for human-facing UI presentation events;
   never runtime authority or agent working context.
@@ -124,11 +133,17 @@ source_of_truth:
 - `Safety Gate Agent`: safety classifier/gate for physical-action wording and approval routing.
 - `Dataset Governance Agent`: policy agent for dataset lifecycle, split restrictions, evidence, and trainability.
 - `Training Data Curator Agent`: delayed dataset selection agent that usually stays silent and acts only with evidence refs.
-- `runtime decision`: exactly one of `speak`, `silent`, `clarify`, or `escalate` after an agent invocation.
-- `speak`: runtime decision to publish concise working output through `MessageEnvelope`.
-- `silent`: decision that creates no `MessageEnvelope` and no Bus publication, but must leave audit evidence.
-- `clarify`: runtime decision to publish a short missing-data request.
-- `escalate`: runtime decision to publish a Team Signal or Safety Block route.
+- `runtime decision`: model-result decision `speak`, `silent`, `clarify`, or
+  `escalate`; pre-call, provider, validation, guard, and audit failures have no
+  final runtime decision.
+- `speak`: candidate runtime decision to create a pending MessageEnvelope;
+  classification and current publication guards still follow.
+- `silent`: strict model-declared decision that creates no `MessageEnvelope`
+  and becomes `outcome_kind=model_silent` only after current guard and audit
+  succeed; runtime failures or denials never become silence.
+- `clarify`: candidate decision to create a pending short missing-data request.
+- `escalate`: candidate decision to create a pending Team Signal or Safety
+  Block-style handoff.
 - `Silent Listener Mode`: agent mode where the agent reads Bus context but does not publish if it does not change the flow.
 - `Conclusion / Agent Output`: concise structured agent result that other agents may consume when published.
 - `Clarification Request`: short Bus event asking for missing data or a targeted detail.
@@ -169,10 +184,13 @@ source_of_truth:
 - `consumable_by_agents`: flag saying whether content may enter agent working context.
 - `visible_to_agents`: UI Feed visibility flag; `false` for spoiler notes.
 - `agent_id`: agent identifier inside `MessageEnvelope`.
-- `claim_type`: output type such as observation, hypothesis, recommendation, safety block, task request, clarification, quoted detail, or team signal.
+- `candidate_claim_type`: model-selected output category such as observation,
+  hypothesis, recommendation, safety block, task request, clarification, or
+  team signal; never safety authority.
 - `confidence`: stated certainty level for an output.
-- `requires_human_approval`: flag showing whether a recommendation needs human approval before action.
-- `consumable_output`: concise text intended for agent-consumable working context.
+- `candidate_output`: validated but still non-operative MessageEnvelope text
+  awaiting project-owned safety classification; never agent-consumable by
+  itself.
 - `ui_spoiler_note_ref`: pointer to a UI Feed spoiler note; not permission for agents to consume it.
 - `target_agent_id`: intended recipient on a clarification request; not a direct command.
 
@@ -180,6 +198,9 @@ source_of_truth:
 
 - `physical action`: plant-system intervention such as pH/EC change, solution change, pump/light/dosing change, pruning, transplanting, or root trimming.
 - `Safety Gate`: policy boundary that blocks or routes physical-action advice before user display or task/action creation.
+- `SafetyClassificationResultV1`: strict project-owned classification of a
+  pending MessageEnvelope as safe information, safe ordinary task request,
+  physical action, or blocked uncertainty.
 - `Safety Gate approval`: physical-action approval path requiring Safety Gate clearance, fresh data, and authorized human decision; distinct from governance approval.
 - `Safety Action Lifecycle`: shared lifecycle from physical-action wording to
   Safety Gate, authorized human approval, human-performed action task, and

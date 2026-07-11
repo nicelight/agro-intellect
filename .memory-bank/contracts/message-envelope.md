@@ -2,7 +2,7 @@
 description: Global MessageEnvelope contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -18,17 +18,22 @@ source_of_truth:
 
 ## Scope
 
-MessageEnvelope is the structured boundary for publishable agent-originated output after project-owned runtime decision handling. It is not raw model output, hidden reasoning, provider history, or UI markup.
+MessageEnvelope is the structured boundary for validated agent-originated
+output after project-owned runtime decision handling and before project-owned
+physical-action classification. It is not yet operative or publishable to
+Bus/UI, and it is not raw model output, hidden reasoning, provider history, or
+UI markup.
 
 The verified FT-000 executable baseline does not implement MessageEnvelope
-runtime code. FT-007 owns its first concrete implementation; FT-008 consumes
-the validated handoff for Bus/UI projection without redefining this schema.
+runtime code. FT-007 owns its first concrete implementation; the Safety & Task
+Loop classifies the immutable handoff, and FT-008 may project it only with the
+matching classification result and a fresh publication guard.
 
 ## Contract Scope
 
-- Defines: project-owned publishable agent-output boundary, runtime decision
-  categories, envelope minimum, forbidden content, claim/safety rules, and
-  Bus/UI projection handoff.
+- Defines: project-owned pre-safety agent-output boundary, runtime decision
+  categories, exact envelope shape, forbidden content, candidate-claim rules,
+  and classified Bus/UI handoff.
 - Out of scope: raw provider messages, hidden reasoning, model prompt history,
   concrete adapter implementation, UI component payloads, or final Plant state.
 - Related specs:
@@ -45,18 +50,16 @@ the validated handoff for Bus/UI projection without redefining this schema.
 
 ## Runtime Decision
 
-Every accepted model-backed product-agent invocation resolves to exactly one
-final runtime decision:
+Every schema-valid model-backed result proposes exactly one candidate decision:
 
 - `speak`: create concise structured output through MessageEnvelope.
 - `silent`: create no MessageEnvelope, but keep sanitized audit evidence.
 - `clarify`: create a short missing-data request through MessageEnvelope.
 - `escalate`: create a Safety Block or Team Signal style MessageEnvelope.
 
-Provider failure, invalid output, or a failed current publication guard cannot
-invent a fifth decision. They resolve to audit-only `silent` with a safe reason
-code, while the outer Agent Runtime outcome records `blocked` or `failed` where
-applicable. The audit shape belongs to
+Provider failure, invalid output, or a failed current publication guard is not
+a model decision and cannot be relabeled `silent`. Those branches have a null
+final decision in `AgentRuntimeOutcomeV1`. The audit shape belongs to
 [.memory-bank/contracts/agent-runtime-adapter.md](agent-runtime-adapter.md) and
 [.memory-bank/contracts/timeline-event.md](timeline-event.md).
 
@@ -75,17 +78,17 @@ Every MessageEnvelope is one strict object with unknown fields rejected:
   Plant-scoped;
 - `runtime_decision`: `speak | clarify | escalate`; `silent` never has an
   envelope;
-- `claim_type`: `observation | hypothesis | recommendation | clarification |
+- `candidate_claim_type`: `observation | hypothesis | recommendation | clarification |
   task_request | safety_block | team_signal`;
 - `confidence`: finite number from `0` through `1`, or `null` only for
   `clarification`, `safety_block`, or `team_signal`;
-- `source_refs`: 1 through 32 unique safe refs matching the existing
+- `source_refs`: 1 through 4 unique safe refs matching the existing
   `kind:identifier` grammar and drawn only from the authorized invocation
-  input;
-- `consumable_output`: normalized plain UTF-8 text from 1 through 2000
-  characters; it is data, not trusted Markdown/HTML or a prompt;
-- `requires_human_approval`: boolean constrained by the safety matrix below;
-- `safety_gate_route`: `not_applicable | required`;
+  input, preserving their relative `ProviderRequestV1` order;
+- `candidate_output`: normalized plain UTF-8 text from 1 through 2000 Unicode
+  code points; it is untrusted candidate data, not Markdown/HTML or a prompt;
+- `publication_state`: literal `pending_classification`;
+- `consumable_by_agents`: literal `false` while this envelope is pending;
 - `authorization_scope`: the exact safe shape below.
 
 The envelope must serialize UUIDs and timestamps as canonical strings. It must
@@ -108,17 +111,26 @@ membership id, token/digest, headers, cookies, credentials, raw ActorContext,
 and mutable permission flags are forbidden. FT-008 must re-resolve current
 authorization at Bus publication and context-read boundaries.
 
-## Decision and claim matrix
+Agent Runtime builds this scope only from the post-model current guard. A
+pre-call ActorContext snapshot cannot populate it when role, grant, session,
+membership, Account, or Plant state changed during provider I/O.
 
-| Runtime decision | Allowed claim types | Required safety fields |
+## Decision and candidate-claim matrix
+
+| Runtime decision | Allowed candidate claims | Confidence |
 |---|---|---|
-| `speak` | `observation`, `hypothesis`, `recommendation`, `task_request`, `team_signal` | `recommendation` and `task_request` use `requires_human_approval=true`, `safety_gate_route=required`; other listed claims use `false`, `not_applicable` |
-| `clarify` | `clarification` | `requires_human_approval=false`, `safety_gate_route=not_applicable` |
-| `escalate` | `safety_block`, `team_signal` | `safety_block` uses `true`, `required`; `team_signal` uses `false`, `not_applicable` |
+| `speak` | `observation`, `hypothesis`, `recommendation`, `task_request`, `team_signal` | `0..1`, nullable only for `team_signal` |
+| `clarify` | `clarification` | `null` |
+| `escalate` | `safety_block`, `team_signal` | `null` |
 
-FT-007 never emits a `cleared` or `approved` safety state. Routing metadata
-cannot authorize physical action, create an action task, or bypass the later
-Safety Gate contract.
+`candidate_claim_type` is model-selected and never proves that text is safe,
+physical, non-physical, taskable, or user-visible. FT-007 emits no
+`requires_human_approval`, `safety_gate_route`, `cleared`, or `approved` field.
+Only the separate strict `SafetyClassificationResultV1` may derive those
+routing semantics. Classification never mutates this envelope: its
+`publication_state` remains `pending_classification` and
+`consumable_by_agents=false`; downstream effects are separate records that
+reference both immutable artifacts.
 
 ## Identity and references
 
@@ -127,19 +139,20 @@ Safety Gate contract.
 - `message_id` identifies only one validated envelope-ready result.
 - Blocked, invalid, failed, and silent candidates never reserve or reuse a
   `message_id`.
-- Downstream Bus/UI records reference a validated envelope as
-  `message_envelope:<message_id>` and use that UUID as their `source_id` where
-  the owning contract requires it.
+- Downstream records reference `message_envelope:<message_id>` and require the
+  matching `SafetyClassificationResultV1` keyed by that `message_id`; the
+  envelope alone is insufficient publication authority.
 - Restore never reuses a prior blocked run or message candidate; a new
   invocation receives a new `run_id` and, if valid, a new `message_id`.
 
 ## Validation failures
 
 The adapter rejects the entire candidate when any required field, identity,
-ref, decision/claim combination, safety flag, confidence, or content rule is
+ref, decision/claim combination, confidence, or content rule is
 invalid. It does not partially repair provider output, infer missing refs, or
 publish a truncated unsafe candidate. The owning outcome is audit-only with
-`AGENT_OUTPUT_INVALID`.
+`AGENT_OUTPUT_INVALID`; if that required audit append fails, the returned
+outcome is instead the closed `audit_failed` branch and no event ref exists.
 
 ## Forbidden Content
 
@@ -154,21 +167,28 @@ MessageEnvelope must not contain:
 
 ## Safety And Claims
 
-- Observation, hypothesis, recommendation, clarification, task request, safety block, and team signal are distinct claim categories.
+- Observation, hypothesis, recommendation, clarification, task request, safety
+  block, and team signal are distinct candidate categories, not safety classes.
 - Agent hypotheses cannot become confirmed Plant state without human review or follow-up evidence.
-- Any physical-action implication must set a Safety Gate route before display/action tracking.
-- `requires_human_approval=true` does not itself authorize action.
+- Every non-silent envelope must be classified by the project-owned Safety &
+  Task Loop before Bus/UI/task publication. Model-selected labels cannot bypass
+  that classifier.
+- Pending envelope text cannot become agent context, cleared user-visible
+  action wording, approval, or any task.
 - `confidence` is advisory metadata only; it cannot replace evidence refs,
   human review, Safety Gate, or backend authorization.
 
 ## Bus And UI Projection
 
-- MessageEnvelope may be referenced by Agent Chat Bus events after validation.
-- A Plant-scoped envelope is publishable only after current
-  `Plant.status=active` and authorization are checked at the projection
-  boundary. Archive after model execution downgrades the result to audit-only;
-  restore never replays it automatically.
-- UI Feed may project human-facing display from MessageEnvelope.
+- MessageEnvelope may be referenced by Agent Chat Bus/UI Feed only after a
+  matching successful project-owned classification result permits that route.
+- A Plant-scoped classified handoff is publishable only after the owning writer
+  applies the canonical current authorization and active-Plant guard in the
+  same boundary as the write. Neither the envelope authorization snapshot nor
+  the classification result is reusable authorization. Archive after
+  classification denies publication; restore does not replay the handoff.
+- UI Feed may project only the route permitted by the classification result;
+  physical-action text remains governed by the Safety Action Lifecycle.
 - UI Feed projection does not become MessageEnvelope or agent context.
 - MessageEnvelope creation is only a narrow handoff. FT-008 repeats the current
   active-Plant/authorization check immediately before Bus or UI emission.
@@ -182,7 +202,11 @@ Tests must prove:
 - unknown fields, incompatible decisions/claims, unsafe refs, and unsafe
   authorization snapshots are blocked;
 - raw reasoning/provider history is absent;
-- physical-action wording routes to Safety Gate;
-- UI Feed projection cannot be consumed by agents.
+- every envelope starts pending/non-consumable and no model-selected claim can
+  bypass the project-owned classifier;
+- adversarially mislabeled physical-action wording routes to Safety Gate or
+  blocked uncertainty, while a verified safe check/measurement request routes
+  to the ordinary task path and never creates an `action_task`;
+- UI Feed projection cannot be consumed by agents;
 - archived Plant blocks MessageEnvelope/Bus/UI operational publication even
   when model execution began before archive.

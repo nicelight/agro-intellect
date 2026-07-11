@@ -2,7 +2,7 @@
 description: Global timeline audit/export event contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-10
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -90,21 +90,32 @@ The FT-007 event contains only:
 - `agent_id`;
 - safe `model_ref` in `provider_profile:model_id` form when a real executor was
   reached, otherwise `null`;
-- `candidate_decision`: `speak | silent | clarify | escalate | null`;
-- `final_decision`: `speak | silent | clarify | escalate`;
-- `outcome_status`: `envelope_ready | silent | blocked | failed`;
-- `reason_code`: `envelope_ready | no_material_output |
-  insufficient_evidence | provider_failed | output_invalid |
-  publication_guard_denied`;
-- `message_id` only for `envelope_ready`, otherwise `null`;
-- `claim_type` only when a validated candidate supplied it, otherwise `null`;
-- `source_ref_count` as a non-negative integer.
+- `outcome_kind`: `envelope_ready | model_silent | provider_failed |
+  output_invalid | publication_guard_denied`;
+- `candidate_decision`, `final_decision`, `outcome_status`, `reason_code`,
+  `error_code`, `message_id`, and `candidate_claim_type` according to the
+  closed matrix below;
+- `source_ref_count` as an integer from 1 through 4, equal to the number of
+  `source_refs.input_refs`.
 
-The payload MUST NOT contain `consumable_output`, observation text, pH/EC
+| `outcome_kind` | Candidate / final decision | Status | Reason / error | Message / candidate claim |
+|---|---|---|---|---|
+| `envelope_ready` | same `speak|clarify|escalate` / same value | `envelope_ready` | `envelope_ready` / `null` | `message_id` present / validated non-null claim |
+| `model_silent` | `silent` / `silent` | `silent` | `no_material_output|insufficient_evidence` / `null` | `null` / `null` |
+| `provider_failed` | `null` / `null` | `failed` | `provider_failed` / `AGENT_PROVIDER_FAILED` | `null` / `null` |
+| `output_invalid` | `null` / `null` | `blocked` | `output_invalid` / `AGENT_OUTPUT_INVALID` | `null` / `null` |
+| `publication_guard_denied` | validated `speak|silent|clarify|escalate` / `null` | `blocked` | `publication_guard_denied` / `AGENT_PUBLICATION_BLOCKED` | `null` / validated claim for a non-silent candidate, otherwise `null` |
+
+Unvalidated provider fields are never retained in the `output_invalid` event.
+`context_denied` and `runtime_not_configured` do not reach provider I/O and
+therefore create no event. `audit_failed` means append failed, so it likewise
+has no event or event ref.
+
+The payload MUST NOT contain `candidate_output`, observation text, pH/EC
 values, prompts, provider response text/objects, parser diagnostics, hidden
 reasoning, credentials, provider keys, headers, cookies, session/auth material,
 or a serialized ActorContext. The event's `source_refs` is exactly
-`{"input_refs": ["kind:identifier", ...]}` with 1 through 32 unique safe refs
+`{"input_refs": ["kind:identifier", ...]}` with 1 through 4 unique safe refs
 already authorized for the invocation; it never copies their payloads.
 
 This registered event is an explicit correlation-only exception to the normal
@@ -114,15 +125,18 @@ and is not a PostgreSQL FK, lookup target, or mutable authority. Its
 check-in, and/or measurement rows that formed the invocation. The event cannot
 be used to reconstruct a run or MessageEnvelope.
 
-Its `actor_ref` is exactly `account_id`, `membership_id`, and `role_preset`
-from the authenticated service-side ActorContext. It excludes `session_id`,
-auth provenance, token/digest, headers, cookies, and credentials.
+Its `actor_ref` is exactly authenticated service-side `account_id`,
+`membership_id`, and request-time `role_preset`. These safe attribution values
+remain available for provider failure and invalid output; they are not reused
+as publication authority. The event excludes `session_id`, auth provenance,
+token/digest, headers, cookies, and credentials.
 
-One accepted request that reaches model execution produces exactly one
+One accepted request that reaches provider I/O produces exactly one
 `agent_runtime_decided` event, including provider failure, invalid output,
 explicit silence, and post-execution publication denial. A request denied
-before model execution remains owned by existing authorization/audit behavior
-and does not create this event.
+before provider I/O, or rejected because runtime is not configured, does not
+create this event. `audit_failed` cannot create an event or event ref and
+returns no MessageEnvelope.
 
 ## Append Writer Seam
 

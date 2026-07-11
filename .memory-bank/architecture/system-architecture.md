@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -32,7 +32,9 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - PostgreSQL/read model is mutable runtime authority unless a later active architecture spec replaces it.
 - Local photo files and manifests are artifacts, not mutable runtime authority.
 - `timeline.jsonl` is append-only audit/export, not mutable runtime authority.
-- Agent output must pass project-owned runtime decision, MessageEnvelope, Agent Chat Bus, and UI Feed boundaries.
+- Agent output must pass project-owned runtime decision, pending MessageEnvelope,
+  Safety & Task Loop classification, and only then applicable Agent Chat Bus/UI
+  Feed boundaries.
 - UI Feed, raw chat, raw model reasoning, admin notices, and unapproved Companion proposals never become agent working context.
 - Safety Gate and authorized human approval are required before physical-action wording can become a human-performed action task.
 - MVP data remains local/private by default with `local_only` sync status.
@@ -100,9 +102,9 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Binds: Hydroponics Advisor, Safety Gate, human approval, action tasks,
   follow-up outcomes, Companion governance, UI prompts, and MessageEnvelope
   safety routing.
-- Prevents: DecisionRecord approval, UI prompt display, MessageEnvelope flags,
-  or Bus publication from being treated as Safety Gate approval or action-task
-  unlock.
+- Prevents: DecisionRecord approval, UI prompt display, MessageEnvelope
+  candidate fields, classification metadata, or Bus publication from being
+  treated as Safety Gate approval or action-task unlock.
 - Rule: physical-action wording can become cleared user-visible action wording
   or a human-performed action task only after fresh evidence, Safety Gate pass,
   authorized human approval, and task/action tracking exist.
@@ -150,6 +152,22 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Source: [.memory-bank/states/plants/plant-and-access-lifecycle.md](../states/plants/plant-and-access-lifecycle.md),
   [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md),
   [.memory-bank/states/companion-governance.md](../states/companion-governance.md).
+
+#### AD-008 - Model-selected safety labels are not Safety Gate authority
+- Binds: Agent Runtime, MessageEnvelope, Agent Chat Bus/UI Feed publication,
+  Hydroponics Advisor, Safety Gate, and the human task/approval loop.
+- Prevents: model labels bypassing Safety Gate or turning ordinary checks into
+  physical-action tasks.
+- Rule: provider fields are candidate data. Only the project-owned classifier
+  defined by the Safety Action Lifecycle selects the downstream boundary.
+  Pending text has no Bus/UI/task authority; `safe_task_request` can create only
+  an ordinary task.
+- Verification: mislabeled physical wording fails closed; safe check,
+  measurement, and follow-up requests never create `action_task`.
+- Source: [.memory-bank/constitution.md](../constitution.md),
+  [.memory-bank/requirements.md](../requirements.md),
+  [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md),
+  [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md).
 
 ## Architecture Style
 
@@ -199,9 +217,9 @@ Runtime authority:
 | Plant Operations | Daily check-in, observations, manual pH/EC, Plant selection, Plant card/history entry points. | Photo binary authority, model reasoning, Safety Gate bypass. |
 | Photo & Artifact Intake | Local photo files, accepted photo catalog metadata, sha256, capture manifests, artifact refs. | Mutable Plant state, agent facts, trainability decisions. |
 | Runtime State & Audit | PostgreSQL/read model, timeline audit/export refs, retained Plant history. | UI presentation, raw model output, physical actuation. |
-| Agent Runtime | Model invocation adapters, runtime decision, MessageEnvelope preparation. | Domain source of truth, direct DB mutation of Plant facts, UI Feed context. |
+| Agent Runtime | Model invocation adapters, runtime decision, pending non-consumable MessageEnvelope preparation. | Domain source of truth, direct DB mutation of Plant facts, safety classification authority, UI Feed context. |
 | Agent Chat Bus & UI Feed | Bus working events and UI presentation projections. | Raw provider history, hidden reasoning, unauthorized context, Safety Gate approval. |
-| Safety & Task Loop | Safety Gate routing, physical-action approval authority, human-performed action tasks, follow-up outcomes. | Automated device execution, governance approval semantics. |
+| Safety & Task Loop | Project-owned output classification, Safety Gate routing, physical-action approval authority, human-performed action tasks, follow-up outcomes. | Automated device execution, model-selected safety authority, governance approval semantics. |
 | Companion Governance | IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, DecisionRecord, approved governance summary. | Plant-state confirmation, Safety Gate approval, action_task creation by itself. |
 | Dataset Governance | Dataset fields, evidence refs, trainability default false, future trainability gates. | Full dataset registry, model fine-tuning, UI Feed-derived trainability. |
 | Operator PWA | Role-aware UI, Plant selector, admin and operations surfaces, cards/prompts/history. | Backend authorization, runtime authority, agent working context. |
@@ -224,12 +242,15 @@ flowchart LR
   Adapter --> Model[Agno / LLM / vision model]
   Model --> Adapter
   Adapter --> Envelope[MessageEnvelope]
-  Envelope --> Safety[Safety Gate]
-  Safety --> Bus
-  Safety --> Feed[UI Feed]
-  Safety --> Tasks[Tasks / approvals / follow-up]
+  Envelope --> Classifier[Project-owned classification]
+  Classifier -->|safe information| Bus
+  Classifier -->|safe information / block notice| Feed[UI Feed]
+  Classifier -->|physical action| Safety[Safety Gate]
+  Classifier -->|safe task request| OrdinaryTasks[Ordinary check / measurement / follow-up tasks]
+  Safety --> ActionTasks[Approvals / human action tasks / follow-up]
   Feed --> UI
-  Tasks --> State
+  OrdinaryTasks --> State
+  ActionTasks --> State
 ```
 
 ## External Integrations
@@ -332,11 +353,8 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 
 ## Open Questions
 
-No global blocker remains after the brownfield-aware `/spec-design --all`
-refresh and the 2026-07-06 FT-002-triggered archived-Plant guard repair.
-
-Applicable feature-level subject specs must still define exact auth/session
-lifecycle, route schemas, DB migrations, event payloads, MessageEnvelope
-fields, Bus/UI projections, photo storage layout, state machines, freshness
-windows, action taxonomy, dataset transition details, provider configuration,
-and UI route/view details.
+- No global/shared design blocker.
+- FT-008/FT-011/FT-012 concrete storage, API, classifier, task, and UI design
+  remains feature-owned.
+- FT-007 execution requires a DeepSeek/Gemini model id, credential, egress
+  opt-in, reconciled task cards, and fresh task-plan approval.

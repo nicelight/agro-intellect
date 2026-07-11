@@ -2,7 +2,7 @@
 description: Global Agent Chat Bus contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -32,7 +32,8 @@ field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
   timeline event taxonomy, DB table schemas, or feature-specific event payloads.
 - Related specs:
   - [.memory-bank/contracts/message-envelope.md](message-envelope.md): defines
-    publishable agent-originated output before Bus/UI projection.
+    validated pending agent-originated output before classification and Bus/UI
+    projection.
   - [.memory-bank/contracts/ui-feed.md](ui-feed.md): defines human-facing
     projection rules.
   - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
@@ -91,7 +92,15 @@ Feature-local specs may add fields, but every Bus event must have:
 
 ## Safety Handoff
 
-- Bus events that imply physical action must route through Safety Gate before user-visible action wording or action-task creation.
+- A pending MessageEnvelope cannot publish to Bus. `safe_information` requires
+  its matching `SafetyClassificationResultV1` and the canonical current
+  publication guard. Neither artifact is authorization.
+- A `safe_task_request` first creates its ordinary task record; any Bus event
+  references that authoritative task rather than treating candidate text as a
+  command.
+- `physical_action|blocked_uncertain` candidate text never enters agent working
+  context. Physical action routes to Safety Gate; uncertainty permits only a
+  non-consumable UI block notice.
 - Bus publication alone never authorizes physical action.
 
 ## Verification
@@ -101,6 +110,9 @@ Tests must prove:
 - unauthorized Plant events are filtered out;
 - UI Feed/raw chat/unapproved proposal content is absent from agent context;
 - raw provider output cannot bypass adapters;
-- Safety Gate and DecisionRecord authority remain separate.
+- Safety Gate and DecisionRecord authority remain separate;
+- adversarially mislabeled physical wording cannot enter Bus, while a verified
+  safe check/measurement request avoids physical-action approval and never
+  creates an `action_task`;
 - archive between model execution and Bus publication fails closed without a
   Plant-scoped Bus event, and restore does not replay the blocked publication.

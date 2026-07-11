@@ -2,7 +2,7 @@
 description: Global risk-based testing strategy and cross-cutting verification rules for MVP v2.
 status: active
 type: testing_strategy
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -50,7 +50,8 @@ evidence belong to subject verification specs, code, and operational artifacts.
 - Plant lifecycle, retained-history, provenance, freshness, and trust rules.
 - Archived-Plant policy leaves dependent records unchanged, denies all
   state-advancing commands, and makes restore require current guards.
-- Runtime decision, MessageEnvelope validation, and publish/block behavior.
+- Strict ProviderRequest/input/outcome unions, pending MessageEnvelope
+  validation, project-owned classification, and publish/block behavior.
 - Agent-context filtering and UI Feed isolation.
 - Safety Gate classification, approval authority, and no-device-execution rules.
 - Companion proposal and DecisionRecord authority boundaries.
@@ -83,7 +84,7 @@ evidence belong to subject verification specs, code, and operational artifacts.
   history, tasks, approvals, and follow-up.
 - Engineer creates a Plant, immediately selects it through the creator grant,
   and remains unable to archive/restore it or manage its grants.
-- Real agent output through validated Bus/UI boundaries.
+- Real agent output through validated classification and Bus/UI boundaries.
 - Missing or stale evidence produces clarification instead of invented facts.
 - Physical-action advice passes Safety Gate and authorized approval before a
   human-performed action task is created.

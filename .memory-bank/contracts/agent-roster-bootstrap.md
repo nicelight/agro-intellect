@@ -2,13 +2,15 @@
 description: Canonical product-agent roster and post-commit Plant bootstrap handoff contract.
 status: active
 type: integration_contract
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/product.md
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/glossary.md
   - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/contracts/farm/plant-management-http.md
+  - .memory-bank/domains/farm/farm-plant-access-storage.md
 ---
 # Agent Roster And Plant Bootstrap
 
@@ -16,8 +18,8 @@ source_of_truth:
 
 This contract fixes stable product-agent identities and the FT-007 side of
 automatic activation after a Plant has been created and committed. It defines
-the deterministic introduction handoff that a later chat/feed publisher
-consumes without turning presentation text into model output or agent context.
+the deterministic introduction handoff consumed by the FT-008 UI Feed
+publisher without turning presentation text into model output or agent context.
 
 "Start agents" means activate the canonical roster for the committed active
 Plant so its members are eligible for future typed invocations. It does not
@@ -101,14 +103,36 @@ The existing Plant transaction must not be held open across bootstrap, chat,
 feed, timeline, network, or provider work. A provider call inside Plant
 creation is forbidden.
 
+### Plant-create compatibility
+
+The hook does not extend the public Plant request or response. The canonical
+`POST /api/plants` behavior remains active Boss/Engineer authorization,
+same-transaction Plant/grant/audit atomicity, and `201 PlantSummary` from
+`plant-management-http.md`. Only after that transaction commits may backend
+composition invoke bootstrap. Bootstrap/sink rejection, timeout, or failure
+cannot change the already selected 201 response into rollback/500, mutate the
+returned Plant/grant snapshot, or reuse any public request field. Existing
+Plant-create error codes remain owned by the HTTP/storage contracts.
+
 ## Introduction handoff version 1
+
+The immutable UUIDv5 namespace for version-1 introduction identities is
+`ddbb4fc1-7253-5953-a427-9693caeafd80`. UUID names are UTF-8 encodings of the
+exact ASCII strings below, using lowercase canonical UUID text and base-10
+roster version without padding:
+
+- batch: `batch:v1:<plant_id>:<roster_version>`;
+- item: `introduction:v1:<plant_id>:<agent_id>:<roster_version>`.
+
+No platform-native tuple formatting, JSON serialization, whitespace, braces,
+or locale-dependent text may enter the UUID name.
 
 For a valid command, `PlantAgentBootstrapService` produces exactly eight
 ordered `AgentIntroductionV1` items. Each strict item contains:
 
 - `schema_version=1`;
-- `introduction_id`: deterministic UUIDv5 derived from
-  `(plant_id, agent_id, roster_version)` in the project namespace;
+- `introduction_id`: deterministic UUIDv5 from the item name and immutable
+  namespace above;
 - `farm_id`, `plant_id`, `roster_version`, and canonical `agent_id`;
 - exact `display_name`, `competence_summary`, and `introduction_text` from the
   roster table;
@@ -120,6 +144,20 @@ eight ids and content. The downstream publisher must use
 `(plant_id, agent_id, roster_version)` as the uniqueness key and treat a
 duplicate as successful idempotent completion.
 
+FT-007 passes the items in exactly one strict `AgentIntroductionBatchV1`, never
+as eight independent sink calls. The batch contains only:
+
+- `schema_version=1`;
+- `batch_id`: deterministic UUIDv5 from the batch name above;
+- `farm_id`, `plant_id`, and `roster_version=1`;
+- `source_type=system`, `source_id=agent_roster_v1`;
+- `introductions`: the exact ordered tuple of eight strict items.
+
+The batch contains no request timestamp, creator/session identity, auth scope,
+provider metadata, or arbitrary extension map, so retries and reconciliation
+produce identical canonical field values; equality never depends on JSON object
+field order.
+
 An introduction is deterministic system presentation metadata:
 
 - it is not produced by a model;
@@ -130,21 +168,37 @@ An introduction is deterministic system presentation metadata:
 - it cannot carry Plant observations, measurements, recommendations, hidden
   reasoning, provider metadata, credentials, or authorization snapshots.
 
-## Ownership boundary without FT-008 tasking
+## Ownership boundary
 
 FT-007 implements the roster, bootstrap command/service, deterministic ids,
-post-commit hook, and a narrow `AgentIntroductionSink` handoff port. It does not
+post-commit hook, and a narrow `AgentIntroductionSink.store_batch(batch)`
+handoff port. It does not
 create BusEventEnvelope storage, chat history, UIFeedEvent persistence, a UI,
 or a worker/outbox.
 
-The concrete durable chat/feed projection and its transactional idempotency
-remain downstream publication work. This FT-007 decomposition records that
-boundary but intentionally creates no FT-008 task card.
+The sink returns one strict `AgentIntroductionBatchResultV1` containing exactly
+`{schema_version, batch_id, status, durable, accepted_count, reason_code}`.
+`schema_version=1`, `batch_id` must equal the submitted batch, and unknown
+fields are rejected. Its closed matrix is:
 
-Until a concrete sink is wired, FT-007 must not claim that an introduction is
-visible in chat. Tests may inject a recording sink only to prove the exact
-handoff contract; production must not replace a missing sink with fake chat
-success.
+| Status | `durable` | `accepted_count` | `reason_code` | Meaning |
+|---|---:|---:|---|---|
+| `accepted` | `true` | `8` | `null` | the whole eight-item intent was durably committed |
+| `duplicate` | `true` | `8` | `null` | the existing batch and all eight uniqueness keys have identical canonical content |
+| `rejected` | `false` | `0` | `plant_not_publishable|batch_invalid|content_conflict` | no item was accepted; invalid/conflicting content is permanent, while Plant state requires a new current-state reconciliation |
+| `failed` | `false` | `0` | `persistence_failed` | no item was accepted; retryable downstream persistence/runtime failure |
+
+No other status/field combination is valid. Per-item results and partial
+success are forbidden: downstream commits all eight durable intents atomically
+or none.
+
+FT-008 owns durable batch storage/reconciliation and the exactly-once
+`UIFeedEvent` projection. The Plant chat/feed UI renders that event; an
+introduction never becomes an Agent Chat Bus event.
+
+Until a concrete durable sink is wired, FT-007 must not claim durable acceptance
+or visibility. A recording sink may test the port but is not production
+delivery evidence.
 
 ## Failure and retry behavior
 
@@ -155,17 +209,19 @@ success.
 - Safe diagnostics use `AGENT_BOOTSTRAP_HANDOFF_FAILED` plus Farm/Plant ids and
   never contain introductions with Plant data, auth material, provider
   payloads, or local paths.
-- The command and handoff are explicitly replay-safe. A downstream publisher
-  may retry or reconcile the same committed Plant; duplicate introduction keys
-  cannot create duplicate visible messages.
+- The command and handoff are replay-safe. FT-008 reconciles the deterministic
+  batch for each active Plant; duplicate keys cannot create duplicate
+  `UIFeedEvent` records.
 - Archive before downstream publication makes the handoff non-publishable.
-  Restore does not replay it automatically without a new current-authority
-  reconciliation owned by the publisher.
+  Pending intent remains retained. Restore does not blindly replay it: the next
+  FT-008 reconciliation must reload the Plant, prove it is currently active,
+  and only then resume idempotent delivery.
 
-Because FT-007 owns no durable delivery store, its successful handoff is not a
-claim of eventual chat delivery. A later publisher that requires guaranteed
-delivery must own persistence/reconciliation rather than smuggling an outbox
-into Agent Runtime.
+Only `accepted|duplicate` from the concrete FT-008 sink proves durable
+acceptance. FT-008 scans active Plants and pending batches, recreates a missing
+deterministic batch after handoff failure/restart, and retries until all eight
+`UIFeedEvent` records exist. This is current-state reconciliation, not replay;
+Agent Runtime owns no outbox.
 
 ## Verification
 
@@ -175,16 +231,21 @@ Tests must prove:
   metadata above;
 - every introduction id/content is deterministic across retries and isolated
   by Plant;
+- the namespace, exact UUID name strings, batch id, and one-call ordered batch
+  snapshot are stable across process/language-independent retries;
 - introduction flags always prevent agent consumption and no introduction is
   parsed as MessageEnvelope;
 - Plant creation commits before the bootstrap hook starts, and the hook makes
   no provider call;
 - a failed post-commit handoff leaves the Plant committed and does not return a
   false rollback/500 result;
+- sink contract tests cover `accepted`, identical `duplicate`, `rejected`, and
+  `failed`; prove accepted counts are only 8 or 0 and partial persistence/result
+  is impossible;
 - inactive, missing, wrong-Farm, caller-forged, and unknown-roster commands
   fail closed;
 - no Agent Runtime provider call is made merely because a Plant was created;
 - process restart does not lose roster eligibility because it is derived from
   the current active Plant and immutable roster version rather than memory;
-- tests do not claim visible chat publication without a concrete downstream
-  sink.
+- FT-007 tests do not claim durable acceptance or visible projection without a
+  concrete FT-008 sink.

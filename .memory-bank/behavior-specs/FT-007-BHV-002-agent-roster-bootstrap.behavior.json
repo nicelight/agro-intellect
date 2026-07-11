@@ -5,16 +5,17 @@
   "given": {
     "plant": "a new active Plant whose creation transaction has committed",
     "roster": "canonical roster version 1 with exactly eight agents",
-    "publisher": "a recording AgentIntroductionSink at the FT-007 downstream boundary"
+    "publisher": "an AgentIntroductionSink receiving one strict eight-item batch at the FT-007 downstream boundary"
   },
   "when": {
     "action": "the backend-owned post-commit PlantAgentBootstrapCommand runs"
   },
   "then": {
     "activation": "all eight canonical agents become eligible for future typed invocation without an immediate model call",
-    "introduction_handoff": "exactly eight ordered deterministic items keyed by plant_id, agent_id, and roster_version",
+    "introduction_handoff": "one strict deterministic batch containing exactly eight ordered items keyed by plant_id, agent_id, and roster_version",
+    "sink_result": "accepted or identical duplicate means durable true, accepted_count 8, and null reason; rejected means durable false, accepted_count 0, and plant_not_publishable, batch_invalid, or content_conflict; failed means durable false, accepted_count 0, and persistence_failed",
     "visibility": "visible_to_agents=false and consumable_by_agents=false",
     "retry": "the same Plant retry produces the same ids and content",
-    "forbidden": "no provider call, MessageEnvelope, raw Plant data, fake visible-chat success, open Plant transaction, or rollback claim after commit"
+    "forbidden": "no provider call, MessageEnvelope, raw Plant data, fake durable or visible-chat success, partial batch acceptance, open Plant transaction, rollback claim after commit, or FT-008 storage/projection implementation"
   }
 }

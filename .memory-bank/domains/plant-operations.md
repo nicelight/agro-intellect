@@ -2,7 +2,7 @@
 description: Concrete Plant operations check-in, observation, manual measurement, and freshness data specification.
 status: active
 type: data_spec
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md
   - .memory-bank/domains/runtime-data-model.md
@@ -46,8 +46,11 @@ Python `uuid.UUID`, and application-generated `uuid.uuid4`.
 - `observed_at`: timezone-aware user observation time or server receive time.
 - `recorded_at`: timezone-aware server record time.
 - `observation_state`: `observed | no_observation_provided`.
-- `observation_text`: required non-blank text only for `observed`; null for
-  `no_observation_provided`.
+- `observation_text`: required text only for `observed`; surrounding whitespace
+  is removed before validation and persistence, and the resulting value must be
+  from 1 through 2000 Unicode code points; null for
+  `no_observation_provided`. Oversized text is rejected, never truncated or
+  summarized implicitly.
 - `source_refs`: JSON object with safe Account/Membership/Plant/session
   provenance refs, excluding auth material.
 - `event_refs`: JSON object containing the required timeline event id(s).
@@ -99,6 +102,9 @@ At least one of `ph` or `ec_ms_cm` is required for a measurement record.
   - one valid manual pH/EC measurement.
 - Missing observation text is never invented. A skipped observation is explicit
   `no_observation_provided`.
+- Backend validation rejects normalized observation text over 2000 Unicode code
+  points before creating a check-in, measurement, or timeline event. Client
+  validation cannot bypass or replace this rule.
 - `observation_state` may be omitted only when `observation_text` is also
   omitted and a valid measurement is present. Supplying non-blank observation
   text without an explicit state is invalid and MUST NOT be silently converted
@@ -168,5 +174,8 @@ The `provenance_note` is included only after redaction.
   and timeline summary.
 - Observation validation tests prove supplied text without a state is rejected
   without a check-in, measurement, or timeline success event.
+- Observation-boundary tests prove normalized lengths 1 and 2000 are accepted,
+  2001 is rejected without any write, and no accepted or rejected input is
+  automatically truncated or summarized.
 - Authority tests prove freshness and latest measurements come from
   PostgreSQL/read model, not timeline, UI Feed, photo manifests, or agent text.

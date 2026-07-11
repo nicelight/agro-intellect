@@ -2,7 +2,7 @@
 description: Verification specification for authorized check-ins, manual measurements, and freshness projections.
 status: active
 type: testing_spec
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/domains/plant-operations.md
   - .memory-bank/contracts/plant-operations-http.md
@@ -29,6 +29,14 @@ Defines deterministic evidence for FT-004 check-in and measurement behavior.
 - Service and HTTP validation tests prove non-blank `observation_text` without
   `observation_state` returns `VALIDATION_FAILED` and creates no check-in,
   measurement, or timeline success event.
+- Service, HTTP, and OpenAPI boundary tests prove normalized observation text
+  lengths 1 and 2000 are accepted, 2001 returns
+  `OBSERVATION_TEXT_TOO_LONG`, no write or timeline event occurs, and the
+  backend never truncates or implicitly summarizes the value.
+- Operator UI component/E2E coverage proves Unicode code-point counting, a
+  visible used/remaining counter, prevention of entry/paste beyond 2000, and
+  display of the authoritative backend rejection for a stale or bypassing
+  client; this remains Operator UI ownership.
 - Timeline-ref tests proving `daily_checkin_recorded` and
   `manual_measurement_recorded` refs are created through the timeline
   foundation and are not used as mutable authority.

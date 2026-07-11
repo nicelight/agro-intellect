@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 ---
 # PRD
 
@@ -105,11 +105,17 @@ does not replace backend rules, and cannot authorize physical actions.
   selected provider. Credentials, auth material, raw UI/chat, provider history,
   and hidden reasoning remain forbidden outbound context.
 - After a Plant creation commits, the system MUST idempotently register the
-  canonical Plant agent roster and hand one deterministic introduction per
-  agent to the Plant chat/feed boundary. Introduction text is project metadata,
-  not model output or evidence that a real model ran.
+  canonical Plant agent roster and send one deterministic eight-item batch to
+  the introduction sink. Introduction text is project metadata, not model
+  output or evidence that a real model ran. FT-008 MUST durably reconcile one
+  `UIFeedEvent` per introduction for every active Plant; the Plant chat/feed UI
+  renders that same event and Agent Chat Bus MUST NOT consume it. Failure MUST
+  NOT roll back or falsely fail Plant creation. Projection stops while archived
+  and resumes only after current-state reconciliation.
 - Vision Observation Agent MUST process actual uploaded photo data through a real vision-capable model or real vision model integration; it MUST NOT be replaced by a mock/fake adapter in MVP.
-- Agent-originated product output MUST pass project-owned runtime decision, MessageEnvelope, Agent Chat Bus, and UI Feed boundaries as applicable.
+- Agent-originated product output MUST pass project-owned runtime decision,
+  pending MessageEnvelope, project-owned classification, and only then the
+  applicable Agent Chat Bus/UI Feed/task/Safety boundary.
 - UI Feed MUST remain presentation-only and unavailable as agent working context.
 - Safety Gate MUST block or route physical-action wording until fresh data, Safety Gate pass, authorized human approval, and task/action tracking exist.
 - Companion governance MUST use explicit typed Plant-scoped state for IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord.
@@ -286,9 +292,11 @@ from first demo.
   typed authorized payload for the explicitly selected provider; credentials,
   raw UI/chat, provider history, and hidden reasoning remain excluded.
 - Q: When do Plant agents start and appear in chat? -> A: After Plant creation
-  commits, automatically register the canonical agent roster and hand one
-  deterministic introduction per agent to that Plant's chat/feed. Introduction
-  metadata is not a model-generated product conclusion.
+  commits, register the canonical roster and submit one deterministic batch.
+  FT-008 eventually creates one non-agent-consumable `UIFeedEvent` per member;
+  the Plant chat/feed UI renders those events. Retry/restart is idempotent,
+  archive pauses projection, restore revalidates current state, and delivery
+  failure never rolls back Plant creation.
 
 ## Unresolved Blockers
 

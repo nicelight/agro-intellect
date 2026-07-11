@@ -1,7 +1,7 @@
 {
   "id": "FT-007-BHV-001",
   "feature_id": "FT-007",
-  "title": "Real provider transport produces a validated envelope",
+  "title": "Real provider transport produces an audited envelope or declared silence",
   "given": {
     "actor": "authorized active-Plant actor",
     "context": "actual persisted Plant records filtered into AuthorizedPlantContext",
@@ -9,12 +9,14 @@
     "definition": "isolated test-only runtime_contract_smoke definition using the production assembler and executor; absent from production definition resolution"
   },
   "when": {
-    "action": "the project-owned AgentRuntimeService runs a single-competence agent and receives a valid speak candidate"
+    "action": "the project-owned AgentRuntimeService invokes the real provider once and receives either a strict valid non-silent candidate or a strict model-declared silent candidate"
   },
   "then": {
-    "runtime_outcome": "envelope_ready",
-    "message_envelope": "valid schema version 1 with safe refs and authorization scope",
+    "envelope_ready_outcome": "outcome_kind envelope_ready, status envelope_ready, final_decision speak, clarify, or escalate, a valid pending_classification MessageEnvelope schema version 1, safe model_ref, and audit ref",
+    "model_silent_outcome": "outcome_kind model_silent, status silent, final_decision silent, reason_code no_material_output or insufficient_evidence, no MessageEnvelope, a safe model_ref, and audit ref",
+    "accepted_smoke_outcomes": "exactly the envelope_ready_outcome or model_silent_outcome above",
     "audit": "one sanitized agent_runtime_decided timeline ref",
-    "forbidden": "no downstream product-agent completion claim, production registration of the smoke definition, raw provider response, prompt history, reasoning, credentials, fake output, Bus event, or UI event"
+    "forbidden_success": "context_denied, runtime_not_configured, provider_failed, output_invalid, publication_guard_denied, audit_failed, skipped, xfailed, fake, fallback, or unaudited result",
+    "forbidden_content": "no downstream product-agent completion claim, production registration of the smoke definition, raw provider response, prompt history, reasoning, credentials, fake output, Bus event, or UI event"
   }
 }

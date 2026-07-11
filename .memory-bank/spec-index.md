@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -47,7 +47,7 @@ source_of_truth:
 | interface_contract | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md) | active | Authorized typed model invocation, runtime decision, failure, audit, and envelope handoff | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md) | active | Multi-provider binding, credentials, typed egress, and no-fallback composition | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md) | active | Canonical agent roster and post-commit Plant introduction handoff | `/prd-to-tasks` or `/spec-design` |
-| agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured publishable agent output | `/prd-to-tasks` or `/spec-design` |
+| agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured pending pre-safety agent output | `/prd-to-tasks` or `/spec-design` |
 | presentation_contract | [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md) | active | Human-facing non-authoritative projection | `/spec-design` |
 | audit_contract | [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md) | active | Append-only timeline event, current event registry, and minimal append writer seam | `/spec-design` or `/prd-to-tasks` |
 | security_contract | [.memory-bank/contracts/auth/session-security.md](contracts/auth/session-security.md) | active | Password/token/cookie/bearer security | `/prd-to-tasks` or `/spec-design` |

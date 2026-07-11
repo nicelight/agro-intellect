@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-007
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/architecture/system-architecture.md
@@ -18,11 +18,19 @@ spec_design_links:
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/contracts/timeline-event.md
   - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/contracts/farm/plant-management-http.md
+  - .memory-bank/contracts/plant-operations-http.md
+  - .memory-bank/domains/auth/session-storage.md
+  - .memory-bank/domains/identity/account-membership.md
+  - .memory-bank/domains/farm/farm-plant-access-storage.md
   - .memory-bank/domains/plant-operations.md
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/states/auth/session-lifecycle.md
+  - .memory-bank/states/safety-action-lifecycle.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
   - .memory-bank/testing/agent-runtime.md
+  - .memory-bank/testing/plant-operations.md
   - .memory-bank/runbooks/agent-runtime-providers.md
 source_of_truth:
   - .memory-bank/prd.md
@@ -36,17 +44,24 @@ source_of_truth:
 - Product agent processes actual scoped Plant data entered or uploaded by users.
 - Domain adapter converts model output into a project-owned runtime decision.
 - Runtime decision produces structured MessageEnvelope or remains silent with audit evidence.
-- Agent output is concise, permission-aware, and safe for downstream publication only after validation.
+- Agent output is concise, permission-aware, and eligible for a downstream
+  route only after adapter validation, project-owned classification, and the
+  owning current-authorization guard.
 
 ## Acceptance Criteria
 
 - MVP runtime/demo product-agent outputs use real LLM/model-backed agents or real model-backed adapters.
 - Fake, mock, hardcoded, or stubbed outputs are allowed only in automated tests, not as MVP runtime/demo behavior.
 - Agno/model execution is execution layer only and not source of truth.
-- Agent output must pass adapter/runtime decision and MessageEnvelope validation before Bus/UI publication.
-- Plant-scoped output must pass a current active-Plant check at publication;
-  archive after model invocation makes the result audit-only rather than
-  publishable.
+- Agent output must pass adapter/runtime-decision validation before a
+  MessageEnvelope is created.
+- Every non-silent MessageEnvelope is pending and non-consumable until the
+  project-owned Safety & Task Loop classifier returns the matching strict
+  classification result; model-selected claim labels cannot authorize routing.
+- Plant-scoped output must pass the FT-007 current guard before the pending
+  handoff and fresh owning guards again before each downstream write; archive
+  at either boundary leaves no operative
+  Bus/UI/task result.
 - Runtime recognizes explicit `deepseek`, `gemini`, and `chatgpt_oauth`
   profiles, uses deployment-selected per-agent model ids, and never selects a
   default or cross-provider fallback.
@@ -54,12 +69,13 @@ source_of_truth:
   contract and requires explicit runtime opt-in; auth material, raw chat, UI
   content, and unapproved data remain forbidden.
 - After a new Plant commits, the system activates the exact eight-agent roster
-  and creates one deterministic non-agent-consumable introduction handoff per
-  member without invoking a model.
+  and sends one strict deterministic batch containing eight
+  non-agent-consumable introduction handoffs without invoking a model.
 
 ## Edge Cases & Failure Modes
 
-- Invalid or unsafe model output is blocked, clarified, escalated, or audit-only.
+- Invalid model output creates no MessageEnvelope. Safety classification is
+  project-owned; uncertainty permits only a generic blocked notice.
 - Raw model reasoning/provider history is never stored as fact or agent working context.
 - Agent cannot bypass PlantAccessGrant or ActorContext.
 - Silent behavior leaves audit evidence without creating Bus/UI events.
@@ -71,7 +87,8 @@ source_of_truth:
 
 ## Verification Targets
 
-- Unit: runtime decision classification after spec defines states.
+- Unit: exact ProviderRequest/input/model-result/outcome/envelope contracts and
+  rejection matrices.
 - Integration: real model-backed adapter path over actual scoped Plant data.
 - Integration: archive during model execution blocks MessageEnvelope/Bus/UI
   publication without replay after restore.
@@ -83,21 +100,27 @@ source_of_truth:
 
 ## Normative Backbone Links
 
-- [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): Agent Runtime module and external integration boundaries.
-- [.memory-bank/contracts/agent-runtime-adapter.md](../contracts/agent-runtime-adapter.md): exact invocation, typed input, adapter, failure, audit, and handoff boundary.
-- [.memory-bank/contracts/agent-model-provider-profiles.md](../contracts/agent-model-provider-profiles.md): strict multi-provider/model binding, egress, credentials, and ChatGPT OAuth support boundary.
-- [.memory-bank/contracts/agent-roster-bootstrap.md](../contracts/agent-roster-bootstrap.md): exact roster identities, deterministic introductions, and post-commit bootstrap semantics.
-- [.memory-bank/contracts/evidence-redaction.md](../contracts/evidence-redaction.md): secret-safe provider configuration, diagnostics, and evidence.
-- [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): runtime decision and publishable output boundary.
-- [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md): Bus publication and consumability rules.
-- [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): human-facing projection boundary that remains unavailable as agent context.
-- [.memory-bank/states/plant-state-trust.md](../states/plant-state-trust.md): observation/hypothesis promotion rules.
-- [.memory-bank/states/plants/plant-and-access-lifecycle.md](../states/plants/plant-and-access-lifecycle.md): archived-Plant publication guard.
-- [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md): sanitized runtime decision audit event.
-- [.memory-bank/domains/plant-operations.md](../domains/plant-operations.md): canonical check-in and normalized pH/EC source rows for typed input v1.
-- [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): PostgreSQL authority and audit/Bus/UI separation.
-- [.memory-bank/testing/agent-runtime.md](../testing/agent-runtime.md): exact deterministic, real-model, anti-cheat, and archive-race verification.
-- [.memory-bank/runbooks/agent-runtime-providers.md](../runbooks/agent-runtime-providers.md): provider configuration and credentialed real-model smoke.
+- Runtime I/O and audit: [adapter](../contracts/agent-runtime-adapter.md),
+  [provider profiles](../contracts/agent-model-provider-profiles.md),
+  [MessageEnvelope](../contracts/message-envelope.md), and
+  [Timeline Event](../contracts/timeline-event.md).
+- Current identity guard: [ActorContext](../contracts/access/actor-context.md),
+  [Session Storage](../domains/auth/session-storage.md),
+  [Account/Membership](../domains/identity/account-membership.md),
+  [Session Lifecycle](../states/auth/session-lifecycle.md), and
+  [Plant Lifecycle](../states/plants/plant-and-access-lifecycle.md).
+- Plant input and bootstrap: [Plant Operations](../domains/plant-operations.md),
+  [Plant Operations HTTP](../contracts/plant-operations-http.md),
+  [Plant Management HTTP](../contracts/farm/plant-management-http.md),
+  [Farm/Plant/Access Storage](../domains/farm/farm-plant-access-storage.md), and
+  [Roster Bootstrap](../contracts/agent-roster-bootstrap.md).
+- Downstream boundaries: [Safety Action Lifecycle](../states/safety-action-lifecycle.md),
+  [Agent Chat Bus](../contracts/agent-chat-bus.md), and
+  [UI Feed](../contracts/ui-feed.md).
+- Verification and operations: [Agent Runtime testing](../testing/agent-runtime.md),
+  [Plant Operations testing](../testing/plant-operations.md),
+  [provider runbook](../runbooks/agent-runtime-providers.md), and
+  [evidence redaction](../contracts/evidence-redaction.md).
 
 ## Behavior specs
 
@@ -109,25 +132,15 @@ source_of_truth:
 
 - FT-007 adds one internal Agent Runtime application service and no public HTTP
   agent endpoint.
-- Exact input v1 is assembled inside the service from the active Plant, latest
-  completed daily check-in, and latest pH/EC PostgreSQL rows; callers cannot
-  submit context mappings or refs.
-- FT-007 owns the stable eight-agent identity/competence/introduction roster;
-  FT-009 through FT-014 own competence-specific instructions, triggers, and
-  effects.
-- Plant creation invokes only a post-commit local bootstrap handoff. It does
-  not hold the Plant transaction open or call providers. Deterministic
-  introduction metadata is neither MessageEnvelope nor agent context.
-- Per-agent provider/model resolution is deployment configuration. DeepSeek
-  and Gemini have native Agno bindings; `chatgpt_oauth` is a recognized
-  fail-closed broker port until an approved executable OAuth contract exists.
-- MessageEnvelope is an immutable validated handoff; sanitized Timeline Event
-  is audit/export evidence. No agent-run, provider-history, prompt, or raw-output
-  PostgreSQL table is required.
-- FT-008 owns BusEventEnvelope, Bus storage/context reads, UIFeedEvent, and
-  durable chat/feed projection behavior; FT-007 exposes validated
-  MessageEnvelope and deterministic introduction handoff ports. No FT-008 task
-  is created by this decomposition.
+- The adapter contract owns exact provider input, model result, outcome, audit,
+  and pending MessageEnvelope rules; this router does not restate them.
+- Roster Bootstrap owns the post-commit eight-item batch and 8-or-0 sink result.
+  Plant creation never calls a provider or rolls back after commit.
+- FT-008 owns Bus/UI publication and durable introduction reconciliation;
+  FT-011/FT-012 own Safety/task effects. FT-007 implements only their strict
+  handoff contracts.
+- Provider/model selection is deployment configuration. Smoke acceptance is
+  defined by Agent Runtime testing and the provider runbook.
 
 ## Feature-Local Design Pressure
 
@@ -137,18 +150,28 @@ source_of_truth:
 
 ## SDD Design Gate
 
-- Global/shared status: ready; `AD-007`, MessageEnvelope, Agent Chat Bus, and
-  Plant lifecycle specs define the archive-race publication block.
-- Feature-local status: complete. Canonical runtime, envelope, audit, exact
-  roster/bootstrap, provider bindings, egress, failure, verification, and
-  operator setup are designed and taskable.
-- Deployment model ids are intentionally selected later. TASK-029 cannot close
-  its real-provider evidence without one explicit DeepSeek or Gemini model id
-  and credential, but this is an execution input rather than a design blocker.
-- Generic third-party ChatGPT OAuth is not overclaimed: the profile is reserved
-  behind a fail-closed broker port and cannot become operational until an
-  approved token/refresh/endpoint contract exists. Codex/ChatGPT browser
-  credentials are never reused.
+- Global/shared and FT-007 design status: complete; exact rules live in the
+  canonical links above.
+- Execution inputs: explicit DeepSeek/Gemini model id, matching credential, and
+  egress opt-in. `chatgpt_oauth` remains fail-closed without an approved broker.
+- TASK-028 and TASK-029 remain planning artifacts only and must not execute until
+  `/prd-to-tasks FT-007` reconciles the implementation plan and task cards, and
+  a fresh `/review-tasks-plan FT-007` returns `APPROVE`.
+
+## /prd-to-tasks FT-007 Repair Handoff
+
+The next `/prd-to-tasks FT-007` run must reconcile these stale planning inputs
+without executing either task:
+
+| Artifact | Required reconciliation |
+|---|---|
+| TASK-028 | Add direct Session Lifecycle/Storage and Account/Membership inputs; cover the exact current guard and safe Timeline attribution. Add the unimplemented 2000-code-point UI/backend/legacy-row delta with direct Plant Operations links. Replace stale model/safety assertions with the canonical ProviderRequest/input/model-result/outcome/envelope/event contracts. Test only the classifier handoff; do not implement FT-011/FT-008/FT-012 effects. |
+| TASK-029 | Add direct Plant Management HTTP and Farm/Plant/Access Storage inputs; preserve request/auth/`201 PlantSummary`/no-store/atomic commit/error behavior. Cover exact UUIDv5 names, one eight-item sink call, 8-or-0 result matrix, downstream reconciliation boundary, and audited smoke rule. Do not implement FT-008 storage/projection. |
+| IMPL-FT-007 | Reconcile write scopes, constraints, gates, dependencies, and verification targets with both task cards and canonical specs. Preserve Plant Operations/Operator UI and FT-008/FT-011/FT-012 ownership. |
+
+After reconciliation, the only allowed next gate is a fresh
+`/review-tasks-plan FT-007`. TASK-028/TASK-029 stay `planned` and execution is
+forbidden unless that review returns exact `VERDICT: APPROVE`.
 
 ## Implementation
 

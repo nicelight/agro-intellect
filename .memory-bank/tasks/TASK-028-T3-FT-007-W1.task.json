@@ -16,8 +16,12 @@
   ],
   "touched_files": [
     "backend/app/agent_runtime/",
+    "backend/app/plant_operations/service.py",
+    "backend/app/api/operations.py",
     "backend/app/timeline/writer.py",
     "tests/backend/agent_runtime/",
+    "tests/backend/plant_operations/test_ft004_service.py",
+    "tests/backend/api/test_ft004_operations_routes.py",
     ".protocols/TASK-028-T3-FT-007-W1/",
     ".tasks/TASK-028-T3-FT-007-W1/",
     ".memory-bank/tasks/TASK-028-T3-FT-007-W1.task.json"
@@ -30,8 +34,13 @@
       "required": false
     },
     {
+      "name": "plant-observation-boundaries",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations/test_ft004_service.py tests/backend/api/test_ft004_operations_routes.py -q",
+      "required": false
+    },
+    {
       "name": "access-runtime-regression",
-      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime -m \"not real_model\" -q",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/plant_operations tests/backend/agent_runtime -m \"not real_model\" -q",
       "required": false
     },
     {
@@ -51,27 +60,34 @@
     }
   ],
   "verify": [
-    "Strict unit tests cover all four runtime decisions, every allowed and forbidden decision/claim/safety combination, exact MessageEnvelope v1 fields, safe authorization scope, UUID/timestamp/ref validation, and unknown-field rejection.",
-    "Production assembler tests prove an authenticated service-side ActorContext plus plant_id yields exactly the active Plant, latest completed check-in, latest pH row, and latest EC row from PostgreSQL with deterministic ordering and at most four records; callers cannot inject context mappings, payloads, prompts, or source refs.",
-    "Integration tests prove the original session/account/membership/Farm/Plant/grant state is reloaded after model execution and before envelope handoff, while ActorContext/session/auth material never reaches the executor or timeline actor_ref.",
-    "Archive or revoke during an in-flight invocation downgrades the candidate to audit-only publication_guard_denied, creates no MessageEnvelope, and restore does not replay it.",
-    "Silent, invalid-output, provider-failed, publication-blocked, and audit-failed paths expose only stable safe outcomes; timeline append failure returns no envelope handoff.",
-    "Exactly one sanitized agent_runtime_decided Timeline Event is appended for each accepted request that reaches execution, and it contains no consumable output, pH/EC value, prompt, provider body, hidden reasoning, credential, session id, auth provenance, or local path.",
-    "Production code has no public agent HTTP endpoint, Bus/UI write, mutable agent-run/provider-history persistence, Agno memory/tools/Team behavior, or fake production fallback.",
-    "Behavior specs FT-007-BHV-001 and FT-007-BHV-003 trace to named tests; BHV-001 transport/provider evidence completes in TASK-029."
+    "Provider request snapshots prove one closed ProviderRequestV1 with only schema_version, project-owned agent_definition, ordered records, and matching ordered source_refs; ActorContext, account/membership/role/grant/session provenance, provider selection, credentials, and arbitrary metadata are absent.",
+    "Production assembler tests prove exact AgentInputRecordV1 `{record_type, source_ref, payload}` variants and the canonical Plant, latest completed check-in, latest pH, latest EC order; one row latest for both measurements appears once in the pH position and at most four PostgreSQL records are sent.",
+    "Plant Operations service/API tests prove normalized observation lengths 1 and 2000 Unicode code points succeed, 2001 returns 422 OBSERVATION_TEXT_TOO_LONG with no check-in, measurement, or timeline write, and no value is truncated, chunked, or implicitly summarized. A legacy oversized persisted row returns context_denied/input_contract_violation before provider or audit I/O.",
+    "Strict tests cover the exact AgentModelResultV1 candidate_claim_type/candidate_output matrix, reject model-owned safety/approval/publication fields, and prove every non-silent MessageEnvelope is immutable pending_classification with consumable_by_agents=false. The classification handoff accepts only `{schema_version,message_id,classifier_version,classification,safe_task_kind,reason_code}` and the canonical safe_information, safe_task_request(check|measurement|follow_up), physical_action, and blocked_uncertain rows; FT-007 creates no Bus/UI/task/Safety effect.",
+    "Post-model integration reloads the original LocalSession and exact active Account/Membership/Farm/Plant/grant under the Session Storage, Account/Membership, Session Lifecycle, ActorContext, and Plant Lifecycle contracts. MessageEnvelope authorization_scope contains exactly farm_id, plant_id, current role_preset, operation_kind, permission_source, and nullable grant_id. Timeline actor_ref positively contains only account_id, membership_id, and request-time role_preset and excludes session/auth material.",
+    "Tests cover every AgentRuntimeOutcomeV1 row and exact nullable/ref/provider/audit states: envelope_ready, model_silent, context_denied, runtime_not_configured, provider_failed, output_invalid, publication_guard_denied, and audit_failed. No denial/failure becomes status or final_decision silent.",
+    "Exactly one canonical sanitized agent_runtime_decided event is appended for each provider-I/O branch and no event exists for context_denied, runtime_not_configured, or audit_failed. Audit failure returns no MessageEnvelope/event ref.",
+    "Archive or revoke during an in-flight invocation returns the exact publication_guard_denied branch, creates no MessageEnvelope, Bus/UI/task effect, or replay after restore. Production code adds no public agent endpoint, mutable agent-run/provider-history persistence, fake fallback, Agno memory/tools, or Team behavior.",
+    "BHV-001 and BHV-003 trace to named deterministic tests; TASK-029 supplies the credentialed provider portion of BHV-001. The absent Operator UI cap/counter remains explicitly routed to FT-016 and is not claimed by this task."
   ],
   "docs": [
     ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
     ".memory-bank/contracts/agent-runtime-adapter.md",
     ".memory-bank/contracts/message-envelope.md",
     ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
     ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/testing/plant-operations.md",
     ".memory-bank/tasks/plans/IMPL-FT-007.md"
   ],
   "evidence_required": [
-    "exact input/output schema and decision-matrix test summary",
-    "PostgreSQL assembler and caller-injection denial evidence",
-    "fresh session/account/membership/Plant/grant recheck evidence",
+    "exact ProviderRequest/input/model-result/outcome/envelope/event matrix test summary",
+    "Plant Operations 1/2000/2001 backend boundary and zero-write evidence",
+    "PostgreSQL assembler order/dedup plus legacy oversized-row denial evidence",
+    "fresh session/account/membership/Plant/grant recheck and safe Timeline attribution evidence",
+    "pending-envelope/classifier handoff evidence with no downstream effect",
     "archive/revoke race and no-replay evidence",
     "sanitized timeline payload and audit-failure evidence",
     "static anti-cheat and forbidden-scope inspection",
@@ -80,11 +96,12 @@
     "node scripts/mb-lint.mjs output",
     "scoped git diff --check output"
   ],
-  "purpose": "Create the provider-neutral, authorization-sensitive FT-007 runtime core before adding production model composition or Plant bootstrap wiring.",
-  "success_outcome": "Authorized actual Plant evidence can pass through one project-owned runtime decision boundary into a strict transient MessageEnvelope or truthful audit-only outcome, with fresh current authority and sanitized timeline evidence and without Bus/UI publication or fake runtime behavior.",
+  "purpose": "Create the provider-neutral, authorization-sensitive FT-007 runtime core and close the authoritative observation-input delta before adding production model composition or Plant bootstrap wiring.",
+  "success_outcome": "Authorized contract-valid Plant evidence can pass through the exact provider request, model-result, runtime-outcome, pending MessageEnvelope, current-authorization, classifier-handoff, and Timeline boundaries; oversized observations fail without writes or provider I/O, and no Bus/UI/task effect or fake runtime behavior is introduced.",
   "anti_goals": [
     "No provider/model configuration, canonical roster/bootstrap hook, or real-provider dependency in W1.",
     "No public agent HTTP route, BusEventEnvelope, chat/UI Feed persistence, worker, outbox, or FT-008 implementation.",
+    "No Operator UI/PWA implementation; its 2000-code-point counter/input behavior remains FT-016 ownership.",
     "No vision photo input, hydroponics policy, Safety Gate effect, task/follow-up, Companion governance, or dataset behavior.",
     "No provider request/response, prompt, reasoning, session, or agent-run persistence.",
     "No production fake, mock, hardcoded, canned, heuristic, or fallback output."
@@ -92,8 +109,12 @@
   "runtime_context": {
     "allowed_write_scope": [
       "backend/app/agent_runtime/",
+      "backend/app/plant_operations/service.py",
+      "backend/app/api/operations.py",
       "backend/app/timeline/writer.py",
       "tests/backend/agent_runtime/",
+      "tests/backend/plant_operations/test_ft004_service.py",
+      "tests/backend/api/test_ft004_operations_routes.py",
       ".protocols/TASK-028-T3-FT-007-W1/",
       ".tasks/TASK-028-T3-FT-007-W1/",
       ".memory-bank/tasks/TASK-028-T3-FT-007-W1.task.json"
@@ -102,6 +123,8 @@
       "provider/model configuration and provider dependencies",
       "Plant-create roster/bootstrap wiring",
       "Bus, chat, UI Feed, worker, outbox, or FT-008 implementation",
+      "Operator UI/PWA or FT-016 implementation",
+      "Safety classifier policy/effects or FT-011/FT-012 implementation",
       "public agent HTTP routes",
       "vision, advisor, safety, task, Companion, or dataset product behavior",
       "provider/prompt/reasoning/session history persistence",
@@ -109,9 +132,9 @@
     ],
     "stop_conditions": [
       "TASK-025-T3-FT-004-W3 is not done or its canonical Plant-operation pH/EC baseline is contradicted.",
-      "Exact typed input cannot be assembled through existing ActorContext and PostgreSQL authority without accepting caller-built context.",
+      "Exact ProviderRequestV1 cannot be assembled through existing ActorContext and PostgreSQL authority without accepting caller-built context or sending authorization/session data to the provider.",
       "The fresh post-model guard cannot revalidate the original session/account/membership/Plant/grant identity without exposing auth material.",
-      "Correctness would require Bus/UI publication, a new public agent API, or mutable agent-run/provider-history persistence.",
+      "Correctness would require Bus/UI/task/Safety effects, Operator UI implementation, a new public agent API, or mutable agent-run/provider-history persistence.",
       "Diagnostics or evidence contain credentials, session/auth material, raw provider payload, hidden reasoning, raw chat, unapproved governance content, or local absolute paths."
     ]
   },
@@ -128,33 +151,41 @@
     ".memory-bank/contracts/timeline-event.md",
     ".memory-bank/contracts/access/actor-context.md",
     ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/domains/auth/session-storage.md",
+    ".memory-bank/domains/identity/account-membership.md",
     ".memory-bank/domains/plant-operations.md",
     ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/auth/session-lifecycle.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
     ".memory-bank/states/plants/plant-and-access-lifecycle.md",
     ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/testing/plant-operations.md",
     ".memory-bank/workflows/tier-policy.md"
   ],
   "constraints": [
-    "Implement the exact strict AgentInputRecordV1 and MessageEnvelope v1 contracts; unknown fields and incompatible decisions/claims fail closed rather than being repaired.",
-    "Build production input only from authorized PostgreSQL Plant/check-in/measurement rows and internally derive the exact source-ref set.",
-    "Perform provider execution outside database transactions and reload current service-side session/account/membership/Plant/grant authority afterward.",
-    "Return envelope_ready only after schema validation, fresh current authority, and successful sanitized timeline append.",
+    "Implement the exact ProviderRequestV1, AgentInputRecordV1, AgentModelResultV1, AgentRuntimeOutcomeV1, MessageEnvelope v1, and agent_runtime_decided matrices; reject unknown/incompatible fields without repair.",
+    "Build provider input only from authorized PostgreSQL Plant/check-in/measurement rows in canonical order, derive refs internally, and keep all authorization/session/provider-selection data outside ProviderRequestV1.",
+    "Enforce the Plant Operations 2000-Unicode-code-point backend cap with OBSERVATION_TEXT_TOO_LONG and zero writes; reject legacy oversized rows as context_denied/input_contract_violation before provider/audit without truncation or summary.",
+    "Perform provider execution outside database transactions and reload the original current session/account/membership/Plant/grant authority afterward using the direct identity/session lifecycle inputs.",
+    "Return envelope_ready only after strict validation, fresh current authority, and successful sanitized timeline append; keep every envelope pending/non-consumable and implement no classifier effect.",
     "Keep test executors behind explicit test dependency injection and absent from production composition."
   ],
   "invariants": [
     "Agno/provider output is never runtime authority; project schemas, authorization, and PostgreSQL records remain authoritative.",
-    "ActorContext, session provenance, credentials, raw chat/UI, provider history, and hidden reasoning never cross the model-input boundary.",
-    "Silent, invalid, failed, archive/revoke-blocked, and audit-failed attempts create no MessageEnvelope or replayable publication candidate.",
+    "ActorContext, account/membership/role/grant/session provenance, credentials, raw chat/UI, provider history, and hidden reasoning never cross the model-input boundary.",
+    "Only strict model-declared silence uses status/final_decision silent; invalid, failed, denied, archive/revoke-blocked, and audit-failed branches create no MessageEnvelope or replayable publication candidate.",
     "Timeline is sanitized append-only audit/export and cannot reconstruct or authorize an Agent Runtime decision.",
     "FT-007 envelope_ready is a transient handoff, not Bus/UI publication authority."
   ],
   "verification_targets": [
     ".venv/bin/python -m pytest tests/backend/agent_runtime -m \"not real_model\" -q",
-    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests/backend/plant_operations/test_ft004_service.py tests/backend/api/test_ft004_operations_routes.py -q",
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/plant_operations tests/backend/agent_runtime -m \"not real_model\" -q",
     ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
     "node scripts/mb-lint.mjs",
     "git diff --check",
-    "Run focused service probes for caller-injection denial, exact typed refs, current authorization recheck, archive/revoke races, safe audit, and audit failure.",
+    "Run focused service probes for exact provider payload/order/dedup, observation bounds and legacy-row denial, current authorization recheck, classifier handoff, outcome/event matrices, archive/revoke races, safe audit, and audit failure.",
     "Inspect production composition for test executors, canned output, Bus/UI writes, public routes, and provider/prompt/session persistence."
   ]
 }

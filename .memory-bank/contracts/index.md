@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -21,7 +21,8 @@ source_of_truth:
   provider/model binding, credential isolation, typed egress, and no fallback.
 - [Agent Roster And Plant Bootstrap](agent-roster-bootstrap.md): canonical
   identities and deterministic post-commit introduction handoff.
-- [MessageEnvelope](message-envelope.md): publishable agent output.
+- [MessageEnvelope](message-envelope.md): validated pending pre-safety agent
+  output.
 - [UI Feed](ui-feed.md): human presentation only.
 - [Timeline Event](timeline-event.md): append-only audit/export event.
 

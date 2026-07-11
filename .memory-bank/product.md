@@ -3,7 +3,7 @@ description: Product brief (C4 L1): что это, для кого, core value, 
 status: active
 type: product
 owner: product
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -37,15 +37,21 @@ The system is also an AI-first agentic development training ground: product agen
 3. User selects an authorized Plant, initially `tomato_001`.
 4. User runs a daily check-in, records observations, uploads photo evidence, and/or enters pH/EC measurements.
 5. Backend persists mutable operational state in the PostgreSQL/read model, local photo artifacts/catalog entries, and append-only timeline audit/export refs.
-6. Real model-backed product agents process only authorized, agent-consumable Plant context and publish through runtime decision, MessageEnvelope, and Agent Chat Bus boundaries.
+6. Real model-backed product agents process only authorized Plant context and
+   pass through runtime decision, pending MessageEnvelope, project-owned
+   classification, and only then applicable Agent Chat Bus/UI boundaries.
 7. UI Feed presents human-facing messages, cards, prompts, tasks, approvals, history, and local storage status without becoming agent context.
 8. Safety Gate blocks or routes physical-action wording until fresh data, Safety Gate pass, authorized human approval, and task/action tracking exist.
 9. Companion may coordinate Plant-scoped discussion through IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord, without replacing backend rules or Safety Gate approval.
 10. Follow-up outcomes and dataset evidence remain traceable and non-trainable by default.
 
-Whenever a Plant creation commits, the system automatically registers the
-canonical Plant agent roster and hands one deterministic introduction per agent
-to that Plant's chat/feed boundary. Introductions identify competence; they are
+Whenever a Plant creation commits, the system registers the canonical roster
+and sends one deterministic eight-item introduction batch to the downstream
+sink. FT-008 eventually writes one `UIFeedEvent` per introduction for every
+active Plant; the Plant chat/feed UI renders the same event and Agent Chat Bus
+does not consume it. Reconciliation recovers failure/restart, pauses while
+archived, and revalidates current state after restore. Delivery failure never
+rolls back Plant creation. Introductions identify competence; they are
 not model-generated analysis and do not satisfy real-model acceptance by
 themselves.
 

@@ -1,7 +1,7 @@
 ---
 description: Foundation Dev Path evidence and feature pressure map.
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
@@ -66,10 +66,9 @@ were created by `/foundation-to-tasks`. The final foundation gate is
   canonical SDD specs for runtime shape, smoke API, DB/session/migration substrate, test
   harness, local runtime runbook, and evidence redaction. It did not create new
   FT-000 task records because the final Foundation gate is already verified.
-- The 2026-07-06 archived-Plant global guard repair changes only product
-  lifecycle/service contracts. Existing app, DB/session, migration, test, and
-  redaction substrate evidence remains sufficient; no new FT-000 task or gate
-  rerun is required.
+- The archived-Plant and FT-007 shared-contract repairs change product
+  contracts, not the executable substrate. `TASK-004-T2-FT-000-W0` remains the
+  verified Foundation gate; no new FT-000 task or gate rerun is required.
 
 ## Foundation Substrate Specs
 

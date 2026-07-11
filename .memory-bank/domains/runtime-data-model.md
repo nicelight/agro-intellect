@@ -152,7 +152,9 @@ Verification target:
   authorization, record-version, freshness, safety, and governance guards.
 - Photo files/manifests can be referenced by runtime records but cannot override runtime state.
 - Timeline events can reference runtime records but cannot become mutable state authority.
-- Agent output can create publishable events/tasks only through project-owned adapters and safety/task boundaries.
+- Agent output can create downstream publishable events or tasks only after
+  project-owned adapter validation, strict safety classification, current
+  authorization, and the applicable Bus/UI/task/Safety boundary.
 - DecisionRecord can create governance/workflow direction only inside backend rules.
 - `can_train_on` is false unless dataset governance rules explicitly allow a later transition.
 

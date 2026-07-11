@@ -2,7 +2,7 @@
 description: Global UI Feed projection contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-06-30
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -37,7 +37,10 @@ feature when a projection is feature-specific.
   - [.memory-bank/contracts/agent-chat-bus.md](agent-chat-bus.md): defines
     agent-consumable working events.
   - [.memory-bank/contracts/message-envelope.md](message-envelope.md): defines
-    publishable agent-output boundary before UI projection.
+    validated pending agent-output boundary before classification and UI
+    projection.
+  - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
+    defines deterministic introduction batches and FT-007/FT-008 ownership.
   - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
     append-only audit/export events.
 
@@ -63,9 +66,17 @@ agent input, runtime truth, timeline authority, or task/action authority.
 
 ## Rules
 
-- UI Feed may project from validated MessageEnvelope, safe domain records,
-  task/approval records, timeline refs, admin notices, storage checks, and
-  Companion governance records.
+- UI Feed may project candidate text only for `safe_information` with the
+  matching `SafetyClassificationResultV1` and current guard. Other classes use
+  an authoritative task/Safety record or a generic block notice; the notice
+  never copies candidate text. UI Feed may also project authorized domain,
+  timeline, admin, storage, and Companion records under their owning contracts.
+- UI Feed is the visible projection owner for deterministic roster
+  introductions. FT-008 durably reconciles one strict eight-item batch per
+  active Plant and writes exactly one `UIFeedEvent` per
+  `(plant_id, agent_id, roster_version)`. The Plant chat/feed UI renders that
+  same event; no introduction is copied to Agent Chat Bus. Introductions remain
+  `visible_to_agents=false` and `consumable_by_agents=false`.
 - UI Feed must never publish directly to Agent Chat Bus.
 - UI Feed, UI markdown, cards, spoiler notes, raw chat, admin notices, and
   unapproved Companion content must never enter agent working context.
@@ -82,10 +93,16 @@ agent input, runtime truth, timeline authority, or task/action authority.
 
 - If projection source authorization cannot be proven, do not emit the UI Feed
   event.
+- A classification result or stale MessageEnvelope authorization snapshot is
+  not proof of current visibility. The projection writer applies the canonical
+  current authorization and active-Plant guard in the same write boundary.
 - If a source record is valid but unsafe for agents, UI Feed may still show a
   redacted human notice with `consumable_by_agents=false`.
 - If a projection references archived Plant history, it must use an explicit
   retained-history authorization path.
+- A pending introduction is retained but not projected while its Plant is
+  archived. A later active-Plant reconciliation after restore may continue
+  delivery only after reloading current Plant state; it is not timeline replay.
 - If a projection references physical-action wording, it must show the current
   Safety Gate/task state instead of cleared action wording unless the safety
   lifecycle permits that wording.

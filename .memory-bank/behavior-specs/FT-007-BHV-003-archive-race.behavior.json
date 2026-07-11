@@ -10,9 +10,14 @@
     "action": "the Plant is archived before the post-execution publication guard"
   },
   "then": {
-    "final_decision": "silent",
+    "outcome_kind": "publication_guard_denied",
+    "status": "blocked",
+    "final_decision": null,
     "reason_code": "publication_guard_denied",
+    "error_code": "AGENT_PUBLICATION_BLOCKED",
     "message_envelope": null,
+    "provider_call_status": "completed",
+    "audit_status": "appended",
     "audit": "one sanitized audit-only event",
     "after_restore": "the blocked candidate is not replayed; a new authorized invocation is required"
   }

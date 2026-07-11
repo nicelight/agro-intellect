@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -48,7 +48,12 @@ source_of_truth:
 - `REQ-010` Runtime authority and timeline audit: PostgreSQL/read model MUST remain mutable operational state authority unless a later active architecture spec replaces it; `timeline.jsonl` remains append-only audit/export only.
 - `REQ-011` Real model-backed product agents: MVP runtime/demo product-agent outputs MUST come from real LLM/model-backed agents or real model-backed adapters over actual scoped Plant data; fake, mock, hardcoded, or stubbed outputs are test-only and do not satisfy MVP runtime/demo acceptance. Runtime MUST support explicit `chatgpt_oauth`, `deepseek`, and `gemini` provider profiles with deploy-time model ids, no hardcoded model default, and no silent cross-provider fallback. DeepSeek/Gemini use native bindings; `chatgpt_oauth` MUST fail closed without a project-approved broker and MUST NOT reuse ChatGPT browser or Codex credentials.
 - `REQ-012` Vision observation and Plant state trust: Vision Observation MUST process actual uploaded photo data through a real vision-capable model or real vision integration, and agent hypotheses MUST NOT become confirmed Plant state without human review or follow-up evidence.
-- `REQ-013` Agent publication and context hygiene: agent-originated output MUST pass project-owned runtime decision, MessageEnvelope, Agent Chat Bus, and UI Feed boundaries; UI Feed, raw chat, UI markdown, spoiler notes, admin notices, and unapproved proposals MUST NOT become agent working context. Archived Plants MUST deny state-advancing agent publication, and restore MUST require current authorization and owning publication guards rather than replay queued work. After Plant creation commits, the system MUST idempotently register the canonical agent roster and hand one deterministic introduction per agent to that Plant's chat/feed boundary; introductions are presentation metadata, not model output or agent context.
+- `REQ-013` Agent publication and context hygiene:
+  - agent output MUST pass runtime decision, pending MessageEnvelope, project-owned classification, and the applicable guarded downstream boundary;
+  - UI Feed, raw chat/UI content, admin notices, and unapproved proposals MUST NOT become agent working context;
+  - archived Plants deny state-advancing publication; restore requires current authorization and does not replay denied work;
+  - after Plant commit, the system submits one deterministic eight-item introduction batch without rolling back or falsely failing Plant creation on delivery failure;
+  - FT-008 MUST reconcile exactly one non-agent-consumable `UIFeedEvent` per introduction for every active Plant; the Plant chat/feed UI renders that event, Agent Chat Bus does not consume it, archive pauses projection, and restore requires current-state reconciliation.
 - `REQ-014` Hydroponics Advisor missing-data behavior: advisory output MUST remain cautious, permission-aware, and request missing/stale critical data instead of bypassing Safety Gate or inventing evidence.
 - `REQ-015` Safety Gate physical-action routing: physical-action wording MUST be blocked or routed until fresh evidence, Safety Gate pass, authorized human approval, and task/action tracking exist.
 - `REQ-016` Human tasks, approval, and follow-up loop: safe check or
@@ -93,7 +98,7 @@ source_of_truth:
 | REQ-010 | EP-002 | FT-006 | verified: PostgreSQL authority vs append-only timeline audit/export, retained history, and strict cursor behavior | verified |
 | REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | integration: real provider-backed runtime adapter plus every owning product-agent flow; anti-cheat: no fake runtime path | planned |
 | REQ-012 | EP-003 | FT-009 | integration: real vision input; unit: Plant trust-state promotion gates | planned |
-| REQ-013 | EP-003 | FT-007, FT-008 | contract: MessageEnvelope/Bus/UI Feed filters, archived-Plant publication deny, restore revalidation, and anti-cheat context hygiene | planned |
+| REQ-013 | EP-003 | FT-007, FT-008 | contract: pending MessageEnvelope/classification/Bus/UI Feed filters, archived-Plant publication deny, restore revalidation, and anti-cheat context hygiene | planned |
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | unit: missing/stale data policy; integration: Safety Gate handoff | planned |
 | REQ-015 | EP-004 | FT-011 | unit: Safety Gate fail-closed policy; integration: approval authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |

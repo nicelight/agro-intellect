@@ -2,7 +2,7 @@
 description: Local configuration and credentialed smoke runbook for Agent Runtime provider profiles.
 status: active
 type: runbook
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/contracts/agent-model-provider-profiles.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -68,10 +68,17 @@ detailed product competence or trigger.
    AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q
    ```
 
-5. Treat skip, xfail, missing provider call, injected fake executor, canned
-   output, or fallback as failure.
-6. Record only profile/model ref, pass/fail, safe run/event refs, and redacted
-   error code.
+5. Accept exactly one of two audited results:
+   `outcome_kind=envelope_ready`, `status=envelope_ready`, with a valid pending
+   MessageEnvelope; or `outcome_kind=model_silent`, `status=silent`, with
+   `final_decision=silent`, `no_material_output|insufficient_evidence`, and no
+   MessageEnvelope.
+6. Treat skip, xfail, missing provider call, injected fake executor, canned
+   output, fallback, `context_denied`, `runtime_not_configured`,
+   `provider_failed`, `output_invalid`, `publication_guard_denied`,
+   `audit_failed`, or any unaudited/runtime-created failure silence as failure.
+7. Record only profile/model ref, accepted outcome kind, pass/fail, safe
+   run/event refs, and redacted error code.
 
 ## Deterministic and regression checks
 
