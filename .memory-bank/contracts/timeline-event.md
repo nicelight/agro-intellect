@@ -9,6 +9,7 @@ source_of_truth:
   - .memory-bank/invariants.md
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/domains/runtime-data-model.md
+  - .memory-bank/contracts/agent-runtime-adapter.md
 ---
 # Timeline Event
 
@@ -76,10 +77,52 @@ The following event types are registered for the current taskable features:
 | `daily_checkin_recorded` | Plant operations service | `daily_checkin` | `check_in_id` | `.memory-bank/domains/plant-operations.md` |
 | `manual_measurement_recorded` | Plant operations service | `manual_measurement` | `measurement_id` | `.memory-bank/domains/plant-operations.md` |
 | `photo_accepted` | Photo intake service | `photo_catalog_item` | `photo_id` | `.memory-bank/domains/photo-artifacts.md` |
+| `agent_runtime_decided` | Agent Runtime service | `agent_runtime_attempt` | `run_id` correlation UUID | `.memory-bank/contracts/agent-runtime-adapter.md` |
 
 New event types require the emitting feature's subject spec to define producer,
 source identity, payload summary, redaction, failure behavior, and verification
 before task creation.
+
+### `agent_runtime_decided` payload summary
+
+The FT-007 event contains only:
+
+- `agent_id`;
+- safe `model_ref` in `provider_profile:model_id` form when a real executor was
+  reached, otherwise `null`;
+- `candidate_decision`: `speak | silent | clarify | escalate | null`;
+- `final_decision`: `speak | silent | clarify | escalate`;
+- `outcome_status`: `envelope_ready | silent | blocked | failed`;
+- `reason_code`: `envelope_ready | no_material_output |
+  insufficient_evidence | provider_failed | output_invalid |
+  publication_guard_denied`;
+- `message_id` only for `envelope_ready`, otherwise `null`;
+- `claim_type` only when a validated candidate supplied it, otherwise `null`;
+- `source_ref_count` as a non-negative integer.
+
+The payload MUST NOT contain `consumable_output`, observation text, pH/EC
+values, prompts, provider response text/objects, parser diagnostics, hidden
+reasoning, credentials, provider keys, headers, cookies, session/auth material,
+or a serialized ActorContext. The event's `source_refs` is exactly
+`{"input_refs": ["kind:identifier", ...]}` with 1 through 32 unique safe refs
+already authorized for the invocation; it never copies their payloads.
+
+This registered event is an explicit correlation-only exception to the normal
+runtime-record source rule: `source_id=run_id` identifies the transient attempt
+and is not a PostgreSQL FK, lookup target, or mutable authority. Its
+`source_refs.input_refs` MUST reference the actual authoritative Plant,
+check-in, and/or measurement rows that formed the invocation. The event cannot
+be used to reconstruct a run or MessageEnvelope.
+
+Its `actor_ref` is exactly `account_id`, `membership_id`, and `role_preset`
+from the authenticated service-side ActorContext. It excludes `session_id`,
+auth provenance, token/digest, headers, cookies, and credentials.
+
+One accepted request that reaches model execution produces exactly one
+`agent_runtime_decided` event, including provider failure, invalid output,
+explicit silence, and post-execution publication denial. A request denied
+before model execution remains owned by existing authorization/audit behavior
+and does not create this event.
 
 ## Append Writer Seam
 
@@ -102,10 +145,18 @@ returns the documented `TIMELINE_APPEND_FAILED` error and must not report a
 successful check-in, measurement, or accepted photo. Any task that adds a new
 filesystem artifact must also clean up files it created for the failed attempt.
 
+FT-007 has no owning PostgreSQL agent-run row. It appends the sanitized event
+after final runtime decision/current publication guard and before returning a
+MessageEnvelope handoff. Append failure returns `AGENT_AUDIT_FAILED` and no
+handoff; a timeline event that already appended remains non-authoritative audit
+noise if a later downstream publisher rejects the envelope.
+
 ## Rules
 
-- Runtime state remains in PostgreSQL/read model; timeline events only reference
-  runtime records and artifact refs.
+- Runtime state remains in PostgreSQL/read model; timeline events reference
+  runtime records/artifact refs, except a registry-declared correlation-only
+  source such as `agent_runtime_attempt`, whose source refs still point to the
+  authoritative input records and never create runtime authority.
 - Timeline replay must not rehydrate mutable runtime state.
 - Timeline events cannot publish directly to Agent Chat Bus.
 - Timeline events cannot make UI Feed content, raw chat, or raw model output
@@ -131,6 +182,8 @@ filesystem artifact must also clean up files it created for the failed attempt.
   the event before writing.
 - If event ordering matters for a feature, the feature-level spec must define
   the stricter ordering/idempotency rule before task creation.
+- If an Agent Runtime audit append fails, do not return a MessageEnvelope
+  handoff or claim an audited runtime outcome.
 
 ## Verification
 
@@ -143,3 +196,5 @@ Tests must prove:
 - Unauthorized Plant timeline/history reads fail closed.
 - Feature-specific audit writes are transactionally consistent with their
   owning runtime mutation policy.
+- Agent Runtime audit tests prove exactly one safe event per invoked run, no
+  content/provider/auth leakage, and no envelope handoff after append failure.

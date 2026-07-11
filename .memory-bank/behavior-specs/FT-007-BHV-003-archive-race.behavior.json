@@ -1,0 +1,19 @@
+{
+  "id": "FT-007-BHV-003",
+  "feature_id": "FT-007",
+  "title": "Archive during model execution blocks publication without replay",
+  "given": {
+    "plant": "active and authorized when model execution starts",
+    "model_result": "candidate that would otherwise produce a MessageEnvelope"
+  },
+  "when": {
+    "action": "the Plant is archived before the post-execution publication guard"
+  },
+  "then": {
+    "final_decision": "silent",
+    "reason_code": "publication_guard_denied",
+    "message_envelope": null,
+    "audit": "one sanitized audit-only event",
+    "after_restore": "the blocked candidate is not replayed; a new authorized invocation is required"
+  }
+}

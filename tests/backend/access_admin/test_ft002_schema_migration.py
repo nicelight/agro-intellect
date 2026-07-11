@@ -100,9 +100,18 @@ def test_ft002_models_match_native_uuid_authority_contract():
     }
 
 
-def test_ft002_revision_is_the_ordered_head_and_contains_no_destructive_reconciliation():
+def test_ft002_revision_is_in_ordered_product_history_and_contains_no_destructive_reconciliation():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
-    revision = script.get_revision("head")
+    product_head = script.get_revision("head")
+    assert product_head is not None
+    assert product_head.revision == "ft005_photo_intake"
+    assert product_head.down_revision == "ft004_plant_operations"
+
+    ft004 = script.get_revision("ft004_plant_operations")
+    assert ft004 is not None
+    assert ft004.down_revision == "ft002_farm_plant_access"
+
+    revision = script.get_revision("ft002_farm_plant_access")
     assert revision is not None
     assert revision.revision == "ft002_farm_plant_access"
     assert revision.down_revision == "ft001_access_sessions"

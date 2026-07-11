@@ -1,0 +1,20 @@
+{
+  "id": "FT-007-BHV-001",
+  "feature_id": "FT-007",
+  "title": "Real provider transport produces a validated envelope",
+  "given": {
+    "actor": "authorized active-Plant actor",
+    "context": "actual persisted Plant records filtered into AuthorizedPlantContext",
+    "executor": "configured production DeepSeek or Gemini Agno model executor with valid credentials and explicit model id",
+    "definition": "isolated test-only runtime_contract_smoke definition using the production assembler and executor; absent from production definition resolution"
+  },
+  "when": {
+    "action": "the project-owned AgentRuntimeService runs a single-competence agent and receives a valid speak candidate"
+  },
+  "then": {
+    "runtime_outcome": "envelope_ready",
+    "message_envelope": "valid schema version 1 with safe refs and authorization scope",
+    "audit": "one sanitized agent_runtime_decided timeline ref",
+    "forbidden": "no downstream product-agent completion claim, production registration of the smoke definition, raw provider response, prompt history, reasoning, credentials, fake output, Bus event, or UI event"
+  }
+}

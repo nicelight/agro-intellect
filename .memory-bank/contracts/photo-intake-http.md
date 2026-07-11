@@ -2,7 +2,7 @@
 description: Concrete HTTP contract for Plant photo upload, catalog reads, and artifact refs.
 status: active
 type: api_contract
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/domains/photo-artifacts.md
   - .memory-bank/contracts/api-guidelines.md
@@ -58,6 +58,22 @@ identity.
 | `GET /api/plants/{plant_id}/photos` | optional `cursor`, `limit` | `200 PhotoCatalogList` | active normal read; archived retained access is outside FT-005 intake routes |
 | `GET /api/plants/{plant_id}/photos/{photo_id}` | none | `200 PhotoCatalogSummary` | active normal read for same Plant/Farm; no cross-Plant leaks |
 
+## Catalog pagination
+
+- The default `limit` is 50; accepted values are `1..100`.
+- Catalog order is stable newest-first by `uploaded_at DESC, photo_id ASC`.
+- The implementation fetches `limit + 1` rows. It returns at most `limit`
+  items and emits `next_cursor` only when another row exists.
+- The opaque unpadded base64url cursor contains canonical JSON with exactly
+  `v=1`, `plant_id`, `uploaded_at`, and `photo_id` for the last returned item.
+  The cursor applies the strict keyset continuation after that tuple; it is not
+  an offset and MUST NOT repeat or skip rows in an unchanged catalog.
+- A cursor is valid only when it uses the unpadded base64url alphabet,
+  decode/re-encode is byte-for-byte canonical, fields and timestamp/UUIDs are
+  valid, `v=1`, and `plant_id` matches the authorized route Plant.
+- Empty, malformed, non-canonical, wrong-version, or wrong-Plant cursors return
+  `422 VALIDATION_FAILED`. A supplied cursor MUST NOT be accepted and ignored.
+
 ## Error catalog
 
 All errors use the global error envelope.
@@ -88,3 +104,6 @@ All errors use the global error envelope.
   evidence.
 - Catalog reads prove PostgreSQL/read model authority instead of filesystem
   scanning.
+- Multi-row pagination tests prove real continuation, stable ordering,
+  non-overlapping pages, complete enumeration beyond `limit`, terminal
+  `next_cursor=null`, and `422` for malformed or wrong-Plant cursors.

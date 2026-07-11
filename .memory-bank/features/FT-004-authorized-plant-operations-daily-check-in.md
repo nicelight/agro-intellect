@@ -4,8 +4,8 @@ status: active
 type: feature
 feature_id: FT-004
 epic: EP-002
-lifecycle: planned
-last_updated: 2026-07-10
+lifecycle: verified
+last_updated: 2026-07-11
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/plant-operations.md
@@ -27,15 +27,19 @@ source_of_truth:
 - Engineer selects an authorized Plant, initially `tomato_001`.
 - Engineer records daily observations.
 - Engineer enters manual pH/EC measurements.
-- Engineer sees Plant card/history, tasks, approvals, and follow-up entry points.
+- Engineer can follow Plant-scoped refs into the FT-005 photo-intake and
+  FT-006 Plant card/history boundaries.
 - Boss can run the same workflow for Farm Plants.
 
 ## Acceptance Criteria
 
 - Authorized users can select only authorized Plants.
-- Daily check-in supports observations, photo upload entry point, manual pH/EC, Plant card/history, cautious agent outputs, tasks, approvals, and follow-up outcomes.
+- Daily check-in supports observations and manual pH/EC with auditable
+  Plant-scoped evidence refs.
 - Check-in persistence is actor-scoped, Plant-scoped, and auditable.
-- Missing data can produce safe measurement/check requests instead of invented evidence.
+- Missing/stale measurement state remains explicit for downstream FT-010 and
+  FT-012 consumers; FT-004 does not create agent output, tasks, approvals, or
+  follow-up outcomes.
 
 ## Edge Cases & Failure Modes
 
@@ -48,7 +52,8 @@ source_of_truth:
 
 - Unit: check-in validation and pH/EC provenance/freshness projections after specs define them.
 - Integration: daily workflow persists authorized Plant evidence and audit refs.
-- E2E: Engineer completes observation plus pH/EC check-in on `tomato_001`.
+- API integration: Engineer completes an authorized observation plus pH/EC
+  check-in on `tomato_001`.
 
 ## Behavior specs
 
@@ -90,7 +95,64 @@ Photo upload remains with FT-005. Plant history/timeline presentation, agent
 outputs, tasks, approvals, follow-up, Safety Gate, and PWA components remain
 outside FT-004.
 
+FT-004 exposes authorized evidence and freshness projections consumed by
+FT-010/FT-012. Request/task creation and every approval/follow-up transition
+remain with those owning features.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+Repeated feature-level adversarial verification after
+`TASK-025-T3-FT-004-W3` confirmed that the prior PostgreSQL/response/timeline
+numeric divergence, future-freshness error, and silent observation loss are
+resolved without authorization, archive, atomicity, or authority regressions.
+Evidence: [repair recheck](../../.tasks/FT-004/FT-004-S-RED-VERIFY-final-report-docs-02.md).
+The historical [semantic-fail report](../../.tasks/FT-004/FT-004-S-RED-VERIFY-final-report-docs-01.md)
+is retained. Generated OpenAPI numeric typing remains a non-blocking residual
+concern for separate owner triage. This boundary sync records the owner's
+`implemented -> verified` lifecycle decision; the Reviewer report itself made
+no lifecycle decision.
+
 ## Implementation
 
 - [Implementation plan](../tasks/plans/IMPL-FT-004.md): ordered task queue,
   dependencies, verification strategy, and UAT.
+
+## Implementation Evidence
+
+- `TASK-019-T3-FT-004-W1` is recorded `done` by the scheduler after Plant
+  operations persistence/service implementation, independent `VERDICT: PASS`,
+  per-task `SEMANTIC_VERDICT: semantic-pass`, focused FT-004 service tests
+  `9/9`, full regression `178/178`, `mb-lint` PASS, and `git diff --check`
+  PASS.
+- Evidence:
+  [implementation](../../.tasks/TASK-019-T3-FT-004-W1/TASK-019-T3-FT-004-W1-S-IMPL-final-report-code-01.md),
+  [verify](../../.tasks/TASK-019-T3-FT-004-W1/TASK-019-T3-FT-004-W1-S-VERIFY-final-report-code-01.md),
+  [red-verify](../../.tasks/TASK-019-T3-FT-004-W1/TASK-019-T3-FT-004-W1-S-RED-VERIFY-final-report-docs-01.md).
+- `TASK-020-T3-FT-004-W2` is recorded `done` by the scheduler after protected
+  operations HTTP/API implementation, independent `VERDICT: PASS`, per-task
+  `SEMANTIC_VERDICT: semantic-pass`, focused API tests `11/11`, combined
+  service/API tests `20/20`, full regression `189/189`, OpenAPI inspection
+  PASS, `mb-lint` PASS, and `git diff --check` PASS.
+- Evidence:
+  [implementation](../../.tasks/TASK-020-T3-FT-004-W2/TASK-020-T3-FT-004-W2-S-IMPL-final-report-code-01.md),
+  [verify](../../.tasks/TASK-020-T3-FT-004-W2/TASK-020-T3-FT-004-W2-S-VERIFY-final-report-code-01.md),
+  [red-verify](../../.tasks/TASK-020-T3-FT-004-W2/TASK-020-T3-FT-004-W2-S-RED-VERIFY-final-report-docs-01.md).
+- `TASK-025-T3-FT-004-W3` is recorded `done` after repairing canonical
+  measurement values, future-dated freshness, and observation validation;
+  independent `VERDICT: PASS`, task-level `SEMANTIC_VERDICT: semantic-pass`,
+  focused FT-004 `26/26`, and full regression `238/238` are recorded.
+- Repair evidence:
+  [implementation](../../.tasks/TASK-025-T3-FT-004-W3/TASK-025-T3-FT-004-W3-S-IMPL-final-report-code-01.md),
+  [verify](../../.tasks/TASK-025-T3-FT-004-W3/TASK-025-T3-FT-004-W3-S-VERIFY-final-report-docs-01.md),
+  [red-verify](../../.tasks/TASK-025-T3-FT-004-W3/TASK-025-T3-FT-004-W3-S-RED-VERIFY-final-report-docs-01.md).
+- Scheduler waived the missing exact `HUMAN_CHECKPOINT: done` markers for
+  TASK-019, TASK-020, and TASK-025 under the advisory T2/T3 process override.
+  TASK-025 records that owner decision without fabricating the marker.
+- FT-004 is synchronized as `verified` from the current feature-level
+  `semantic-pass` report while the historical failure report remains intact.
+
+Photo upload remains with FT-005. Plant history/timeline presentation, agent
+outputs, tasks, approvals, follow-up, Safety Gate, and PWA components remain
+outside FT-004.

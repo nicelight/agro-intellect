@@ -1,0 +1,133 @@
+{
+  "id": "TASK-025-T3-FT-004-W3",
+  "title": "Repair FT-004 authoritative measurement and observation semantics",
+  "status": "done",
+  "wave": "W3",
+  "feature": "FT-004",
+  "reqs": [
+    "REQ-008",
+    "REQ-010"
+  ],
+  "depends_on": [
+    "TASK-020-T3-FT-004-W2"
+  ],
+  "touched_files": [
+    "backend/app/plant_operations/service.py",
+    "backend/app/api/operations.py",
+    "tests/backend/plant_operations/",
+    "tests/backend/api/test_ft004_operations_routes.py",
+    ".memory-bank/tasks/TASK-025-T3-FT-004-W3.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft004-focused-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/api/test_ft004_operations_routes.py -q",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "A PostgreSQL-backed excess-scale probe proves one scale-2 pH and scale-3 EC value is used by the immediate result, timeline summary, stored row, later read, and freshness projection for the same measurement id.",
+    "Service and HTTP tests prove a far-future measured_at value is false for both analysis and approval_input freshness and remains named in missing_or_stale.",
+    "Service and HTTP tests prove non-blank observation_text without observation_state returns 422 VALIDATION_FAILED and creates no check-in, measurement, or timeline success event.",
+    "Existing authorization, archived-Plant denial, rollback, check-in, measurement, and timeline-ref tests remain green.",
+    "An independent Reviewer runs /verify and task-level /red-verify before feature-level /red-verify --feature FT-004 is repeated.",
+    "VERDICT: PASS — independent PostgreSQL/service/HTTP verification confirmed all three repair outcomes; focused 26 passed, full 238 passed; report: .tasks/TASK-025-T3-FT-004-W3/TASK-025-T3-FT-004-W3-S-VERIFY-final-report-docs-01.md",
+    "SEMANTIC_VERDICT: semantic-pass — task-level adversarial review found no remaining false-success, authority, freshness, observation-loss, safety, or scope defect; report: .tasks/TASK-025-T3-FT-004-W3/TASK-025-T3-FT-004-W3-S-RED-VERIFY-final-report-docs-01.md. Scheduler closure accepts HUMAN_CHECKPOINT: missing as an advisory waiver for this run; no checkpoint marker is fabricated."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md"
+  ],
+  "evidence_required": [
+    "PostgreSQL normalization comparison for response, timeline, stored row, later read, and freshness projection",
+    "future-dated analysis and approval_input freshness regression output",
+    "observation text without state 422 and zero-write/zero-event evidence",
+    "FT-004 focused and full regression summaries",
+    "independent /verify and task-level /red-verify reports",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Restore truthful FT-004 accepted-input semantics so PostgreSQL, responses, freshness projections, and timeline evidence agree and user observation text is never silently lost.",
+  "success_outcome": "FT-004 uses one canonical persisted pH/EC value on every surface, never marks future-dated measurements fresh, and rejects observation text without explicit state without writing false evidence.",
+  "anti_goals": [
+    "No database schema or migration change.",
+    "No photo, Plant history, agent, Safety Gate, action task, follow-up, or PWA implementation.",
+    "No rewrite of historical TASK-019 or TASK-020 lifecycle/evidence.",
+    "No new timestamp-skew configuration or generic measurement framework."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/plant_operations/service.py",
+      "backend/app/api/operations.py",
+      "tests/backend/plant_operations/",
+      "tests/backend/api/test_ft004_operations_routes.py",
+      ".protocols/TASK-025-T3-FT-004-W3/",
+      ".tasks/TASK-025-T3-FT-004-W3/",
+      ".memory-bank/tasks/TASK-025-T3-FT-004-W3.task.json"
+    ],
+    "forbidden_scope": [
+      "database schema or migration changes",
+      "photo, history, agent, Safety Gate, task, follow-up, or PWA behavior",
+      "historical TASK-019/TASK-020 evidence mutation",
+      "unredacted auth/session/evidence material"
+    ],
+    "stop_conditions": [
+      "The repair requires changing PostgreSQL pH/EC column scales or a new migration.",
+      "The implementation cannot use one canonical value before result, freshness, and timeline construction.",
+      "The repair requires a public behavior not defined by the linked Plant Operations specs.",
+      "Diagnostics or evidence contain secrets, auth material, raw SQL errors, provider payloads, or hidden reasoning."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md",
+    ".tasks/FT-004/FT-004-S-RED-VERIFY-final-report-docs-01.md",
+    ".memory-bank/tasks/plans/IMPL-FT-004.md",
+    ".protocols/FT-004/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Normalize accepted finite in-range values with decimal ROUND_HALF_UP to pH scale 2 and EC scale 3 before ORM row, result, freshness, and timeline payload construction.",
+    "Freshness uses the closed interval computed_at - window <= measured_at <= computed_at; future-dated evidence is stale for both purposes.",
+    "Observation text without observation_state returns existing VALIDATION_FAILED and leaves no successful runtime or timeline write.",
+    "PostgreSQL/read model remains mutable authority; timeline remains audit/export only."
+  ],
+  "invariants": [
+    "One measurement id has one numeric value across PostgreSQL, immediate response, later reads, freshness, and timeline summary.",
+    "Future evidence never qualifies as approval_input before computed_at.",
+    "Supplied observation text is persisted under explicit observed state or rejected; it is never discarded.",
+    "The repair does not authorize physical action or weaken ActorContext/Plant access checks."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/api/test_ft004_operations_routes.py -q",
+    ".venv/bin/python -m pytest tests -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Run the reproduced PostgreSQL excess-scale, future-date, and observation-state probes from the FT-004 feature red-verify report."
+  ]
+}

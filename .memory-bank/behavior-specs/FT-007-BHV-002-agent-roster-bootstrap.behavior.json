@@ -1,0 +1,20 @@
+{
+  "id": "FT-007-BHV-002",
+  "feature_id": "FT-007",
+  "title": "Committed Plant activates the canonical roster and introduction handoff",
+  "given": {
+    "plant": "a new active Plant whose creation transaction has committed",
+    "roster": "canonical roster version 1 with exactly eight agents",
+    "publisher": "a recording AgentIntroductionSink at the FT-007 downstream boundary"
+  },
+  "when": {
+    "action": "the backend-owned post-commit PlantAgentBootstrapCommand runs"
+  },
+  "then": {
+    "activation": "all eight canonical agents become eligible for future typed invocation without an immediate model call",
+    "introduction_handoff": "exactly eight ordered deterministic items keyed by plant_id, agent_id, and roster_version",
+    "visibility": "visible_to_agents=false and consumable_by_agents=false",
+    "retry": "the same Plant retry produces the same ids and content",
+    "forbidden": "no provider call, MessageEnvelope, raw Plant data, fake visible-chat success, open Plant transaction, or rollback claim after commit"
+  }
+}

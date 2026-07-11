@@ -4,8 +4,8 @@ status: active
 type: feature
 feature_id: FT-005
 epic: EP-002
-lifecycle: planned
-last_updated: 2026-07-10
+lifecycle: verified
+last_updated: 2026-07-11
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/domains/photo-artifacts.md
@@ -48,7 +48,8 @@ source_of_truth:
 
 - Unit: upload validation and checksum behavior.
 - Integration: file/catalog/manifest/timeline refs are created and linked.
-- E2E: upload photo for `tomato_001` and verify visible authorized history refs.
+- API integration: upload a photo for `tomato_001`, enumerate the authorized
+  catalog, and verify history-consumable refs without requiring a PWA view.
 
 ## Behavior specs
 
@@ -90,8 +91,68 @@ Status: complete.
   evidence matrix.
 
 Vision processing, Plant history display, and PWA UI remain outside FT-005.
+FT-005 provides typed artifact/catalog refs to those consumers; their runtime
+or presentation behavior is not an FT-005 acceptance condition.
 
 ## Implementation
 
 - [Implementation plan](../tasks/plans/IMPL-FT-005.md): ordered task queue,
   dependencies, verification strategy, and UAT.
+
+## Implementation Evidence
+
+- `TASK-021-T3-FT-005-W1` is recorded `done` by the scheduler after local
+  photo catalog, artifact storage, manifest, checksum, cleanup, and
+  `photo_accepted` service implementation, independent `VERDICT: PASS`,
+  per-task `SEMANTIC_VERDICT: semantic-pass`, focused FT-005 tests `13/13`,
+  full regression `202/202`, `mb-lint` PASS, and `git diff --check` PASS.
+- Evidence:
+  [implementation](../../.tasks/TASK-021-T3-FT-005-W1/TASK-021-T3-FT-005-W1-S-IMPL-final-report-code-01.md),
+  [verify](../../.tasks/TASK-021-T3-FT-005-W1/TASK-021-T3-FT-005-W1-S-VERIFY-final-report-docs-01.md),
+  [red-verify](../../.tasks/TASK-021-T3-FT-005-W1/TASK-021-T3-FT-005-W1-S-RED-VERIFY-final-report-docs-01.md).
+- `TASK-022-T3-FT-005-W2` is recorded `done` by the scheduler after protected
+  upload/catalog HTTP route implementation, independent `VERDICT: PASS`,
+  per-task `SEMANTIC_VERDICT: semantic-pass`, focused API tests `13/13`,
+  combined photo-intake/API tests `26/26`, full regression `215/215`,
+  multipart/OpenAPI/20 MiB probes PASS, `mb-lint` PASS, and `git diff --check`
+  PASS.
+- Evidence:
+  [implementation](../../.tasks/TASK-022-T3-FT-005-W2/TASK-022-T3-FT-005-W2-S-IMPL-final-report-code-01.md),
+  [verify](../../.tasks/TASK-022-T3-FT-005-W2/TASK-022-T3-FT-005-W2-S-VERIFY-final-report-code-01.md),
+  [red-verify](../../.tasks/TASK-022-T3-FT-005-W2/TASK-022-T3-FT-005-W2-S-RED-VERIFY-final-report-docs-01.md).
+- `TASK-026-T2-FT-005-W3` is recorded `done` after repairing stable catalog
+  cursor continuation, terminal cursor truthfulness, strict cursor validation,
+  and authorization-before-decode; independent `VERDICT: PASS`, task-level
+  `SEMANTIC_VERDICT: semantic-pass`, focused FT-005 `29/29`, and full
+  regression `238/238` are recorded.
+- Repair evidence:
+  [implementation](../../.tasks/TASK-026-T2-FT-005-W3/TASK-026-T2-FT-005-W3-S-IMPL-final-report-code-01.md),
+  [verify](../../.tasks/TASK-026-T2-FT-005-W3/TASK-026-T2-FT-005-W3-S-VERIFY-final-report-docs-01.md),
+  [red-verify](../../.tasks/TASK-026-T2-FT-005-W3/TASK-026-T2-FT-005-W3-S-RED-VERIFY-final-report-docs-01.md).
+- Scheduler waived the missing exact `HUMAN_CHECKPOINT: done` markers for
+  TASK-021 and TASK-022 under the advisory T2/T3 process override. This sync
+  records that as a warning, not a blocker.
+- FT-005 is synchronized as `verified` from the current feature-level
+  `semantic-pass` report while the historical concern report remains intact.
+
+Current implementation evidence remains backend-only. It does not claim Vision
+processing, dataset trainability approval, Plant history UI, timeline
+pagination, export UI, remote sync, or PWA completion.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+Feature-level adversarial re-verification after `TASK-026-T2-FT-005-W3`
+confirmed complete stable PostgreSQL keyset enumeration, truthful terminal
+cursor behavior, strict malformed/wrong-Plant cursor rejection,
+authorization-before-decode, and no upload/manifest/timeline/privacy
+regression. See the
+[repair recheck report](../../.tasks/FT-005/FT-005-S-RED-VERIFY-final-report-docs-02.md).
+
+The historical pre-repair
+[semantic-concern report](../../.tasks/FT-005/FT-005-S-RED-VERIFY-final-report-docs-01.md)
+is retained as superseded evidence.
+
+This boundary sync records the owner's `implemented -> verified` lifecycle
+decision; the Reviewer report itself made no lifecycle decision.

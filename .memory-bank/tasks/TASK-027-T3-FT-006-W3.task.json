@@ -1,0 +1,158 @@
+{
+  "id": "TASK-027-T3-FT-006-W3",
+  "title": "Repair FT-006 response path redaction and cursor canonicality",
+  "status": "done",
+  "wave": "W3",
+  "feature": "FT-006",
+  "reqs": [
+    "REQ-003",
+    "REQ-007",
+    "REQ-010",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-024-T3-FT-006-W2"
+  ],
+  "touched_files": [
+    "backend/app/plant_history/service.py",
+    "backend/app/api/history.py",
+    "tests/backend/plant_history/",
+    "tests/backend/api/test_ft006_history_routes.py",
+    ".memory-bank/tasks/TASK-027-T3-FT-006-W3.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft006-focused-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_history tests/backend/api/test_ft006_history_routes.py -q",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "PostgreSQL-backed service and HTTP tests prove recursive best-effort handling across direct card/list fields, nested values, and mapping keys for obvious standalone or clearly bounded POSIX, Windows-drive, UNC, and file-URI paths.",
+    "Redaction tests include Plant display_name and path-shaped JSON keys while proving complete valid non-file URLs, delimiter-free URL-first ambiguous values, and safe relative artifact refs remain usable.",
+    "Cursor tests prove the service-emitted canonical cursor continues correctly and every non-alphabet, whitespace, padding, wrong-version, extra/missing-field, invalid-timestamp, invalid-source-type, invalid-UUID, or non-canonical form returns HISTORY_CURSOR_INVALID.",
+    "Authenticated HTTP tests prove malformed cursors return 422 with the stable error envelope and no history success payload.",
+    "Existing PostgreSQL authority, retained-history authorization, timeline no-replay, ordering, filtering, and no-store tests remain green.",
+    "An independent Reviewer runs /verify and task-level /red-verify before feature-level /red-verify --feature FT-006 is repeated.",
+    "2026-07-11 independent /verify — VERDICT: FAIL. Authenticated PostgreSQL-backed HTTP probes showed a colon-delimited embedded POSIX absolute-path form surviving verbatim in display_name, a nested value, and a mapping key. Focused suite passed 14/14 and cursor canonicality/422 behavior passed, but the direct response-wide privacy contract is violated. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-01.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after implementation retry 02 — VERDICT: FAIL. The exact prior colon-delimited direct/nested/key leak is fixed and isolated non-file URLs plus strict cursor behavior pass, but an authenticated PostgreSQL-backed HTTP composition probe showed that a remote URL span masks a following no-whitespace colon-delimited POSIX local path in display_name, a nested value, and a mapping key. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-02.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after implementation retry 03 — VERDICT: FAIL. Both historical bypasses now pass, as do legitimate URL/ref preservation and strict cursor behavior, but authenticated PostgreSQL-backed HTTP showed that a delimiter outside the hard-coded URL-boundary allowlist still masks a following colon-delimited POSIX local path in display_name, a nested value, and a mapping key. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-03.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after implementation retry 04 — VERDICT: FAIL. Historical and broad ASCII/Unicode delimiter compositions plus strict cursor behavior pass, but authenticated PostgreSQL-backed HTTP exposed a double-leading-slash POSIX false negative in display_name/nested/key and a false positive that redacts a valid HTTPS URL with a root-looking query value contrary to the non-file URL exemption. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-04.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after implementation retry 05 — VERDICT: FAIL. Historical bypasses, complete path families, valid root-query/root-path URLs, broad URL forms, and strict cursor behavior pass, but authenticated PostgreSQL-backed HTTP showed an oversized validated span swallowing an adjacent malformed hierarchical URL and its absolute path in display_name, a nested value, and a mapping key. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-05.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after implementation retry 06 — VERDICT: FAIL. Prior findings, valid scheme grammar, URL/path families, and strict cursor behavior pass, but authenticated PostgreSQL-backed HTTP showed a valid URL span swallowing an adjacent all-digit malformed hierarchical candidate and its absolute root path in display_name, a nested value, and a mapping key because the marker was skipped during scheme reconstruction. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-06.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after implementation retry 07 — VERDICT: FAIL. Prior malformed-marker/path/cursor classes pass, but unconditional colon/slash boundary discovery misclassifies valid HTTPS path/query/fragment content. Authenticated PostgreSQL-backed HTTP redacted direct display and nested values and omitted mapping keys for complete non-file URLs containing literal colon/slash data. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-07.md. Task-level /red-verify not run after functional FAIL.",
+    "2026-07-11 repeat independent /verify after owner-approved URL-first/KISS implementation retry 08 — VERDICT: PASS. Independent PostgreSQL service and authenticated HTTP probes plus focused 14/14 and full 238/238 suites proved recursive grounded path handling, complete URL and delimiter-free URL-first preservation, safe relative refs, canonical cursor continuation, stable malformed/non-canonical 422 responses, unchanged auth/PostgreSQL authority, and removal without replacement of retry-era parser/matrix complexity. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-08.md. Task-level /red-verify is the next separate action; scheduler lifecycle is unchanged.",
+    "2026-07-11 repeat independent /verify after implementation retry 09 — VERDICT: PASS. PostgreSQL service and authenticated HTTP probes proved URL-userinfo credential, Bearer, and Basic material in direct/nested mapping keys is omitted, comparable values are redacted, safe URL-first keys/values and relative refs remain, obvious path recursion and strict cursor/auth/no-store/PostgreSQL controls pass, and the fix reuses existing redact_text at net +1 production LOC without parser/matrix/state growth. Focused 14/14, full 238/238, compile, and mb-lint passed. Evidence: .protocols/TASK-027-T3-FT-006-W3/verification.md; report: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-VERIFY-final-report-code-09.md. Fresh task-level /red-verify follows; scheduler lifecycle is unchanged.",
+    "2026-07-11 fresh task-level /red-verify after functional PASS 09 — SEMANTIC_VERDICT: semantic-pass. Adversarial review confirmed URL-first/KISS redaction, URL-userinfo/Bearer/Basic secret handling, recursive direct/nested/key behavior, safe URL and relative-ref preservation, strict cursor behavior, PostgreSQL/auth/no-store boundaries, and removal of parser/matrix arms-race complexity. Evidence: .tasks/TASK-027-T3-FT-006-W3/TASK-027-T3-FT-006-W3-S-RED-VERIFY-final-report-docs-02.md. Scheduler closure accepts the absent HUMAN_CHECKPOINT as an advisory waiver for this run; no checkpoint marker is fabricated."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-006-runtime-state-timeline-plant-history.md",
+    ".memory-bank/domains/plant-history.md",
+    ".memory-bank/contracts/plant-history-http.md",
+    ".memory-bank/testing/plant-history.md",
+    ".memory-bank/tasks/plans/IMPL-FT-006.md"
+  ],
+  "evidence_required": [
+    "recursive direct-field, nested-value, and mapping-key evidence for obvious standalone/clearly bounded local paths",
+    "POSIX, Windows-drive, UNC, file-URI, display_name, complete non-file URL, URL-first ambiguity, and safe-relative-ref evidence",
+    "static evidence that retry-era URL candidate grammar/state machinery and generated delimiter/candidate arms-race tests were removed rather than replaced",
+    "canonical cursor continuation and malformed cursor 422 matrix",
+    "FT-006 focused and full regression summaries",
+    "independent /verify and task-level /red-verify reports",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Restore the clarified FT-006 URL-first best-effort local-path presentation and strict-query contracts without an exhaustive URL/path parser arms race.",
+  "success_outcome": "FT-006 recursively best-effort redacts obvious standalone or clearly bounded POSIX, drive, UNC, and file-URI paths; preserves complete valid non-file URLs and safe relative refs; removes retry 01-07 URL candidate grammar/state-machine machinery and generated delimiter/candidate tests used only for rejected exhaustive semantics; and allows only canonical service-emitted cursors to produce 200 history pages.",
+  "anti_goals": [
+    "No upstream Plant display-name validation or Plant-management contract change.",
+    "No PostgreSQL schema, history source family, ordering, or retained-history authorization change.",
+    "No raw export, PWA, Vision, agent, Safety Gate, task/follow-up, Companion, or dataset implementation.",
+    "No rewrite of historical TASK-023 or TASK-024 lifecycle/evidence.",
+    "No exhaustive URL/path grammar, parser state machine, finite delimiter catalogue, generated candidate matrix, or replacement arms race.",
+    "Do not retain retry 01-07 parser/test complexity solely to satisfy superseded exhaustive redaction semantics."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/plant_history/service.py",
+      "backend/app/api/history.py",
+      "tests/backend/plant_history/",
+      "tests/backend/api/test_ft006_history_routes.py",
+      ".protocols/TASK-027-T3-FT-006-W3/",
+      ".tasks/TASK-027-T3-FT-006-W3/",
+      ".memory-bank/tasks/TASK-027-T3-FT-006-W3.task.json"
+    ],
+    "forbidden_scope": [
+      "Plant-management write validation changes",
+      "new history source families, persistent history tables, or event sourcing",
+      "raw export, PWA, Vision, agent, Safety Gate, task, Companion, or dataset behavior",
+      "historical TASK-023/TASK-024 evidence mutation",
+      "unredacted auth/session/secret evidence material",
+      "exhaustive URL/path parser grammar, state machine, delimiter catalogue, or generated candidate arms race"
+    ],
+    "stop_conditions": [
+      "The response-wide policy cannot preserve canonical safe relative artifact refs.",
+      "The repair requires changing upstream Plant-management public input behavior.",
+      "Cursor strictness requires changing the documented history sort tuple or pagination response shape.",
+      "The repair weakens ActorContext or archived retained-history authorization.",
+      "The implementation retains or adds retry-era URL candidate/delimiter machinery solely to pursue exhaustive path-vs-URL discrimination instead of simplifying it.",
+      "Diagnostics or evidence contain credentials, auth material, raw SQL errors, provider payloads, hidden reasoning, raw chat, or unapproved governance content."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-006-runtime-state-timeline-plant-history.md",
+    ".tasks/FT-006/FT-006-S-RED-VERIFY-final-report-docs-01.md",
+    ".memory-bank/tasks/plans/IMPL-FT-006.md",
+    ".protocols/FT-006/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/plant-history.md",
+    ".memory-bank/contracts/plant-history-http.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/domains/photo-artifacts.md",
+    ".memory-bank/testing/plant-history.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Apply one recursive best-effort local-path policy to direct/nested response strings and mapping keys, including Plant display_name.",
+    "Redact a recognized obvious local-path string value as a whole, omit an entry whose key is recognized as an obvious local path, and preserve safe relative artifact refs.",
+    "Cover grounded obvious standalone or clearly bounded POSIX, Windows-drive, UNC, and file-URI forms without claiming exhaustive discrimination.",
+    "Treat a complete valid non-file URL as one exempt value/span including path, query, fragment, and path-like substrings; delimiter-free ambiguous content that parses as that URL is URL-first and preserved.",
+    "Remove retry 01-07 URL candidate grammar/state-machine helpers and generated delimiter/candidate tests used only for superseded exhaustive semantics; do not replace them with another complex parser.",
+    "Accept only unpadded base64url cursor input whose exact v1 JSON shape and decode/re-encode identity match the service encoder; all other forms return HISTORY_CURSOR_INVALID."
+  ],
+  "invariants": [
+    "Obvious standalone or clearly bounded local paths are best-effort redaction targets throughout the serialized response graph; ambiguous completeness is not a hard privacy/security guarantee.",
+    "Mapping keys use the same minimal recursive policy as values; recognized obvious path keys do not survive serialization.",
+    "Complete valid non-file URLs and delimiter-free content parsed as such URLs remain visible under the URL-first rule.",
+    "Only canonical service-emitted cursors can continue pagination; permissive decoder behavior never changes HTTP success.",
+    "PostgreSQL/read model remains history authority and retained reads grant no operational authority."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/plant_history tests/backend/api/test_ft006_history_routes.py -q",
+    ".venv/bin/python -m pytest tests -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Run focused public card/list recursion probes for obvious standalone/clearly bounded POSIX, drive, UNC, and file-URI paths plus complete valid non-file URLs, delimiter-free URL-first ambiguity, and safe relative refs.",
+    "Inspect implementation/tests to confirm retry-era candidate grammar/state-machine helpers and generated delimiter/candidate arms-race matrices were removed rather than replaced.",
+    "Repeat the strict cursor-malleation probes from the FT-006 feature red-verify report."
+  ]
+}

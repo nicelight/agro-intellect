@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -44,7 +44,10 @@ source_of_truth:
 | api_contract | [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md) | active | `/health` and `/ready` substrate boundary | `/foundation-to-tasks` or `/spec-design` |
 | evidence_contract | [.memory-bank/contracts/evidence-redaction.md](contracts/evidence-redaction.md) | active | Secret/evidence redaction | `/foundation-to-tasks` or `/spec-design` |
 | event_contract | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md) | active | Agent-consumable event boundary | `/spec-design` |
-| agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured publishable agent output | `/spec-design` |
+| interface_contract | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md) | active | Authorized typed model invocation, runtime decision, failure, audit, and envelope handoff | `/prd-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md) | active | Multi-provider binding, credentials, typed egress, and no-fallback composition | `/prd-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md) | active | Canonical agent roster and post-commit Plant introduction handoff | `/prd-to-tasks` or `/spec-design` |
+| agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured publishable agent output | `/prd-to-tasks` or `/spec-design` |
 | presentation_contract | [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md) | active | Human-facing non-authoritative projection | `/spec-design` |
 | audit_contract | [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md) | active | Append-only timeline event, current event registry, and minimal append writer seam | `/spec-design` or `/prd-to-tasks` |
 | security_contract | [.memory-bank/contracts/auth/session-security.md](contracts/auth/session-security.md) | active | Password/token/cookie/bearer security | `/prd-to-tasks` or `/spec-design` |
@@ -70,8 +73,10 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/plant-operations.md](testing/plant-operations.md) | active | Check-in, manual measurement, and freshness verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/photo-intake.md](testing/photo-intake.md) | active | Photo artifact, manifest, catalog, upload, and timeline-ref verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/plant-history.md](testing/plant-history.md) | active | Plant card/history projection, retained-history, timeline-ref, and redaction verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md) | active | Agent runtime, MessageEnvelope, real-model anti-cheat, audit, and archive-race verification | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/prd-to-tasks` or `/spec-design` |
+| runbook | [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | active | Agent provider configuration and credentialed real-model smoke | `/prd-to-tasks` or `/spec-design` |
 
 ## Planned Specs
 

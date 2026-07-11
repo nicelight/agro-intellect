@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-006
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -27,13 +27,19 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 - Dataset candidates remain non-trainable by default.
 - MVP sync status remains `local_only`.
 - Storage prompt appears over 200 MB without implying upload/server availability.
-- First demo includes Boss and Engineer paths, real agent behavior, safety, Companion governance, dataset fields, and timeline audit/export.
+- FT-016 composes the first-demo Boss/Engineer PWA journey over available
+  Plant operations, agent, Safety Gate/task, Companion, dataset, and
+  timeline/history seams without transferring ownership of those backend
+  behaviors into or out of their epics.
 
 ## Acceptance Criteria
 
 - Secrets/auth material do not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.
 - LAN mode, if present, is explicitly enabled and protected.
 - UI is role-aware and uses backend authorization as authority.
+- Web App/PWA owns the visible first-demo composition of Plant selection,
+  check-in/photo/history, agent output, safety/task/approval/follow-up,
+  Companion, dataset, timeline/export, and storage-prompt surfaces.
 - Consultant remains in product scope while first-demo Consultant UI may be deferred.
 
 ## Constraints / Invariants

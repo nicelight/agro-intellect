@@ -1,5 +1,5 @@
 ---
-description: Router for active feature implementation plans.
+description: Router for active and in-design feature implementation plans.
 status: active
 ---
 # Implementation Plans
@@ -11,3 +11,5 @@ status: active
 - [IMPL-FT-004](IMPL-FT-004.md): authorized Plant operations and daily check-in.
 - [IMPL-FT-005](IMPL-FT-005.md): photo intake, catalog, and capture manifests.
 - [IMPL-FT-006](IMPL-FT-006.md): runtime state, timeline refs, and Plant history.
+- [IMPL-FT-007](IMPL-FT-007.md): authorized Agent Runtime, canonical roster,
+  post-commit bootstrap, provider bindings, and MessageEnvelope.

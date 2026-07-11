@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -15,6 +15,12 @@ source_of_truth:
 - [Foundation Smoke API](foundation-smoke-api.md): `/health` and `/ready`.
 - [Evidence Redaction](evidence-redaction.md): secret/evidence redaction.
 - [Agent Chat Bus](agent-chat-bus.md): agent-consumable event boundary.
+- [Agent Runtime Adapter](agent-runtime-adapter.md): real model invocation,
+  typed input, runtime decision, failure, audit, and envelope handoff.
+- [Agent Model Provider Profiles](agent-model-provider-profiles.md): explicit
+  provider/model binding, credential isolation, typed egress, and no fallback.
+- [Agent Roster And Plant Bootstrap](agent-roster-bootstrap.md): canonical
+  identities and deterministic post-commit introduction handoff.
 - [MessageEnvelope](message-envelope.md): publishable agent output.
 - [UI Feed](ui-feed.md): human presentation only.
 - [Timeline Event](timeline-event.md): append-only audit/export event.

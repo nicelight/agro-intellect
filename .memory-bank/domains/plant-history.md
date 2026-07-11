@@ -2,7 +2,7 @@
 description: Plant history projection, retained-history access, and runtime authority data specification.
 status: active
 type: data_spec
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/features/FT-006-runtime-state-timeline-plant-history.md
   - .memory-bank/domains/runtime-data-model.md
@@ -97,8 +97,33 @@ mutable identity:
 presence flags, pH/EC values, status strings, timestamps, photo type,
 content type, size, sha256, and safe admin action names. It must not contain
 credentials, session tokens/digests, password hashes, headers, cookies, `.env`
-values, raw SQL, absolute paths, user filenames, raw provider payloads, hidden
-reasoning, raw Companion proposal text, or unapproved UI/chat content.
+values, raw SQL, user filenames, raw provider payloads, hidden reasoning, raw
+Companion proposal text, or unapproved UI/chat content. Local-path handling is
+the separate best-effort presentation policy below, not a secret-redaction
+guarantee.
+
+### Response-safe string projection
+
+- Apply one recursive policy to direct card/list string fields, nested string
+  values, and mapping keys, not only `summary` and `source_refs`.
+- URL-first and KISS: a complete valid non-`file` URL is one exempt value/span,
+  including its path, query, fragment, and any path-like substrings within it.
+  If a delimiter-free ambiguous concatenation parses as that complete URL, the
+  URL interpretation wins and the value/span is preserved.
+- Use only a small best-effort recognizer for obvious standalone local paths or
+  paths embedded after a clear boundary: POSIX `/...`, Windows drive
+  `C:\\...` or `C:/...`, UNC `\\\\server\\share`, and `file://...` forms. A
+  recognized string value is replaced as a whole by the project redaction
+  marker; a recognized mapping key is omitted to avoid key collisions.
+- Do not build exhaustive URL/path grammar, candidate state machines, or a
+  finite delimiter catalogue to discriminate every composition. When more
+  exhaustive redaction would require cumbersome construction, preserving and
+  displaying the ambiguous path or link is preferred.
+- Safe relative artifact refs such as `plants/<uuid>/photos/...` remain
+  allowed.
+- Local-path redaction completeness is not a hard privacy/security guarantee
+  when syntax is ambiguous or the required discrimination would violate KISS.
+  Secret/auth-material exclusions remain strict and separate.
 
 ## Ordering and pagination
 
@@ -106,6 +131,10 @@ reasoning, raw Companion proposal text, or unapproved UI/chat content.
   source_id)`.
 - Cursor pagination uses an opaque cursor derived from that tuple. The cursor
   is not a mutable authority token and must not encode credentials or raw SQL.
+- Cursor decoding is canonical and non-malleable: only the unpadded base64url
+  alphabet is accepted, decode/re-encode must reproduce the exact input, and
+  the decoded versioned payload must have the exact expected fields and valid
+  timestamps/source type/source UUID.
 - Default page size is implementation-local; the API contract defines accepted
   limits.
 - A source row without a timeline ref may still appear when the authoritative
@@ -153,5 +182,11 @@ reasoning, raw Companion proposal text, or unapproved UI/chat content.
   history entries and missing timeline lines do not overwrite PostgreSQL
   source rows.
 - Redaction tests prove responses, summaries, logs, exports, and evidence omit
-  auth material, absolute paths, raw SQL, provider payloads, hidden reasoning,
-  and raw governance/chat content.
+  auth material, raw SQL, provider payloads, hidden reasoning, and raw
+  governance/chat content.
+- Response-recursion tests cover card fields (including `display_name`), nested
+  values, and mapping keys with simple obvious POSIX, Windows-drive, UNC, and
+  `file://` cases. They also prove complete valid non-file URLs and safe
+  relative artifact refs remain unchanged.
+- Local-path tests do not claim exhaustive discrimination and do not generate
+  delimiter/candidate matrices solely to search for ambiguous URL/path forms.

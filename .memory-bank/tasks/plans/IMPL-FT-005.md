@@ -3,7 +3,7 @@ description: Implementation plan for FT-005 Photo Intake Catalog and Capture Man
 status: active
 type: implementation_plan
 feature_id: FT-005
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/features/FT-005-photo-intake-catalog-capture-manifests.md
   - .memory-bank/domains/photo-artifacts.md
@@ -70,6 +70,14 @@ manifest writer, checksum validation, and acceptance service.
 OpenAPI tests, integration flow, behavior-spec traceability, and durable FT-005
 docs sync.
 
+### W3 - Catalog Continuation Repair
+
+`TASK-026-T2-FT-005-W3` implements the already advertised catalog cursor as
+stable keyset pagination, returns a real `next_cursor`, and proves rows beyond
+`limit` are reachable without duplicates or omissions. It depends on the
+completed W2 HTTP boundary and leaves accepted upload/artifact semantics
+unchanged.
+
 ## Expected Touched Areas
 
 - `backend/app/photo_intake/`
@@ -88,6 +96,8 @@ docs sync.
   routes.
 - Full test suite when practical.
 - `node scripts/mb-lint.mjs` and `git diff --check`.
+- Multi-row service/HTTP continuation probe with `limit=1`, complete
+  enumeration, terminal null cursor, and malformed/wrong-Plant cursor cases.
 
 ## UAT
 
@@ -97,3 +107,10 @@ docs sync.
 3. Manifest and stored original agree with catalog metadata.
 4. Invalid, oversized, unsupported, unauthorized, or archived uploads fail
    without accepted artifacts.
+5. A catalog larger than `limit` is fully enumerable through stable opaque
+   cursors, and a supplied cursor is never silently ignored.
+
+## Repair Evidence Basis
+
+- `.tasks/FT-005/FT-005-S-RED-VERIFY-final-report-docs-01.md`
+- Existing `TASK-021` and `TASK-022` records remain `done` historical evidence.

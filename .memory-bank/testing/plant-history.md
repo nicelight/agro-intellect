@@ -2,7 +2,7 @@
 description: Verification specification for Plant card/history projections, retained-history access, and timeline authority boundaries.
 status: active
 type: testing_spec
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/domains/plant-history.md
   - .memory-bank/contracts/plant-history-http.md
@@ -34,6 +34,15 @@ timeline-ref authority separation, and retained-history reads.
   `/api/plants/{plant_id}/history`.
 - Redaction tests for response summaries, timeline refs, artifact refs, logs,
   exports, screenshots, and evidence.
+- PostgreSQL-backed service and HTTP tests traverse direct card/list fields,
+  nested values, and mapping keys. Grounded cases cover obvious standalone or
+  clearly bounded POSIX, Windows-drive, UNC, and `file://` paths with
+  best-effort redaction, plus complete valid non-file URL and safe-relative-ref
+  preservation.
+- Cursor tests prove canonical unpadded base64url continuation succeeds while
+  inserted non-alphabet bytes, whitespace, padding, wrong version,
+  extra/missing fields, invalid timestamps/source type/UUID, and non-canonical
+  encodings return `HISTORY_CURSOR_INVALID`; HTTP maps each to `422`.
 
 ## Anti-cheat checks
 
@@ -45,9 +54,23 @@ timeline-ref authority separation, and retained-history reads.
   approval, agent publication, or governance transition authority.
 - Future source families such as tasks, approvals, agent outputs, Companion,
   and dataset records are not faked before their owning feature schemas exist.
-- Responses and evidence omit secrets/auth material, absolute paths, raw SQL,
-  provider payloads, hidden reasoning, raw Companion proposal text, raw chat,
-  and UI Feed content.
+- Responses and evidence omit secrets/auth material, raw SQL, provider
+  payloads, hidden reasoning, raw Companion proposal text, raw chat, and UI
+  Feed content.
+- The best-effort local-path policy is applied recursively, including card
+  fields and mapping keys; testing only selected `summary` values is
+  insufficient.
+- Complete valid non-file URLs are preserved as whole values/spans, including
+  path/query/fragment and path-like substrings. Delimiter-free ambiguous text
+  that parses as one such URL is URL-first.
+- Remove retry-era generated delimiter/candidate matrices and assertions whose
+  only purpose is exhaustive URL/path discrimination. Do not replace them with
+  another parser grammar or state-machine arms race.
+- Local-path completeness is not a hard privacy/security gate when ambiguity
+  or implementation complexity arises; preserve/display the path or link in
+  that case. Secret/auth redaction remains strict.
+- Cursor decoding never relies on permissive base64 behavior and accepts only
+  the canonical representation emitted by the service.
 
 ## Suggested gates
 

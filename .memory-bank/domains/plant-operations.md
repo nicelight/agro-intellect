@@ -2,7 +2,7 @@
 description: Concrete Plant operations check-in, observation, manual measurement, and freshness data specification.
 status: active
 type: data_spec
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md
   - .memory-bank/domains/runtime-data-model.md
@@ -74,6 +74,16 @@ Python `uuid.UUID`, and application-generated `uuid.uuid4`.
 
 At least one of `ph` or `ec_ms_cm` is required for a measurement record.
 
+### Canonical measurement values
+
+- pH is stored and exposed at scale 2; EC is stored and exposed at scale 3.
+- Accepted finite in-range numeric input is normalized with decimal
+  `ROUND_HALF_UP` to those scales before the ORM row, immediate result,
+  freshness projection, and timeline summary are constructed.
+- The one normalized value is used by PostgreSQL, the success response,
+  subsequent reads, and audit/export summaries. Those surfaces MUST NOT report
+  different values for the same `measurement_id`.
+
 ## Check-in rules
 
 - A check-in is created only for an active Plant and an ActorContext whose
@@ -89,6 +99,10 @@ At least one of `ph` or `ec_ms_cm` is required for a measurement record.
   - one valid manual pH/EC measurement.
 - Missing observation text is never invented. A skipped observation is explicit
   `no_observation_provided`.
+- `observation_state` may be omitted only when `observation_text` is also
+  omitted and a valid measurement is present. Supplying non-blank observation
+  text without an explicit state is invalid and MUST NOT be silently converted
+  to `no_observation_provided`.
 - Photo upload is not performed by FT-004. A check-in response may expose a
   photo upload entry-point/ref for FT-005, but it must not claim photo
   acceptance.
@@ -101,6 +115,10 @@ are not authority.
 - `analysis` freshness window: 24 hours.
 - `approval_input` freshness window: 2 hours.
 - pH and EC freshness are computed independently.
+- A value is fresh only when its timestamp is within the closed interval
+  `computed_at - window <= measured_at <= computed_at`. Future-dated evidence
+  is retained as entered but is stale for both purposes until server time
+  reaches it; no clock-skew allowance is implicit.
 - Missing or stale values remain explicit in projection output and must not be
   silently treated as fresh.
 - Fresh pH/EC is never sufficient to authorize physical action. Safety Gate and
@@ -144,6 +162,11 @@ The `provenance_note` is included only after redaction.
 - Service tests prove authorized Boss/Engineer writes, Consultant/archived/
   revoked/unauthorized denials, no partial writes, and safe source refs.
 - Freshness tests cover 24h analysis, 2h approval input, missing values, stale
-  values, and independent pH/EC computation.
+  values, future-dated values, and independent pH/EC computation.
+- PostgreSQL-backed normalization tests prove excess-scale accepted inputs use
+  one canonical value in the ORM result, database reread, freshness projection,
+  and timeline summary.
+- Observation validation tests prove supplied text without a state is rejected
+  without a check-in, measurement, or timeline success event.
 - Authority tests prove freshness and latest measurements come from
   PostgreSQL/read model, not timeline, UI Feed, photo manifests, or agent text.

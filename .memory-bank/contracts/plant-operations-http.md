@@ -2,7 +2,7 @@
 description: Concrete HTTP contract for daily Plant check-ins and manual pH/EC measurements.
 status: active
 type: api_contract
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/domains/plant-operations.md
   - .memory-bank/contracts/api-guidelines.md
@@ -80,6 +80,11 @@ approvals, follow-up outcomes, and frontend/PWA layout.
 - optional `measurement` object with nullable `measured_at`, nullable `ph`,
   nullable `ec_ms_cm`, nullable `provenance_note`.
 
+When `observation_text` is non-blank, `observation_state` is required. If both
+observation fields are omitted, a valid measurement payload may still make the
+check-in non-empty. Text without state returns `422 VALIDATION_FAILED`; it is
+never discarded or rewritten as `no_observation_provided`.
+
 `POST /measurements` payload:
 
 - nullable `measured_at`; defaults to receive time only when the user did not
@@ -87,6 +92,16 @@ approvals, follow-up outcomes, and frontend/PWA layout.
 - nullable `ph`.
 - nullable `ec_ms_cm`.
 - nullable `provenance_note`.
+
+pH and EC accept finite JSON numeric values in their documented ranges. The
+success response exposes the canonical PostgreSQL value: pH at scale 2 and EC
+at scale 3, normalized with decimal `ROUND_HALF_UP` before persistence and
+timeline append. A subsequent read and the audit summary for the same
+measurement MUST agree with the creation response.
+
+Future-aware timestamps remain valid historical input, but a `measured_at`
+later than the freshness projection's `computed_at` is stale for both
+`analysis` and `approval_input`.
 
 ## Error catalog
 
@@ -113,6 +128,11 @@ All errors use the global `{error: {code, message, request_id}}` envelope.
 - Authorization tests cover Boss, Engineer, Consultant, missing grant, revoked
   grant, disabled membership, unauthorized Plant, and archived Plant.
 - Freshness tests prove latest measurement projection reads PostgreSQL state
-  and uses the documented windows.
+  and uses the documented closed windows, including future-dated evidence.
+- PostgreSQL/API tests prove excess-scale values have one normalized value in
+  the creation response, timeline summary, database reread, and latest
+  projection.
+- Validation tests prove non-blank observation text without
+  `observation_state` returns `422 VALIDATION_FAILED` and writes nothing.
 - Failure-injection tests prove persistence or timeline failures do not return
   success and do not leak raw exception or credential details.

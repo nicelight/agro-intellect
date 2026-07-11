@@ -3,7 +3,7 @@ description: Implementation plan for FT-004 Authorized Plant Operations and Dail
 status: active
 type: implementation_plan
 feature_id: FT-004
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/features/FT-004-authorized-plant-operations-daily-check-in.md
   - .memory-bank/domains/plant-operations.md
@@ -34,7 +34,8 @@ measurements, freshness projections, and operations HTTP routes.
 ## Constitution Check
 
 - Spec Before Code: tasks derive from FT-004 and linked canonical specs.
-- KISS: two implementation tasks, no generic workflow engine.
+- KISS: preserve the two completed implementation tasks and add one cohesive
+  repair task for the feature-level findings; no generic workflow engine.
 - Safety/authority: fresh pH/EC is evidence only; it never unlocks physical
   actions without Safety Gate and human approval.
 - Security: T3 because writes are Plant-scoped, authorization-sensitive, and
@@ -68,6 +69,14 @@ validation, authorization, freshness projection, and timeline refs.
 `TASK-020-T3-FT-004-W2` implements protected API routes/OpenAPI, focused
 integration flow, behavior-spec traceability, and durable FT-004 docs sync.
 
+### W3 - Authority And Evidence Semantics Repair
+
+`TASK-025-T3-FT-004-W3` repairs the three feature-level semantic failures in
+one service/API/test slice: canonical pH/EC normalization across PostgreSQL,
+responses, projections, and timeline summaries; future-dated evidence staying
+stale; and rejection of observation text without explicit state. It depends
+on the completed W2 feature boundary and does not rewrite historical tasks.
+
 ## Expected Touched Areas
 
 - `backend/app/plant_operations/`
@@ -85,6 +94,10 @@ integration flow, behavior-spec traceability, and durable FT-004 docs sync.
 - Regression tests for existing auth, Plant access, and admin routes.
 - Full test suite when practical.
 - `node scripts/mb-lint.mjs` and `git diff --check`.
+- PostgreSQL probe comparing accepted excess-scale input across immediate
+  response, timeline payload, stored row, and later read.
+- Service/HTTP probes for future-dated freshness and observation text without
+  state, including zero-write/zero-event evidence for the rejected check-in.
 
 ## UAT
 
@@ -92,3 +105,11 @@ integration flow, behavior-spec traceability, and durable FT-004 docs sync.
 2. Engineer logs in and creates a check-in with observation plus pH/EC.
 3. Latest measurement projection reports fresh pH/EC.
 4. Archived or unauthorized Plant check-in fails without writes.
+5. Excess-scale values agree across response, PostgreSQL, timeline, and later
+   reads; future-dated values remain stale; observation text without state is
+   rejected and preserved nowhere as a false `no_observation_provided` event.
+
+## Repair Evidence Basis
+
+- `.tasks/FT-004/FT-004-S-RED-VERIFY-final-report-docs-01.md`
+- Existing `TASK-019` and `TASK-020` records remain `done` historical evidence.

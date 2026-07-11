@@ -1,0 +1,138 @@
+{
+  "id": "TASK-026-T2-FT-005-W3",
+  "title": "Repair FT-005 catalog cursor continuation",
+  "status": "done",
+  "wave": "W3",
+  "feature": "FT-005",
+  "reqs": [
+    "REQ-003",
+    "REQ-009",
+    "REQ-010"
+  ],
+  "depends_on": [
+    "TASK-022-T3-FT-005-W2"
+  ],
+  "touched_files": [
+    "backend/app/photo_intake/repository.py",
+    "backend/app/photo_intake/service.py",
+    "backend/app/api/photos.py",
+    "tests/backend/photo_intake/",
+    "tests/backend/api/test_ft005_photos_routes.py",
+    ".memory-bank/tasks/TASK-026-T2-FT-005-W3.task.json"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "ft005-focused-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/photo_intake tests/backend/api/test_ft005_photos_routes.py -q",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Repository/service tests seed more photos than limit and prove stable uploaded_at DESC, photo_id ASC keyset continuation reaches every PostgreSQL row exactly once.",
+    "HTTP tests prove next_cursor is non-null only when another row exists, the supplied cursor advances the page, and the terminal page returns next_cursor=null.",
+    "Cursor-negative tests prove empty, malformed, non-canonical, wrong-version, invalid-field, and wrong-Plant cursors return 422 VALIDATION_FAILED without authorization or existence leakage.",
+    "Existing accepted upload, artifact, manifest, checksum, timeline, authorization, local_only, and can_train_on tests remain green.",
+    "An independent Reviewer runs /verify and task-level /red-verify before feature-level /red-verify --feature FT-005 is repeated.",
+    "2026-07-11 independent /verify: VERDICT: PASS. Real PostgreSQL/service and protected HTTP probes proved stable complete limit=1 enumeration, no duplicates/omissions, truthful terminal cursor, strict invalid/wrong-Plant cursor behavior, and authorization-before-decode. Focused 29 passed; full 238 passed; mb-lint PASS. Evidence: .protocols/TASK-026-T2-FT-005-W3/verification.md and .tasks/TASK-026-T2-FT-005-W3/TASK-026-T2-FT-005-W3-S-VERIFY-final-report-docs-01.md. Global git diff --check warning is limited to unrelated notes_agro-prj.md:51.",
+    "SEMANTIC_VERDICT: semantic-pass — task-level adversarial review confirmed truthful complete catalog continuation, strict cursor validation, authorization-before-decode, PostgreSQL authority, and unchanged upload/artifact boundaries; report: .tasks/TASK-026-T2-FT-005-W3/TASK-026-T2-FT-005-W3-S-RED-VERIFY-final-report-docs-01.md"
+  ],
+  "docs": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-capture-manifests.md",
+    ".memory-bank/domains/photo-artifacts.md",
+    ".memory-bank/contracts/photo-intake-http.md",
+    ".memory-bank/testing/photo-intake.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md"
+  ],
+  "evidence_required": [
+    "multi-row limit=1 continuation and complete-enumeration output",
+    "stable ordering and no-duplicate/no-omission evidence",
+    "malformed, non-canonical, and wrong-Plant cursor 422 evidence",
+    "FT-005 focused and full regression summaries",
+    "independent /verify and task-level /red-verify reports",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Make the advertised FT-005 catalog pagination truthful so authorized clients can enumerate every PostgreSQL catalog row beyond limit through a stable opaque cursor.",
+  "success_outcome": "FT-005 catalog pages use deterministic Plant-scoped keyset continuation, return a real next_cursor when more rows exist, and reject invalid cursors instead of ignoring them.",
+  "anti_goals": [
+    "No photo upload, artifact layout, manifest, checksum, or timeline acceptance redesign.",
+    "No offset pagination, server-side cursor registry, or new pagination framework.",
+    "No Plant history/timeline pagination change.",
+    "No rewrite of historical TASK-021 or TASK-022 lifecycle/evidence."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/photo_intake/repository.py",
+      "backend/app/photo_intake/service.py",
+      "backend/app/api/photos.py",
+      "tests/backend/photo_intake/",
+      "tests/backend/api/test_ft005_photos_routes.py",
+      ".protocols/TASK-026-T2-FT-005-W3/",
+      ".tasks/TASK-026-T2-FT-005-W3/",
+      ".memory-bank/tasks/TASK-026-T2-FT-005-W3.task.json"
+    ],
+    "forbidden_scope": [
+      "photo artifact acceptance or storage redesign",
+      "Plant history cursor or response changes",
+      "offset state or a server-side cursor registry",
+      "historical TASK-021/TASK-022 evidence mutation",
+      "unredacted auth/session/path/evidence material"
+    ],
+    "stop_conditions": [
+      "The repair requires a database migration or new persistent cursor state.",
+      "Stable continuation cannot preserve the documented uploaded_at DESC, photo_id ASC order.",
+      "The repair requires changing upload/artifact identity or acceptance semantics.",
+      "Authorization cannot be resolved before catalog cursor results are returned.",
+      "Diagnostics or evidence contain secrets, auth material, absolute paths, raw SQL errors, provider payloads, or hidden reasoning."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-005-photo-intake-catalog-capture-manifests.md",
+    ".tasks/FT-005/FT-005-S-RED-VERIFY-final-report-docs-01.md",
+    ".memory-bank/tasks/plans/IMPL-FT-005.md",
+    ".protocols/FT-005/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/photo-intake-http.md",
+    ".memory-bank/domains/photo-artifacts.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/photo-intake.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use stable keyset order uploaded_at DESC, photo_id ASC and fetch limit + 1 rows.",
+    "The canonical unpadded base64url v1 cursor contains Plant id plus the last returned uploaded_at/photo_id tuple and must round-trip exactly.",
+    "Malformed, non-canonical, wrong-version, invalid-field, and wrong-Plant cursors use existing 422 VALIDATION_FAILED.",
+    "Catalog reads remain PostgreSQL-authoritative and ActorContext-scoped; filesystem scanning is forbidden."
+  ],
+  "invariants": [
+    "An unchanged catalog can be fully enumerated without duplicate or omitted rows.",
+    "next_cursor is null if and only if no row exists after the returned page.",
+    "A supplied cursor advances the keyset query or fails validation; it is never ignored.",
+    "Pagination does not weaken Plant/Farm authorization or expose cross-Plant existence."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/photo_intake tests/backend/api/test_ft005_photos_routes.py -q",
+    ".venv/bin/python -m pytest tests -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Repeat the three-photo limit=1 continuation probe from the FT-005 feature red-verify report and enumerate all pages."
+  ]
+}

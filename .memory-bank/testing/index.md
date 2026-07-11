@@ -1,7 +1,7 @@
 ---
 description: Router for active testing strategy and subject verification specifications.
 status: active
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/testing/strategy.md
@@ -30,6 +30,9 @@ source_of_truth:
   upload, checksum, and timeline-ref evidence.
 - [Plant History Verification](plant-history.md): Plant card/history
   projection, retained-history, timeline-ref, and redaction evidence.
+- [Agent Runtime Verification](agent-runtime.md): runtime decisions,
+  MessageEnvelope, roster/bootstrap, provider binding, real-model anti-cheat,
+  audit, and archive-race evidence.
 
 ## Archive
 

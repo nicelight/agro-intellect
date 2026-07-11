@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-004
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -24,15 +24,23 @@ Make physical-action advice safe and accountable by requiring freshness, Safety 
 ## Success Metrics
 
 - Physical-action wording fails closed when evidence is stale/missing, Safety Gate fails, or actor authority is missing.
+- Safe missing/stale-data requests create traceable check or measurement tasks.
 - Approval never triggers automated device execution.
-- Follow-up outcomes remain traceable to approved human-performed tasks.
+- Tasks, approvals, and follow-up outcomes retain Plant/evidence refs that
+  audit/history projections can consume without owning their state.
 
 ## Acceptance Criteria
 
 - Safety Gate approval remains distinct from Companion governance approval.
+- Check/measurement task creation, pending approval records,
+  human-performed `action_task` records, and follow-up outcomes are owned by
+  the Safety & Task Loop, not Plant Operations.
 - Boss can approve for Farm Plants only through Safety Gate rules.
 - Engineer can approve only when granted `plant_approve_actions` for the Plant.
 - Consultant never approves physical actions in MVP.
+- Archived-Plant tasks, approvals, and outcomes remain retained and
+  non-operative; restore requires a new request through current authorization,
+  freshness, safety, and owning lifecycle guards.
 
 ## Constraints / Invariants
 

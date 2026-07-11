@@ -4,6 +4,117 @@ status: active
 ---
 # Changelog
 
+## [2026-07-11] FT-007 SDD closure and task queue
+- Finalized the project-owned Agent Runtime, strict MessageEnvelope v1,
+  sanitized runtime-decision timeline audit, exact PostgreSQL typed-input
+  assembler, and fresh post-model authorization/archive guard.
+- Added canonical provider-profile, eight-agent roster/post-commit bootstrap,
+  focused verification, provider runbook, and three behavior specifications.
+- Recorded explicit DeepSeek and Gemini native bindings, per-agent deploy-time
+  model ids, typed external egress, no fallback, and a recognized fail-closed
+  `chatgpt_oauth` broker port that never reuses ChatGPT/Codex credentials.
+- Defined Plant agent activation as a restart-safe derived roster and one
+  deterministic non-agent-consumable introduction handoff per agent after
+  Plant commit, without model I/O inside creation or false durable-chat claims.
+- Added and indexed `TASK-028-T3-FT-007-W1` and
+  `TASK-029-T3-FT-007-W2`; the direct W1 dependency is the completed canonical
+  Plant-operations baseline `TASK-025-T3-FT-004-W3`.
+- Preserved Bus/chat/UI persistence as a downstream boundary and created no
+  FT-008 task after the owner's explicit scope reduction.
+- JSON/task-schema/link checks and `mb-lint` passed. `mb-doctor` passed with
+  zero errors; its 12 advisories are 11 historical T3 checkpoint warnings plus
+  the intentionally planned W1 ready-candidate warning pending
+  `/review-tasks-plan FT-007`. Global diff-check still reports only the
+  unrelated pre-existing `notes_agro-prj.md:51` whitespace finding.
+
+## [2026-07-11] EP-002 ownership correction boundary sync
+- Reconciled the already-written owner decision: EP-002 is `active` and
+  `verified` for authorized check-in/observations/manual pH/EC, photo intake
+  and manifests, PostgreSQL authority, timeline audit/export refs, and
+  retained Plant card/history.
+- Confirmed REQ-008/009/010 as `verified`; REQ-006/007, EP-003/004/006,
+  REQ-016, and REQ-021 remain lifecycle-unchanged and `planned` where
+  applicable.
+- Confirmed routing ownership without further edits: agents/Vision remain with
+  EP-003, Safety/tasks/approvals/follow-up with EP-004, and PWA/first-demo
+  composition with EP-006/FT-016.
+- Confirmed the epic/feature routers, RTM evidence, boundary map, verified
+  FT-004/005/006 state, and 28/28 `done` task registry are mutually consistent.
+- Preserved the PRD, user scenarios, task records and links, canonical
+  contracts, code/tests, feature lifecycles, and all historical sync reports
+  and changelog entries.
+- Post-sync RTM/ownership/link assertions, `mb-lint`, and scoped whitespace
+  checks passed. Strict doctor passed with `0 errors, 11 warnings, 2 info`;
+  warnings remain the already-recorded advisory checkpoint findings. Global
+  diff hygiene retains only the unrelated `notes_agro-prj.md:51` warning.
+- Post-sync review corrected the operational run status from mixed active/run
+  chronology to one compact terminal snapshot: no task is selected or running,
+  the queue remains `28/28 done`, and historical step-by-step evidence routes
+  to per-task protocols/reports instead of being duplicated as current state.
+
+## [2026-07-11] EP-002 decomposition ownership repair
+- Corrected the L1-L3 ownership cut so EP-002 closes independently around
+  authorized check-in/observations/manual pH/EC, photo intake/manifests,
+  PostgreSQL runtime authority, timeline audit/export refs, and retained Plant
+  card/history.
+- Narrowed REQ-008 to that owned outcome and synchronized REQ-008 plus EP-002
+  to `verified` from the already-verified FT-004/FT-005/FT-006 evidence.
+- Activated the EP-002 document after its decomposition questions closed and
+  scoped its local redaction criterion to timeline/manifests/history/evidence/
+  export refs; mandatory Bus/UI Feed/agent-context redaction remains governed
+  by global specs and implemented by EP-003/EP-006.
+- Routed agent/Vision behavior to EP-003, Safety Gate/tasks/approvals/follow-up
+  to EP-004/REQ-016, and first-demo PWA composition solely to
+  EP-006/REQ-021/FT-016; these downstream areas remain lifecycle-unchanged.
+- Corrected REQ-006 to primary EP-001/FT-002 ownership with FT-004 as a
+  non-owning consumer, without changing the REQ-006 lifecycle.
+- Split the REQ-007 base retention mapping from downstream archived-Plant
+  guards now traced by REQ-013/016/017/018; REQ-007 lifecycle remains
+  unchanged.
+- Rephrased FT-004/005/006 criteria as owned backend/API behavior plus typed
+  integration seams and moved task/approval/outcome authority in the boundary
+  map to the Safety & Task Loop.
+- Preserved the PRD and user scenarios as composite product flows, all task
+  records/links, historical reports and sync entries, unrelated specs, code,
+  and tests. No new product IDs or `/mb-sync` run was introduced.
+
+## [2026-07-11] Wave W3 - FT-004/FT-005/FT-006 repair verification sync
+- Reconciled owner-written `done` decisions and preserved functional/semantic
+  evidence for repair tasks TASK-025, TASK-026, and TASK-027 without changing
+  task identity, tier, dependencies, status, or historical reports.
+- Synchronized FT-004, FT-005, and FT-006 from `implemented` to `verified`
+  after current feature-level reports each recorded exact
+  `SEMANTIC_VERDICT: semantic-pass`; EP-002 remains `implemented` so downstream
+  epic/product scope is not inferred.
+- Synchronized REQ-009 and REQ-010 to `verified`; kept REQ-007 and REQ-008
+  `planned` and left other shared requirements unchanged.
+- Recorded TASK-025/TASK-027 missing human-checkpoint markers as explicit
+  advisory owner waivers, without fabricating either marker.
+- Recorded the controlling FT-006 URL-first/KISS policy: obvious local paths
+  are best-effort redaction targets, ambiguous paths/links may remain visible
+  rather than reintroducing unstable parser/matrix complexity, and strict
+  secret/auth redaction remains unchanged.
+- Confirmed task/index and canonical spec-link consistency through TASK-027;
+  no spec, lifecycle model, dependency promotion, or unrelated feature was
+  created or changed.
+
+## [2026-07-10] Wave W2 - FT-004/FT-005/FT-006 scheduler sync
+- Reconciled scheduler-written `TASK-019` through `TASK-024` records as `done`
+  without changing closure decisions or promoting dependents inside
+  `/mb-sync`.
+- Synchronized FT-004, FT-005, FT-006, and EP-002 lifecycles as
+  `implemented`, not `verified`, with direct implementation/verify/red-verify
+  evidence links.
+- Synchronized RTM lifecycles for REQ-009 and REQ-010 to `implemented`; kept
+  REQ-008 and REQ-007 `planned` because downstream task/approval/follow-up,
+  Safety Gate, PWA/first-demo, agent, Companion, and governance scope remains
+  with later features.
+- Recorded scheduler-waived missing exact `HUMAN_CHECKPOINT: done` markers for
+  TASK-019 through TASK-024 as warnings, not blockers, under the advisory T2/T3
+  process override.
+- Confirmed the indexed queue is reconciled through `TASK-024`; no new specs,
+  principles, lifecycle models, or future-work task records were created.
+
 ## [2026-07-10] FT-006 SDD closure and task queue
 - Created subject-based SDD specs for Plant history projections, retained-
   history HTTP reads, and focused verification.

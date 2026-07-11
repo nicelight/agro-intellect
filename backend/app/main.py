@@ -7,7 +7,14 @@ from fastapi.responses import JSONResponse
 
 from .access_admin.dependencies import install_protected_route_error_handler
 from .access_admin.errors import install_error_handlers
-from .api import admin_router, plants_router, session_router
+from .api import (
+    admin_router,
+    history_router,
+    operations_router,
+    photos_router,
+    plants_router,
+    session_router,
+)
 from .config import AppSettings
 from .database import DatabaseHandle, build_database
 
@@ -28,6 +35,9 @@ def create_app(
     app.include_router(session_router)
     app.include_router(admin_router)
     app.include_router(plants_router)
+    app.include_router(operations_router)
+    app.include_router(photos_router)
+    app.include_router(history_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

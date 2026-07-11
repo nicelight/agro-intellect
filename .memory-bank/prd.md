@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-07-06
+last_updated: 2026-07-11
 ---
 # PRD
 
@@ -95,6 +95,19 @@ does not replace backend rules, and cannot authorize physical actions.
 - Product agents MUST operate with single-competence boundaries and permission-aware context.
 - MVP product agents MUST run as real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users.
 - MVP MUST NOT satisfy agent acceptance criteria with fake, mock, hardcoded, or stubbed agent outputs.
+- Agent Runtime MUST support explicit provider profiles for `chatgpt_oauth`,
+  `deepseek`, and `gemini`; concrete model identifiers are deploy-time
+  configuration with no hardcoded default or silent cross-provider fallback.
+  DeepSeek and Gemini use native bindings; `chatgpt_oauth` remains fail-closed
+  behind an approved external credential broker and MUST NOT reuse ChatGPT
+  browser or Codex credentials.
+- Authorized typed Plant context MAY leave the local runtime for the explicitly
+  selected provider. Credentials, auth material, raw UI/chat, provider history,
+  and hidden reasoning remain forbidden outbound context.
+- After a Plant creation commits, the system MUST idempotently register the
+  canonical Plant agent roster and hand one deterministic introduction per
+  agent to the Plant chat/feed boundary. Introduction text is project metadata,
+  not model output or evidence that a real model ran.
 - Vision Observation Agent MUST process actual uploaded photo data through a real vision-capable model or real vision model integration; it MUST NOT be replaced by a mock/fake adapter in MVP.
 - Agent-originated product output MUST pass project-owned runtime decision, MessageEnvelope, Agent Chat Bus, and UI Feed boundaries as applicable.
 - UI Feed MUST remain presentation-only and unavailable as agent working context.
@@ -148,6 +161,8 @@ First working flow:
 1. User logs in or opens a local session.
 2. System resolves Account, Farm, role preset, PlantAccessGrant, and ActorContext.
 3. User selects an authorized Plant, initially `tomato_001`.
+   For a newly committed Plant, the system registers its canonical agent roster
+   and hands each agent's deterministic introduction to that Plant's chat/feed.
 4. System starts a daily check-in.
 5. User records observations, uploads a photo, and/or enters pH/EC measurements.
 6. Backend stores photo file, catalog row, initial capture manifest, runtime state, and timeline audit.
@@ -171,6 +186,10 @@ from first demo.
 - Backend: Python, FastAPI, Pydantic/schema validation, PostgreSQL/read model, local filesystem for photos/artifacts, JSONL timeline export.
 - Frontend: Web App/PWA with role-aware UI, Plant selector, chat/feed surface, task/approval cards, and minimal Boss Admin Surface.
 - AI runtime: Agno SDK as execution layer only, real LLM-backed product agents, real vision-capable model or real vision model integration for photos, and project-owned domain adapters.
+- Model provider profiles: DeepSeek and Gemini native adapters plus a
+  fail-closed `chatgpt_oauth` profile behind a future project-approved
+  credential adapter; model ids are selected later through deployment
+  configuration.
 - Future/non-MVP options: InfluxDB, object storage, DuckDB, Capacitor wrapper, server sync/cloud deployment, full dataset registry, and real fine-tuning.
 
 ## Edge Cases / Failure Handling
@@ -254,6 +273,22 @@ from first demo.
 - Q: What is the high-level CompanionProposal supersede/expiry policy? -> A: No parallel proposals for the same Plant-scoped issue. When Companion creates a new proposal for the same issue, the previous pending proposal automatically becomes superseded and non-operative. No time-based expiry is required in PRD.
 - Q: What approved governance summary becomes agent-consumable? -> A: Only compact typed facts derived from a valid DecisionRecord: decision id, Plant id, issue id, proposal id/version, decision, decision summary, allowed workflow effect, decider role, decided_at, source refs, and explicit `safety_gate_authority=not_granted`. Raw proposal text, raw rationale, UI markdown, raw chat, and unapproved discussion content remain non-consumable.
 - Q: Is the first-demo boundary sufficient, and can any agent/model behavior be stubbed in MVP? -> A: MVP must use real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users. Fake, mock, hardcoded, or stubbed agent outputs are not acceptable as the MVP runtime/demo path. Sensor runtime remains out of MVP until real sensors exist.
+
+### Session 2026-07-11
+
+- Q: Which provider families must Agent Runtime support? -> A: Support
+  `chatgpt_oauth`, `deepseek`, and `gemini`. Concrete model ids will be chosen
+  later and must remain explicit deployment configuration. DeepSeek/Gemini use
+  native bindings; `chatgpt_oauth` cannot become operational until an approved
+  broker defines token lifecycle and endpoint semantics, and it must fail
+  closed rather than reuse ChatGPT/Codex credentials.
+- Q: May Plant context be sent to external providers? -> A: Yes, but only the
+  typed authorized payload for the explicitly selected provider; credentials,
+  raw UI/chat, provider history, and hidden reasoning remain excluded.
+- Q: When do Plant agents start and appear in chat? -> A: After Plant creation
+  commits, automatically register the canonical agent roster and hand one
+  deterministic introduction per agent to that Plant's chat/feed. Introduction
+  metadata is not a model-generated product conclusion.
 
 ## Unresolved Blockers
 

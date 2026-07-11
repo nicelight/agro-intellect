@@ -22,6 +22,7 @@ status: active
 - [User Scenarios](user-scenarios.md), [Core Domain](domains/core-domain.md), [Boundary Map](contracts/boundary-map.md), [Lifecycle Map](states/lifecycle-map.md): decomposition context.
 - [Foundation Runtime Runbook](runbooks/foundation-local-runtime.md): local setup/start/smoke.
 - [First Boss Bootstrap Runbook](runbooks/first-boss-local-bootstrap.md): one-shot local first-Boss setup command.
+- [Agent Runtime Provider Runbook](runbooks/agent-runtime-providers.md): explicit provider/model setup and credentialed real-model smoke.
 - [Changelog](changelog.md): durable change history.
 
 ## Operational roots

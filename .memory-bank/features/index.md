@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -21,13 +21,13 @@ source_of_truth:
 
 ## EP-002 Plant Operations Evidence Authority
 
-- [FT-004 Authorized Plant Operations And Daily Check-In](FT-004-authorized-plant-operations-daily-check-in.md): authorized daily operations entry points.
-- [FT-005 Photo Intake Catalog And Capture Manifests](FT-005-photo-intake-catalog-capture-manifests.md): local photo artifact intake and evidence refs.
-- [FT-006 Runtime State Timeline And Plant History](FT-006-runtime-state-timeline-plant-history.md): runtime authority, timeline, and retained history.
+- [FT-004 Authorized Plant Operations And Daily Check-In](FT-004-authorized-plant-operations-daily-check-in.md): verified backend/API daily operations, check-ins, canonical measurements, freshness, and timeline refs.
+- [FT-005 Photo Intake Catalog And Capture Manifests](FT-005-photo-intake-catalog-capture-manifests.md): verified backend/API local photo intake, catalog pagination, manifests, checksum, and evidence refs.
+- [FT-006 Runtime State Timeline And Plant History](FT-006-runtime-state-timeline-plant-history.md): verified backend/API runtime-authority history projections, retained history, strict cursors, and URL-first/KISS response handling.
 
 ## EP-003 Agent Runtime And Context Hygiene
 
-- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): real model runtime and publishable output.
+- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD-complete authorized runtime, canonical roster/bootstrap, multi-provider boundary, and planned TASK-028/TASK-029 queue.
 - [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): working-context and presentation separation.
 - [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): visual evidence and state promotion.
 - [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): cautious advice and missing-data behavior.

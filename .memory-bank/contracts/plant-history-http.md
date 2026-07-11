@@ -2,7 +2,7 @@
 description: Concrete HTTP contract for Plant history card, retained-history reads, and timeline refs.
 status: active
 type: api_contract
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_of_truth:
   - .memory-bank/domains/plant-history.md
   - .memory-bank/contracts/api-guidelines.md
@@ -32,10 +32,28 @@ components.
 - Protected responses set `Cache-Control: no-store`.
 - Request query parameters reject unknown fields.
 - Responses exclude credentials, password hashes, session tokens/digests,
-  cookies, headers, raw SQL errors, absolute local paths, provider payloads,
-  hidden reasoning, raw Companion proposal text, raw chat, and UI Feed content.
+  cookies, headers, raw SQL errors, provider payloads, hidden reasoning, raw
+  Companion proposal text, raw chat, and UI Feed content.
 - `timeline_ref` and `event_refs` are audit/export refs only and never make a
   history response a mutable state authority.
+
+Local-path presentation uses a response-recursive, URL-first KISS policy:
+
+- Obvious standalone or clearly bounded POSIX, Windows-drive, UNC, and
+  `file://` local paths are best-effort redaction targets in direct fields,
+  nested string values, and mapping keys. A recognized value becomes the
+  project redaction marker; a recognized key is omitted.
+- A complete valid non-`file` URL is one exempt value/span, including its path,
+  query, fragment, and path-like substrings. If delimiter-free ambiguous text
+  parses as that URL, preserve it under the URL-first rule.
+- Safe relative artifact refs remain allowed.
+- The implementation MUST NOT grow an exhaustive URL/path grammar, parser
+  state machine, generated delimiter catalogue, or other arms race. If exact
+  discrimination would require cumbersome construction, preserving/displaying
+  the ambiguous path or link is preferred.
+- Consequently local-path redaction completeness is not a hard privacy or
+  security guarantee. Strict credential/auth/secret exclusions above are not
+  weakened by this presentation trade-off.
 
 ## Response shapes
 
@@ -82,6 +100,14 @@ The default `limit` is 50. Accepted `limit` range is `1..100`. `cursor` is an
 opaque value returned by the previous page. `source_type`, when present, must
 be one of the currently implemented entry source types.
 
+The cursor is unpadded base64url canonical JSON with exactly `v=1`,
+`occurred_at`, `recorded_at`, `source_type`, and `source_id`, matching the
+newest-first sort tuple. Valid cursor input uses only `[A-Za-z0-9_-]`, has no
+whitespace or padding, decodes to valid typed fields, and re-encodes exactly to
+the original input. Non-alphabet bytes, padding, whitespace, extra/missing
+fields, wrong versions, invalid timestamps/source types/UUIDs, and any other
+non-canonical representation return `422 HISTORY_CURSOR_INVALID`.
+
 ## Error catalog
 
 All errors use the global `{error: {code, message, request_id}}` envelope.
@@ -110,5 +136,15 @@ All errors use the global `{error: {code, message, request_id}}` envelope.
   audit refs remain readable to authorized retained-history users without
   enabling writes.
 - Redaction tests prove responses and evidence omit auth material, raw SQL,
-  absolute paths, provider payloads, hidden reasoning, raw chat, and unapproved
-  governance content.
+  provider payloads, hidden reasoning, raw chat, and unapproved governance
+  content.
+- Focused response-recursion tests cover `display_name`, nested values, and
+  mapping keys with obvious standalone/clearly bounded POSIX, drive-letter,
+  UNC, and `file://` cases; complete valid non-file URLs and safe relative refs
+  remain unchanged.
+- Tests MUST NOT require exhaustive URL/path discrimination or generated
+  delimiter/candidate coverage. Ambiguous delimiter-free content that parses
+  as one complete non-file URL is expected to be preserved.
+- Cursor tests cover canonical continuation plus inserted non-alphabet bytes,
+  whitespace, padding, wrong version, extra/missing fields, invalid typed
+  fields, and deterministic `422 HISTORY_CURSOR_INVALID` responses.
