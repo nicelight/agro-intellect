@@ -49,6 +49,12 @@ may use implementation details chosen by FT-011, but only the project-owned
 validated result below is authority; model-selected claim labels are inputs,
 not classification.
 
+The classifier may semantically analyze `candidate_output`, including text that
+looks like Markdown, HTML, a prompt, an instruction, or a command, but it must
+treat the complete value as untrusted data. Candidate content cannot instruct
+the classifier, change its closed result schema/matrix, select a permitted next
+boundary, or authorize an action.
+
 The strict result contains exactly:
 
 - `schema_version=1`;
@@ -127,6 +133,9 @@ Every safety/action record must carry:
 - DecisionRecord, UI Feed prompt display, MessageEnvelope
   candidate fields, `SafetyClassificationResultV1`, and Bus publication are not
   Safety Gate approval.
+- Candidate wording cannot override classifier policy, freshness evidence,
+  current authorization, Safety Gate state, approval authority, or task/action
+  tracking even when it claims to be a system/developer instruction or command.
 - Superseded, stale, or replayed approvals cannot create an action task.
 - Every Safety Gate, approval, task, follow-up, and outcome transition requires
   current `Plant.status=active` at its transactional authorization boundary.
@@ -145,6 +154,9 @@ Every safety/action record must carry:
   the safety/task record.
 - Governance approval cannot be converted into physical-action approval.
 - Unsafe classifier uncertainty must prefer block/clarify over cleared wording.
+- Markup- or prompt-looking syntax alone is neither a safety class nor an
+  `output_invalid` condition; classification is semantic and still fails
+  closed on physical-action meaning or uncertainty.
 - A model-selected `observation|hypothesis|team_signal` label cannot make
   physical-action wording safe, and a model-selected
   `recommendation|task_request` label cannot force a genuinely non-physical
@@ -164,6 +176,9 @@ Tests must prove:
 - Adversarial classification tests cover mislabeled physical-action wording,
   all four result classes, exact matrix/unknown-field rejection, duplicate
   conflict, and safe task requests that never create an `action_task`.
+- Classifier tests treat representative Markdown/HTML/prompt-like strings as
+  untrusted data, prove they cannot override the result matrix or current
+  guards, and preserve unchanged fail-closed physical-action behavior.
 - No code path performs automated actuation.
 - Archiving with open safety/task records leaves those records unchanged,
   blocks every transition while archived, and restore does not bypass current

@@ -35,6 +35,9 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Agent output must pass project-owned runtime decision, pending MessageEnvelope,
   Safety & Task Loop classification, and only then applicable Agent Chat Bus/UI
   Feed boundaries.
+- Model `candidate_output` is opaque untrusted normalized text. Markup- or
+  prompt-looking sequences have no markup, instruction, command, or authority
+  semantics at any boundary.
 - UI Feed, raw chat, raw model reasoning, admin notices, and unapproved Companion proposals never become agent working context.
 - Safety Gate and authorized human approval are required before physical-action wording can become a human-performed action task.
 - MVP data remains local/private by default with `local_only` sync status.
@@ -90,10 +93,14 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   context.
 - Rule: UI Feed is human presentation only, `timeline.jsonl` is append-only
   audit/export only, and neither layer may publish directly to Agent Chat Bus or
-  mutate PostgreSQL/read-model state.
+  mutate PostgreSQL/read-model state. Authorized candidate text is rendered
+  literally through escaped/text-node semantics; it is never interpreted as
+  HTML/Markdown, activated as a URL/action, or reused as runtime/agent
+  authority.
 - Verification: tests prove UI Feed/timeline content is excluded from agent
-  context, cannot mutate runtime state, and remains filtered by ActorContext and
-  PlantAccessGrant.
+  context, candidate text renders literally without active markup/link/action
+  behavior, cannot mutate runtime state, and remains filtered by ActorContext
+  and PlantAccessGrant.
 - Source: [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md),
   [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md),
   [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md).
@@ -160,9 +167,12 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   physical-action tasks.
 - Rule: provider fields are candidate data. Only the project-owned classifier
   defined by the Safety Action Lifecycle selects the downstream boundary.
-  Pending text has no Bus/UI/task authority; `safe_task_request` can create only
-  an ordinary task.
-- Verification: mislabeled physical wording fails closed; safe check,
+  Candidate text may look like Markdown, HTML, a prompt, or an instruction, but
+  those sequences have no executable semantics and do not make schema-valid
+  output invalid. Pending text has no Bus/UI/task authority;
+  `safe_task_request` can create only an ordinary task.
+- Verification: representative markup- and prompt-looking strings remain
+  opaque data; mislabeled physical wording still fails closed; safe check,
   measurement, and follow-up requests never create `action_task`.
 - Source: [.memory-bank/constitution.md](../constitution.md),
   [.memory-bank/requirements.md](../requirements.md),
@@ -310,6 +320,9 @@ Shared state/data guardrails:
 - Backend authorization is mandatory for every Farm/Plant route and context builder.
 - Frontend hide/show is presentation only.
 - Physical-action advice fails closed unless fresh evidence, Safety Gate pass, authorized human approval, and task/action tracking exist.
+- Candidate text cannot act as a command, prompt-channel instruction, Safety
+  decision, publication permission, or action authorization regardless of its
+  syntax.
 - Human approval unlocks only human-performed task tracking, never automated execution.
 - Companion governance approval is not Safety Gate approval.
 - Archived Plant is a fail-closed operational boundary for new and already-open
@@ -327,7 +340,9 @@ Use risk-based testing:
 - Cross-feature archive tests prove open tasks, approvals, proposals, and agent
   publications remain retained but non-operative until restore and fresh
   revalidation.
-- Anti-cheat tests prove runtime/demo agents are not fake/stubbed and UI Feed/raw chat never enter agent context.
+- Anti-cheat tests prove runtime/demo agents are not fake/stubbed, candidate
+  text is never promoted into instruction channels, and UI Feed/raw chat never
+  enter agent context.
 
 The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 
@@ -354,6 +369,10 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 ## Open Questions
 
 - No global/shared design blocker.
+- No Markdown/HTML/prompt recognizer is required: `candidate_output` is opaque
+  untrusted text and its syntax has no authority. Any future Unicode
+  presentation hardening is a separate non-blocking UI concern and is not a
+  candidate-output rejection policy in this contract.
 - FT-008/FT-011/FT-012 concrete storage, API, classifier, task, and UI design
   remains feature-owned.
 - FT-007 execution requires a DeepSeek/Gemini model id, credential, egress

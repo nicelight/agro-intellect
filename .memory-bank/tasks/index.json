@@ -120,6 +120,14 @@
     {
       "id": "TASK-029-T3-FT-007-W2",
       "file": "TASK-029-T3-FT-007-W2.task.json"
+    },
+    {
+      "id": "TASK-030-T3-FT-007-W1",
+      "file": "TASK-030-T3-FT-007-W1.task.json"
+    },
+    {
+      "id": "TASK-031-T3-FT-007-W2",
+      "file": "TASK-031-T3-FT-007-W2.task.json"
     }
   ]
 }

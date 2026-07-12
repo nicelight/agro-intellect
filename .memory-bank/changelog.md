@@ -4,6 +4,25 @@ status: active
 ---
 # Changelog
 
+## [2026-07-12] Opaque candidate-output contract decision
+- Ratified the owner decision that schema-valid `candidate_output` is opaque
+  untrusted normalized text within the existing 1..2000 Unicode-code-point
+  bound; Markdown/HTML/prompt-like syntax is data and is not by itself
+  `output_invalid`.
+- Extended AD-004/AD-008 and the existing MessageEnvelope, Agent Runtime,
+  UI Feed, Agent Chat Bus, Safety Action Lifecycle, and testing contracts:
+  authorized UI rendering is literal/escaped, Bus propagation uses typed
+  quotation rather than instruction channels, and candidate content gains no
+  routing, Safety, task, action, or runtime authority.
+- Kept the classifier matrix, current authorization/archive guards, Safety
+  Gate, human approval, redaction, pending/non-consumable envelope state, and
+  raw-provider/history/reasoning exclusions unchanged.
+- Preserved TASK-028 failure, TASK-029 blocked state, BUG-001, protocols, and
+  scheduler evidence as correct historical records under the superseded
+  syntax-rejection contract; no lifecycle artifact was edited.
+- Foundation remains verified and unaffected. Next route is bounded
+  `/prd-to-tasks FT-007`, then fresh `/review-tasks-plan FT-007`; no execution.
+
 ## [2026-07-12] FT-007 shared/global SDD repair
 - Closed D1-D6/E1 in canonical Agent I/O, MessageEnvelope, Timeline,
   classification, Plant Operations, provider-smoke, and roster/bootstrap specs.

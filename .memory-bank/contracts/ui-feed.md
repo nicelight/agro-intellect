@@ -71,6 +71,12 @@ agent input, runtime truth, timeline authority, or task/action authority.
   an authoritative task/Safety record or a generic block notice; the notice
   never copies candidate text. UI Feed may also project authorized domain,
   timeline, admin, storage, and Companion records under their owning contracts.
+- Candidate text on that authorized/classified route is rendered literally
+  through escaped/text-node semantics (for example, framework text
+  interpolation or `textContent`). UI Feed never sends it through an HTML or
+  Markdown renderer, raw-HTML insertion, URL/link activation, or action parser.
+  Markup-, prompt-, instruction-, command-, and URL-looking sequences remain
+  inert visible text.
 - UI Feed is the visible projection owner for deterministic roster
   introductions. FT-008 durably reconciles one strict eight-item batch per
   active Plant and writes exactly one `UIFeedEvent` per
@@ -80,6 +86,8 @@ agent input, runtime truth, timeline authority, or task/action authority.
 - UI Feed must never publish directly to Agent Chat Bus.
 - UI Feed, UI markdown, cards, spoiler notes, raw chat, admin notices, and
   unapproved Companion content must never enter agent working context.
+- Candidate text displayed by UI Feed must not be copied into agent context,
+  runtime instructions, command handlers, routing inputs, or authority fields.
 - UI Feed may show a Safety block or pending approval prompt, but it cannot
   authorize a physical action.
 - UI Feed may show a DecisionRecord summary, but it cannot make raw proposal
@@ -118,3 +126,7 @@ Tests must prove:
 - Safety Gate approval, DecisionRecord approval, and UI prompt display remain
   separate authority classes.
 - Redaction removes secrets/auth material from UI Feed output.
+- Representative HTML/Markdown/prompt-/URL-looking candidate strings render
+  literally with no active element, link, command, or action side effect.
+- Candidate display remains unavailable to agent context/runtime authority;
+  exact component and e2e mechanics remain owned by FT-008/FT-016.

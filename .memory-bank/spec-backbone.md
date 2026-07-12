@@ -21,6 +21,10 @@ last_updated: 2026-07-12
 
 ## Open Design Questions
 - None at the global/shared design level.
+- `candidate_output` requires no Markdown/HTML/prompt recognizer: it is opaque
+  untrusted normalized text, and syntax-looking content has no executable or
+  authority semantics. Future Unicode presentation hardening, if needed, is a
+  non-blocking UI concern rather than a candidate-output rejection policy.
 - DeepSeek/Gemini model id, credential, and egress opt-in are execution inputs;
   FT-008/FT-011/FT-012 concrete design remains feature-owned.
 
@@ -37,10 +41,10 @@ last_updated: 2026-07-12
 | data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/foundation.md](foundation.md) | ActorContext -> state/artifacts/audit -> Bus/agents -> Safety/UI/tasks flow defined; FT-000 runtime smoke flow defined; projection/audit layers cannot become runtime or agent authority. |
 | storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/foundation.md](foundation.md) | PostgreSQL/read model, shared UUID identity, non-cascading authority relations, DB/session/Alembic substrate, local filesystem artifacts, JSONL audit/export separation, and local bootstrap/runtime-root baseline defined. |
 | api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md), [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md) | HTTP/API guardrails, FT-000 smoke, unchanged Plant-create compatibility, authoritative observation-limit rejection, and FT-006 Plant history boundary are defined. |
-| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Pending MessageEnvelope, project-owned classification, guarded downstream writes, Timeline matrix, and archive no-replay rules are defined. |
-| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Sole ProviderRequestV1 allowlist, ordered AgentInputRecordV1 records/refs, strict model/outcome unions, UUIDv5 batch identity, atomic sink matrix, and active-Plant reconciliation boundary are defined. |
-| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-008 and the strict classification matrix deny model-selected safety authority, separate ordinary tasks from action_task, and require current guards at every downstream write. |
-| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Exact request/input/outcome/event/batch assertions, observation boundaries, adversarial classification compatibility, and the two accepted audited smoke outcomes are defined. |
+| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Pending opaque-text MessageEnvelope, project-owned classification, literal UI rendering, typed Bus quotation, guarded downstream writes, Timeline matrix, and archive no-replay rules are defined. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Sole ProviderRequestV1 allowlist, ordered AgentInputRecordV1 records/refs, strict model/outcome unions, opaque candidate-text boundary, UUIDv5 batch identity, atomic sink matrix, and active-Plant reconciliation boundary are defined. |
+| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-008 and the strict classification matrix deny model-selected/content-selected authority, separate ordinary tasks from action_task, and require current guards at every downstream write. |
+| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Exact request/input/outcome/event/batch assertions, opaque candidate acceptance, literal UI/typed Bus separation, adversarial classification compatibility, and the two accepted audited smoke outcomes are defined. |
 | deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md), [.memory-bank/foundation.md](foundation.md) | Local loopback first demo; Linux Mint local bootstrap/PostgreSQL path and runbook; optional protected LAN later; no SaaS/server sync. |
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md) | Key architecture risks recorded. |
 | open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/foundation.md](foundation.md) | No global/shared design blocker remains; provider model/credential/egress values are execution inputs, and downstream feature-local details stay routed to their owning `/prd-to-tasks` runs. |
@@ -63,8 +67,17 @@ last_updated: 2026-07-12
 
 ## Handoff To /prd-to-tasks
 - Ready: yes for `/prd-to-tasks FT-007` planning reconciliation only.
-- Scope: feature-level SDD design and task slicing for the selected feature.
+- Scope: bounded reconciliation of FT-007 planning against the authoritative
+  opaque-candidate-text contract; then `/review-tasks-plan FT-007`.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or feature design conflicts with the authoritative global backbone; rerun `/spec-design` for shared/global decisions. TASK-028/TASK-029 execution remains forbidden until the refreshed queue receives a fresh `VERDICT: APPROVE`.
+- Historical note: TASK-028's failed verification and BUG-001 were correct
+  under the now-superseded syntax-rejection contract and remain preserved as
+  historical evidence. This `/spec-design` pass does not alter TASK-028,
+  TASK-029, BUG-001, or scheduler lifecycle state.
+- Brownfield delta: `backend/app/agent_runtime/contracts.py` and its FT-007
+  tests still implement the superseded partial markup/prompt regex rejection.
+  That is an implementation/planning reconciliation input, not a remaining
+  global design question.
 
 ## Global Backbone Status
 - Status: complete
@@ -75,6 +88,7 @@ last_updated: 2026-07-12
   - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
-- Notes: Foundation remains verified. FT-007 is ready for planning
-  reconciliation only; execution requires refreshed task cards and fresh
-  `/review-tasks-plan FT-007` approval.
+- Notes: Foundation remains verified and is not affected by the candidate-text
+  contract change. FT-007 is ready for bounded planning reconciliation only;
+  execution requires refreshed task cards and fresh `/review-tasks-plan
+  FT-007` approval.

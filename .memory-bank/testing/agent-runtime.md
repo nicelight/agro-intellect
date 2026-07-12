@@ -42,7 +42,7 @@ archive/authorization guard.
 | Provider request | Exact closed `ProviderRequestV1`; ordered records/refs; no authorization, session, role/grant, provider selection, or arbitrary metadata. |
 | Typed input | Exact record union and payloads; PostgreSQL sources; Plant/check-in/pH/EC order; pH+EC row dedup; canonical UUID/time/decimal values; maximum four records. |
 | Observation bound | Lengths 1/2000 accepted; 2001 rejected before provider I/O; no truncation, chunking, or implicit summary. |
-| Model/envelope | Exact decision/candidate matrix; unknown/malformed/unsafe content rejected; silence has no envelope; non-silent envelope is pending and non-consumable; model supplies no safety authority. |
+| Model/envelope | Exact decision/candidate matrix; unknown/malformed/type/normalization/length-invalid content rejected; representative Markdown/HTML/prompt-/instruction-/URL-looking strings accepted unchanged as opaque candidate data when schema-valid; silence has no envelope; non-silent envelope is pending and non-consumable; model supplies no safety authority. |
 | Outcome/event | Every `AgentRuntimeOutcomeV1` and Timeline matrix row; exact nullability/ref/provider/audit states; no-event branches; no failure becomes silence. |
 | Security/errors | Message scope and audit attribution expose only canonical safe fields; provider/parser failures expose stable codes without secrets or raw payloads. |
 | Roster/batch | Exact roster/order/metadata, UUIDv5 namespace and names, one eight-item batch, and the 8-or-0 sink result matrix. |
@@ -55,14 +55,22 @@ archive/authorization guard.
 | Production assembly | ActorContext plus `plant_id` loads real PostgreSQL rows; callers cannot inject records/refs; request order matches the canonical contract. A persisted oversized observation returns `context_denied/input_contract_violation` with no provider or audit call. |
 | Post-model guard | Expired/revoked session, disabled Account/Membership, role/grant change, wrong Farm, revoked grant, or archived Plant returns exact `publication_guard_denied` semantics. Identity never enters provider input; Timeline attribution is exactly `account_id`, `membership_id`, and request-time `role_preset`. |
 | Envelope/classifier boundary | FT-007 returns only immutable pending/non-consumable envelopes. Producer tests reject model safety fields and claim no Bus/UI/task effect; classifier/effect implementation remains FT-011/FT-008/FT-012 scope. |
+| Opaque candidate handoff | Schema-valid markup-/prompt-looking text reaches the pending envelope unchanged but has no instruction, routing, publication, task, Safety, or action authority. Downstream literal UI rendering and typed Bus quotation remain FT-008/FT-016 tests. |
 | Audit/storage | One sanitized event for each provider-I/O branch; append failure blocks handoff; no agent-run/provider-history table and no timeline-as-runtime read. |
 | Plant compatibility | Bootstrap starts after the existing Plant/grant/audit commit, makes no provider call, and leaves `POST /api/plants` authorization, `201 PlantSummary`, no-store, and error behavior unchanged for every sink result. |
 | Batch sink | One call with eight deterministic items; identical duplicate succeeds; conflict rejects; rejected/failed accepts zero; introductions are non-consumable and not MessageEnvelope. No FT-008 storage/projection is implemented or claimed. |
 | Provider composition | DeepSeek/Gemini construct only the selected native adapter; no cross-provider fallback; unconfigured `chatgpt_oauth` fails before credential/network access and never reads Codex/browser credentials. |
 
-## Real-model smoke
+## Deferred optional/manual real-model UAT
 
-The credentialed smoke must:
+This credentialed smoke is retained for later manual UAT and is non-blocking
+for TASK-031/code-phase closure. Its absence or lack of credentials/provider
+egress is not a deterministic-suite failure. BHV-001 and the live-provider
+portion of REQ-011 remain explicitly deferred/unverified until a later smoke
+passes; deterministic introduction, constructor, binding, or anti-cheat
+evidence cannot satisfy them.
+
+When explicitly invoked, the smoke remains strict and must:
 
 1. Use a production DeepSeek or Gemini `AgnoModelExecutor`; no injected test
    executor or cross-provider substitute is allowed.
@@ -104,12 +112,15 @@ result, or runtime-created failure silence never count as a successful smoke.
   never relabels API-key auth as `chatgpt_oauth`.
 - Agno memory/session history, Team coordination, raw provider messages, and
   UI Feed are absent from model context and persistence.
+- Candidate text is never parsed or promoted into system/developer/instruction
+  channels by FT-007; syntax-looking content remains opaque data.
 
 ## Behavior traceability
 
-- `FT-007-BHV-001`: credentialed real provider transport -> either an audited
-  validated non-silent envelope or audited strict model-declared silence, without
-  accepting failure silence or claiming downstream product-agent completion.
+- `FT-007-BHV-001`: deferred/unverified manual UAT. A later credentialed real
+  provider transport must produce either an audited validated non-silent
+  envelope or audited strict model-declared silence, without accepting failure
+  silence or claiming downstream product-agent completion.
 - `FT-007-BHV-002`: committed Plant -> exact post-commit roster introduction
   handoff without model I/O or agent-context visibility.
 - `FT-007-BHV-003`: archive during invocation ->
@@ -120,8 +131,9 @@ result, or runtime-created failure silence never count as a successful smoke.
 
 - Focused deterministic suite:
   `.venv/bin/python -m pytest tests/backend/agent_runtime -m "not real_model" -q`
-- Credentialed smoke after explicit `AGENT_REAL_SMOKE_PROFILE`/model id,
-  egress opt-in, and matching credential are configured:
+- Deferred optional/manual UAT after explicit `AGENT_REAL_SMOKE_PROFILE`/model
+  id, egress opt-in, installed provider dependency, and matching credential are
+  configured (not a TASK-031/code-phase closure command):
   `AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q`
 - Related access/archive regression:
   `.venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime -q`
@@ -130,7 +142,8 @@ result, or runtime-created failure silence never count as a successful smoke.
 - Diff check: `git diff --check`
 
 Concrete roster-member prompts, triggers, and product-flow real-model evidence
-remain with the RTM-listed owning features. Before REQ-011 is claimed complete,
+remain with the RTM-listed owning features. The live-provider portion of
+REQ-011 is currently deferred/unverified. Before REQ-011 is claimed complete,
 at least one such downstream flow must repeat the production provider path over
 actual scoped Plant data; the FT-007 contract smoke alone is insufficient.
 

@@ -70,6 +70,14 @@ Feature-local specs may add fields, but every Bus event must have:
 
 - `consumable_by_agents=true` is required before event content can enter agent working context.
 - UI Feed events are not Bus events.
+- When an authorized `safe_information` route preserves candidate content, the
+  Bus payload carries it only in an explicit typed quoted-data member. Exact
+  feature-local field naming may be refined by FT-008, but the payload type
+  must distinguish untrusted quotation from instructions and routing data.
+- Context construction must preserve that quotation boundary and must never
+  concatenate candidate content into system, developer, instruction, prompt,
+  tool, command, or routing channels. Prompt-like text cannot instruct a
+  downstream agent.
 - Approved governance summary facts can be consumable only when derived from a valid DecisionRecord and must include `safety_gate_authority=not_granted`.
 - Unapproved proposals and raw chat remain non-consumable.
 
@@ -80,6 +88,9 @@ Feature-local specs may add fields, but every Bus event must have:
   explicit retained-history projection may read retained events, and it is not
   agent working context.
 - Agents may receive only scoped Plant/Farm context they are authorized to process.
+- Candidate-derived quoted data, when allowed, remains visibly typed and
+  untrusted in the assembled agent input; it cannot become an agent definition,
+  policy, competence, instruction, tool call, or runtime decision.
 - Context builders must exclude UI Feed, spoiler notes, raw model reasoning, raw chat, admin notices, and unapproved Companion content.
 
 ## Ordering And Replay
@@ -102,6 +113,9 @@ Feature-local specs may add fields, but every Bus event must have:
   context. Physical action routes to Safety Gate; uncertainty permits only a
   non-consumable UI block notice.
 - Bus publication alone never authorizes physical action.
+- Candidate content cannot alter event routing or consumability by stating a
+  prompt, command, safety label, or publication instruction; only the matching
+  validated classification and current guard select the route.
 
 ## Verification
 
@@ -110,6 +124,9 @@ Tests must prove:
 - unauthorized Plant events are filtered out;
 - UI Feed/raw chat/unapproved proposal content is absent from agent context;
 - raw provider output cannot bypass adapters;
+- classified candidate content uses a typed quotation field and never an
+  instruction/prompt channel; prompt-like text cannot alter downstream agent
+  behavior or routing authority;
 - Safety Gate and DecisionRecord authority remain separate;
 - adversarially mislabeled physical wording cannot enter Bus, while a verified
   safe check/measurement request avoids physical-action approval and never

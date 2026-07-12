@@ -228,9 +228,9 @@ are rejected. Its matrix is:
 
 | Decision | Candidate claim | Output/confidence/refs | Reason |
 |---|---|---|---|
-| `speak` | `observation|hypothesis|recommendation|task_request|team_signal` | normalized plain text 1..2000 code points; confidence `0..1` except nullable for `team_signal`; 1..4 request refs | `null` |
-| `clarify` | `clarification` | normalized plain text 1..2000; confidence `null`; 1..4 request refs | `null` |
-| `escalate` | `safety_block|team_signal` | normalized plain text 1..2000; confidence `null`; 1..4 request refs | `null` |
+| `speak` | `observation|hypothesis|recommendation|task_request|team_signal` | opaque untrusted normalized text 1..2000 code points; confidence `0..1` except nullable for `team_signal`; 1..4 request refs | `null` |
+| `clarify` | `clarification` | opaque untrusted normalized text 1..2000; confidence `null`; 1..4 request refs | `null` |
+| `escalate` | `safety_block|team_signal` | opaque untrusted normalized text 1..2000; confidence `null`; 1..4 request refs | `null` |
 | `silent` | `null` | output and confidence `null`; refs exactly `[]` | `no_material_output|insufficient_evidence` |
 
 The candidate claim is untrusted model data. The provider result has no
@@ -238,6 +238,11 @@ The candidate claim is untrusted model data. The provider result has no
 publication flag. For every non-silent result Agent Runtime creates only a
 MessageEnvelope with `publication_state=pending_classification`; the project-
 owned Safety & Task Loop classifier decides the final route.
+
+`candidate_output` is not parsed as Markdown, HTML, a prompt, an instruction,
+or a command. Such syntax is accepted unchanged when the strict schema,
+decision/claim matrix, refs, normalization, and 1..2000-code-point bound are
+valid. It remains opaque data and cannot alter runtime routing or authority.
 
 Provider metadata, messages, traces, tool calls, response objects, hidden
 reasoning, and parser diagnostics remain transient inside the executor. The
@@ -254,8 +259,9 @@ adapter copies only the validated object above.
    `runtime_not_configured` with no provider/audit call.
 3. Invoke the configured real model outside every database transaction. A call
    failure becomes the pending `provider_failed` outcome.
-4. Parse `AgentModelResultV1`. Schema/matrix/ref/content failure becomes the
-   pending `output_invalid` outcome.
+4. Parse `AgentModelResultV1`. Schema, decision/claim matrix, ref, type,
+   normalization, or length failure becomes the pending `output_invalid`
+   outcome. Markup- or prompt-looking syntax alone does not.
 5. After any schema-valid provider result, reload the original LocalSession by
    `session_id`, require it unexpired/unrevoked and bound to the same active
    Account, reload the exact active Membership in the same Farm, then resolve
@@ -328,7 +334,7 @@ boundary without inventing another outcome kind.
 | `AGENT_CONTEXT_DENIED` | Input scope is missing, inactive, mismatched, unauthorized, or contains a selected authoritative record that violates the strict V1 input bounds before invocation. | No provider call and no MessageEnvelope. No `agent_runtime_decided` event is created because model execution did not begin. |
 | `AGENT_RUNTIME_NOT_CONFIGURED` | Production model binding, egress opt-in, provider dependency/credential, competence policy, or approved OAuth broker is unavailable. | Safe failure; no fake/cross-provider fallback and no provider call. |
 | `AGENT_PROVIDER_FAILED` | Timeout, rate limit, network, provider, or Agno execution failure. | Audited `provider_failed`; no final decision or MessageEnvelope. |
-| `AGENT_OUTPUT_INVALID` | Candidate output fails schema, decision/claim, refs, or content validation. | Audited `output_invalid`; no final decision or MessageEnvelope. |
+| `AGENT_OUTPUT_INVALID` | Candidate output fails schema, decision/claim, refs, type, normalization, or length validation. Markup- or prompt-looking syntax alone is not invalid. | Audited `output_invalid`; no final decision or MessageEnvelope. |
 | `AGENT_PUBLICATION_BLOCKED` | Current session/Account/Membership/Plant/grant recheck fails after model execution. | Audited `publication_guard_denied`; no final decision, MessageEnvelope, or replay. |
 | `AGENT_AUDIT_FAILED` | Sanitized timeline append fails. | Fail closed; no MessageEnvelope handoff is returned. |
 
@@ -362,7 +368,8 @@ silence and always fails the smoke.
 The canonical [Agent Runtime testing spec](../testing/agent-runtime.md) covers:
 
 - ProviderRequest/input allowlists, order, observation bounds, and auth absence;
-- model/envelope/outcome/event matrices, current guard, and audit failure;
+- model/envelope/outcome/event matrices, acceptance of schema-valid opaque
+  markup-/prompt-looking candidate text, current guard, and audit failure;
 - provider composition, no fallback, and the exact smoke rule above;
 - post-commit batch handoff without FT-008 implementation claims.
 

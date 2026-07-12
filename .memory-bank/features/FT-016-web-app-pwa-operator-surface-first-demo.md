@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-016
 epic: EP-006
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -26,12 +26,17 @@ source_of_truth:
 - First demo includes Plant selector access checks, daily check-in, photo upload with file/catalog/sha256/manifest refs, manual pH/EC, real model-backed product agents, real vision processing, Plant State trust statuses, Hydroponics Advisor missing-data behavior, Task & Follow-up behavior, Safety Gate behavior, Companion HumanAttentionNeeded/proposal/decision path, dataset fields, timeline audit/export, and local storage prompt.
 - UI remains role-aware and presentation-only where applicable.
 - UI does not become backend authority or agent working context.
+- Authorized/classified model text is shown literally through escaped/text-node
+  rendering; markup-, prompt-, command-, and URL-looking sequences remain inert
+  text with no HTML/Markdown interpretation or action activation.
 
 ## Edge Cases & Failure Modes
 
 - Unauthorized UI state cannot reveal or mutate Plant data.
 - Frontend hide/show cannot replace backend authorization.
 - UI markdown/cards/spoiler notes/admin notices cannot become agent facts.
+- Candidate text cannot create active markup/links/actions or be copied into
+  agent instruction/runtime-authority channels.
 - First-demo scope may defer advanced Boss Admin Surface, full role matrix, sync UI details, sensor runtime, and Consultant UI/path where allowed by PRD.
 
 ## Verification Targets
@@ -40,6 +45,8 @@ source_of_truth:
 - E2E: Safety Gate and Companion governance visible without unsafe authority mixing.
 - E2E: unauthorized/archived Plant visibility checks.
 - UI smoke: local storage prompt and role-aware navigation.
+- UI security smoke: representative HTML/Markdown/prompt-/URL-looking candidate
+  text renders literally and triggers no link, command, or action behavior.
 
 ## Normative Backbone Links
 
@@ -53,4 +60,14 @@ source_of_truth:
 ## Feature-Local Design Pressure
 
 - Exact route/view set, API dependency map, role-aware UI behavior, first-demo
-  smoke flow, UI Feed projections, and e2e checks.
+  smoke flow, UI Feed projections, literal candidate rendering mechanics, and
+  e2e checks.
+
+## SDD Design Gate
+
+- Global/shared status: complete; AD-004, MessageEnvelope, UI Feed, Agent Chat
+  Bus, and Safety Action Lifecycle define opaque candidate data, literal
+  presentation, no instruction-channel promotion, and unchanged authority
+  boundaries.
+- Feature-local status: pending `/prd-to-tasks FT-016` for concrete component,
+  route/view, and e2e mechanics.

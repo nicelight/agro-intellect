@@ -52,6 +52,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
   state-advancing commands, and makes restore require current guards.
 - Strict ProviderRequest/input/outcome unions, pending MessageEnvelope
   validation, project-owned classification, and publish/block behavior.
+- Opaque candidate strings with representative Markdown, HTML, prompt,
+  instruction, command, and URL syntax are accepted when schema-valid and do
+  not gain executable or authority semantics.
 - Agent-context filtering and UI Feed isolation.
 - Safety Gate classification, approval authority, and no-device-execution rules.
 - Companion proposal and DecisionRecord authority boundaries.
@@ -69,6 +72,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
 - PostgreSQL/read-model authority remains separate from timeline audit/export.
 - Real model and vision adapters process actual scoped Plant data.
 - Agent Chat Bus and UI Feed preserve consumability boundaries.
+- Authorized/classified candidate text renders literally in UI Feed and uses a
+  typed quoted-data boundary in Agent Chat Bus; it is never promoted to an
+  instruction channel, active URL/action, runtime command, or authority.
 - Timeline replay cannot mutate runtime state or publish directly to the Bus.
 - Safety approval remains separate from Companion governance decisions.
 - Archive/restore contract tests span open tasks, approvals, follow-ups, and
@@ -105,6 +111,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
   runtime product-agent path.
 - UI Feed, UI markdown, spoiler notes, raw chat, admin notices, unapproved
   proposals, and raw model reasoning never enter agent-context fixtures.
+- Markup- and prompt-looking candidate data stays inert: tests prove no
+  HTML/Markdown rendering, unsafe link/action activation, instruction-channel
+  promotion, classifier override, or direct action authorization.
 - Timeline replay, manifests, UI Feed, and raw agent output cannot override
   mutable runtime authority.
 - DecisionRecord cannot count as Safety Gate approval, Plant-state evidence, or

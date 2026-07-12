@@ -17,12 +17,17 @@ from .api import (
 )
 from .config import AppSettings
 from .database import DatabaseHandle, build_database
+from .agent_runtime.bootstrap import (
+    AgentIntroductionSink,
+    UnavailableAgentIntroductionSink,
+)
 
 
 def create_app(
     settings: AppSettings | None = None,
     database: DatabaseHandle | None = None,
     readiness_check_database: bool = False,
+    agent_introduction_sink: AgentIntroductionSink | None = None,
 ) -> FastAPI:
     resolved_settings = settings or AppSettings.from_env()
     resolved_database = database or build_database(resolved_settings)
@@ -30,6 +35,9 @@ def create_app(
     app.state.settings = resolved_settings
     app.state.database = resolved_database
     app.state.readiness_check_database = readiness_check_database
+    app.state.agent_introduction_sink = (
+        agent_introduction_sink or UnavailableAgentIntroductionSink()
+    )
     install_error_handlers(app)
     install_protected_route_error_handler(app)
     app.include_router(session_router)

@@ -30,6 +30,7 @@ class PlantOperationErrorCode(StrEnum):
     CHECK_IN_EMPTY = "CHECK_IN_EMPTY"
     OBSERVATION_TEXT_REQUIRED = "OBSERVATION_TEXT_REQUIRED"
     OBSERVATION_TEXT_FORBIDDEN = "OBSERVATION_TEXT_FORBIDDEN"
+    OBSERVATION_TEXT_TOO_LONG = "OBSERVATION_TEXT_TOO_LONG"
     MEASUREMENT_VALUE_REQUIRED = "MEASUREMENT_VALUE_REQUIRED"
     PH_INVALID = "PH_INVALID"
     EC_INVALID = "EC_INVALID"
@@ -350,6 +351,10 @@ def _validated_observation(
         if not text:
             raise PlantOperationError(
                 PlantOperationErrorCode.OBSERVATION_TEXT_REQUIRED
+            )
+        if len(text) > 2000:
+            raise PlantOperationError(
+                PlantOperationErrorCode.OBSERVATION_TEXT_TOO_LONG
             )
         return state, text
     if text:

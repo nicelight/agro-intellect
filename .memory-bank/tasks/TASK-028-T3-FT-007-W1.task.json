@@ -1,7 +1,7 @@
 {
   "id": "TASK-028-T3-FT-007-W1",
   "title": "Implement authorized Agent Runtime decision and MessageEnvelope core",
-  "status": "planned",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-007",
   "reqs": [
@@ -68,7 +68,105 @@
     "Tests cover every AgentRuntimeOutcomeV1 row and exact nullable/ref/provider/audit states: envelope_ready, model_silent, context_denied, runtime_not_configured, provider_failed, output_invalid, publication_guard_denied, and audit_failed. No denial/failure becomes status or final_decision silent.",
     "Exactly one canonical sanitized agent_runtime_decided event is appended for each provider-I/O branch and no event exists for context_denied, runtime_not_configured, or audit_failed. Audit failure returns no MessageEnvelope/event ref.",
     "Archive or revoke during an in-flight invocation returns the exact publication_guard_denied branch, creates no MessageEnvelope, Bus/UI/task effect, or replay after restore. Production code adds no public agent endpoint, mutable agent-run/provider-history persistence, fake fallback, Agno memory/tools, or Team behavior.",
-    "BHV-001 and BHV-003 trace to named deterministic tests; TASK-029 supplies the credentialed provider portion of BHV-001. The absent Operator UI cap/counter remains explicitly routed to FT-016 and is not claimed by this task."
+    "BHV-001 and BHV-003 trace to named deterministic tests; TASK-029 supplies the credentialed provider portion of BHV-001. The absent Operator UI cap/counter remains explicitly routed to FT-016 and is not claimed by this task.",
+    {
+      "stage": "independent_verify",
+      "verdict": "FAIL",
+      "report": ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-VERIFY-final-report-docs-01.md",
+      "finding": "AgentModelResultV1 accepts prohibited HTML candidate_output although the direct MessageEnvelope contract requires plain text and forbids Markdown/HTML/prompt content.",
+      "scheduler_recommendation": "Keep status in_progress; bounded repair through /execute TASK-028-T3-FT-007-W1, then repeat /verify and /red-verify."
+    },
+    {
+      "stage": "independent_red_verify",
+      "semantic_verdict": "semantic-fail",
+      "report": ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-01.md",
+      "finding": "The prohibited markup crosses the runtime-to-pending-MessageEnvelope boundary, creating a false-success hygiene failure even though no current downstream effect exists.",
+      "scheduler_recommendation": "Do not close or promote dependents before bounded repair and repeat semantic verification."
+    },
+    {
+      "stage": "scheduler_retry_decision",
+      "trigger": {
+        "independent_verify_verdict": "FAIL",
+        "independent_red_verify_semantic_verdict": "semantic-fail"
+      },
+      "reproducible_defect": "AgentModelResultV1.from_untrusted accepts HTML candidate_output despite the MessageEnvelope plain-text rule forbidding Markdown, HTML, and prompt content.",
+      "decision": "retry same TASK-028-T3-FT-007-W1",
+      "status_transition": "none; retain in_progress",
+      "replan_required": false,
+      "dependent_task": {
+        "id": "TASK-029-T3-FT-007-W2",
+        "status": "planned",
+        "promotion": "not_authorized until TASK-028-T3-FT-007-W1 is done after repeated verification"
+      },
+      "failure_retry_budget": {
+        "failure_events_recorded": 1,
+        "retry_attempts_authorized": 1,
+        "retry_attempts_completed": 0,
+        "retry_attempts_remaining": 1,
+        "automatic_additional_retry": false
+      },
+      "evidence_reports": [
+        ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-028-T3-FT-007-W1/verification.md",
+        ".protocols/TASK-028-T3-FT-007-W1/red-verification.md"
+      ]
+    },
+    {
+      "stage": "independent_verify_retry",
+      "verdict": "FAIL",
+      "report": ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-VERIFY-final-report-docs-02.md",
+      "finding": "The retry rejects the former HTML case but accepts standard single-emphasis Markdown, which reaches a pending MessageEnvelope contrary to the direct plain-text/no-Markdown contract.",
+      "scheduler_recommendation": "Retain in_progress; do not promote TASK-029; make a bounded validator/test repair and repeat independent verification."
+    },
+    {
+      "stage": "independent_red_verify_retry",
+      "semantic_verdict": "semantic-fail",
+      "report": ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-02.md",
+      "finding": "Partial Markdown recognition creates a false-success hygiene boundary: a prohibited markup form can still become the cross-feature pending handoff.",
+      "scheduler_recommendation": "Do not close TASK-028 or promote TASK-029 until bounded repair and fresh semantic verification produce semantic-pass."
+    },
+    {
+      "stage": "scheduler_failure_budget_terminal_decision",
+      "trigger": {
+        "independent_verify_retry_verdict": "FAIL",
+        "independent_red_verify_retry_semantic_verdict": "semantic-fail"
+      },
+      "observed_contract_breach": "AgentModelResultV1.from_untrusted accepts standard single-emphasis Markdown candidate_output; a fresh PostgreSQL-backed service invocation returns envelope_ready and places it unchanged in MessageEnvelopeV1.candidate_output, contrary to the direct MessageEnvelope normalized plain-text rule forbidding Markdown, HTML, and prompt content.",
+      "decision": "HALT_FAILURE_BUDGET",
+      "status_transition": "in_progress -> failed",
+      "failure_retry_budget": {
+        "failure_events_recorded": 2,
+        "retry_attempts_authorized": 1,
+        "retry_attempts_completed": 1,
+        "retry_attempts_remaining": 0,
+        "automatic_additional_retry": false
+      },
+      "follow_up_task_planning": "pending; no follow-up task is created by this terminal decision",
+      "bug_record": ".memory-bank/bugs/BUG-001-task-028-message-envelope-markdown-contract.md",
+      "evidence_reports": [
+        ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-028-T3-FT-007-W1/TASK-028-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-02.md"
+      ]
+    },
+    {
+      "stage": "owner_administrative_closure",
+      "date": "2026-07-12",
+      "decision": "done",
+      "verdict": "PASS",
+      "semantic_verdict": "semantic-pass",
+      "closure_kind": "superseded_by_verified_replacement",
+      "replacement_task": "TASK-030-T3-FT-007-W1",
+      "basis": "Explicit owner instruction closes this superseded task as done so it no longer appears as active failure. Historical FAIL and semantic-fail evidence remains truthful and unchanged; the current owner-approved opaque-text outcome was implemented and independently verified by TASK-030.",
+      "evidence": [
+        ".memory-bank/tasks/TASK-030-T3-FT-007-W1.task.json",
+        ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-028-T3-FT-007-W1/administrative-closure.md"
+      ]
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",

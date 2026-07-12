@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import json
 from pathlib import Path
+import re
 from typing import Any
 import uuid
 
@@ -16,7 +17,12 @@ _EVENT_SOURCE_TYPES = {
     "daily_checkin_recorded": "daily_checkin",
     "manual_measurement_recorded": "manual_measurement",
     "photo_accepted": "photo_catalog_item",
+    "agent_runtime_decided": "agent_runtime_attempt",
 }
+_SOURCE_REF_RE = re.compile(
+    r"[a-z][a-z0-9_]{0,63}:[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z"
+)
+_MODEL_REF_RE = re.compile(r"[a-z][a-z0-9_]{0,63}:[A-Za-z0-9._-]{1,127}\Z")
 
 
 class TimelineAppendError(RuntimeError):
@@ -92,7 +98,7 @@ def append_timeline_event(
 
 
 def _event_shape_is_valid(event: object) -> bool:
-    return (
+    base_is_valid = (
         isinstance(event, TimelineEvent)
         and isinstance(event.farm_id, uuid.UUID)
         and (event.plant_id is None or isinstance(event.plant_id, uuid.UUID))
@@ -101,6 +107,172 @@ def _event_shape_is_valid(event: object) -> bool:
         and isinstance(event.source_refs, dict)
         and isinstance(event.payload_summary, dict)
     )
+    if not base_is_valid:
+        return False
+    if event.event_type == "agent_runtime_decided":
+        return _agent_runtime_event_is_valid(event)
+    return True
+
+
+def _agent_runtime_event_is_valid(event: TimelineEvent) -> bool:
+    if event.plant_id is None or not _actor_ref_is_valid(event.actor_ref):
+        return False
+    if event.source_id.version != 4:
+        return False
+    input_refs = event.source_refs.get("input_refs")
+    if (
+        set(event.source_refs) != {"input_refs"}
+        or not isinstance(input_refs, list)
+        or not 1 <= len(input_refs) <= 4
+        or len(input_refs) != len(set(input_refs))
+        or any(not _agent_input_ref_is_valid(item) for item in input_refs)
+    ):
+        return False
+    payload = event.payload_summary
+    expected_keys = {
+        "agent_id",
+        "model_ref",
+        "outcome_kind",
+        "candidate_decision",
+        "final_decision",
+        "outcome_status",
+        "reason_code",
+        "error_code",
+        "message_id",
+        "candidate_claim_type",
+        "source_ref_count",
+    }
+    if set(payload) != expected_keys:
+        return False
+    if (
+        not isinstance(payload["agent_id"], str)
+        or not re.fullmatch(r"[a-z][a-z0-9_]{2,63}", payload["agent_id"])
+        or not isinstance(payload["model_ref"], str)
+        or _MODEL_REF_RE.fullmatch(payload["model_ref"]) is None
+        or isinstance(payload["source_ref_count"], bool)
+        or not isinstance(payload["source_ref_count"], int)
+        or payload["source_ref_count"] != len(input_refs)
+    ):
+        return False
+    return _agent_runtime_payload_matrix_is_valid(payload)
+
+
+def _actor_ref_is_valid(value: object) -> bool:
+    if not isinstance(value, dict) or set(value) != {
+        "account_id",
+        "membership_id",
+        "role_preset",
+    }:
+        return False
+    return (
+        _canonical_uuid_text(value["account_id"])
+        and _canonical_uuid_text(value["membership_id"])
+        and value["role_preset"] in {"boss", "engineer", "consultant"}
+    )
+
+
+def _agent_runtime_payload_matrix_is_valid(payload: dict[str, object]) -> bool:
+    kind = payload["outcome_kind"]
+    candidate = payload["candidate_decision"]
+    final = payload["final_decision"]
+    status = payload["outcome_status"]
+    reason = payload["reason_code"]
+    error = payload["error_code"]
+    message_id = payload["message_id"]
+    claim = payload["candidate_claim_type"]
+    claims = {
+        "observation",
+        "hypothesis",
+        "recommendation",
+        "clarification",
+        "task_request",
+        "safety_block",
+        "team_signal",
+    }
+    if kind == "envelope_ready":
+        return (
+            candidate in {"speak", "clarify", "escalate"}
+            and final == candidate
+            and status == "envelope_ready"
+            and reason == "envelope_ready"
+            and error is None
+            and _canonical_uuid_text(message_id)
+            and _claim_matches_decision(candidate, claim, claims)
+        )
+    if kind == "model_silent":
+        return (
+            candidate == "silent"
+            and final == "silent"
+            and status == "silent"
+            and reason in {"no_material_output", "insufficient_evidence"}
+            and error is None
+            and message_id is None
+            and claim is None
+        )
+    if kind == "provider_failed":
+        return (
+            candidate is None
+            and final is None
+            and status == "failed"
+            and reason == "provider_failed"
+            and error == "AGENT_PROVIDER_FAILED"
+            and message_id is None
+            and claim is None
+        )
+    if kind == "output_invalid":
+        return (
+            candidate is None
+            and final is None
+            and status == "blocked"
+            and reason == "output_invalid"
+            and error == "AGENT_OUTPUT_INVALID"
+            and message_id is None
+            and claim is None
+        )
+    if kind == "publication_guard_denied":
+        return (
+            candidate in {"speak", "silent", "clarify", "escalate"}
+            and final is None
+            and status == "blocked"
+            and reason == "publication_guard_denied"
+            and error == "AGENT_PUBLICATION_BLOCKED"
+            and message_id is None
+            and (claim is None if candidate == "silent" else _claim_matches_decision(candidate, claim, claims))
+        )
+    return False
+
+
+def _canonical_uuid_text(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = uuid.UUID(value)
+    except (TypeError, ValueError, AttributeError):
+        return False
+    return str(parsed) == value
+
+
+def _agent_input_ref_is_valid(value: object) -> bool:
+    if not isinstance(value, str) or _SOURCE_REF_RE.fullmatch(value) is None:
+        return False
+    kind, identifier = value.split(":", maxsplit=1)
+    return kind in {"plant", "daily_checkin", "manual_measurement"} and _canonical_uuid_text(identifier)
+
+
+def _claim_matches_decision(
+    decision: object,
+    claim: object,
+    claims: set[str],
+) -> bool:
+    if claim not in claims:
+        return False
+    if decision == "speak":
+        return claim in {"observation", "hypothesis", "recommendation", "task_request", "team_signal"}
+    if decision == "clarify":
+        return claim == "clarification"
+    if decision == "escalate":
+        return claim in {"safety_block", "team_signal"}
+    return False
 
 
 def _sanitize_json(value: Any) -> tuple[Any, bool]:

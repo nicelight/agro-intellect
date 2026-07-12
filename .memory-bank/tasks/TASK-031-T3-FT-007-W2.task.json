@@ -1,5 +1,5 @@
 {
-  "id": "TASK-029-T3-FT-007-W2",
+  "id": "TASK-031-T3-FT-007-W2",
   "title": "Bind canonical roster, Plant bootstrap, and multi-provider Agent Runtime",
   "status": "done",
   "wave": "W2",
@@ -11,7 +11,7 @@
     "REQ-020"
   ],
   "depends_on": [
-    "TASK-028-T3-FT-007-W1"
+    "TASK-030-T3-FT-007-W1"
   ],
   "touched_files": [
     "pyproject.toml",
@@ -22,9 +22,14 @@
     "backend/app/main.py",
     "tests/backend/agent_runtime/",
     "tests/backend/api/test_ft007_plant_bootstrap.py",
-    ".protocols/TASK-029-T3-FT-007-W2/",
-    ".tasks/TASK-029-T3-FT-007-W2/",
-    ".memory-bank/tasks/TASK-029-T3-FT-007-W2.task.json"
+    ".protocols/TASK-031-T3-FT-007-W2/",
+    ".tasks/TASK-031-T3-FT-007-W2/",
+    ".memory-bank/tasks/TASK-031-T3-FT-007-W2.task.json",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/runbooks/agent-runtime-providers.md",
+    ".protocols/FT-007/decision-log.md"
   ],
   "tier": "T3",
   "gates": [
@@ -60,7 +65,7 @@
     }
   ],
   "verify": [
-    "Roster tests prove version 1 contains exactly the eight ordered canonical ids, display names, competence summaries, introduction texts, output-schema seam, and owning-feature mappings from the canonical contract; activation alone does not make an unimplemented owning-feature policy invocable.",
+    "Roster tests prove version 1 contains exactly the eight ordered canonical ids, display names, competence summaries, introduction texts, output-schema seam, and owning-feature mappings; activation alone does not make an unimplemented owning-feature policy invocable.",
     "Configuration tests atomically reject malformed JSON, unknown fields/agent ids/profiles, blank or unsafe model ids, credential-bearing values, and caller overrides; partial bindings are allowed but invocation of an unbound agent fails before provider construction.",
     "DeepSeek and Gemini factory tests construct their native Agno model adapters with the exact deployment model id and declared direct dependencies; missing dependency/key/egress or provider failure never selects another provider/model or fake output.",
     "The chatgpt_oauth profile is recognized but returns AGENT_RUNTIME_NOT_CONFIGURED without an approved injected broker; production code does not read ChatGPT browser/Codex credential stores, substitute OPENAI_API_KEY, or claim the profile is operational.",
@@ -70,38 +75,54 @@
     "Bootstrap calls AgentIntroductionSink.store_batch exactly once with one strict ordered eight-item batch. Result tests cover only accepted(true,8,null), identical duplicate(true,8,null), rejected(false,0,plant_not_publishable|batch_invalid|content_conflict), and failed(false,0,persistence_failed); per-item or partial acceptance is impossible.",
     "Roster eligibility is derived from the current active Plant plus immutable roster version, survives process restart without a per-Plant registry table, and is unavailable for missing, wrong-Farm, or archived Plants.",
     "Bootstrap retry produces identical batch/item ids and canonical content; sink rejected/failed leaves the Plant committed and cannot report rollback/500. No FT-007 path implements FT-008 storage, worker, reconciliation, UIFeedEvent projection, or durable/visible success without a concrete downstream sink.",
-    "A credentialed non-skipped DeepSeek or Gemini smoke uses the isolated test-only runtime_contract_smoke definition/binding through production assembler/provider composition, actual persisted Plant plus check-in or pH/EC evidence, and exactly one real provider. It passes only with audited envelope_ready plus a valid pending MessageEnvelope or strict audited model_silent with no_material_output|insufficient_evidence; context_denied, runtime_not_configured, provider_failed, output_invalid, publication_guard_denied, audit_failed, skip, xfail, fake, fallback, or unaudited output fails.",
-    "Behavior specs FT-007-BHV-001 through FT-007-BHV-003 have direct executable traceability; the introduction behavior is not counted as real-model evidence.",
-    "Independent /verify and task-level /red-verify complete before lifecycle closure; feature-level /red-verify --feature FT-007 remains the later feature boundary gate.",
+    "The credentialed DeepSeek or Gemini smoke is retained as deferred manual UAT and is not TASK-031/code-phase closure evidence. When explicitly invoked later, it uses the isolated test-only runtime_contract_smoke path and passes only with audited envelope_ready plus a valid pending MessageEnvelope or strict audited model_silent; every failure, skip, fake, fallback, or unaudited outcome fails.",
+    "BHV-002 has direct executable traceability. BHV-001 live-provider acceptance remains explicitly deferred/unverified and is not satisfied by deterministic introduction or constructor tests.",
+    "Independent /verify and task-level /red-verify are recommended before lifecycle closure; feature-level /red-verify --feature FT-007 remains the later feature-boundary review.",
+    "2026-07-12 independent /verify: VERDICT: FAIL. Deterministic checks passed (46 focused, 224 scoped regression, 288 full non-real; mb-lint 179), but the mandatory credentialed non-skipped real-provider smoke failed before provider construction because explicit profile/model/egress/matching credential and installed provider dependencies were absent; no accepted audited envelope_ready or strict model_silent outcome exists. Evidence: .protocols/TASK-031-T3-FT-007-W2/verification.md and .tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-VERIFY-final-report-docs-01.md. Scheduler status unchanged; /red-verify not run.",
     {
-      "stage": "scheduler_dependency_block",
-      "upstream_task": "TASK-028-T3-FT-007-W1",
-      "upstream_status": "failed",
-      "upstream_terminal_state": "HALT_FAILURE_BUDGET",
-      "status_transition": "planned -> blocked",
-      "reason": "Direct dependency TASK-028-T3-FT-007-W1 failed after its one authorized retry was consumed and the failure budget reached zero.",
-      "unblock_condition": "Separate follow-up task planning remains pending; no follow-up task is created by this terminal decision.",
+      "stage": "scheduler_blocking_decision",
+      "decision": "blocked",
+      "terminal_state": "HALT_DEPENDENCY_DEADLOCK",
       "evidence": [
-        ".memory-bank/tasks/TASK-028-T3-FT-007-W1.task.json",
-        ".memory-bank/bugs/BUG-001-task-028-message-envelope-markdown-contract.md"
-      ]
+        ".tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-IMPL-final-report-code-01.md",
+        ".tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-031-T3-FT-007-W2/verification.md"
+      ],
+      "basis": "The deterministic implementation passes, but mandatory credentialed real-provider evidence is unverifiable because explicit provider profile/model, egress opt-in, matching credential, and installed provider runtime dependencies are absent. No fake, skip, fallback, semantic review, checkpoint, or normal closure is accepted.",
+      "operator_action": "Install the declared provider dependencies in the isolated runtime; securely provide one explicit deepseek or gemini profile/model id, AGENT_EXTERNAL_EGRESS_ENABLED=true, and the matching credential; rerun the exact real-model smoke, then independent /verify and task-level /red-verify."
     },
     {
-      "stage": "owner_administrative_closure",
+      "stage": "owner_smoke_deferral",
+      "decision": "supersede_live_smoke_as_code_closure_gate",
+      "date": "2026-07-12",
+      "basis": "Explicit owner decision defers credentialed real-provider smoke until after code completion. The smoke remains available as strict optional/manual UAT; fail-closed provider behavior, no fake/skip/fallback acceptance, egress opt-in, credentials, and redaction rules remain binding when it is invoked.",
+      "residual_risk": "BHV-001 and the live-provider portion of REQ-011 remain deferred/unverified and must not be marked complete from deterministic evidence.",
+      "scheduler_action": "Reopen TASK-031 for bounded canonical-doc alignment and fresh independent verification against deterministic code-phase acceptance."
+    },
+    {
+      "stage": "fresh_code_phase_verify",
+      "date": "2026-07-12",
+      "verdict": "PASS",
+      "basis": "Independent deterministic code-phase verification under the explicit owner_smoke_deferral decision: 46 focused, 224 scoped, and 288 full non-real tests passed; mb-lint passed for 179 files; scoped diff, task/index structure, static anti-cheat/no-fallback, future-smoke integrity, and scope scans passed. No live smoke was run or credited.",
+      "evidence": [
+        ".protocols/TASK-031-T3-FT-007-W2/verification-code-phase-02.md",
+        ".tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-VERIFY-final-report-docs-02.md"
+      ],
+      "residual_risk": "FT-007-BHV-001 and the live-provider portion of REQ-011 remain deferred/unverified; real DeepSeek/Gemini transport is not proved by deterministic evidence.",
+      "scheduler_action": "Run task-level red-verify; verifier made no lifecycle/status transition or dependent promotion."
+    },
+    {
+      "stage": "scheduler_closure_after_smoke_deferral",
       "date": "2026-07-12",
       "decision": "done",
-      "verdict": "PASS",
-      "semantic_verdict": "semantic-pass",
-      "closure_kind": "superseded_by_verified_replacement",
-      "replacement_task": "TASK-031-T3-FT-007-W2",
-      "basis": "Explicit owner instruction closes this never-executed superseded task as done so it no longer appears blocked. Its historical dependency block remains truthful; the active roster/provider/bootstrap code-phase outcome was implemented and independently verified by TASK-031, with live-provider UAT explicitly deferred/unverified.",
+      "basis": "Scheduler accepted fresh VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, exact HUMAN_CHECKPOINT: done, deterministic 46/224/288 test evidence, mb-lint PASS, future-smoke integrity, and no semantic overclaim under the explicit owner deferral decision.",
       "evidence": [
-        ".memory-bank/tasks/TASK-031-T3-FT-007-W2.task.json",
+        ".tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-IMPL-final-report-docs-02.md",
         ".tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-VERIFY-final-report-docs-02.md",
         ".tasks/TASK-031-T3-FT-007-W2/TASK-031-T3-FT-007-W2-S-RED-VERIFY-final-report-docs-01.md",
-        ".protocols/TASK-029-T3-FT-007-W2/administrative-closure.md"
+        ".protocols/TASK-031-T3-FT-007-W2/handoff.md"
       ],
-      "accepted_residual_risk": "FT-007-BHV-001 and the live-provider portion of REQ-011 remain deferred/unverified manual UAT debt."
+      "accepted_residual_risk": "FT-007-BHV-001, live-provider REQ-011 evidence, and real provider SDK/network compatibility remain deferred/unverified manual UAT debt and are not claimed complete."
     }
   ],
   "docs": [
@@ -126,14 +147,14 @@
     "exact UUIDv5 namespace/name and one-call ordered batch snapshot",
     "closed 8-or-0 sink result, deterministic retry, conflict, and no-partial evidence",
     "truthful FT-008 ownership and no durable/visible-chat overclaim evidence",
-    "credentialed non-skipped real-provider smoke summary with accepted audited outcome and safe model ref",
+    "recorded deferred manual/UAT real-provider verification debt with runbook link; no live-provider success claim",
     "focused Plant-create/Agent Runtime and full regression summaries",
     "independent /verify and task-level /red-verify reports",
     "node scripts/mb-lint.mjs output",
     "scoped git diff --check output"
   ],
-  "purpose": "Complete FT-007 production composition with stable product-agent identities, explicit multi-provider bindings, post-commit Plant activation, and real-provider anti-cheat evidence.",
-  "success_outcome": "Without changing the public Plant-create contract, every committed active Plant can submit one deterministic eight-item non-agent-consumable batch through the strict 8-or-0 sink port, each enabled canonical agent resolves only its explicit deployment provider/model, and a real DeepSeek or Gemini returns one accepted audited FT-007 smoke outcome while ChatGPT OAuth and every unavailable/failed path fail closed without fallback or hidden FT-008 work.",
+  "purpose": "Complete the FT-007 code-phase production composition with stable product-agent identities, explicit multi-provider bindings, post-commit Plant activation, and strict deterministic anti-cheat evidence; retain credentialed real-provider transport verification as deferred manual UAT.",
+  "success_outcome": "Without changing the public Plant-create contract, every committed active Plant can submit one deterministic eight-item non-agent-consumable batch through the strict 8-or-0 sink port, each enabled canonical agent resolves only its explicit deployment provider/model, and ChatGPT OAuth plus every unavailable/failed provider path fail closed without fallback or hidden FT-008 work. Live DeepSeek/Gemini transport acceptance remains deferred and unclaimed.",
   "anti_goals": [
     "No BusEventEnvelope, durable chat/UI Feed storage, context reconstruction, worker, outbox, frontend, or FT-008 task implementation.",
     "No eight model invocations merely because a Plant was created and no long-lived per-Plant agent processes.",
@@ -151,34 +172,40 @@
       "backend/app/main.py",
       "tests/backend/agent_runtime/",
       "tests/backend/api/test_ft007_plant_bootstrap.py",
-      ".protocols/TASK-029-T3-FT-007-W2/",
-      ".tasks/TASK-029-T3-FT-007-W2/",
-      ".memory-bank/tasks/TASK-029-T3-FT-007-W2.task.json"
+      ".protocols/TASK-031-T3-FT-007-W2/",
+      ".tasks/TASK-031-T3-FT-007-W2/",
+      ".memory-bank/tasks/TASK-031-T3-FT-007-W2.task.json",
+      ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+      ".memory-bank/tasks/plans/IMPL-FT-007.md",
+      ".memory-bank/testing/agent-runtime.md",
+      ".memory-bank/runbooks/agent-runtime-providers.md",
+      ".protocols/FT-007/decision-log.md"
     ],
     "forbidden_scope": [
+      "TASK-028/TASK-029 lifecycle, protocol, or evidence mutation",
       "Bus, chat/UI Feed persistence, context queries, worker, outbox, frontend, or FT-008 tasking",
       "new PostgreSQL agent-run, provider-history, prompt, or introduction-delivery tables",
       "detailed downstream agent competence effects or product triggers",
       "hardcoded/default model ids or cross-provider/model fallback",
       "ChatGPT browser/Codex credential access or undocumented OAuth implementation",
-      "unredacted credential, auth, provider, path, raw chat, or hidden-reasoning evidence"
+      "unredacted credential, auth, provider, path, raw chat, provider payload, prompt history, or hidden-reasoning evidence"
     ],
     "stop_conditions": [
-      "TASK-028-T3-FT-007-W1 is not complete or its strict runtime/envelope contract is contradicted.",
-      "No explicit DeepSeek or Gemini smoke profile/model id, matching credential, and external-egress opt-in are available when the mandatory closure smoke is attempted; do not skip or fake it.",
+      "TASK-030-T3-FT-007-W1 is not done or its opaque-text runtime/envelope contract is contradicted.",
+      "When deferred real-provider UAT is explicitly requested, missing profile/model id, matching credential, dependencies, or external-egress opt-in stops that UAT only; do not skip, fake, or treat it as code-phase failure.",
       "Operational ChatGPT OAuth is demanded without an approved broker contract defining token source, refresh/expiry, revocation, endpoint/audience, redaction, and smoke path.",
       "Automatic Plant bootstrap would require holding the Plant transaction over provider/network I/O or falsely returning a rollback after commit.",
       "The hook cannot preserve the canonical POST /api/plants request, authorization, 201 PlantSummary, no-store, atomic commit, or error contract.",
       "The downstream port cannot represent one atomic eight-item accepted-or-zero result without per-item partial success.",
       "Correctness would require implementing durable chat/feed delivery, Bus/UI context, worker/outbox, or any FT-008 task under this card.",
-      "Diagnostics or evidence contain credentials, session/auth material, raw provider payload, hidden reasoning, raw chat, unapproved governance content, or local absolute paths."
+      "Diagnostics or evidence contain credentials, session/auth material, raw provider payload, prompt history, hidden reasoning, raw chat, unapproved governance content, or local absolute paths."
     ]
   },
   "source_artifacts": [
+    ".memory-bank/tasks/TASK-029-T3-FT-007-W2.task.json",
     ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
     ".memory-bank/behavior-specs/FT-007-BHV-001-real-model-envelope.behavior.json",
     ".memory-bank/behavior-specs/FT-007-BHV-002-agent-roster-bootstrap.behavior.json",
-    ".memory-bank/behavior-specs/FT-007-BHV-003-archive-race.behavior.json",
     ".memory-bank/tasks/plans/IMPL-FT-007.md",
     ".protocols/FT-007/decision-log.md"
   ],
@@ -207,12 +234,12 @@
     "Derive batch/item UUIDv5 ids with namespace ddbb4fc1-7253-5953-a427-9693caeafd80 and the exact canonical name strings, then call one strict eight-item sink batch.",
     "Accept only the closed AgentIntroductionBatchResultV1 8-or-0 matrix; duplicate requires identical canonical content and partial acceptance is invalid.",
     "Register the pytest real_model marker in project test configuration so deterministic and credentialed suites select tests without unknown-marker ambiguity.",
-    "Require a credentialed non-skipped DeepSeek or Gemini smoke over actual persisted non-Plant-only context before this task can close."
+    "Retain the credentialed non-skipped DeepSeek or Gemini smoke over actual persisted non-Plant-only context as deferred manual UAT after code-phase closure; it is not TASK-031 closure evidence."
   ],
   "invariants": [
     "Provider/auth mode/model binding is project configuration, never caller or model output.",
     "A provider/model failure cannot change identity, competence, provider, model, or produce a fake fallback.",
-    "Only authorized typed Plant context may leave the process; secrets, auth material, raw chat/UI, provider history, and hidden reasoning never do.",
+    "Only authorized typed Plant context may leave the process; secrets, auth material, raw chat/UI, provider history, prompt history, and hidden reasoning never do.",
     "Plant creation activation is deterministic metadata handoff, not model execution, MessageEnvelope, agent working context, or REQ-011 evidence.",
     "Committed Plant state is not rolled back or misreported after a post-commit bootstrap/sink failure.",
     "Visible/durable introduction delivery, active-Plant reconciliation, and exactly-once UIFeedEvent projection remain FT-008 authority and are not implemented or overclaimed by FT-007.",
@@ -220,12 +247,12 @@
   ],
   "verification_targets": [
     ".venv/bin/python -m pytest tests/backend/agent_runtime -m \"not real_model\" -q",
-    "AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q",
+    "DEFERRED MANUAL UAT (non-blocking for TASK-031): AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q",
     ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/api tests/backend/agent_runtime -m \"not real_model\" -q",
     ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
     "node scripts/mb-lint.mjs",
     "git diff --check",
     "Run static scans for test/canned/fallback executors, hardcoded model ids, OPENAI_API_KEY substitution, Codex/ChatGPT credential paths, provider request/response persistence, and hidden FT-008 storage/worker/projection code.",
-    "Trace FT-007-BHV-001 through FT-007-BHV-003 to concrete passing tests, assert the exact accepted smoke outcomes, and distinguish deterministic introduction metadata from real-model evidence."
+    "Trace FT-007-BHV-002 to deterministic passing tests; record FT-007-BHV-001 live-provider evidence as deferred/unverified and distinguish deterministic introduction metadata from real-model evidence."
   ]
 }

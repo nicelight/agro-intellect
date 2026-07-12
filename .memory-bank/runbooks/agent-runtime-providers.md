@@ -13,11 +13,16 @@ source_of_truth:
 
 ## Purpose
 
-Configure one explicit canonical-agent provider/model binding, run the
-credentialed FT-007 adapter smoke, and collect safe evidence without
-overclaiming its later competence-specific product flow.
+Configure one explicit canonical-agent provider/model binding, optionally run
+the deferred credentialed FT-007 adapter manual UAT, and collect safe evidence
+without overclaiming its later competence-specific product flow. This UAT is
+not a TASK-031/code-phase closure prerequisite.
 
-## Preconditions
+## Manual-UAT preconditions
+
+These preconditions apply only when the optional credentialed UAT is explicitly
+invoked. Missing credentials, egress, model selection, or dependencies leave
+that UAT deferred; they do not fail TASK-031/code-phase closure.
 
 - Local Foundation bootstrap and PostgreSQL migration path are working.
 - An active authorized Plant has at least one real completed check-in or manual
@@ -50,13 +55,15 @@ Credential sources:
 Do not add `OPENAI_API_KEY` as an implicit replacement for
 `chatgpt_oauth` and do not read ChatGPT/Codex CLI credential caches.
 
-## FT-007 contract smoke
+## Deferred optional/manual FT-007 contract smoke
 
 The FT-007 smoke uses the production assembler/provider factory and the
 isolated test-only `runtime_contract_smoke` definition/binding through the
 explicit test seam. The definition is absent from production resolution. This
 proves transport, typed egress, validation, and anti-fallback behavior, not a
-detailed product competence or trigger.
+detailed product competence or trigger. BHV-001 and the live-provider portion
+of REQ-011 remain deferred/unverified until a later accepted run; deterministic
+evidence must not claim them.
 
 1. Set `AGENT_REAL_SMOKE_PROFILE=deepseek|gemini` and a nonblank
    `AGENT_REAL_SMOKE_MODEL_ID`.

@@ -22,7 +22,9 @@ MessageEnvelope is the structured boundary for validated agent-originated
 output after project-owned runtime decision handling and before project-owned
 physical-action classification. It is not yet operative or publishable to
 Bus/UI, and it is not raw model output, hidden reasoning, provider history, or
-UI markup.
+UI payload. Its `candidate_output` is opaque untrusted text: sequences that
+look like markup, prompts, instructions, commands, or links remain literal
+data and have no executable semantics.
 
 The verified FT-000 executable baseline does not implement MessageEnvelope
 runtime code. FT-007 owns its first concrete implementation; the Safety & Task
@@ -85,15 +87,19 @@ Every MessageEnvelope is one strict object with unknown fields rejected:
 - `source_refs`: 1 through 4 unique safe refs matching the existing
   `kind:identifier` grammar and drawn only from the authorized invocation
   input, preserving their relative `ProviderRequestV1` order;
-- `candidate_output`: normalized plain UTF-8 text from 1 through 2000 Unicode
-  code points; it is untrusted candidate data, not Markdown/HTML or a prompt;
+- `candidate_output`: opaque untrusted normalized UTF-8 text from 1 through
+  2000 Unicode code points; Markdown-, HTML-, prompt-, instruction-, command-,
+  and URL-looking sequences are permitted as data and do not by themselves
+  make the output invalid;
 - `publication_state`: literal `pending_classification`;
 - `consumable_by_agents`: literal `false` while this envelope is pending;
 - `authorization_scope`: the exact safe shape below.
 
 The envelope must serialize UUIDs and timestamps as canonical strings. It must
 not include provider/model response objects, arbitrary metadata, prompts,
-parser diagnostics, session state, tool traces, or UI payloads.
+parser diagnostics, session state, tool traces, or UI payloads. A
+prompt-looking substring inside `candidate_output` is not a prompt field and
+cannot become system/developer/user instructions or runtime authority.
 
 ## Authorization scope
 
@@ -148,9 +154,11 @@ reference both immutable artifacts.
 ## Validation failures
 
 The adapter rejects the entire candidate when any required field, identity,
-ref, decision/claim combination, confidence, or content rule is
-invalid. It does not partially repair provider output, infer missing refs, or
-publish a truncated unsafe candidate. The owning outcome is audit-only with
+ref, decision/claim combination, confidence, type, normalization, or
+1..2000-code-point bound is invalid. Markdown-, HTML-, prompt-, instruction-,
+command-, or URL-looking syntax alone is never an `output_invalid` reason. The
+adapter does not partially repair provider output, infer missing refs, or
+publish a truncated candidate. The owning invalid outcome is audit-only with
 `AGENT_OUTPUT_INVALID`; if that required audit append fails, the returned
 outcome is instead the closed `audit_failed` branch and no event ref exists.
 
@@ -161,9 +169,15 @@ MessageEnvelope must not contain:
 - hidden chain-of-thought or raw reasoning;
 - raw provider messages/history;
 - secrets, tokens, credentials, API keys, `.env` values, or auth material;
-- raw UI markdown as agent-consumable content;
+- a raw UI payload or UI-originated markdown promoted into agent-consumable
+  content;
 - raw CompanionProposal text/rationale/chat discussion;
 - unauthorized Farm/Plant context.
+
+These structural/source exclusions do not introduce a syntax recognizer for
+`candidate_output`. Model text that merely resembles Markdown, HTML, a prompt,
+or one of the forbidden source categories remains opaque data; downstream
+boundaries must preserve that lack of authority.
 
 ## Safety And Claims
 
@@ -175,6 +189,9 @@ MessageEnvelope must not contain:
   that classifier.
 - Pending envelope text cannot become agent context, cleared user-visible
   action wording, approval, or any task.
+- Candidate text cannot override the classifier schema/result matrix, current
+  authorization guards, Safety Gate, or human approval even when it is phrased
+  as a command or instruction.
 - `confidence` is advisory metadata only; it cannot replace evidence refs,
   human review, Safety Gate, or backend authorization.
 
@@ -189,6 +206,13 @@ MessageEnvelope must not contain:
   classification denies publication; restore does not replay the handoff.
 - UI Feed may project only the route permitted by the classification result;
   physical-action text remains governed by the Safety Action Lifecycle.
+- When an authorized/classified route permits candidate text in UI Feed, the
+  text is rendered literally through escaped/text-node semantics. It is never
+  interpreted as HTML/Markdown, activated as a URL/action, or reused as agent
+  context/runtime authority.
+- If a classified route permits candidate content in Agent Chat Bus, the Bus
+  keeps it in an explicit typed quoted-data field and never concatenates it
+  into a system, developer, instruction, prompt, or routing channel.
 - UI Feed projection does not become MessageEnvelope or agent context.
 - MessageEnvelope creation is only a narrow handoff. FT-008 repeats the current
   active-Plant/authorization check immediately before Bus or UI emission.
@@ -199,6 +223,9 @@ Tests must prove:
 
 - test mocks are not wired as runtime/demo product-agent outputs;
 - invalid envelopes are blocked;
+- representative Markdown-, HTML-, prompt-, instruction-, command-, and
+  URL-looking strings are accepted unchanged as candidate data when every
+  schema/type/normalization/length rule is valid;
 - unknown fields, incompatible decisions/claims, unsafe refs, and unsafe
   authorization snapshots are blocked;
 - raw reasoning/provider history is absent;
@@ -208,5 +235,7 @@ Tests must prove:
   blocked uncertainty, while a verified safe check/measurement request routes
   to the ordinary task path and never creates an `action_task`;
 - UI Feed projection cannot be consumed by agents;
+- downstream tests prove literal UI rendering, typed Bus quotation, no
+  instruction-channel promotion, and no direct action or authority;
 - archived Plant blocks MessageEnvelope/Bus/UI operational publication even
   when model execution began before archive.

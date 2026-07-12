@@ -15,6 +15,9 @@ dependencies = [
   "alembic>=1.13",
   "psycopg[binary]>=3.2",
   "argon2-cffi>=23.1",
+  "agno>=1.7",
+  "openai>=1.0",
+  "google-genai>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -31,3 +34,6 @@ include = ["backend*"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra"
+markers = [
+  "real_model: credentialed external-provider smoke tests",
+]

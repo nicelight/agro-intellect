@@ -139,6 +139,10 @@ _ERROR_DEFINITIONS = {
         422,
         "Observation text is not allowed for this observation state.",
     ),
+    PlantOperationErrorCode.OBSERVATION_TEXT_TOO_LONG: _OperationErrorDefinition(
+        422,
+        "Observation text is too long.",
+    ),
     PlantOperationErrorCode.MEASUREMENT_VALUE_REQUIRED: _OperationErrorDefinition(
         422,
         "Measurement must include pH or EC.",

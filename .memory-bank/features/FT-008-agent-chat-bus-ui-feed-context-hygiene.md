@@ -26,6 +26,12 @@ source_of_truth:
 - UI Feed is presentation-only.
 - UI Feed, spoiler notes, UI markdown, raw chat, admin notices, and unapproved Companion proposals do not enter agent working context.
 - MessageEnvelope and Bus/UI projections preserve source refs and consumability boundaries.
+- Authorized/classified candidate text is literal escaped/text-node UI data;
+  no Markdown/HTML rendering, unsafe URL/action activation, or reuse as agent
+  context/runtime authority is allowed.
+- If classified candidate content enters agent-consumable Bus context, FT-008
+  preserves it in a typed quoted-data field and never concatenates it into
+  system/developer/instruction/prompt/tool/routing channels.
 - Every active Plant eventually has exactly one `UIFeedEvent` per deterministic
   roster introduction. The Plant chat/feed UI renders that same event; no copy
   enters Agent Chat Bus. FT-008 reconciles missing batches after failure or
@@ -56,6 +62,8 @@ source_of_truth:
 - Integration: archive race blocks Bus publication and agent context while
   preserving authorized retained-history presentation.
 - Anti-cheat: UI Feed and raw chat are absent from agent context builder fixtures.
+- Anti-cheat: markup-/prompt-looking candidate text stays literal in UI and
+  typed as quotation on Bus; it cannot instruct agents or alter routing.
 
 ## Normative Backbone Links
 
@@ -77,6 +85,7 @@ source_of_truth:
 - Global/shared status: complete; `AD-007`, `AD-008`, the strict introduction
   batch/result contract, and linked Bus/Message/Safety/Plant lifecycle specs
   define pending classification, durable active-Plant reconciliation, archived
-  context, and guarded publication behavior.
+  context, guarded publication, literal UI rendering, and typed Bus quotation
+  behavior.
 - Feature-local status: pending `/prd-to-tasks FT-008` for concrete envelopes,
   filters, projections, ordering, and verification.

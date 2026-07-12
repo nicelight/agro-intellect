@@ -34,6 +34,9 @@ after Plant commit without faking downstream chat or safety authority.
 - Implement the exact model-result, eight-branch outcome, pending
   MessageEnvelope, current authorization guard, classification handoff, and
   sanitized Timeline Event matrices.
+- Treat schema-valid `candidate_output` as opaque untrusted normalized text:
+  formatting-looking syntax passes unchanged and has no instruction, routing,
+  publication, Safety, task, approval, or action authority.
 - Add the exact eight-member roster, UUIDv5 identities, one strict eight-item
   batch port, closed 8-or-0 result handling, and post-commit bootstrap hook.
 - Add strict per-agent DeepSeek/Gemini/ChatGPT-OAuth profile resolution,
@@ -68,9 +71,10 @@ after Plant commit without faking downstream chat or safety authority.
   provider egress, and fake-runtime boundaries are T3 and fail closed.
 - Low maintenance: reuse existing Plant context/timeline/creation seams; model
   ids are configuration rather than hardcoded policy.
-- Design blockers: none. W2 execution still needs one explicit DeepSeek or
-  Gemini model id, matching credential, and egress opt-in for its non-skipped
-  smoke evidence.
+- Design blockers: none. A later optional/manual real-provider UAT needs one
+  explicit DeepSeek or Gemini model id, matching credential, installed provider
+  dependencies, and egress opt-in; those external inputs are not W2
+  code-phase closure prerequisites.
 
 ## Source Artifacts
 
@@ -117,24 +121,37 @@ after Plant commit without faking downstream chat or safety authority.
 
 ## Ordered implementation strategy
 
-### W1 - Authorized runtime and envelope core
+### Historical W1 - Superseded syntax-rejection attempt
 
-`TASK-028-T3-FT-007-W1` implements Agent Runtime types/service, exact
-PostgreSQL typed-input assembly, the Plant Operations backend observation cap,
-legacy-row pre-provider denial, model-result/outcome/MessageEnvelope validation,
-current session/account/membership/Plant/grant recheck, strict classifier
-handoff, sanitized timeline audit, deterministic tests, and explicit test-only
-executor injection. It does not implement classifier effects or Operator UI.
+`TASK-028-T3-FT-007-W1` remains `failed` with its original verification,
+red-verification, retry-budget, and BUG evidence. `TASK-029-T3-FT-007-W2`
+remains `blocked` as the never-executed dependent. Neither historical record is
+edited or eligible for execution.
+
+### Active W1 - Opaque candidate-text alignment
+
+`TASK-030-T3-FT-007-W1` depends on completed
+`TASK-025-T3-FT-004-W3`. It removes the superseded syntax/prompt regex
+rejection from the existing runtime contract, adds representative unchanged
+opaque-text acceptance, and re-proves the complete W1 schema, guard,
+classifier-handoff, audit, outcome, and no-downstream-authority behavior. Its
+implementation write scope is narrowly limited to
+`backend/app/agent_runtime/contracts.py` and
+`tests/backend/agent_runtime/test_ft007_runtime.py`; any broader need stops for
+canonical evidence and owner re-planning.
 
 ### W2 - Canonical roster, bootstrap, and production providers
 
-`TASK-029-T3-FT-007-W2` implements the eight immutable roster metadata records,
+`TASK-031-T3-FT-007-W2` depends on `TASK-030` and semantically replaces the
+never-executed TASK-029. It implements the eight immutable roster metadata records,
 immutable UUIDv5 identities, one-call batch port/result matrix, strict
 deployment binding resolver, native DeepSeek/Gemini Agno composition,
 fail-closed ChatGPT OAuth broker port, config/redaction, a post-commit Plant
 hook that preserves the canonical public create contract, anti-cheat tests,
-and a credentialed non-skipped real-provider transport smoke over actual Plant
-data using the isolated test-only definition through the explicit test seam.
+and retains a credentialed non-skipped real-provider transport smoke over
+actual Plant data as deferred optional/manual UAT using the isolated test-only
+definition through the explicit test seam. That UAT is not TASK-031/code-phase
+closure evidence.
 
 ## Expected touched areas
 
@@ -142,13 +159,9 @@ data using the isolated test-only definition through the explicit test seam.
 - `.env.example`
 - `backend/app/config.py`
 - `backend/app/agent_runtime/`
-- `backend/app/plant_operations/service.py`
-- `backend/app/api/operations.py`
-- `backend/app/timeline/writer.py`
 - `backend/app/api/plants.py`
 - `backend/app/main.py`
 - `tests/backend/agent_runtime/`
-- focused Plant Operations service/API observation-boundary tests;
 - focused Plant-create composition tests and FT-007 evidence/task records.
 
 ## Constraints and invariants
@@ -161,6 +174,9 @@ data using the isolated test-only definition through the explicit test seam.
 - Observation text is normalized and limited to 2000 Unicode code points at
   the authoritative backend; no truncation, chunking, implicit summary, or
   write occurs on rejection. Legacy oversized rows fail before provider/audit.
+- Schema-valid `candidate_output` is opaque untrusted normalized text from 1
+  through 2000 code points. Markdown-, HTML-, prompt-, instruction-, command-,
+  and URL-looking syntax alone is accepted unchanged and is never executable.
 - Model-selected candidate claims have no safety authority. Every non-silent
   envelope remains pending/non-consumable until the separate project-owned
   classification result is available.
@@ -179,6 +195,10 @@ data using the isolated test-only definition through the explicit test seam.
 ## Verification strategy
 
 - Exact provider-request/input/model-result/outcome/envelope/event matrices.
+- Representative schema-valid formatting-looking candidate strings pass
+  unchanged through AgentModelResultV1 and the pending MessageEnvelope while
+  strict schema/type/normalization/length/decision/claim/ref failures remain
+  rejected.
 - Plant Operations service/API boundaries at 1, 2000, and 2001 Unicode code
   points, including authoritative `OBSERVATION_TEXT_TOO_LONG` zero-write
   behavior and legacy-row pre-provider denial.
@@ -191,17 +211,17 @@ data using the isolated test-only definition through the explicit test seam.
   failure behavior, and full Plant-create compatibility assertions.
 - Strict binding/config/redaction/no-fallback tests for all profiles.
 - Native DeepSeek/Gemini constructor tests and fail-closed ChatGPT OAuth scan.
-- Credentialed non-skipped DeepSeek or Gemini transport smoke using actual
-  persisted Plant evidence and the isolated test-only definition. Only audited
+- Deferred optional/manual DeepSeek or Gemini transport UAT using actual
+  persisted Plant evidence and the isolated test-only definition. It does not
+  block TASK-031/code-phase closure. When invoked, only audited
   `envelope_ready` or strict audited model-declared `model_silent` passes;
   downstream competence features retain product-agent acceptance.
 - Focused/full regressions, `mb-lint`, and scoped diff check.
 
 ## Quality gates
 
+- `.venv/bin/python -m pytest tests/backend/agent_runtime/test_ft007_runtime.py -q`
 - `.venv/bin/python -m pytest tests/backend/agent_runtime -m "not real_model" -q`
-- `.venv/bin/python -m pytest tests/backend/plant_operations/test_ft004_service.py tests/backend/api/test_ft004_operations_routes.py -q`
-- `AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q`
 - `.venv/bin/python -m pytest tests/backend/access_admin tests/backend/api tests/backend/agent_runtime -m "not real_model" -q`
 - `.venv/bin/python -m pytest tests -m "not real_model" -q`
 - `node scripts/mb-lint.mjs`
@@ -209,6 +229,11 @@ data using the isolated test-only definition through the explicit test seam.
 - `git diff --check`
 
 ## UAT
+
+This credentialed provider procedure is deferred optional/manual UAT. It is
+not a TASK-031/code-phase quality gate or closure prerequisite. BHV-001 and the
+live-provider portion of REQ-011 remain unverified until this procedure later
+passes; deterministic evidence must not claim them.
 
 1. Configure explicit typed egress plus one DeepSeek or Gemini smoke binding,
    model id, and matching secret.
@@ -225,10 +250,16 @@ data using the isolated test-only definition through the explicit test seam.
 6. Select unconfigured `chatgpt_oauth` and confirm fail-closed behavior without
    reading Codex/ChatGPT credentials or trying another provider.
 
+Exact command after all explicit prerequisites are present:
+`AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q`.
+
 ## Queue handoff
 
-- `TASK-028-T3-FT-007-W1` and `TASK-029-T3-FT-007-W2` are the complete ordered
-  FT-007 queue; both remain `planned`.
+- Historical records remain verbatim: `TASK-028-T3-FT-007-W1` is `failed` and
+  `TASK-029-T3-FT-007-W2` is `blocked`.
+- The active replacement queue is exactly
+  `TASK-030-T3-FT-007-W1` (`planned`) ->
+  `TASK-031-T3-FT-007-W2` (`planned`).
 - Next and only semantic gate: `/review-tasks-plan FT-007`.
 - Execution is forbidden until that fresh review returns exact
   `VERDICT: APPROVE`.

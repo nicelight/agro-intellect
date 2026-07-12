@@ -1,0 +1,197 @@
+{
+  "id": "TASK-030-T3-FT-007-W1",
+  "title": "Align Agent Runtime core with the opaque candidate-text contract",
+  "status": "done",
+  "wave": "W1",
+  "feature": "FT-007",
+  "reqs": [
+    "REQ-003",
+    "REQ-010",
+    "REQ-011",
+    "REQ-013",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-025-T3-FT-004-W3"
+  ],
+  "touched_files": [
+    "backend/app/agent_runtime/contracts.py",
+    "tests/backend/agent_runtime/test_ft007_runtime.py",
+    ".protocols/TASK-030-T3-FT-007-W1/",
+    ".tasks/TASK-030-T3-FT-007-W1/",
+    ".memory-bank/tasks/TASK-030-T3-FT-007-W1.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft007-opaque-text-contract",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_runtime/test_ft007_runtime.py -q",
+      "required": false
+    },
+    {
+      "name": "ft007-core-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_runtime -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "access-runtime-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/plant_operations tests/backend/agent_runtime -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "full-test-suite",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "AgentModelResultV1 accepts representative schema-valid Markdown-, HTML-, prompt-, instruction-, command-, and URL-looking candidate_output strings unchanged through MessageEnvelopeV1; syntax-looking content alone never yields output_invalid.",
+    "Strict schema/type/normalization/1..2000-code-point, decision/claim, confidence, source-ref, unknown-field, and model-owned authority-field rejection matrices remain unchanged and fail closed.",
+    "Every accepted non-silent output remains an immutable pending_classification MessageEnvelope with consumable_by_agents=false; candidate text cannot select classification, routing, publication, task, Safety, approval, or action authority.",
+    "Classifier handoff tests accept only the strict project-owned SafetyClassificationResultV1 boundary and create no FT-008/FT-011/FT-012 effect.",
+    "Provider request/input ordering, current session/account/membership/Plant/grant guard, archive/revoke race, outcome/event matrices, sanitized audit, audit failure, and no-replay behavior from the W1 runtime core remain proven by focused and regression tests.",
+    "No public agent route, Bus/UI publication, downstream action, mutable agent-run/provider-history persistence, fake output, provider fallback, or production test executor is introduced.",
+    "BHV-001 and BHV-003 retain named deterministic traceability; credentialed provider evidence remains TASK-031 scope.",
+    "Independent /verify and task-level /red-verify are recommended before lifecycle closure; feature-level /red-verify --feature FT-007 remains the later feature-boundary review.",
+    {
+      "stage": "independent_verify",
+      "verdict": "PASS",
+      "report": ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-VERIFY-final-report-docs-01.md",
+      "evidence": "Opaque candidate handoff, strict rejection/classifier boundaries, pending-envelope authority isolation, current guards, outcome/audit matrices, scoped and full regressions, lint, and task-owned whitespace independently passed.",
+      "scheduler_recommendation": "Run mandatory task-level /red-verify; retain scheduler lifecycle ownership and status in_progress."
+    },
+    {
+      "stage": "independent_red_verify",
+      "semantic_verdict": "semantic-pass",
+      "report": ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-01.md",
+      "evidence": "No false-success, authority promotion, anti-goal breach, boundary drift, state/data inconsistency, critical security issue, operational widening, or unjustified maintenance cost was found.",
+      "scheduler_recommendation": "Task is closure-eligible after scheduler accepts functional PASS, semantic-pass, and the explicit HUMAN_CHECKPOINT marker; scheduler owns the lifecycle transition."
+    },
+    {
+      "stage": "scheduler_closure",
+      "decision": "done",
+      "evidence": [
+        ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-IMPL-final-report-code-01.md",
+        ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-030-T3-FT-007-W1/TASK-030-T3-FT-007-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-030-T3-FT-007-W1/handoff.md"
+      ],
+      "basis": "Scheduler accepted independent VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, exact HUMAN_CHECKPOINT: done, full T3 protocol evidence, and task-scoped clean checks.",
+      "residual_risk": "Repository-wide git diff --check still reports unrelated pre-existing whitespace in notes_agro-prj.md; TASK-030-owned scope is clean."
+    }
+  ],
+  "docs": [
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/bugs/BUG-001-task-028-message-envelope-markdown-contract.md"
+  ],
+  "evidence_required": [
+    "representative formatting-looking opaque-text acceptance and unchanged-handoff matrix",
+    "strict invalid schema/type/normalization/length/decision/claim/ref/confidence regression summary",
+    "pending-envelope and strict classifier-handoff evidence with no downstream authority",
+    "full W1 current-guard, archive/revoke, outcome/event, safe-audit, and audit-failure regression summary",
+    "static no-publication/no-authority/no-persistence/no-fake inspection",
+    "independent /verify and task-level /red-verify reports",
+    "node scripts/mb-lint.mjs output",
+    "scoped git diff --check output"
+  ],
+  "purpose": "Replace the superseded syntax-rejection delta from failed TASK-028 with the owner-approved opaque untrusted text contract while preserving and re-proving the existing authorized FT-007 W1 runtime core.",
+  "success_outcome": "Representative schema-valid formatting-looking candidate text passes unchanged through AgentModelResultV1 into an immutable pending MessageEnvelope without gaining authority, while every strict schema, authorization, guard, outcome, audit, classifier-handoff, and no-downstream-effect invariant of the existing W1 runtime core remains proven.",
+  "anti_goals": [
+    "No Markdown, HTML, prompt, instruction, command, or URL grammar, parser, sanitizer, filter, renderer, or active-link behavior.",
+    "No Bus/UI literal-rendering implementation, classifier policy/effect, Safety/task/action effect, or FT-008/FT-011/FT-012 work.",
+    "No provider/model configuration, roster/bootstrap hook, real-provider dependency, or credentialed smoke work.",
+    "No rewrite of TASK-028 history, verification evidence, retry budget, or BUG origin evidence.",
+    "No broader Agent Runtime, Plant Operations, API, Timeline, or frontend refactor without direct canonical evidence and explicit re-planning."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/agent_runtime/contracts.py",
+      "tests/backend/agent_runtime/test_ft007_runtime.py",
+      ".protocols/TASK-030-T3-FT-007-W1/",
+      ".tasks/TASK-030-T3-FT-007-W1/",
+      ".memory-bank/tasks/TASK-030-T3-FT-007-W1.task.json"
+    ],
+    "forbidden_scope": [
+      "TASK-028/TASK-029 lifecycle, protocol, or evidence mutation",
+      "markup/prompt recognizers, sanitizers, renderers, or active links",
+      "Bus, UI Feed, classifier policy/effects, Safety/task/action effects, or FT-008/FT-011/FT-012 implementation",
+      "provider/model composition, canonical roster/bootstrap, or real-provider smoke",
+      "Plant Operations, API, Timeline, frontend, or unrelated Agent Runtime refactors",
+      "unredacted auth, provider, path, raw chat, provider payload, prompt history, or hidden-reasoning evidence"
+    ],
+    "stop_conditions": [
+      "TASK-025-T3-FT-004-W3 is not done or its canonical Plant-operation baseline is contradicted.",
+      "The canonical opaque-text contract conflicts with another direct task-linked authoritative spec.",
+      "Correctness requires writes outside contracts.py and test_ft007_runtime.py; stop and record the exact canonical evidence before any owner-approved scope widening.",
+      "The change would interpret candidate text as instructions or give it classification, routing, publication, task, Safety, approval, or action authority.",
+      "Diagnostics or evidence contain credentials, session/auth material, raw provider payload, prompt history, hidden reasoning, raw chat, or local absolute paths."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/tasks/TASK-028-T3-FT-007-W1.task.json",
+    ".memory-bank/bugs/BUG-001-task-028-message-envelope-markdown-contract.md",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/behavior-specs/FT-007-BHV-001-real-model-envelope.behavior.json",
+    ".memory-bank/behavior-specs/FT-007-BHV-003-archive-race.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".protocols/FT-007/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/domains/auth/session-storage.md",
+    ".memory-bank/domains/identity/account-membership.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/domains/runtime-data-model.md",
+    ".memory-bank/states/auth/session-lifecycle.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Treat candidate_output as opaque untrusted normalized text: accept schema-valid 1..2000-code-point formatting-looking values unchanged and do not parse, filter, sanitize, or classify them by syntax.",
+    "Remove only the superseded syntax/prompt regex rejection while preserving strict AgentModelResultV1, MessageEnvelopeV1, ProviderRequestV1, runtime-outcome, classifier-handoff, ref, confidence, and unknown-field matrices.",
+    "Preserve the existing current authorization guard, immutable pending/non-consumable envelope, sanitized audit, audit-failure, archive/revoke, and no-replay behavior.",
+    "Keep candidate text out of all instruction/control channels and give authority only to typed project-owned classifier/guards/Safety/human decisions.",
+    "Keep execution writes narrow to contracts.py, test_ft007_runtime.py, and task-owned protocol/evidence unless canonical evidence proves a necessary widening and the owner re-plans it."
+  ],
+  "invariants": [
+    "Model text is data, never runtime, classifier, publication, task, Safety, approval, or action authority.",
+    "Agno/provider output never overrides project schemas, authorization, PostgreSQL authority, current guards, or sanitized audit rules.",
+    "Only strict model-declared silence is silent; invalid, failed, denied, guard-blocked, or audit-failed branches create no MessageEnvelope or replayable candidate.",
+    "Every accepted non-silent MessageEnvelope remains pending_classification and consumable_by_agents=false.",
+    "FT-007 creates no Bus/UI/task/Safety effect and does not implement literal rendering or typed Bus quotation."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/agent_runtime/test_ft007_runtime.py -q",
+    ".venv/bin/python -m pytest tests/backend/agent_runtime -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/plant_operations tests/backend/agent_runtime -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Probe representative Markdown, HTML, prompt, instruction, command, and URL-looking strings for byte-for-byte/code-point-preserving AgentModelResultV1-to-MessageEnvelopeV1 handoff and zero authority side effects.",
+    "Inspect the scoped production diff for residual syntax/prompt rejection and for any new renderer, parser, command, routing, classification, publication, or action path."
+  ]
+}

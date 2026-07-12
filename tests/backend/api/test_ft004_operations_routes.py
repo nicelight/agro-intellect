@@ -293,6 +293,45 @@ def test_observation_text_without_state_returns_422_and_writes_nothing(
     assert not (timeline_root / "timeline.jsonl").exists()
 
 
+def test_observation_limit_returns_stable_422_without_writes(
+    operations_api_runtime,
+):
+    client, database, seed, timeline_root = operations_api_runtime
+
+    for length in (1, 2000):
+        accepted = client.post(
+            f"/api/plants/{seed.plant_id}/operations/check-ins",
+            json={
+                "observation_state": "observed",
+                "observation_text": "🙂" * length,
+            },
+            cookies=_cookies(seed.engineer),
+        )
+        assert accepted.status_code == 201
+
+    rejected = client.post(
+        f"/api/plants/{seed.plant_id}/operations/check-ins",
+        json={
+            "observation_state": "observed",
+            "observation_text": "🙂" * 2001,
+        },
+        cookies=_cookies(seed.engineer),
+        headers={"x-request-id": "req-ft007-observation-limit"},
+    )
+    assert rejected.status_code == 422
+    assert rejected.json()["error"] == {
+        "code": "OBSERVATION_TEXT_TOO_LONG",
+        "message": "Observation text is too long.",
+        "request_id": "req-ft007-observation-limit",
+    }
+    assert _row_counts(database) == (2, 0)
+    timeline_events = [
+        json.loads(line)
+        for line in (timeline_root / "timeline.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(timeline_events) == 2
+
+
 @pytest.mark.parametrize(
     ("actor_name", "plant_attr", "expected_status", "expected_code"),
     [

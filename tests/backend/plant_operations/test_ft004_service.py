@@ -383,6 +383,43 @@ def test_observation_text_without_state_is_rejected_without_writes(
     assert event_ref_factory.events == []
 
 
+def test_observation_code_point_limit_is_authoritative_and_zero_write(
+    ft004_database,
+    event_ref_factory,
+):
+    farm = seed_farm(ft004_database)
+    boss, _ = create_actor(ft004_database, farm, "boss")
+    plant = create_active_plant(ft004_database, boss, plant_key="observation_limit_001")
+
+    for length in (1, 2000):
+        with ft004_database.session() as session:
+            PlantOperationsService(
+                session,
+                timeline_append=event_ref_factory,
+            ).create_check_in(
+                boss,
+                plant_id=plant.plant_id,
+                observation_state="observed",
+                observation_text="🙂" * length,
+            )
+    assert row_counts(ft004_database) == (2, 0)
+
+    with ft004_database.session() as session:
+        with pytest.raises(PlantOperationError) as rejected:
+            PlantOperationsService(
+                session,
+                timeline_append=event_ref_factory,
+            ).create_check_in(
+                boss,
+                plant_id=plant.plant_id,
+                observation_state="observed",
+                observation_text="🙂" * 2001,
+            )
+    assert rejected.value.code is PlantOperationErrorCode.OBSERVATION_TEXT_TOO_LONG
+    assert row_counts(ft004_database) == (2, 0)
+    assert len(event_ref_factory.events) == 2
+
+
 def test_validation_errors_do_not_persist(ft004_database, event_ref_factory):
     farm = seed_farm(ft004_database)
     boss, _ = create_actor(ft004_database, farm, "boss")

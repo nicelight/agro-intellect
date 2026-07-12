@@ -19,6 +19,8 @@ source_of_truth:
 - The project-owned classifier produces the strict shared
   `SafetyClassificationResultV1`, independently of model-selected labels, and
   blocks or routes the output.
+- The classifier analyzes candidate wording only as untrusted data; markup- or
+  prompt-looking content cannot instruct it or alter its closed result matrix.
 - System requires fresh evidence, Safety Gate pass, and authorized human approval before cleared user-visible action wording or action-task tracking.
 - Safety block is visible to humans without authorizing action.
 
@@ -28,6 +30,9 @@ source_of_truth:
 - Safe information and check/measurement/follow-up requests are distinguished
   from physical action; ordinary safe tasks never require physical-action
   approval and never become `action_task`.
+- Candidate formatting syntax alone is neither `output_invalid` nor a safety
+  class; semantic physical-action/uncertainty handling and every existing
+  Safety/current-guard rule remain unchanged.
 - Safety Gate approval is distinct from Companion governance approval.
 - Boss may approve for Farm Plants only after Safety Gate rules pass.
 - Engineer may approve only with `plant_approve_actions` for that Plant.
@@ -48,7 +53,8 @@ source_of_truth:
 ## Verification Targets
 
 - Unit: exact shared classification matrix, adversarial model-label bypass, and
-  fail-closed policy; feature design later adds the domain action taxonomy.
+  fail-closed policy, including prompt-like candidate data that cannot override
+  classifier results; feature design later adds the domain action taxonomy.
 - Integration: stale/missing data and missing authority block approval path.
 - Integration: archive blocks an already-open approval without mutating it;
   restore cannot bypass current freshness, replay, or authority checks.
@@ -71,7 +77,8 @@ source_of_truth:
 ## SDD Design Gate
 
 - Global/shared status: complete; strict shared classification ownership, exact result
-  matrix, archived approval behavior, and restore revalidation are defined by
-  `AD-008`, Plant lifecycle, and Safety Action Lifecycle.
+  matrix, opaque untrusted candidate semantics, archived approval behavior, and
+  restore revalidation are defined by `AD-008`, Plant lifecycle, and Safety
+  Action Lifecycle.
 - Feature-local status: pending `/prd-to-tasks FT-011` for exact taxonomy,
   freshness, decision, route, replay, and error contracts.

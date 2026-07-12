@@ -55,6 +55,10 @@ source_of_truth:
 - Agno/model execution is execution layer only and not source of truth.
 - Agent output must pass adapter/runtime-decision validation before a
   MessageEnvelope is created.
+- Schema-valid `candidate_output` is opaque untrusted normalized text within
+  the existing 1..2000 Unicode-code-point bound. Markdown-, HTML-, prompt-,
+  instruction-, command-, and URL-looking sequences are accepted as data and
+  have no executable or authority semantics.
 - Every non-silent MessageEnvelope is pending and non-consumable until the
   project-owned Safety & Task Loop classifier returns the matching strict
   classification result; model-selected claim labels cannot authorize routing.
@@ -74,7 +78,9 @@ source_of_truth:
 
 ## Edge Cases & Failure Modes
 
-- Invalid model output creates no MessageEnvelope. Safety classification is
+- Invalid model output creates no MessageEnvelope. Formatting-looking syntax
+  alone is not invalid; strict schema/type/normalization/length, decision/claim,
+  ref, and confidence failures remain invalid. Safety classification is
   project-owned; uncertainty permits only a generic blocked notice.
 - Raw model reasoning/provider history is never stored as fact or agent working context.
 - Agent cannot bypass PlantAccessGrant or ActorContext.
@@ -88,8 +94,11 @@ source_of_truth:
 ## Verification Targets
 
 - Unit: exact ProviderRequest/input/model-result/outcome/envelope contracts and
-  rejection matrices.
-- Integration: real model-backed adapter path over actual scoped Plant data.
+  rejection matrices, including acceptance of representative schema-valid
+  Markdown/HTML/prompt-like candidate data.
+- Deferred manual UAT: real model-backed adapter path over actual scoped Plant
+  data. Its absence does not block TASK-031/code-phase closure and does not
+  satisfy BHV-001 or the live-provider portion of REQ-011.
 - Integration: archive during model execution blocks MessageEnvelope/Bus/UI
   publication without replay after restore.
 - Anti-cheat: runtime demo path cannot be satisfied by fake/stubbed agent output.
@@ -134,13 +143,17 @@ source_of_truth:
   agent endpoint.
 - The adapter contract owns exact provider input, model result, outcome, audit,
   and pending MessageEnvelope rules; this router does not restate them.
+- Candidate text remains opaque data across FT-007. It is never parsed as
+  markup/prompt, promoted to instructions, or used to select classification,
+  publication, task, Safety, or action authority.
 - Roster Bootstrap owns the post-commit eight-item batch and 8-or-0 sink result.
   Plant creation never calls a provider or rolls back after commit.
 - FT-008 owns Bus/UI publication and durable introduction reconciliation;
   FT-011/FT-012 own Safety/task effects. FT-007 implements only their strict
   handoff contracts.
-- Provider/model selection is deployment configuration. Smoke acceptance is
-  defined by Agent Runtime testing and the provider runbook.
+- Provider/model selection is deployment configuration. The credentialed
+  smoke is retained as optional/manual UAT; when explicitly invoked, its strict
+  acceptance is defined by Agent Runtime testing and the provider runbook.
 
 ## Feature-Local Design Pressure
 
@@ -152,28 +165,70 @@ source_of_truth:
 
 - Global/shared and FT-007 design status: complete; exact rules live in the
   canonical links above.
-- Execution inputs: explicit DeepSeek/Gemini model id, matching credential, and
-  egress opt-in. `chatgpt_oauth` remains fail-closed without an approved broker.
-- TASK-028 and TASK-029 remain planning artifacts only and must not execute until
-  `/prd-to-tasks FT-007` reconciles the implementation plan and task cards, and
-  a fresh `/review-tasks-plan FT-007` returns `APPROVE`.
+- Historical TASK-028 verification/semantic failures and BUG-001 were correct
+  under the superseded syntax-rejection contract. They remain historical and
+  their lifecycle is not changed by this design pass.
+- Manual-UAT inputs, only when that UAT is explicitly invoked: explicit
+  DeepSeek/Gemini model id, matching credential, and egress opt-in. Their
+  absence does not block TASK-031/code-phase closure. `chatgpt_oauth` remains
+  fail-closed without an approved broker.
+- TASK-028 (`failed`) and TASK-029 (`blocked`) remain lifecycle/history
+  artifacts only and must never be re-executed or rewritten.
+- Current `backend/app/agent_runtime/contracts.py` and its FT-007 tests still
+  contain the superseded partial markup/prompt regex rejection. The bounded
+  implementation delta is routed to planned TASK-030 without rewriting the
+  historical failed/blocked lifecycle records.
 
-## /prd-to-tasks FT-007 Repair Handoff
+## /prd-to-tasks FT-007 Reconciled Handoff
 
-The next `/prd-to-tasks FT-007` run must reconcile these stale planning inputs
-without executing either task:
+Bounded reconciliation preserves the historical records and creates this
+active replacement queue without executing any task:
 
-| Artifact | Required reconciliation |
+| Artifact | Reconciled result |
 |---|---|
-| TASK-028 | Add direct Session Lifecycle/Storage and Account/Membership inputs; cover the exact current guard and safe Timeline attribution. Add the unimplemented 2000-code-point UI/backend/legacy-row delta with direct Plant Operations links. Replace stale model/safety assertions with the canonical ProviderRequest/input/model-result/outcome/envelope/event contracts. Test only the classifier handoff; do not implement FT-011/FT-008/FT-012 effects. |
-| TASK-029 | Add direct Plant Management HTTP and Farm/Plant/Access Storage inputs; preserve request/auth/`201 PlantSummary`/no-store/atomic commit/error behavior. Cover exact UUIDv5 names, one eight-item sink call, 8-or-0 result matrix, downstream reconciliation boundary, and audited smoke rule. Do not implement FT-008 storage/projection. |
-| IMPL-FT-007 | Reconcile write scopes, constraints, gates, dependencies, and verification targets with both task cards and canonical specs. Preserve Plant Operations/Operator UI and FT-008/FT-011/FT-012 ownership. |
+| TASK-028 / TASK-029 | Preserved verbatim as `failed` / `blocked` history, including dependencies and evidence. |
+| TASK-030 | Planned W1 replacement depending on completed TASK-025. Removes syntax/prompt regex rejection, accepts representative schema-valid formatting-looking values unchanged, and re-proves the full existing runtime core without downstream authority. |
+| TASK-031 | Planned W2 replacement depending on TASK-030. Preserves the legitimate TASK-029 roster/provider/bootstrap/Plant-create/real-provider-smoke scope under its own protocol/evidence identity. |
+| IMPL-FT-007 | Active dependency graph and scopes now match TASK-030 -> TASK-031; no canonical or behavior spec was added. |
 
-After reconciliation, the only allowed next gate is a fresh
-`/review-tasks-plan FT-007`. TASK-028/TASK-029 stay `planned` and execution is
-forbidden unless that review returns exact `VERDICT: APPROVE`.
+The only allowed next gate is a fresh `/review-tasks-plan FT-007`. No active
+replacement task may execute unless that review returns exact
+`VERDICT: APPROVE`. Explicit DeepSeek/Gemini model id, matching credential, and
+egress opt-in are later manual-UAT inputs, not planning or TASK-031/code-phase
+closure blockers.
+
+## Owner-Directed Smoke Deferral
+
+- As of 2026-07-12, credentialed DeepSeek/Gemini smoke is strict
+  optional/manual UAT and is not TASK-031/code-phase closure evidence.
+- Deterministic roster, provider-construction, no-fallback, bootstrap,
+  Plant-create compatibility, redaction, and regression evidence may support
+  code-phase closure without a live provider call.
+- `FT-007-BHV-001` and the live-provider portion of REQ-011 remain explicitly
+  deferred and unverified. Deterministic introduction, constructor, binding,
+  or anti-cheat tests must not be presented as satisfying them.
+- If the smoke is invoked later, explicit mode, profile/model, matching
+  credential, installed provider dependencies, and egress opt-in are required;
+  every skip, fake, fallback, blocked/failed, or unaudited outcome fails that
+  UAT, and evidence remains redacted.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+- Feature-level adversarial review accepts the owner-approved deterministic
+  code-phase and explicit replacement-based administrative closure boundary.
+  TASK-028 FAIL/semantic-fail and TASK-029 dependency-block history remain
+  preserved; their current administrative `done` records point explicitly to
+  independently verified TASK-030/TASK-031 replacements and do not claim the
+  original implementations passed.
+- `FT-007-BHV-001`, the live-provider portion of REQ-011, and real
+  DeepSeek/Gemini transport remain deferred/unverified and are not satisfied by
+  deterministic evidence. FT-008 retains durable introduction reconciliation,
+  Bus/UI publication, and downstream current-guard ownership.
+- Report: [FT-007 feature semantic review](../../.tasks/FT-007/FT-007-S-RED-VERIFY-final-report-docs-01.md).
 
 ## Implementation
 
-- [Implementation plan](../tasks/plans/IMPL-FT-007.md): two ordered T3 task
-  cards for the runtime core and roster/provider/bootstrap production binding.
+- [Implementation plan](../tasks/plans/IMPL-FT-007.md): historical TASK-028/029
+  plus active ordered T3 replacements TASK-030 -> TASK-031.
