@@ -7,6 +7,9 @@ import re
 from typing import TypeAlias
 import uuid
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from ..core.security import (
     is_valid_session_token,
     is_valid_session_token_hash,
@@ -280,6 +283,99 @@ def plant_permission_allows(
     return False
 
 
+def build_current_agent_bus_context(
+    session: Session,
+    actor: ActorContext,
+    *,
+    plant_id: uuid.UUID,
+    limit: int = 100,
+) -> AuthorizedPlantContext | None:
+    """Load only typed Bus records after a same-transaction current guard."""
+    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 100:
+        return None
+    # Local imports keep the shared access seam independent of FT-008 at import time.
+    from ..agent_chat.authorization import lock_current_plant_authorization
+    from ..agent_chat.contracts import AgentChatContractError, BusEventEnvelopeV1, timestamp_text
+    from ..agent_chat.models import AgentBusEvent
+
+    auth = lock_current_plant_authorization(
+        session, actor, plant_id, allow_archived=False
+    )
+    if auth is None:
+        return None
+    rows = list(
+        session.scalars(
+            select(AgentBusEvent)
+            .where(
+                AgentBusEvent.farm_id == actor.farm_id,
+                AgentBusEvent.plant_id == plant_id,
+                AgentBusEvent.consumable_by_agents.is_(True),
+            )
+            .order_by(AgentBusEvent.created_at, AgentBusEvent.event_id)
+            .limit(limit)
+        )
+    )
+    permission = actor.resolve_plant_permission(plant_id, OperationKind.NORMAL_READ)
+    if not plant_permission_allows(permission, OperationKind.NORMAL_READ):
+        return None
+    records: list[SafePlantContextRecord] = []
+    try:
+        for row in rows:
+            envelope = BusEventEnvelopeV1.from_untrusted(
+                {
+                    "schema_version": 1,
+                    "event_id": str(row.event_id),
+                    "event_type": row.event_type,
+                    "created_at": timestamp_text(row.created_at),
+                    "farm_id": str(row.farm_id),
+                    "plant_id": str(row.plant_id),
+                    "actor_ref": row.actor_ref,
+                    "source_type": row.source_type,
+                    "source_id": row.source_id,
+                    "payload": row.payload,
+                    "source_refs": row.source_refs,
+                    "consumable_by_agents": row.consumable_by_agents,
+                    "authorization_scope": row.authorization_scope,
+                }
+            )
+            records.append(
+                SafePlantContextRecord(
+                    source_ref=f"agent_bus_event:{envelope.event_id}",
+                    payload={
+                        "record_type": "agent_bus_event",
+                        "event_id": str(envelope.event_id),
+                        "event_type": envelope.event_type,
+                        "source_type": envelope.source_type,
+                        "source_id": envelope.source_id,
+                        "payload": _copy_safe_mapping(envelope.payload),
+                        "source_refs": list(envelope.source_refs),
+                        "consumable_by_agents": True,
+                    },
+                )
+            )
+    except (AgentChatContractError, TypeError, ValueError):
+        return None
+    assert permission.plant_status is not None
+    return AuthorizedPlantContext(
+        authorization_scope=AuthorizationScope(
+            farm_id=auth.farm_id,
+            plant_id=auth.plant_id,
+            role_preset=actor.role_preset,
+            operation_kind=OperationKind.NORMAL_READ,
+            plant_status=permission.plant_status,
+            can_read=True,
+            can_comment=permission.can_comment,
+            can_operate=permission.can_operate,
+            can_create_domain_tasks=permission.can_create_domain_tasks,
+            can_manage_access=permission.can_manage_access,
+            can_approve_actions=permission.can_approve_actions,
+            source=permission.source,
+            grant_id=permission.grant_id,
+        ),
+        records=tuple(records),
+    )
+
+
 __all__ = [
     "AuthorizationScope",
     "AuthorizedPlantContext",
@@ -287,5 +383,6 @@ __all__ = [
     "PlantContextCandidate",
     "SafePlantContextRecord",
     "build_authorized_plant_context",
+    "build_current_agent_bus_context",
     "plant_permission_allows",
 ]

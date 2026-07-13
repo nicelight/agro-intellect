@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-07-12
+last_updated: 2026-07-13
 ---
 # SDD Spec Backbone
 
@@ -66,18 +66,21 @@ last_updated: 2026-07-12
 - Downstream rule: product tasking must honor the Foundation gate recorded in the authoritative Foundation document.
 
 ## Handoff To /prd-to-tasks
-- Ready: yes for `/prd-to-tasks FT-007` planning reconciliation only.
-- Scope: bounded reconciliation of FT-007 planning against the authoritative
-  opaque-candidate-text contract; then `/review-tasks-plan FT-007`.
-- Stop conditions: PRD scope changes, a new shared/global gap appears, or feature design conflicts with the authoritative global backbone; rerun `/spec-design` for shared/global decisions. TASK-028/TASK-029 execution remains forbidden until the refreshed queue receives a fresh `VERDICT: APPROVE`.
-- Historical note: TASK-028's failed verification and BUG-001 were correct
-  under the now-superseded syntax-rejection contract and remain preserved as
-  historical evidence. This `/spec-design` pass does not alter TASK-028,
-  TASK-029, BUG-001, or scheduler lifecycle state.
-- Brownfield delta: `backend/app/agent_runtime/contracts.py` and its FT-007
-  tests still implement the superseded partial markup/prompt regex rejection.
-  That is an implementation/planning reconciliation input, not a remaining
-  global design question.
+- Ready: yes for feature-local `/prd-to-tasks FT-<NNN>` runs whose own
+  clarification/design preflight passes.
+- Current FT-008 outcome: feature-local Bus/UI envelopes, PostgreSQL
+  persistence/reconciliation, protected Plant feed HTTP, context hygiene, and
+  verification are complete; TASK-032 and TASK-033 are `done` with independent
+  functional PASS and per-task semantic-pass evidence. FT-008 is `verified`.
+- Latest pre-execution `/review-tasks-plan FT-008` is `APPROVE`. The scheduler
+  will delegate the final task-plan review separately; this sync does not run
+  or pre-claim that review.
+- FT-007 note: TASK-030/TASK-031 are done under the explicit owner deferral of
+  credentialed real-provider smoke; that residual UAT remains unclaimed and
+  does not block FT-008 deterministic sink/context work.
+- Stop conditions: PRD scope changes, a new shared/global gap appears, or a
+  feature design conflicts with the authoritative global backbone; route the
+  shared decision back through `/spec-design`.
 
 ## Global Backbone Status
 - Status: complete
@@ -88,7 +91,6 @@ last_updated: 2026-07-12
   - microservices_or_distributed_deployment: not_applicable - MVP uses a local modular monolith.
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
-- Notes: Foundation remains verified and is not affected by the candidate-text
-  contract change. FT-007 is ready for bounded planning reconciliation only;
-  execution requires refreshed task cards and fresh `/review-tasks-plan
-  FT-007` approval.
+- Notes: Foundation remains verified. FT-008 feature-local design and both
+  execution waves are complete and independently verified. Its T3 per-task
+  semantic evidence is recorded; no feature-level T2 semantic gate applies.

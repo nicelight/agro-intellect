@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+import logging
 from typing import Final
 
 from fastapi import FastAPI
@@ -9,6 +11,7 @@ from .access_admin.dependencies import install_protected_route_error_handler
 from .access_admin.errors import install_error_handlers
 from .api import (
     admin_router,
+    feed_router,
     history_router,
     operations_router,
     photos_router,
@@ -17,10 +20,13 @@ from .api import (
 )
 from .config import AppSettings
 from .database import DatabaseHandle, build_database
+from .agent_chat import PostgreSQLAgentIntroductionSink, reconcile_active_plants
 from .agent_runtime.bootstrap import (
     AgentIntroductionSink,
-    UnavailableAgentIntroductionSink,
 )
+
+
+_logger = logging.getLogger(__name__)
 
 
 def create_app(
@@ -31,13 +37,23 @@ def create_app(
 ) -> FastAPI:
     resolved_settings = settings or AppSettings.from_env()
     resolved_database = database or build_database(resolved_settings)
-    app = FastAPI(title=resolved_settings.app_name)
+    resolved_sink = agent_introduction_sink or PostgreSQLAgentIntroductionSink(
+        resolved_database
+    )
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        try:
+            reconcile_active_plants(resolved_database, resolved_sink)
+        except Exception:
+            _logger.warning("AGENT_INTRODUCTION_RECONCILIATION_FAILED")
+        yield
+
+    app = FastAPI(title=resolved_settings.app_name, lifespan=lifespan)
     app.state.settings = resolved_settings
     app.state.database = resolved_database
     app.state.readiness_check_database = readiness_check_database
-    app.state.agent_introduction_sink = (
-        agent_introduction_sink or UnavailableAgentIntroductionSink()
-    )
+    app.state.agent_introduction_sink = resolved_sink
     install_error_handlers(app)
     install_protected_route_error_handler(app)
     app.include_router(session_router)
@@ -46,6 +62,7 @@ def create_app(
     app.include_router(operations_router)
     app.include_router(photos_router)
     app.include_router(history_router)
+    app.include_router(feed_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

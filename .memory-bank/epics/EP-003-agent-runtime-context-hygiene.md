@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-003
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-13
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -48,3 +48,14 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 - Exact MessageEnvelope, BusEventEnvelope, and UIFeedEvent contracts.
 - Exact adapter validation and runtime decision flow.
 - Exact agent context-builder filters and anti-cheat verification.
+
+## Current Lifecycle Evidence
+
+- FT-008 is `verified` for durable roster introductions, guarded typed Bus and
+  literal UI publication, current-authority agent-context isolation, and the
+  protected Plant feed API. REQ-013 is correspondingly `verified` across its
+  FT-007/FT-008 boundary.
+- EP-003 remains `planned`: FT-007 retains deferred live-provider UAT under
+  REQ-011, while FT-009 Vision/Plant trust and FT-010 advisor behavior remain
+  independently owned and unimplemented. FT-008 does not claim those outcomes
+  or FT-016 frontend rendering.

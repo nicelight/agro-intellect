@@ -36,6 +36,7 @@ source_of_truth:
 - [Plant Operations HTTP](plant-operations-http.md): daily check-in and manual measurement API.
 - [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
 - [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
+- [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination and archived retained-history reads.
 
 ## Routing
 

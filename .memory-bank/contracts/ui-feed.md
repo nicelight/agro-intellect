@@ -44,25 +44,40 @@ feature when a projection is feature-specific.
   - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
     append-only audit/export events.
 
-## Projection Shape
+## UIFeedEvent version 1
 
-Feature-local specs may refine fields, but every UI Feed projection must carry:
+FT-008 implements one strict Plant-scoped object with unknown fields rejected:
 
-- `ui_event_id`
-- `created_at`
-- `farm_id`
-- `plant_id` when Plant-scoped
-- `source_type`
-- `source_id`
-- `source_refs`
-- `display_kind`
-- `display_payload`
-- `visible_to_roles`
-- `visible_to_agents=false`
-- `consumable_by_agents=false`
+- `schema_version=1`;
+- `ui_event_id`: UUID; introductions reuse their deterministic
+  `introduction_id`, other projections use application-generated UUIDv4;
+- `created_at`: timezone-aware UTC timestamp;
+- `farm_id`, `plant_id`: native UUID identities;
+- `source_type`: `system | agent_message | safety`;
+- `source_id`: stable introduction/message/classification identity;
+- `source_refs`: zero through four unique safe `kind:identifier` refs;
+- `display_kind`: `agent_introduction | agent_message | block_notice`;
+- `display_payload`: exactly one variant below;
+- `visible_to_roles`: non-empty unique subset of
+  `boss|engineer|consultant`;
+- `visible_to_agents=false`;
+- `consumable_by_agents=false`.
 
-`display_payload` is human presentation data only. It must not be reused as
-agent input, runtime truth, timeline authority, or task/action authority.
+Payload variants:
+
+- `agent_introduction`: exactly
+  `{payload_kind:"agent_introduction",agent_id,display_name,competence_summary,introduction_text,roster_version}`
+  copied from the strict canonical introduction item.
+- `agent_message`: exactly
+  `{payload_kind:"agent_message",agent_id,candidate_claim_type,quoted_text}`;
+  `quoted_text` equals the authorized/classified candidate and remains literal
+  presentation data.
+- `block_notice`: exactly
+  `{payload_kind:"block_notice",notice_code:"classification_uncertain",text:"Сообщение заблокировано до уточнения безопасности."}`;
+  it never copies candidate text.
+
+`display_payload` must not be reused as agent input, runtime truth, timeline
+authority, task/action authority, URL/action input, or HTML/Markdown source.
 
 ## Rules
 
@@ -96,6 +111,12 @@ agent input, runtime truth, timeline authority, or task/action authority.
   constraints as backend reads.
 - Secrets, tokens, auth headers, `.env` values, provider payloads, hidden
   reasoning, and credentials must not appear in UI Feed.
+
+Persisted Plant feed reads use the protected
+`.memory-bank/contracts/plant-feed-http.md` boundary. Actual Svelte/PWA DOM
+rendering remains FT-016 ownership because no frontend scaffold exists in the
+current brownfield tree; that consumer must render these text fields through
+text-node/framework interpolation semantics.
 
 ## Edge Cases And Errors
 

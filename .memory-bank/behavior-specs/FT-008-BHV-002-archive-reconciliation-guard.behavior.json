@@ -1,0 +1,17 @@
+{
+  "id": "FT-008-BHV-002",
+  "feature_id": "FT-008",
+  "title": "Archive blocks projection and restore requires fresh reconciliation",
+  "given": {
+    "plant": "archived",
+    "introduction_batch": "missing"
+  },
+  "when": {
+    "action": "reconcile_then_restore_without_replay"
+  },
+  "then": {
+    "writes_while_archived": 0,
+    "automatic_restore_replay": false,
+    "fresh_active_reconciliation_required": true
+  }
+}

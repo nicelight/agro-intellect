@@ -1,0 +1,176 @@
+{
+  "id": "TASK-032-T3-FT-008-W1",
+  "title": "Persist roster introductions and reconcile active Plants",
+  "status": "done",
+  "wave": "W1",
+  "feature": "FT-008",
+  "reqs": [
+    "REQ-013",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-031-T3-FT-007-W2"
+  ],
+  "touched_files": [
+    "backend/app/agent_chat/",
+    "backend/app/main.py",
+    "backend/migrations/versions/ft008_agent_chat_ui_feed.py",
+    "tests/backend/agent_chat/",
+    "tests/backend/api/test_ft007_plant_bootstrap.py",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/photo_intake/test_ft005_migration_models.py",
+    "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/test_foundation_database_contract.py",
+    ".memory-bank/tasks/TASK-032-T3-FT-008-W1.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft008-storage-reconciliation-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_chat -q",
+      "required": false
+    },
+    {
+      "name": "plant-bootstrap-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/api/test_ft007_plant_bootstrap.py tests/backend/agent_runtime/test_ft007_bootstrap.py tests/backend/agent_chat -q",
+      "required": false
+    },
+    {
+      "name": "full-deterministic-suite",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Migration/model tests prove native UUID PK/FK parity, ON DELETE RESTRICT, strict boolean/JSON constraints, unique batch and introduction keys, and rollback-safe sessions.",
+    "The production app uses the PostgreSQL FT-008 sink rather than UnavailableAgentIntroductionSink; test recording sinks remain explicitly test-only.",
+    "One strict batch commits one batch identity and exactly eight introduction UIFeedEvent rows, or commits zero; accepted and duplicate are durable only after a truthful committed state.",
+    "Identical retry preserves ids, canonical content, and original created_at; batch/item mismatch returns content_conflict with no partial mutation.",
+    "Startup/current-state reconciliation fills missing active-Plant introductions after failure or restart and converges under repeated runs without Bus copies or provider/model calls.",
+    "Archive racing bootstrap/reconciliation returns plant_not_publishable and writes nothing; retained rows survive archive, restore performs no automatic replay, and a later fresh active scan is idempotent.",
+    "Existing POST /api/plants request/auth/atomic Plant-grant-audit commit/201/no-store/error behavior remains unchanged after concrete sink composition.",
+    {
+      "stage": "functional-verification",
+      "verdict": "PASS",
+      "mode": "scheduler",
+      "evidence": [
+        ".protocols/TASK-032-T3-FT-008-W1/verification.md",
+        ".protocols/TASK-032-T3-FT-008-W1/red-verification.md",
+        ".tasks/TASK-032-T3-FT-008-W1/TASK-032-T3-FT-008-W1-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "summary": "Independent real-PostgreSQL verification passed focused and regression checks, 8-or-0 atomicity, retry/conflict/timestamp behavior, stale-scan archive denial, restore fresh-scan convergence, guarded migration rollback, full deterministic suite, lint, diff-check, and strict doctor. Per-task T3 semantic verdict is semantic-pass; HUMAN_CHECKPOINT remains pending."
+    },
+    {
+      "stage": "scheduler-closure",
+      "mode": "scheduler",
+      "verdict": "CLOSURE: done",
+      "closed_at": "2026-07-12T23:33:04+05:00",
+      "evidence": [
+        ".protocols/TASK-032-T3-FT-008-W1/verification.md",
+        ".protocols/TASK-032-T3-FT-008-W1/red-verification.md",
+        ".tasks/TASK-032-T3-FT-008-W1/TASK-032-T3-FT-008-W1-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "checkpoint_decision": "waived_process_only_by_scheduler",
+      "summary": "Scheduler accepted independent VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass. The exact HUMAN_CHECKPOINT: done marker was not fabricated; its process-only requirement was explicitly waived under the Constitution and project policy override. Product safety, authorization, data integrity, source-of-truth, scope, and destructive-action rules were not waived."
+    }
+  ],
+  "docs": [
+    ".memory-bank/features/FT-008-agent-chat-bus-ui-feed-context-hygiene.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/contracts/agent-roster-bootstrap.md",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md"
+  ],
+  "evidence_required": [
+    "migration and model constraint inspection",
+    "strict sink accepted duplicate rejected failed 8-or-0 matrix",
+    "restart and repeated reconciliation convergence",
+    "archive race and post-restore fresh-scan evidence",
+    "unchanged Plant-create contract regression",
+    "focused and full deterministic test summaries",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Replace the truthful unavailable FT-007 sink with durable PostgreSQL introduction delivery and restart-safe current-state reconciliation without changing Plant creation or creating agent context.",
+  "success_outcome": "Every current active Plant converges to one durable canonical roster batch and exactly eight non-agent-consumable introduction UI Feed rows; retries, restarts, archive races, conflicts, and persistence failures remain atomic, idempotent, and fail closed with no Agent Chat Bus copy or false Plant rollback.",
+  "anti_goals": [
+    "No Bus context query, classified MessageEnvelope publication, Plant feed HTTP endpoint, frontend, classifier, task, Safety Gate, Companion, or dataset effect.",
+    "No distributed broker, worker fleet, outbox, event sourcing, timeline replay, or provider/model call.",
+    "No public Plant-create request/response/error change and no reopening the Plant transaction around downstream delivery."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/agent_chat/",
+      "backend/app/main.py",
+      "backend/migrations/versions/ft008_agent_chat_ui_feed.py",
+      "tests/backend/agent_chat/",
+      "tests/backend/api/test_ft007_plant_bootstrap.py",
+      "tests/backend/access_admin/test_ft002_schema_migration.py",
+      "tests/backend/photo_intake/test_ft005_migration_models.py",
+      "tests/backend/plant_operations/test_ft004_migration_models.py",
+      "tests/backend/test_foundation_database_contract.py",
+      ".protocols/TASK-032-T3-FT-008-W1/",
+      ".tasks/TASK-032-T3-FT-008-W1/",
+      ".memory-bank/tasks/TASK-032-T3-FT-008-W1.task.json"
+    ],
+    "forbidden_scope": [
+      "TASK-031 lifecycle, protocol, evidence, roster, UUID, provider, or MessageEnvelope changes",
+      "Bus/context/API/frontend/classifier/task/Safety/Companion/dataset implementation",
+      "new infrastructure beyond the local PostgreSQL sink and startup reconciliation service",
+      "secrets, auth material, provider payloads, hidden reasoning, raw chat, or unapproved governance content"
+    ],
+    "stop_conditions": [
+      "The current FT-007 sink port or deterministic batch differs from the canonical roster/bootstrap contract.",
+      "Correctness would require changing POST /api/plants request/response/transaction semantics or reporting rollback after commit.",
+      "The sink cannot provide a single committed eight-or-zero result without partial acceptance.",
+      "Reconciliation would require timeline replay, a distributed broker, provider calls, or storing auth/provider content."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-008-agent-chat-bus-ui-feed-context-hygiene.md",
+    ".memory-bank/behavior-specs/FT-008-BHV-001-introduction-reconciliation.behavior.json",
+    ".memory-bank/behavior-specs/FT-008-BHV-002-archive-reconciliation-guard.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md",
+    ".protocols/FT-008/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/contracts/agent-roster-bootstrap.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use PostgreSQL/read-model rows with native UUID identities, matching FK types, restricted deletes, and one scoped Alembic migration.",
+    "Persist the strict canonical batch and eight introduction UIFeedEvent rows in one transaction and return the existing closed 8-or-0 result matrix.",
+    "Use introduction_id as ui_event_id and enforce uniqueness by plant_id, agent_id, and roster_version with canonical-content conflict detection.",
+    "Run reconciliation from current active Plant state and the existing deterministic roster builder; do not replay timeline or cache stale Plant state."
+  ],
+  "invariants": [
+    "Introduction metadata is system presentation, never model output, MessageEnvelope, runtime authority, Agent Chat Bus context, or REQ-011 evidence.",
+    "Archived Plant admits no new projection; restore does not replay and only a fresh current-state reconciliation may continue.",
+    "Durable acceptance is never reported before commit and partial batch persistence is impossible.",
+    "Secrets, auth/session material, provider data, hidden reasoning, raw chat, and unapproved governance content never enter the rows or evidence."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/agent_chat -q",
+    ".venv/bin/python -m pytest tests/backend/api/test_ft007_plant_bootstrap.py tests/backend/agent_runtime/test_ft007_bootstrap.py tests/backend/agent_chat -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Trace FT-008-BHV-001 and FT-008-BHV-002 to PostgreSQL integration tests covering duplicate, restart, archive race, restore without replay, and exactly eight UI rows."
+  ]
+}

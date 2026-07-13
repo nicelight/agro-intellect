@@ -4,6 +4,61 @@ status: active
 ---
 # Changelog
 
+## [2026-07-13] Wave W2 — FT-008 guarded publication and context isolation
+- Reconciled the scheduler-written `TASK-033-T3-FT-008-W2` `done` decision
+  after one bounded repair, fresh independent functional PASS, and per-task
+  semantic-pass evidence.
+- Recorded strict Bus/UI value-object validation, atomic guarded
+  safe-information publication, current ActorContext/Plant/grant enforcement,
+  fail-closed persisted Bus reconstruction, presentation/raw/provider/
+  governance exclusion from agent context, literal candidate data, and the
+  protected retained-history Plant feed API.
+- Synchronized FT-008 and REQ-013 as `verified`; EP-003, REQ-011, and REQ-020
+  remain `planned`, and FT-009/FT-010 plus FT-015/FT-016 retain their existing
+  downstream ownership. No frontend rendering, Safety/task, governance,
+  dataset, provider-UAT, or mutable Plant-authority outcome is claimed.
+- Preserved the absent `HUMAN_CHECKPOINT: done` markers for both T3 FT-008
+  tasks as explicit scheduler-waived process warnings. Used only their
+  per-task semantic evidence and did not invent a feature-level T2 red gate.
+- Confirmed the authoritative indexed queue contains 34 tasks, all `done`.
+  Final `/review-tasks-plan FT-008` remains a separately delegated scheduler
+  gate and was not run by this sync.
+
+## [2026-07-12] Wave W1 — FT-008 durable introduction reconciliation
+- Reconciled the scheduler-written `TASK-032-T3-FT-008-W1` `done` decision with
+  independent functional PASS and per-task semantic-pass evidence for durable
+  PostgreSQL introduction delivery and current-state reconciliation.
+- Recorded exactly-eight-or-zero persistence, retry/conflict idempotency,
+  restart convergence, archive-race denial, restore without replay, guarded
+  rollback, and unchanged post-commit Plant creation as the completed W1
+  outcome.
+- Preserved the absent `HUMAN_CHECKPOINT: done` marker as an explicit warning;
+  scheduler accepted only the process requirement and did not waive safety,
+  authorization, data integrity, source-of-truth, privacy, or scope rules.
+- Kept FT-008, REQ-013, and REQ-020 lifecycle `planned` because guarded Bus/UI
+  publication, context reads, the Plant feed API, and broader privacy/operator
+  outcomes remain downstream. TASK-033 stays `planned`; promotion remains a
+  separate scheduler decision after strict readiness gates.
+
+## [2026-07-12] FT-008 SDD closure and task queue
+- Completed FT-008 feature-local design for strict Bus/UI v1 envelopes,
+  PostgreSQL storage, atomic safe-information publication, protected Plant
+  feed reads, context filtering, and restart/archive-safe roster-introduction
+  reconciliation.
+- Extended the existing Agent Chat Bus and UI Feed canonical contracts; added
+  subject-based storage, HTTP, and testing specs plus three behavior examples.
+- Selected one local current-state reconciliation service and an atomic strict
+  eight-item sink instead of a broker, distributed worker, or outbox.
+- Preserved FT-011 classifier, FT-012 task effects, and FT-016 Svelte/PWA
+  rendering ownership. The current tree has no frontend scaffold, so FT-008
+  defines the exact backend event/API handoff without claiming DOM evidence.
+- Added and indexed `TASK-032-T3-FT-008-W1` for durable introduction delivery
+  and `TASK-033-T3-FT-008-W2` for guarded Bus/UI publication, context reads,
+  and the Plant feed API.
+- JSON/schema/link/dependency checks, `mb-lint`, `mb-doctor`, and diff check
+  pass. Doctor reports only historical checkpoint advisories plus the expected
+  planned W1 ready-candidate warning. Next: `/review-tasks-plan FT-008`.
+
 ## [2026-07-12] Opaque candidate-output contract decision
 - Ratified the owner decision that schema-valid `candidate_output` is opaque
   untrusted normalized text within the existing 1..2000 Unicode-code-point

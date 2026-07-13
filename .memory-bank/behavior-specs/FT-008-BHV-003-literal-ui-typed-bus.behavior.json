@@ -1,0 +1,18 @@
+{
+  "id": "FT-008-BHV-003",
+  "feature_id": "FT-008",
+  "title": "Candidate text stays literal UI data and typed Bus quotation",
+  "given": {
+    "message_envelope": "schema_valid_markup_prompt_url_looking_candidate",
+    "classification": "safe_information",
+    "current_guard": "authorized_active_plant"
+  },
+  "when": {
+    "action": "publish_safe_information"
+  },
+  "then": {
+    "ui": "unchanged_literal_text_data",
+    "bus": "quoted_candidate_payload",
+    "instruction_or_routing_authority": false
+  }
+}

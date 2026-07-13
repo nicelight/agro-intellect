@@ -61,6 +61,7 @@ def test_ft005_models_match_native_uuid_and_catalog_contract():
     finally:
         database.dispose()
 
+
     assert all(fk.ondelete == "RESTRICT" for fk in PhotoCatalogItem.__table__.foreign_keys)
     assert {constraint.name for constraint in PhotoCatalogItem.__table__.constraints if constraint.name} >= {
         "ck_photo_catalog_items_photo_type",
@@ -78,7 +79,12 @@ def test_ft005_models_match_native_uuid_and_catalog_contract():
 
 def test_ft005_revision_is_ordered_head_and_contains_guarded_downgrade():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
-    revision = script.get_revision("head")
+    product_head = script.get_revision("head")
+    assert product_head is not None
+    assert product_head.revision == "ft008_agent_chat_ui_feed"
+    assert product_head.down_revision == "ft005_photo_intake"
+
+    revision = script.get_revision("ft005_photo_intake")
     assert revision is not None
     assert revision.revision == "ft005_photo_intake"
     assert revision.down_revision == "ft004_plant_operations"
@@ -164,4 +170,3 @@ def test_ft005_postgresql_migration_schema_and_guarded_downgrade():
                 outer.rollback()
     finally:
         database.dispose()
-

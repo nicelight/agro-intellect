@@ -33,6 +33,8 @@ source_of_truth:
 - [Agent Runtime Verification](agent-runtime.md): runtime decisions,
   MessageEnvelope, roster/bootstrap, provider binding, real-model anti-cheat,
   audit, and archive-race evidence.
+- [Agent Chat Bus And UI Feed Verification](agent-chat-ui-feed.md): durable
+  introductions, guarded publication, context hygiene, and Plant feed API.
 
 ## Archive
 

@@ -1,0 +1,209 @@
+{
+  "id": "TASK-033-T3-FT-008-W2",
+  "title": "Publish guarded Bus/UI events and expose authorized Plant feed",
+  "status": "done",
+  "wave": "W2",
+  "feature": "FT-008",
+  "reqs": [
+    "REQ-003",
+    "REQ-013",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-032-T3-FT-008-W1"
+  ],
+  "touched_files": [
+    "backend/app/agent_chat/",
+    "backend/app/access_admin/context_builders.py",
+    "backend/app/api/feed.py",
+    "backend/app/api/__init__.py",
+    "backend/app/main.py",
+    "tests/backend/agent_chat/",
+    "tests/backend/api/test_ft008_feed_routes.py",
+    ".memory-bank/tasks/TASK-033-T3-FT-008-W2.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "ft008-focused-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_chat tests/backend/api/test_ft008_feed_routes.py -q",
+      "required": false
+    },
+    {
+      "name": "access-runtime-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime tests/backend/agent_chat tests/backend/api/test_ft008_feed_routes.py -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "full-deterministic-suite",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Strict value-object tests reject unknown fields, invalid identity/ref/role/flag/payload combinations, unsafe source content, and every candidate-to-control-channel promotion.",
+    "A matching safe_information classification plus fresh authorized active-Plant guard atomically writes one quoted Bus event and one literal UI message; duplicate is idempotent and conflict/denial writes zero.",
+    "blocked_uncertain creates only the canonical generic non-consumable notice without candidate text; safe_task_request and physical_action create no FT-008 Bus/UI effect.",
+    "Agent context reads require current ActorContext, active Plant, and can_read; exclude UI Feed, raw chat, admin notices, provider/hidden reasoning, unauthorized Plants, archived Plants, and unapproved proposals.",
+    "Markup/HTML/prompt/instruction/command/URL-looking candidate text remains unchanged inside quoted_text and literal JSON display data but cannot alter routing, consumability, instructions, tools, links, or actions.",
+    "GET /api/plants/{plant_id}/feed enforces active or explicit archived retained-history authorization, strict canonical cursor/limit parsing, stable order, no-store, safe errors, exact payload variants, and both agent flags false.",
+    "OpenAPI and regression tests prove no frontend visibility check replaces backend authorization and no Bus/UI/timeline row becomes mutable Plant authority.",
+    {
+      "stage": "independent_functional_verification",
+      "verdict": "FAIL",
+      "reviewer_role": "Reviewer",
+      "evidence": [
+        ".protocols/TASK-033-T3-FT-008-W2/verification.md",
+        ".tasks/TASK-033-T3-FT-008-W2/TASK-033-T3-FT-008-W2-S-VERIFY-final-report-docs-01.md"
+      ],
+      "findings": [
+        "Agent context accepts malformed persisted Bus payloads instead of enforcing the closed typed Bus union.",
+        "Strict Bus/UI value objects accept invalid identity and source/authority combinations."
+      ],
+      "recommended_scheduler_action": "Keep non-closed, delegate bounded fix and regression tests, then rerun /verify; do not run /red-verify until PASS."
+    },
+    {
+      "stage": "independent_functional_reverification",
+      "verdict": "PASS",
+      "reviewer_role": "Reviewer",
+      "evidence": [
+        ".protocols/TASK-033-T3-FT-008-W2/verification.md",
+        ".tasks/TASK-033-T3-FT-008-W2/TASK-033-T3-FT-008-W2-S-VERIFY-final-report-docs-01.md"
+      ],
+      "reproduced_evidence": [
+        "Arbitrary persisted consumable Bus payload with instruction/raw_chat is rejected fail-closed at agent-context construction.",
+        "Invalid Bus source UUID, null MessageEnvelope actor/auth, source/authority/role/ref/flag/payload combinations are rejected.",
+        "Invalid UI application UUID, source-kind/source-ref/flag/payload combinations are rejected."
+      ],
+      "gates": [
+        "focused: 30 passed",
+        "access-runtime: 158 passed, 1 deselected",
+        "full deterministic: 319 passed, 1 deselected",
+        "mb-lint: PASS (183 files)",
+        "git diff --check: PASS",
+        "mb-doctor --strict: PASS (0 errors)"
+      ],
+      "checkpoint": "HUMAN_CHECKPOINT: pending",
+      "recommended_scheduler_action": "Route to required per-task T3 red-verification; scheduler retains lifecycle and exact human-checkpoint decision."
+    },
+    {
+      "stage": "scheduler-closure",
+      "mode": "scheduler",
+      "verdict": "CLOSURE: done",
+      "closed_at": "2026-07-13T00:06:40+05:00",
+      "evidence": [
+        ".protocols/TASK-033-T3-FT-008-W2/verification.md",
+        ".protocols/TASK-033-T3-FT-008-W2/red-verification.md",
+        ".tasks/TASK-033-T3-FT-008-W2/TASK-033-T3-FT-008-W2-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-033-T3-FT-008-W2/TASK-033-T3-FT-008-W2-S-RED-VERIFY-final-report-docs-01.md"
+      ],
+      "checkpoint_decision": "waived_process_only_by_scheduler",
+      "failure_budget": "1 failure event; 1 bounded retry completed successfully; 0 retry attempts needed or remaining after closure",
+      "summary": "After one bounded repair, a fresh Reviewer reproduced the original defects as fixed, returned VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and found no forbidden scope. HUMAN_CHECKPOINT: done was not fabricated; the scheduler explicitly waived that process-only marker under the Constitution and project policy override without waiving product safety, authorization, context isolation, data integrity, source-of-truth, scope, or destructive-action rules."
+    }
+  ],
+  "docs": [
+    ".memory-bank/features/FT-008-agent-chat-bus-ui-feed-context-hygiene.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md"
+  ],
+  "evidence_required": [
+    "strict Bus/UI v1 contract and payload-union tests",
+    "safe-information atomic Bus/UI publication and route-class matrix",
+    "current ActorContext and archive-race denial evidence",
+    "context anti-cheat fixtures excluding every presentation/raw source",
+    "literal candidate JSON and typed quotation evidence",
+    "feed authorization pagination error no-store and OpenAPI evidence",
+    "focused access/runtime and full deterministic test summaries",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Complete the backend FT-008 authority boundary by publishing only guarded typed Bus/UI events, constructing current authorized agent context, and exposing the same durable UI events through a protected Plant feed API.",
+  "success_outcome": "Authorized active-Plant safe information produces one atomic typed Bus quotation and literal non-agent-consumable UI event, unauthorized/archived/raw/presentation content never enters agent context, and authorized users can page the exact durable Plant feed through a strict no-store API without granting UI text any runtime, instruction, routing, task, or safety authority.",
+  "anti_goals": [
+    "No Safety classifier algorithm, ordinary task, physical-action Safety Gate, approval/follow-up, Companion, dataset, or provider/model effect.",
+    "No frontend/PWA scaffold or DOM success claim; FT-016 owns the literal Svelte consumer and browser e2e.",
+    "No raw chat ingestion, UI Feed-to-Bus bridge, timeline replay, arbitrary payload extensions, active links/actions, or instruction parsing."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/agent_chat/",
+      "backend/app/access_admin/context_builders.py",
+      "backend/app/api/feed.py",
+      "backend/app/api/__init__.py",
+      "backend/app/main.py",
+      "tests/backend/agent_chat/",
+      "tests/backend/api/test_ft008_feed_routes.py",
+      ".protocols/TASK-033-T3-FT-008-W2/",
+      ".tasks/TASK-033-T3-FT-008-W2/",
+      ".memory-bank/tasks/TASK-033-T3-FT-008-W2.task.json"
+    ],
+    "forbidden_scope": [
+      "FT-007 runtime/envelope/provider/roster semantics or TASK-031 lifecycle/evidence",
+      "FT-011 classifier policy, FT-012 task effects, FT-013 governance, FT-014 dataset, or FT-016 frontend implementation",
+      "new timeline event taxonomy, distributed messaging, provider history, prompt storage, or arbitrary Bus/UI payload maps",
+      "secrets, auth/session material, provider payloads, hidden reasoning, raw chat, admin UI text, or unapproved proposal content"
+    ],
+    "stop_conditions": [
+      "A source-of-truth conflict appears between MessageEnvelope, SafetyClassificationResultV1, Bus/UI v1, or archived-Plant rules.",
+      "Current authorization/active Plant cannot be checked in the same write boundary as publication.",
+      "Candidate text would need to enter an instruction, prompt, tool, command, routing, URL activation, or action channel.",
+      "Feed correctness would require inventing the absent FT-016 frontend scaffold or weakening backend authorization.",
+      "Diagnostics or evidence would expose secrets, auth material, provider payloads, hidden reasoning, raw chat, or unapproved governance content."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-008-agent-chat-bus-ui-feed-context-hygiene.md",
+    ".memory-bank/behavior-specs/FT-008-BHV-003-literal-ui-typed-bus.behavior.json",
+    ".memory-bank/tasks/TASK-032-T3-FT-008-W1.task.json",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md",
+    ".protocols/FT-008/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Implement the exact strict BusEventEnvelopeV1 and UIFeedEventV1 payload variants with unknown-field rejection and fixed consumability semantics.",
+    "Consume only an immutable MessageEnvelope and matching strict SafetyClassificationResultV1; re-resolve current authorization instead of trusting either snapshot as authority.",
+    "Write safe-information Bus/UI rows atomically and keep quoted candidate text out of every instruction/control channel.",
+    "Implement the canonical Plant feed order, cursor, limit, error envelope, no-store header, and retained-history authorization without frontend-derived trust."
+  ],
+  "invariants": [
+    "UI Feed, raw chat/UI, admin notices, spoiler notes, provider history, hidden reasoning, and unapproved proposals never become agent working context.",
+    "Bus events are working context references/data only; UI events are presentation only; neither replaces PostgreSQL Plant authority or Safety/task authority.",
+    "Archived Plant denies agent context and new publication; restore never replays a denied handoff.",
+    "Candidate syntax is inert: literal UI text and typed quotation do not create markup, links, actions, instructions, routing, or authority."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/agent_chat tests/backend/api/test_ft008_feed_routes.py -q",
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime tests/backend/agent_chat tests/backend/api/test_ft008_feed_routes.py -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Trace FT-008-BHV-003 to adversarial safe-information tests covering unchanged markup/prompt/URL-looking text, typed Bus quotation, literal UI JSON, and no instruction/routing/action effect.",
+    "Run static scans proving UI Feed/raw chat/admin/unapproved/provider/history sources are absent from agent context construction and no frontend/FT-011/FT-012 effect was implemented."
+  ]
+}

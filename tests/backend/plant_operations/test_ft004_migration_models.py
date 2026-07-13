@@ -85,8 +85,12 @@ def test_ft004_revision_is_in_ordered_product_history_and_contains_guarded_downg
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     product_head = script.get_revision("head")
     assert product_head is not None
-    assert product_head.revision == "ft005_photo_intake"
-    assert product_head.down_revision == "ft004_plant_operations"
+    assert product_head.revision == "ft008_agent_chat_ui_feed"
+    assert product_head.down_revision == "ft005_photo_intake"
+
+    ft005 = script.get_revision("ft005_photo_intake")
+    assert ft005 is not None
+    assert ft005.down_revision == "ft004_plant_operations"
 
     revision = script.get_revision("ft004_plant_operations")
     assert revision is not None

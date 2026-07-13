@@ -1,0 +1,18 @@
+{
+  "id": "FT-008-BHV-001",
+  "feature_id": "FT-008",
+  "title": "Restart-safe deterministic introduction reconciliation",
+  "given": {
+    "plant": "active",
+    "roster_version": 1,
+    "prior_handoff": "missing_or_failed"
+  },
+  "when": {
+    "action": "reconcile_active_plants_twice"
+  },
+  "then": {
+    "ui_feed_events": 8,
+    "unique_by": "plant_id_agent_id_roster_version",
+    "agent_bus_copies": 0
+  }
+}

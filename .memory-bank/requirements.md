@@ -98,7 +98,7 @@ source_of_truth:
 | REQ-010 | EP-002 | FT-006 | verified: PostgreSQL authority vs append-only timeline audit/export, retained history, and strict cursor behavior | verified |
 | REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | integration: real provider-backed runtime adapter plus every owning product-agent flow; anti-cheat: no fake runtime path | planned |
 | REQ-012 | EP-003 | FT-009 | integration: real vision input; unit: Plant trust-state promotion gates | planned |
-| REQ-013 | EP-003 | FT-007, FT-008 | contract: pending MessageEnvelope/classification/Bus/UI Feed filters, archived-Plant publication deny, restore revalidation, and anti-cheat context hygiene | planned |
+| REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification handoff, guarded typed Bus/literal UI publication, archived-Plant deny, restore revalidation, protected feed reads, and anti-cheat agent-context hygiene | verified |
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | unit: missing/stale data policy; integration: Safety Gate handoff | planned |
 | REQ-015 | EP-004 | FT-011 | unit: Safety Gate fail-closed policy; integration: approval authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
@@ -195,3 +195,31 @@ source_of_truth:
   owned REQ-008/009/010 outcomes. Other REQ lifecycles remain unchanged; this
   decomposition repair does not infer lifecycle promotion for EP-003, EP-004,
   EP-006, or REQ-021.
+
+## Current FT-008 Completion Evidence Note
+
+- `TASK-032-T3-FT-008-W1` is recorded `done` with independent functional
+  `VERDICT: PASS` and per-task `SEMANTIC_VERDICT: semantic-pass`. Evidence
+  covers one durable canonical batch plus exactly eight non-agent-consumable
+  introduction UI rows, atomic failure, idempotent retry, current-state
+  restart reconciliation, archive-race denial, restore without replay, and
+  unchanged Plant-create semantics.
+- The exact `HUMAN_CHECKPOINT: done` marker is absent. Scheduler closure records
+  an explicit process-only waiver; this note preserves that warning and does
+  not weaken safety, authorization, data integrity, source-of-truth, privacy,
+  or scope rules.
+- `TASK-033-T3-FT-008-W2` is recorded `done` after one bounded repair, fresh
+  independent `VERDICT: PASS`, and per-task
+  `SEMANTIC_VERDICT: semantic-pass`. Evidence covers strict Bus/UI identity and
+  source unions, atomic guarded safe-information publication, current
+  ActorContext/Plant/grant checks, fail-closed persisted Bus reconstruction,
+  UI/raw/provider/governance context exclusion, literal candidate data, and
+  backend-authorized retained-history feed reads.
+- FT-008 and the FT-007/FT-008-owned REQ-013 outcome are synchronized as
+  `verified`. This does not satisfy FT-007's deferred live-provider UAT or
+  promote REQ-011, FT-009, FT-010, or EP-003.
+- REQ-020 remains `planned`: FT-008 verifies only its applicable local/privacy,
+  no-secret, and context-exclusion boundary; complete local security, exposure,
+  and operator-surface ownership remains downstream with FT-015/FT-016.
+- Both FT-008 tasks are T3. Their per-task semantic evidence is the applicable
+  semantic basis; no feature-level T2 red gate is claimed or invented.
