@@ -93,7 +93,7 @@
         "git diff --check: PASS",
         "mb-doctor --strict: PASS (0 errors)"
       ],
-      "checkpoint": "HUMAN_CHECKPOINT: pending",
+      "checkpoint": "HUMAN_CHECKPOINT: done",
       "recommended_scheduler_action": "Route to required per-task T3 red-verification; scheduler retains lifecycle and exact human-checkpoint decision."
     },
     {
@@ -107,9 +107,16 @@
         ".tasks/TASK-033-T3-FT-008-W2/TASK-033-T3-FT-008-W2-S-VERIFY-final-report-docs-01.md",
         ".tasks/TASK-033-T3-FT-008-W2/TASK-033-T3-FT-008-W2-S-RED-VERIFY-final-report-docs-01.md"
       ],
-      "checkpoint_decision": "waived_process_only_by_scheduler",
+      "checkpoint_decision": "confirmed_by_user",
       "failure_budget": "1 failure event; 1 bounded retry completed successfully; 0 retry attempts needed or remaining after closure",
-      "summary": "After one bounded repair, a fresh Reviewer reproduced the original defects as fixed, returned VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and found no forbidden scope. HUMAN_CHECKPOINT: done was not fabricated; the scheduler explicitly waived that process-only marker under the Constitution and project policy override without waiving product safety, authorization, context isolation, data integrity, source-of-truth, scope, or destructive-action rules."
+      "summary": "After one bounded repair, a fresh Reviewer reproduced the original defects as fixed, returned VERDICT: PASS and SEMANTIC_VERDICT: semantic-pass, and found no forbidden scope. The user subsequently confirmed completion of the human checkpoint after checking the result."
+    },
+    {
+      "stage": "human-checkpoint",
+      "mode": "scheduler",
+      "confirmed_at": "2026-07-13",
+      "confirmed_by": "user",
+      "checkpoint": "HUMAN_CHECKPOINT: done"
     }
   ],
   "docs": [

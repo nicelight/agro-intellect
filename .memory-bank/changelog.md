@@ -4,6 +4,12 @@ status: active
 ---
 # Changelog
 
+## [2026-07-13] FT-008 human checkpoint confirmation
+- Recorded the user's confirmation of `HUMAN_CHECKPOINT: done` for TASK-032
+  and TASK-033 after the completed results were checked.
+- Replaced the temporary scheduler waiver state in the authoritative task
+  cards; historical verification and review reports remain unchanged.
+
 ## [2026-07-13] Wave W2 — FT-008 guarded publication and context isolation
 - Reconciled the scheduler-written `TASK-033-T3-FT-008-W2` `done` decision
   after one bounded repair, fresh independent functional PASS, and per-task
@@ -17,9 +23,8 @@ status: active
   remain `planned`, and FT-009/FT-010 plus FT-015/FT-016 retain their existing
   downstream ownership. No frontend rendering, Safety/task, governance,
   dataset, provider-UAT, or mutable Plant-authority outcome is claimed.
-- Preserved the absent `HUMAN_CHECKPOINT: done` markers for both T3 FT-008
-  tasks as explicit scheduler-waived process warnings. Used only their
-  per-task semantic evidence and did not invent a feature-level T2 red gate.
+- Both T3 FT-008 checkpoints were subsequently confirmed by the user; no
+  feature-level T2 red gate applies to this T3-only feature.
 - Confirmed the authoritative indexed queue contains 34 tasks, all `done`.
   Final `/review-tasks-plan FT-008` remains a separately delegated scheduler
   gate and was not run by this sync.

@@ -122,20 +122,16 @@ source_of_truth:
   retry/conflict handling, restart reconciliation, archive-race denial,
   restore-without-replay, fresh-scan convergence, guarded rollback, and the
   unchanged post-commit Plant-create contract.
-- Per-task adversarial review records `SEMANTIC_VERDICT: semantic-pass`. The
-  exact `HUMAN_CHECKPOINT: done` marker is absent and was not fabricated; the
-  scheduler explicitly accepted that process-only warning without waiving
-  safety, authorization, data integrity, source-of-truth, or scope rules.
+- Per-task adversarial review records `SEMANTIC_VERDICT: semantic-pass`; the
+  user confirmed `HUMAN_CHECKPOINT: done` after checking the completed result.
 - `TASK-033-T3-FT-008-W2` is `done` after one bounded repair and fresh
   independent re-verification. Evidence proves closed Bus/UI value objects,
   atomic guarded safe-information publication, current-authority agent-context
   isolation, fail-closed persisted-row validation, literal candidate data, and
   the protected retained-history Plant feed API.
-- W2 records `VERDICT: PASS` and per-task
-  `SEMANTIC_VERDICT: semantic-pass`. The exact `HUMAN_CHECKPOINT: done` marker
-  remains absent; the scheduler recorded a process-only waiver without
-  weakening product, authorization, context-isolation, data-integrity,
-  source-of-truth, or scope requirements.
+- W2 records `VERDICT: PASS`, per-task
+  `SEMANTIC_VERDICT: semantic-pass`, and user-confirmed
+  `HUMAN_CHECKPOINT: done`.
 - FT-008 is `verified` for its owned backend persistence, publication, context,
   reconciliation, and feed API outcome. FT-016 still owns the Svelte/PWA
   consumer and literal DOM rendering; this feature claims no frontend evidence
