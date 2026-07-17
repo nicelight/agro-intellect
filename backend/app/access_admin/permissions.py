@@ -54,7 +54,6 @@ class RolePolicy:
     can_create_domain_tasks: bool
     can_manage_access: bool
     can_approve_actions: bool
-    can_approve_governance: bool
 
 
 ROLE_POLICIES = MappingProxyType(
@@ -69,7 +68,6 @@ ROLE_POLICIES = MappingProxyType(
             can_create_domain_tasks=True,
             can_manage_access=True,
             can_approve_actions=True,
-            can_approve_governance=False,
         ),
         RolePreset.ENGINEER: RolePolicy(
             requires_plant_grant=True,
@@ -81,7 +79,6 @@ ROLE_POLICIES = MappingProxyType(
             can_create_domain_tasks=True,
             can_manage_access=False,
             can_approve_actions=False,
-            can_approve_governance=False,
         ),
         RolePreset.CONSULTANT: RolePolicy(
             requires_plant_grant=True,
@@ -93,7 +90,6 @@ ROLE_POLICIES = MappingProxyType(
             can_create_domain_tasks=False,
             can_manage_access=False,
             can_approve_actions=False,
-            can_approve_governance=False,
         ),
     }
 )

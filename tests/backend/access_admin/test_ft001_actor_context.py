@@ -311,7 +311,6 @@ def test_fixed_role_policy_and_active_permissions_match_canonical_matrix():
     assert consultant_policy.can_create_domain_tasks is False
     assert consultant_policy.can_manage_access is False
     assert consultant_policy.can_approve_actions is False
-    assert consultant_policy.can_approve_governance is False
 
     boss_session = _validated_session("boss")
     boss_snapshot = _snapshot(boss_session, include_grant=False)

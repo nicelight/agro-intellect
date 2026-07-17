@@ -2,7 +2,7 @@
 description: ActorContext, role policy, bounded PlantPermissionContext seam, and context-builder authorization contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-06
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/contracts/api-guidelines.md
@@ -67,6 +67,21 @@ agent/context builder resolves before business logic:
 | Consultant + active grant | read/comment | no | authorized read/comment only | no | never |
 | Missing/revoked grant or disabled identity | no | no | no | no | no |
 
+### Companion governance authorization composition
+
+- Companion governance MUST NOT add `can_approve_governance` or any other new
+  permission member to `ActorContext` or `PlantPermissionContext`; the only MVP
+  per-Plant override remains `plant_approve_actions`.
+- A human proposal-decision/DecisionRecord command first requires current active
+  membership, `Plant.status=active`, and the existing `can_operate=true` result.
+  For `source=plant_access_grant`, that result already depends on the current
+  active grant; Boss continues to resolve through `source=boss_role`.
+- `can_operate=true` is a necessary scope/access guard, not governance approval
+  authority by itself. FT-013 must apply its exact positive role matrix after
+  this shared guard; Consultant remains denied by the role preset.
+- `plant_approve_actions` and `can_approve_actions` are Safety/action authority
+  inputs only and MUST NOT grant or imply governance approval.
+
 ## Resolver rules
 
 - Plant creation is a Farm-scoped authorization decision made from active
@@ -121,6 +136,10 @@ agent/context builder resolves before business logic:
 - Integration tests prove ActorContext-before-business-logic and authorization
   parity between reads and context builders.
 - Bus/model context tests exclude auth material and unauthorized Plants.
+- Governance authorization tests prove proposal decisions use the existing
+  `role_preset` plus current `can_operate`/grant result, do not extend either
+  permission envelope, and never derive governance authority from action-
+  approval fields.
 - Deferred cross-feature E2E after FT-002 tasking proves Engineer sees only
   granted Plants, immediately sees an atomically granted self-created Plant,
   and Consultant remains read/comment/advice only.

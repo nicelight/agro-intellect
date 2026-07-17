@@ -2,7 +2,7 @@
 description: Plant history projection, retained-history access, and runtime authority data specification.
 status: active
 type: data_spec
-last_updated: 2026-07-11
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-006-runtime-state-timeline-plant-history.md
   - .memory-bank/domains/runtime-data-model.md
@@ -54,8 +54,11 @@ safe summaries plus refs. Current FT-006 source families are:
 
 Future source families such as tasks, approvals, outcomes, agent outputs,
 Safety Gate records, Companion governance, and dataset records may extend this
-spec when their owning schemas exist. FT-006 must not create placeholder rows
-or fake those downstream feature outcomes.
+spec only when their owning schemas and an explicit product requirement exist.
+FT-013 does not add a Companion-governance `PlantHistoryEntry` source family in
+the current MVP slice: authoritative governance records remain in their owning
+storage and human presentation uses the shared UI Feed projection. FT-006 must
+not create placeholder rows or fake those downstream feature outcomes.
 
 ## Plant card projection
 

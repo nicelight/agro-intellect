@@ -4,6 +4,24 @@ status: active
 ---
 # Changelog
 
+## [2026-07-18] FT-013 unambiguous gap closure
+- Kept the governance authorization seam on the existing `role_preset`, active
+  Plant, and current `can_operate`/grant result without adding a governance
+  permission field; the exact Boss/Engineer positive matrix remains FT-013
+  design work.
+- Removed the unused brownfield `RolePolicy.can_approve_governance` field and
+  its stale test assertion so it cannot be mistaken for runtime authority.
+- Made the existing proposal lifecycle explicit that elapsed time does not
+  expire `pending` proposals in MVP, and recorded that FT-013 adds no
+  `PlantHistoryEntry` source family in the current slice.
+- Reconfirmed that DecisionRecord-only Bus refs, strict Companion UI variants,
+  shared Bus/UI tables, archive/no-replay, negative Safety/action authority,
+  and FT-016 frontend ownership were already canonical and needed no duplicate
+  specification.
+- Deferred brownfield Companion Bus/UI validator and constraint changes to the
+  ordered FT-013 implementation slice: changing the applied FT-008 migration or
+  creating a revision ahead of planned FT-011/FT-012 would be unsafe.
+
 ## [2026-07-17] FT-012 SDD closure and task queue
 - Completed FT-012 feature-local design for ordinary tasks, current human
   approval, one human action Task, deterministic +48-hour follow-up, exact

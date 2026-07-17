@@ -2,7 +2,7 @@
 description: Global Companion governance lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -101,6 +101,9 @@ catalog remain feature-local design.
 - No parallel pending proposals may exist for the same Plant-scoped issue.
 - A new proposal for the same Plant issue supersedes the previous pending
   proposal.
+- Proposal state has no time-based expiry in MVP. Elapsed time alone never
+  transitions a `pending` proposal; it remains pending until an authorized
+  decision or a later same-issue proposal supersedes it.
 - Superseded proposals are not approvable and cannot become agent facts.
 - DecisionRecord may direct Plant-scoped discussion/workflow or safe check,
   measurement, or follow-up task requests through backend rules.
@@ -135,6 +138,7 @@ catalog remain feature-local design.
 Tests must prove:
 
 - Proposal supersede behavior prevents parallel pending proposals.
+- Elapsed time alone does not expire or transition a pending proposal.
 - Superseded proposal cannot be approved.
 - DecisionRecord cannot authorize Safety Gate or physical action.
 - Approved summary has `safety_gate_authority=not_granted`.
