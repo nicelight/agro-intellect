@@ -2,7 +2,7 @@
 description: Global timeline audit/export event contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -10,6 +10,7 @@ source_of_truth:
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/domains/runtime-data-model.md
   - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/domains/task-approval-outcomes.md
 ---
 # Timeline Event
 
@@ -78,10 +79,50 @@ The following event types are registered for the current taskable features:
 | `manual_measurement_recorded` | Plant operations service | `manual_measurement` | `measurement_id` | `.memory-bank/domains/plant-operations.md` |
 | `photo_accepted` | Photo intake service | `photo_catalog_item` | `photo_id` | `.memory-bank/domains/photo-artifacts.md` |
 | `agent_runtime_decided` | Agent Runtime service | `agent_runtime_attempt` | `run_id` correlation UUID | `.memory-bank/contracts/agent-runtime-adapter.md` |
+| `task_created` | Task and Follow-Up service | `task` | `task_id` | `.memory-bank/domains/task-approval-outcomes.md` |
+| `task_completed` | Task and Follow-Up service | `task` | `task_id` | `.memory-bank/domains/task-approval-outcomes.md` |
+| `approval_decided` | Task and Follow-Up service | `approval` | `approval_id` | `.memory-bank/domains/task-approval-outcomes.md` |
+| `follow_up_outcome_recorded` | Task and Follow-Up service | `outcome` | `outcome_id` | `.memory-bank/domains/task-approval-outcomes.md` |
 
 New event types require the emitting feature's subject spec to define producer,
 source identity, payload summary, redaction, failure behavior, and verification
 before task creation.
+
+### Task, Approval, and Outcome payload summaries
+
+The FT-012 event payloads are strict correlation summaries:
+
+- `task_created`: `task_kind`, `task_source_type`, nullable `due_at`, and
+  `source_ref_count`;
+- `task_completed`: `task_kind`, `completion_kind=ordinary|action|outcome`, and
+  `source_ref_count`;
+- `approval_decided`: `decision=approved|rejected`, `action_kind`,
+  `record_version=2`, and nullable `action_task_id` present only for approval;
+- `follow_up_outcome_recorded`: `follow_up_task_id`,
+  `outcome_value=improved|worsened|unchanged|no_data`, and
+  `evidence_ref_count` from 0 through 4.
+
+The event's standard `actor_ref` owns safe human attribution. These summaries
+MUST NOT contain Task display text, MessageEnvelope candidate text, target
+values, quantities, device commands, measurement values, Outcome evidence
+payloads, request ids/fingerprints, ActorContext/session/grant objects,
+provider data, prompts, credentials, or arbitrary metadata.
+
+Cardinality follows the authoritative FT-012 transaction:
+
+- ordinary Task creation: one `task_created`;
+- reject: one `approval_decided`;
+- approve: one `approval_decided` plus one `task_created` for the action;
+- ordinary completion: one `task_completed`;
+- action completion: one `task_completed` plus one `task_created` for its
+  automatic follow-up;
+- Outcome recording: one `task_completed` plus one
+  `follow_up_outcome_recorded`.
+
+Approval materialization alone emits no event. The task/approval/outcome data
+spec owns append-before-commit behavior and persisted refs. An appended event
+left by a later failed PostgreSQL commit is non-authoritative audit noise;
+Timeline replay cannot create or repair the missing row.
 
 ### `agent_runtime_decided` payload summary
 
@@ -177,6 +218,8 @@ noise if a later downstream publisher rejects the envelope.
   agent-consumable.
 - Timeline events that reference physical-action wording must reference the
   relevant Safety Gate/task records instead of becoming action authority.
+- Task, Approval, and Outcome events cannot create, decide, complete, retry, or
+  schedule their referenced records and cannot authorize a physical action.
 - Timeline events that reference DecisionRecord must preserve
   `safety_gate_authority=not_granted` when governance summary is involved.
 - Timeline events that reference dataset candidates cannot set or imply
@@ -212,3 +255,6 @@ Tests must prove:
   owning runtime mutation policy.
 - Agent Runtime audit tests prove exactly one safe event per invoked run, no
   content/provider/auth leakage, and no envelope handoff after append failure.
+- FT-012 tests prove the registered task/approval/outcome cardinality, strict
+  redacted summaries, persisted event refs, rollback on append failure, and no
+  Timeline-based replay or state repair.

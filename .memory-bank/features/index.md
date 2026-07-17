@@ -35,7 +35,7 @@ source_of_truth:
 ## EP-004 Safety Tasks And Follow-Up
 
 - [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): SDD design complete; two planned T3 tasks add model-backed immutable classification and two-hour-evidence Safety routing through pending human approval.
-- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): human-performed tasks and outcomes.
+- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): SDD design complete; two planned T3 tasks add authoritative approval/task/follow-up/outcome state and the real classified `task_follow_up` agent path.
 
 ## EP-005 Companion Governance
 

@@ -162,6 +162,35 @@ unconfigured/provider-failed/output-invalid/guard-denied/persistence-failed
 outcome, unexpected class/kind, or direct action effect fails the fixture.
 Record only the safe model ref and classification record/result refs.
 
+## FT-012 Task and Follow-Up product-agent smoke
+
+Configure canonical `task_follow_up` and `safety_gate` bindings with explicit
+DeepSeek or Gemini model ids, enable egress, and supply only the matching
+credentials. Seed an authorized active Plant through production PostgreSQL
+paths with the committed Task/Outcome/evidence fixture from the FT-012 testing
+contract. Run:
+
+```bash
+AGENT_REAL_TASK_FOLLOW_UP_SMOKE=1 .venv/bin/python -m pytest tests/backend/task_follow_up/test_real_task_follow_up_smoke.py -m real_model -q
+```
+
+The smoke must make exactly one real `task_follow_up` provider call over
+`TaskFollowUpProviderRequestV1`, return a strict non-silent
+`check|measurement|follow_up` proposal, pass one real existing Safety
+classifier call with the same task kind, and persist exactly one ordinary Task
+through the production authority path. It must not send Farm/Plant/auth/UI/
+Bus/Timeline replay data to the Task and Follow-Up provider and must create no
+action Task, Approval decision, completion, Outcome, Plant-state mutation, or
+device effect.
+
+Skip/xfail, fake executor or classifier, canned output, fallback, model
+silence, unconfigured/provider-failed/output-invalid/guard-denied/audit-failed
+result, classification mismatch, or direct action effect fails an explicitly
+requested smoke. Record only safe model, run/event, classification, and Task
+refs; never record Task text, prompts, raw responses, credentials, auth state,
+or hidden reasoning. Without this accepted smoke, do not claim FT-012's
+product-agent portion of REQ-011.
+
 ## Troubleshooting
 
 - `AGENT_RUNTIME_NOT_CONFIGURED`: verify the exact profile/model pair, egress

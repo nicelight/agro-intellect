@@ -2,7 +2,7 @@
 description: Verification contract for FT-007 agent runtime, MessageEnvelope, real-model anti-cheat, and archive-race behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -32,7 +32,9 @@ archive/authorization guard.
 - Bus storage/context queries and UI Feed projection tests owned by FT-008.
 - Vision input/trust promotion owned by FT-009.
 - Advisor missing-data behavior owned by FT-010.
-- Safety Gate classification and approval owned by FT-011.
+- Safety Gate model classification and routing through immutable
+  `pending_human_approval` are owned by FT-011. FT-012 owns the human
+  decision, tasks/outcomes, and `task_follow_up` competence verification.
 - Frontend/PWA flows owned by FT-016.
 
 ## Unit matrix

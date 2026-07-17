@@ -1,0 +1,20 @@
+{
+  "id": "FT-012-BHV-003",
+  "feature_id": "FT-012",
+  "title": "Real Task and Follow-up Agent can create only a matched ordinary task",
+  "given": {
+    "plant": "active and currently authorized",
+    "provider": "one explicit DeepSeek or Gemini task_follow_up binding",
+    "context": "strict PostgreSQL task, outcome, and evidence records only"
+  },
+  "when": {
+    "flow": "typed model proposal becomes a pending task_request envelope and receives the matching project classification"
+  },
+  "then": {
+    "created_task_kind": "the same check|measurement|follow_up kind",
+    "created_task_count": 1,
+    "action_task_created": false,
+    "approval_or_completion_effect": false,
+    "fake_fallback_or_silent_acceptance": false
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "FT-012-BHV-002",
+  "feature_id": "FT-012",
+  "title": "Retries are idempotent while conflicts and archived transitions fail closed",
+  "given": {
+    "records": "a pending approval or open task with persisted natural key and version",
+    "plant_states": "active for the first request, then archived for a later transition"
+  },
+  "when": {
+    "requests": "repeat an identical request, submit a stale or conflicting request, and attempt a transition while archived"
+  },
+  "then": {
+    "identical_retry": "returns the first committed result without duplication",
+    "stale_or_conflicting_retry": "conflict with no mutation",
+    "archived_attempt": "denied with records unchanged",
+    "restore_effect": "no automatic resume or replay"
+  }
+}
+

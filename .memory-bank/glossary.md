@@ -213,12 +213,17 @@ source_of_truth:
   the owning safety spec defines the exact policy.
 - `fresh data`: measurement or evidence still inside the relevant freshness window.
 - `pending action proposal`: blocked risky recommendation converted into a proposal awaiting approval.
-- `pending approval task`: task representing required human decision before action tracking can start.
-- `action_task`: approved human-performed checklist/task; never automated device execution in MVP.
+- `pending approval`: an `Approval(status=pending)` record and its human-visible
+  projection for one immutable Safety decision; it is not a Task kind.
+- `action_task`: `Task(kind=action)` created only by an approved Safety
+  decision; it records human-performed work and never automated device
+  execution in MVP.
 - `check_task`: low-risk check/observation task that does not require approval.
 - `measurement task`: task requesting missing or stale measurements.
 - `follow-up`: later check, usually after 1-3 days, to capture outcome.
-- `outcome`: follow-up result such as improved, worsened, unchanged, or no data.
+- `outcome`: follow-up result with exact value
+  `improved|worsened|unchanged|no_data`; non-`no_data` values require evidence
+  refs.
 - `confirmed_updated`: value explicitly updated now by human input, measurement, review, or follow-up evidence.
 - `confirmed_unchanged`: human confirms the value did not change.
 - `assumed_unchanged`: system carried a previous value forward without fresh confirmation.

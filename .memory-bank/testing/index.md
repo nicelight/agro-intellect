@@ -43,6 +43,9 @@ source_of_truth:
 - [Safety Gate Verification](safety-gate.md): real model-backed classification,
   immutable Safety decisions, 2-hour approval input, UI projection, and
   concurrency/archive guards.
+- [Task And Follow-Up Verification](task-follow-up.md): Approval/task/outcome
+  transactions, HTTP, concurrency/archive guards, and real Task and Follow-Up
+  Agent evidence.
 
 ## Archive
 

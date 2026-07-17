@@ -89,6 +89,11 @@ last_updated: 2026-07-17
   UI projection, and verification contracts are complete. TASK-037 and
   TASK-038 are indexed `planned`; FT-012 remains the owner of human decisions
   and every later task/follow-up state.
+- Current FT-012 planning outcome: feature-local Approval, Task, automatic
+  +48-hour follow-up, Outcome, HTTP, Timeline, idempotency/concurrency, archive,
+  and real `task_follow_up` provider/classification contracts are complete.
+  TASK-039 and TASK-040 are indexed `planned`; no deterministic implementation
+  or real-model product-agent acceptance is pre-claimed by planning.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.
@@ -107,6 +112,8 @@ last_updated: 2026-07-17
   design is complete and its two T3 tasks await review/execution; no real-model
   product-agent acceptance is claimed yet. FT-011 feature-local design is
   complete and its two T3 tasks await review/execution; no Safety Gate
+  real-model acceptance is claimed yet. FT-012 feature-local design is
+  complete and its two T3 tasks await review/execution; no Task and Follow-Up
   real-model acceptance is claimed yet. Dataset Governance now has one
   lifecycle and one derived trainability authority; FT-014 exact persistence
   and evidence policy remain feature-local.

@@ -5,11 +5,31 @@ type: feature
 feature_id: FT-012
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/states/lifecycle-map.md
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/states/task-follow-up-lifecycle.md
+  - .memory-bank/domains/task-approval-outcomes.md
+  - .memory-bank/contracts/task-approval-http.md
+  - .memory-bank/contracts/task-follow-up-runtime.md
+  - .memory-bank/testing/task-follow-up.md
+  - .memory-bank/domains/safety-action-routing.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
+  - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/contracts/safety-gate-runtime.md
+  - .memory-bank/contracts/agent-chat-bus.md
+  - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/contracts/agent-model-provider-profiles.md
+  - .memory-bank/contracts/agent-roster-bootstrap.md
+  - .memory-bank/contracts/timeline-event.md
+  - .memory-bank/runbooks/agent-runtime-providers.md
 ---
 # FT-012 Human Approval Tasks And Follow-Up Outcomes
 
@@ -27,7 +47,9 @@ source_of_truth:
 - A `safe_task_request` classification may create only its ordinary
   check/measurement/follow-up task through backend rules; it bypasses neither
   task authorization nor evidence checks and can never create `action_task`.
-- Follow-up outcome captures improved/worsened/unchanged/no-data style results after specs define exact vocabulary.
+- Follow-up outcome captures exactly
+  `improved|worsened|unchanged|no_data`; non-`no_data` values require evidence
+  refs.
 - Task and approval records preserve ActorContext, Plant scope, source refs, and audit refs.
 - Archived Plant preserves task/approval/follow-up records but blocks their
   transitions until restore and current-guard revalidation.
@@ -60,13 +82,23 @@ source_of_truth:
 
 ## Feature-Local Design Pressure
 
-- Exact task/approval/outcome states, action-unlock service, replay prevention,
-  follow-up outcome vocabulary, and tests.
+- Resolved by the linked Task/Approval/Outcome data, lifecycle, HTTP, real
+  `task_follow_up` runtime, Timeline, and verification subject specs.
+
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-012-BHV-001-approval-follow-up-outcome.behavior.json`
+- `.memory-bank/behavior-specs/FT-012-BHV-002-retry-conflict-archive.behavior.json`
+- `.memory-bank/behavior-specs/FT-012-BHV-003-real-agent-ordinary-task.behavior.json`
 
 ## SDD Design Gate
 
 - Global/shared status: complete; `AD-008` and Safety Action Lifecycle define the exact
   safe-task versus physical-action route; `AD-007` and Plant lifecycle define
   retained-but-frozen records and restore revalidation.
-- Feature-local status: pending `/prd-to-tasks FT-012` for exact task,
-  approval, outcome, replay, API, and persistence contracts.
+- Feature-local status: complete. The canonical design defines closed
+  Task/Approval/Outcome states, exact FT-011 handoff and expiry reuse,
+  transactional approval/action/follow-up/outcome uniqueness, persisted
+  idempotency fingerprints, protected HTTP commands, Timeline refs, archive
+  races, and the real typed `task_follow_up` path. No scheduler, worker,
+  outbox, device effect, or second proposal state machine is introduced.

@@ -122,9 +122,10 @@ responses, credential-bearing endpoints, and raw SDK objects are forbidden.
 The owner permits external processing, but the provider receives exactly one
 registered strict request for the invoked competence: generic
 `ProviderRequestV1`, FT-009 `VisionProviderRequestV1` plus its single in-memory
-media attachment, FT-009 `PlantStateProviderRequestV1`, or FT-010
-`HydroponicsAdvisorProviderRequestV1`, or FT-011
-`SafetyGateProviderRequestV1`. Every request keeps project-owned
+media attachment, FT-009 `PlantStateProviderRequestV1`, FT-010
+`HydroponicsAdvisorProviderRequestV1`, FT-011
+`SafetyGateProviderRequestV1`, or FT-012
+`TaskFollowUpProviderRequestV1`. Every request keeps project-owned
 definition/schema instructions and its exact subject allowlist. No adjacent
 executor argument or hidden metadata may add business/context fields beyond
 the explicit Vision media value.
@@ -142,6 +143,14 @@ not model-selected evidence or reusable authorization. FT-011 permits only the
 five-field pending-message candidate from `safety-gate-runtime.md`; Farm/Plant,
 ActorContext, source refs, evidence, approval state, and downstream routes stay
 outside provider egress.
+
+FT-012 permits only the strict task/outcome/evidence record union from
+`task-follow-up-runtime.md`. Task display text remains a typed untrusted
+quotation; Farm/Plant identity, ActorContext, session/account/membership/grant,
+raw chat, UI Feed, Bus/Timeline replay, approval state, prompts, caller refs,
+and arbitrary evidence payloads remain forbidden. The model may propose only
+`check|measurement|follow_up`; no provider field can create action, approve,
+complete, record an Outcome, or mutate Plant state.
 
 Provider request/response bodies are never persisted. Sanitized audit may
 record only fields allowed by the Timeline Event contract.
@@ -193,7 +202,8 @@ Tests must prove:
 - outbound-spy snapshots match the exact `ProviderRequestV1` shape and record
   order, and prove authorization/ActorContext/session/role/grant data is absent;
 - competence-specific outbound snapshots match the registered Vision, Plant
-  State, Hydroponics Advisor, and Safety Gate request allowlists without
+  State, Hydroponics Advisor, Safety Gate, and Task and Follow-Up request
+  allowlists without
   widening generic `ProviderRequestV1`;
 - logs, timeline, pytest output, and task evidence contain no credentials or
   raw provider payload;

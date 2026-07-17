@@ -1,0 +1,22 @@
+{
+  "id": "FT-012-BHV-001",
+  "feature_id": "FT-012",
+  "title": "Approved action produces one follow-up and one evidence outcome",
+  "given": {
+    "plant": "active",
+    "approval_actor": "current Boss or Engineer with plant_approve_actions",
+    "safety_decision": "immutable pending_human_approval with current pH and EC evidence",
+    "approval_time": "not later than valid_until"
+  },
+  "when": {
+    "flow": "approve, complete the human action, then record the follow-up outcome"
+  },
+  "then": {
+    "action_task": "exactly one completed human-performed action task",
+    "follow_up_task": "exactly one task due 48 hours after action completion",
+    "outcome": "one improved|worsened|unchanged|no_data record",
+    "non_no_data_evidence": "required",
+    "device_effect": false
+  }
+}
+

@@ -4,6 +4,25 @@ status: active
 ---
 # Changelog
 
+## [2026-07-17] FT-012 SDD closure and task queue
+- Completed FT-012 feature-local design for ordinary tasks, current human
+  approval, one human action Task, deterministic +48-hour follow-up, exact
+  Outcome evidence, and retained-but-frozen archive behavior.
+- Added canonical Task/Approval/Outcome lifecycle, PostgreSQL data, protected
+  HTTP, real `task_follow_up` runtime, and verification specs; extended the
+  existing Timeline registry and provider/runbook allowlists without adding a
+  worker, scheduler, outbox, device path, or second action proposal state.
+- Replaced the legacy `pending approval task` term with one
+  `Approval(status=pending)` authority record and kept `expired` derived from
+  the immutable FT-011 expiry rather than adding a mutable state.
+- Added three behavior examples and indexed two sequential T3 tasks:
+  `TASK-039-T3-FT-012-W1` for the authoritative transactional loop and
+  `TASK-040-T3-FT-012-W2` for the explicitly bound real Task and Follow-Up
+  Agent through matching project classification and ordinary-task authority.
+- Updated RTM ownership for ActorContext, Plant approval authority, Safety
+  tracking, and Consultant restrictions. Planning claims no implementation or
+  real-model acceptance.
+
 ## [2026-07-17] FT-011 SDD closure and task queue
 - Completed FT-011 feature-local design for a real model-backed Safety Gate
   candidate with backend-owned immutable classification authority.

@@ -39,6 +39,7 @@ source_of_truth:
 | data_spec | [.memory-bank/domains/agent-chat-ui-feed-storage.md](domains/agent-chat-ui-feed-storage.md) | active | Agent Chat Bus/UI Feed PostgreSQL rows, atomic publication, and roster-introduction reconciliation | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/plant-state-observations.md](domains/plant-state-observations.md) | active | Plant-state observations, assessments, conflicts, and human promotion | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/safety-action-routing.md](domains/safety-action-routing.md) | active | Immutable Safety classifications, action decisions, approval-input evidence, and pending proposal persistence | `/prd-to-tasks` or `/spec-design` |
+| data_spec | [.memory-bank/domains/task-approval-outcomes.md](domains/task-approval-outcomes.md) | active | Approval, ordinary/action Task, automatic follow-up, Outcome, idempotency, and audit-ref persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/identity/account-membership.md](domains/identity/account-membership.md) | active | Account and FarmMembership persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/auth/session-storage.md](domains/auth/session-storage.md) | active | LocalSession digest-only persistence | `/prd-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/farm/farm-plant-access-storage.md](domains/farm/farm-plant-access-storage.md) | active | Exact Farm/Plant/grant persistence, migration, bootstrap, and transaction rules | `/prd-to-tasks` or `/spec-design` |
@@ -54,6 +55,7 @@ source_of_truth:
 | interface_contract | [.memory-bank/contracts/plant-state-runtime.md](contracts/plant-state-runtime.md) | active | Authorized Plant State trend/conflict/unknown model assessment handoff | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/hydroponics-advisor-runtime.md](contracts/hydroponics-advisor-runtime.md) | active | Authorized pH/EC and Plant-state input, missing-data policy, and pending advisor handoff | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/safety-gate-runtime.md](contracts/safety-gate-runtime.md) | active | Strict model-backed Safety candidate and project-owned classification mapping | `/prd-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/task-follow-up-runtime.md](contracts/task-follow-up-runtime.md) | active | Strict real Task and Follow-Up Agent input, proposal, classification, and ordinary-task handoff | `/prd-to-tasks` or `/spec-design` |
 | agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured pending pre-safety agent output | `/prd-to-tasks` or `/spec-design` |
 | presentation_contract | [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md) | active | Human-facing non-authoritative projection | `/spec-design` |
 | audit_contract | [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md) | active | Append-only timeline event, current event registry, and minimal append writer seam | `/spec-design` or `/prd-to-tasks` |
@@ -63,12 +65,14 @@ source_of_truth:
 | api_contract | [.memory-bank/contracts/admin/boss-admin-http.md](contracts/admin/boss-admin-http.md) | active | Boss direct Account creation and admin HTTP boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md) | active | Farm/Plant lifecycle and PlantAccessGrant HTTP boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md) | active | Daily check-in and manual measurement HTTP boundary | `/prd-to-tasks` or `/spec-design` |
+| api_contract | [.memory-bank/contracts/task-approval-http.md](contracts/task-approval-http.md) | active | Protected Approval, Task completion, follow-up Outcome, and task/approval read boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/photo-intake-http.md](contracts/photo-intake-http.md) | active | Photo upload and catalog HTTP boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md) | active | Plant history card/list HTTP boundary and archived retained-history reads | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md) | active | Protected Plant UI Feed pagination and retained-history read boundary | `/prd-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-state-http.md](contracts/plant-state-http.md) | active | Protected Plant trust-record list and human review boundary | `/prd-to-tasks` or `/spec-design` |
 | state_spec | [.memory-bank/states/plant-state-trust.md](states/plant-state-trust.md) | active | Plant evidence trust promotion | `/spec-design` |
 | state_spec | [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | active | Safety/action approval lifecycle | `/spec-design` |
+| state_spec | [.memory-bank/states/task-follow-up-lifecycle.md](states/task-follow-up-lifecycle.md) | active | Human Approval, Task completion, automatic follow-up, and Outcome transitions | `/prd-to-tasks` or `/spec-design` |
 | state_spec | [.memory-bank/states/companion-governance.md](states/companion-governance.md) | active | Companion governance lifecycle | `/spec-design` |
 | state_spec | [.memory-bank/states/dataset-governance.md](states/dataset-governance.md) | active | Dataset trainability lifecycle | `/spec-design` |
 | state_spec | [.memory-bank/states/auth/session-lifecycle.md](states/auth/session-lifecycle.md) | active | Password session expiry/revocation | `/prd-to-tasks` or `/spec-design` |
@@ -87,6 +91,7 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/vision-observation-plant-state.md](testing/vision-observation-plant-state.md) | active | Real vision input, trust persistence, conflict, promotion, and API verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/hydroponics-advisor.md](testing/hydroponics-advisor.md) | active | Advisor freshness, missing-data, real-model, authorization, and pending-handoff verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/safety-gate.md](testing/safety-gate.md) | active | Model-backed classification, durable Safety routing, 2-hour evidence, projection, and concurrency verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/task-follow-up.md](testing/task-follow-up.md) | active | Approval/task/outcome transactions, HTTP, archive/concurrency, and real Task and Follow-Up Agent verification | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | active | Agent provider configuration and credentialed real-model smoke | `/prd-to-tasks` or `/spec-design` |

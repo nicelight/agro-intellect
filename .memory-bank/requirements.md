@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -88,8 +88,8 @@ source_of_truth:
 | REQ-000 | Foundation | FT-000 | gate: final Foundation Dev Path build/start/bootstrap/db/migration/test/MB checks | verified |
 | REQ-001 | EP-001 | FT-002 | verified: canonical single local Farm workspace via FT-002 bootstrap/API integration; first-Boss setup remains FT-003/first-demo scope | verified |
 | REQ-002 | EP-001 | FT-001 | unit: session model; integration: login/session attribution | verified |
-| REQ-003 | EP-001 | FT-001, FT-002, FT-003 | integration: ActorContext on every Farm/Plant route and context builder | planned |
-| REQ-004 | EP-001 | FT-001, FT-002 | unit: role/permission matrix; integration: PlantAccessGrant filtering | planned |
+| REQ-003 | EP-001, EP-004 | FT-001, FT-002, FT-003, FT-012 | integration: ActorContext on every Farm/Plant route, context builder, task, approval, and outcome mutation | planned |
+| REQ-004 | EP-001, EP-004 | FT-001, FT-002, FT-012 | unit: role/permission matrix; integration: PlantAccessGrant filtering and current action-approval authority | planned |
 | REQ-005 | EP-001 | FT-003 | implemented: first-Boss bootstrap plus Boss personnel/Plant access/admin audit flow through canonical HTTP boundaries | implemented |
 | REQ-006 | EP-001 | FT-002 | integration: multiple Plants, `tomato_001` bootstrap, Boss/Engineer create policy, atomic Engineer creator grant; FT-004 is a non-owning consumer | planned |
 | REQ-007 | EP-001, EP-002 | FT-002, FT-005, FT-006 | integration: archive/restore preserves Plant/grants and authorized history/photo/timeline/admin-audit evidence | planned |
@@ -100,14 +100,14 @@ source_of_truth:
 | REQ-012 | EP-003 | FT-009 | integration: real vision input; unit: Plant trust-state promotion gates | planned |
 | REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification handoff, guarded typed Bus/literal UI publication, archived-Plant deny, restore revalidation, protected feed reads, and anti-cheat agent-context hygiene | verified |
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | unit: missing/stale data policy; integration: Safety Gate handoff | planned |
-| REQ-015 | EP-004 | FT-011 | unit: Safety Gate fail-closed policy; integration: approval authority checks | planned |
+| REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
 | REQ-017 | EP-005 | FT-013 | unit: proposal supersede/archive state; integration: retained non-operative governance records and DecisionRecord creation | planned |
 | REQ-018 | EP-005, EP-004 | FT-013, FT-011, FT-012 | integration: governance approval separated from Safety Gate approval and workflow effects revalidated after restore | planned |
 | REQ-019 | EP-006 | FT-014 | unit: trainability default false; integration: evidence refs required | planned |
 | REQ-020 | EP-006 | FT-015 | integration: loopback/LAN controls, secret redaction, storage prompt | planned |
 | REQ-021 | EP-006 | FT-016 | e2e: first-demo PWA composition over available backend/agent/safety/governance seams plus safety/context checks | planned |
-| REQ-022 | EP-001, EP-006 | FT-001, FT-016 | integration: Consultant read/comment scope and no approval/action authority | planned |
+| REQ-022 | EP-001, EP-004, EP-006 | FT-001, FT-012, FT-016 | integration: Consultant read/comment scope and no task mutation, governance approval, or physical-action approval authority | planned |
 
 ## Current FT-001 Evidence Note
 

@@ -185,8 +185,12 @@ instructions, an approval, or an action command.
   applies per Plant.
 - Archive before commit produces no decision or projection. Archive preserves
   existing rows unchanged and makes them retained/non-operative. Restore does
-  not retry, refresh, or promote a prior decision; a new Agent Runtime request
-  and message id must pass all current guards.
+  not make FT-011 retry, refresh, promote, or reproject a prior decision. A new
+  FT-011 classification/Safety evaluation requires a new Agent Runtime request
+  and message id. A separate explicit FT-012 approve/reject command may
+  reference the retained decision only when it is still pending and unexpired
+  and the command revalidates current ActorContext, active Plant, approval
+  authority, immutable decision, and selected pH/EC freshness.
 - A safety decision has no update/delete/execute path in FT-011. FT-012 may
   reference only a current `pending_human_approval` decision and owns every
   later record/state.

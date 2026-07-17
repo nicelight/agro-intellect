@@ -29,6 +29,9 @@ source_of_truth:
   pH/EC and Plant-state input, missing-data policy, and pending advisor handoff.
 - [Safety Gate Runtime](safety-gate-runtime.md): strict model-backed semantic
   candidate and project-owned classification mapping.
+- [Task And Follow-Up Agent Runtime](task-follow-up-runtime.md): strict
+  authorized Task/Outcome/evidence input, typed ordinary-task proposal, and
+  classified Task handoff.
 - [MessageEnvelope](message-envelope.md): validated pending pre-safety agent
   output.
 - [UI Feed](ui-feed.md): human presentation only.
@@ -42,6 +45,8 @@ source_of_truth:
 - [Boss Admin HTTP](admin/boss-admin-http.md): direct Account creation and personnel/admin/audit API.
 - [Plant Management HTTP](farm/plant-management-http.md): Farm/Plant lifecycle and PlantAccessGrant API.
 - [Plant Operations HTTP](plant-operations-http.md): daily check-in and manual measurement API.
+- [Task And Approval HTTP](task-approval-http.md): protected Approval decision,
+  Task read/completion, and follow-up Outcome API.
 - [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
 - [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
 - [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination and archived retained-history reads.
