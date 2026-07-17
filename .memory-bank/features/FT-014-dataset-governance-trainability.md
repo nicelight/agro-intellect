@@ -53,3 +53,14 @@ source_of_truth:
 
 - Exact dataset fields, lifecycle, transition authority, evidence refs,
   trainability recomputation, export constraints, and tests.
+
+## SDD Design Gate
+
+- Global/shared status: complete. The canonical Dataset Governance state uses
+  one `candidate_status` lifecycle, separates `candidate_origin` and
+  `quality_tier`, and makes `can_train_on` a derived result owned only by
+  Dataset Governance.
+- Photo Intake's existing `can_train_on=false` remains an immutable source
+  assertion and is not mutable trainability authority.
+- Feature-local status: pending `/prd-to-tasks FT-014` for exact persistence,
+  evidence-policy, confirmation, agent I/O, API/export, and test contracts.

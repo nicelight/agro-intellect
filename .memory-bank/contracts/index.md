@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -21,6 +21,14 @@ source_of_truth:
   provider/model binding, credential isolation, typed egress, and no fallback.
 - [Agent Roster And Plant Bootstrap](agent-roster-bootstrap.md): canonical
   identities and deterministic post-commit introduction handoff.
+- [Vision Observation Runtime](vision-observation-runtime.md): authorized
+  real-photo input, Gemini-only v1 execution, and pending observation handoff.
+- [Plant State Runtime](plant-state-runtime.md): authorized trust-record input
+  and structured trend/conflict/unknown assessment handoff.
+- [Hydroponics Advisor Runtime](hydroponics-advisor-runtime.md): authorized
+  pH/EC and Plant-state input, missing-data policy, and pending advisor handoff.
+- [Safety Gate Runtime](safety-gate-runtime.md): strict model-backed semantic
+  candidate and project-owned classification mapping.
 - [MessageEnvelope](message-envelope.md): validated pending pre-safety agent
   output.
 - [UI Feed](ui-feed.md): human presentation only.
@@ -37,6 +45,7 @@ source_of_truth:
 - [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
 - [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
 - [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination and archived retained-history reads.
+- [Plant State HTTP](plant-state-http.md): protected Plant trust records and human review.
 
 ## Routing
 

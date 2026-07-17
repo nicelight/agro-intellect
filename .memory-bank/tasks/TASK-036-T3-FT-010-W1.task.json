@@ -1,0 +1,160 @@
+{
+  "id": "TASK-036-T3-FT-010-W1",
+  "title": "Run Hydroponics Advisor with fail-closed missing-data policy",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-010",
+  "reqs": [
+    "REQ-003",
+    "REQ-008",
+    "REQ-011",
+    "REQ-013",
+    "REQ-014"
+  ],
+  "depends_on": [
+    "TASK-035-T3-FT-009-W2"
+  ],
+  "touched_files": [
+    "backend/app/hydroponics_advisor/",
+    "backend/app/agent_runtime/providers.py",
+    "tests/backend/hydroponics_advisor/",
+    ".memory-bank/tasks/TASK-036-T3-FT-010-W1.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "advisor-deterministic-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/hydroponics_advisor -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "advisor-product-agent-smoke",
+      "command": "AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q",
+      "required": false
+    },
+    {
+      "name": "advisor-runtime-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/plant_state tests/backend/hydroponics_advisor -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "full-deterministic-suite",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "The canonical hydroponics_advisor definition and strict command/request/result shapes reject caller-supplied records, refs, prompts, provider/model choice, unknown fields, and unsupported analysis values.",
+    "The assembler resolves current ActorContext normal-read authority for the same active Plant and loads at most four exact PostgreSQL records: Plant, independent latest pH/EC rows with deduplication, then remaining bounded context from the latest completed check-in and latest non-rejected Plant-state row in canonical order.",
+    "The provider request contains the project-computed 24-hour freshness object and authorized typed rows only; ActorContext, session/account/membership/grant state, UI Feed, raw chat, Timeline replay, provider history, local paths, credentials, and hidden reasoning never cross egress.",
+    "pH and EC freshness are independent and use the exact closed interval; boundary-age values are fresh, older or missing values are explicit, and future-dated values are stale.",
+    "Any non-empty missing/stale set accepts only the exact structured measurement request and deterministic project wording, maps to one pending non-consumable task_request MessageEnvelope, and creates no classification, task, Safety, Bus/UI, Plant-state, approval, or action effect.",
+    "Recommendation, hypothesis, clarification, or model silence is rejected while pH or EC is missing/stale. With both fresh, candidate refs include both authoritative measurement refs and model text remains opaque pending data with no direct authority.",
+    "Post-model session/membership/grant/active-Plant and audit-failure semantics match Agent Runtime; archive/revoke blocks handoff and restore does not replay it.",
+    "DeepSeek/Gemini composition uses exactly one explicit binding with no default, fake, or cross-provider fallback; chatgpt_oauth remains fail closed and all evidence is redacted.",
+    "A non-skipped credentialed canonical-agent smoke invokes exactly one real provider over the missing/stale fixture and returns audited envelope_ready with the exact pending measurement task request; every skip, substitute, non-request model decision, blocked/failed/unaudited result, or direct downstream effect fails acceptance."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md",
+    ".memory-bank/contracts/hydroponics-advisor-runtime.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/testing/hydroponics-advisor.md",
+    ".memory-bank/runbooks/agent-runtime-providers.md",
+    ".memory-bank/tasks/plans/IMPL-FT-010.md"
+  ],
+  "evidence_required": [
+    "exact advisor command request result policy and envelope contract tests",
+    "PostgreSQL input order freshness boundary and forbidden-source evidence",
+    "missing/stale measurement-request mapping and zero-direct-effect evidence",
+    "fresh-evidence pending-only and physical-action bypass prevention evidence",
+    "current authorization archive revoke and audit-failure race evidence",
+    "DeepSeek/Gemini explicit binding and no-fake no-fallback anti-cheat inspection",
+    "non-skipped canonical hydroponics_advisor real-provider missing-data smoke",
+    "focused and full deterministic test summaries",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Add the canonical Hydroponics Advisor product-agent path that evaluates current authorized pH/EC and Plant-state evidence, requests unavailable critical measurements without invention, and preserves the project-owned pending Safety/task boundary.",
+  "success_outcome": "One explicitly bound real Hydroponics Advisor consumes only current authorized PostgreSQL evidence; missing or stale pH/EC yields exactly one audited pending measurement task request with project-owned wording, while fresh-evidence advice remains pending opaque candidate data and no invalid, unauthorized, archived, fake, fallback, failed, or unaudited branch can create a task, publish content, clear Safety, confirm Plant state, approve or execute an action.",
+  "anti_goals": [
+    "No Safety classifier, Safety Gate decision, ordinary or action task persistence, approval/follow-up, Bus/UI publication, Plant-state mutation, frontend, or automated actuation implementation.",
+    "No public prompt/model/advisor HTTP endpoint, background worker, outbox, table/migration, provider history, Agno memory/RAG/tools/Team, sensor ingestion, crop recipe, target range, nutrient schedule, or dosage formula.",
+    "No default model, cross-provider fallback, fake/canned product output, caller-supplied context/refs/prompts, or secret/raw provider evidence."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/hydroponics_advisor/",
+      "backend/app/agent_runtime/providers.py",
+      "tests/backend/hydroponics_advisor/",
+      ".protocols/TASK-036-T3-FT-010-W1/",
+      ".tasks/TASK-036-T3-FT-010-W1/",
+      ".memory-bank/tasks/TASK-036-T3-FT-010-W1.task.json"
+    ],
+    "forbidden_scope": [
+      "FT-004 measurement persistence/freshness contract changes or FT-009 Plant-state lifecycle/evidence changes",
+      "FT-011 classifier/Safety approval, FT-012 task/approval/follow-up, FT-008 Bus/UI, FT-016 frontend, governance, dataset, sensor, or automated actuation implementation",
+      "public prompt/model API, background worker/outbox, new persistence, provider history/raw response storage, default model, fallback, or fake/canned product output",
+      "secrets, auth/session material, local paths, UI/raw chat, Timeline replay, provider payloads, prompts, candidate text evidence, or hidden reasoning"
+    ],
+    "stop_conditions": [
+      "TASK-035 is not done or the classified Plant-state input contract differs materially from the linked canonical spec.",
+      "Correctness would require widening the generic Agent Runtime outcome/MessageEnvelope authority or changing canonical Plant Operations freshness.",
+      "A missing/stale branch cannot be made deterministic without model-authored values, wording, task kind, or action semantics.",
+      "Current authorization and active-Plant state cannot be rechecked after provider I/O before handoff.",
+      "A passing product-agent smoke would require skip, fake/canned executor, fallback, missing audit, or exposing provider/auth/prompt data."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md",
+    ".memory-bank/behavior-specs/FT-010-BHV-001-missing-stale-measurements.behavior.json",
+    ".memory-bank/behavior-specs/FT-010-BHV-002-fresh-evidence-pending-safety.behavior.json",
+    ".memory-bank/behavior-specs/FT-010-BHV-003-current-authority-race.behavior.json",
+    ".memory-bank/tasks/plans/IMPL-FT-010.md",
+    ".protocols/FT-010/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/hydroponics-advisor-runtime.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/contracts/agent-roster-bootstrap.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/domains/plant-state-observations.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/hydroponics-advisor.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Use exactly the internally assembled PostgreSQL records and project-computed freshness object; callers cannot supply context, records, refs, prompts, model, or schema.",
+    "Require both pH and EC fresh for analysis before recommendation, hypothesis, or clarification; a non-empty missing/stale set accepts only the exact project-owned measurement request mapping.",
+    "Every non-silent output stops at the existing pending MessageEnvelope; persist, publish, classify, approve, or execute nothing in this task."
+  ],
+  "invariants": [
+    "PostgreSQL Plant Operations and classified Plant-state rows are evidence authority; Timeline, UI Feed, raw chat, MessageEnvelope, and model text are not.",
+    "Missing/stale evidence is explicit and cannot become invented advice; fresh evidence never bypasses project-owned classification, Safety Gate, or human approval.",
+    "Measurement requests can become only ordinary FT-012 tasks after matching classification and current guards; FT-010 can never create or request action_task.",
+    "Archive/revoke/audit failure blocks handoff and restore never replays prior work."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/hydroponics_advisor -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/plant_state tests/backend/hydroponics_advisor -m \"not real_model\" -q",
+    "AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "The credentialed missing/stale fixture proves one real provider call, exact policy request, audited pending task_request envelope, and zero direct task/Safety/Bus/UI/state/action effect."
+  ]
+}

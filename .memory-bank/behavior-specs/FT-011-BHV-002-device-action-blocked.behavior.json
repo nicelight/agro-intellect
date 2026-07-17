@@ -1,0 +1,20 @@
+{
+  "id": "FT-011-BHV-002",
+  "feature_id": "FT-011",
+  "title": "Device command remains a blocked physical action",
+  "given": {
+    "plant": "active and authorized for read",
+    "message_envelope": "validated pending wording that commands a dosing device"
+  },
+  "when": {
+    "model_candidate": "physical_action/dosing_command",
+    "backend_action": "validate, persist classification, and evaluate Safety"
+  },
+  "then": {
+    "safety_status": "safety_blocked",
+    "reason_code": "unsupported_action",
+    "approval_input_evaluated": false,
+    "candidate_text_projected": false,
+    "approval_task_or_device_effect": false
+  }
+}

@@ -3,7 +3,7 @@ description: Product brief (C4 L1): что это, для кого, core value, 
 status: active
 type: product
 owner: product
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -56,7 +56,10 @@ not model-generated analysis and do not satisfy real-model acceptance by
 themselves.
 
 ## Constraints
-- Tech stack direction: local modular monolith, Python/FastAPI/Pydantic backend, PostgreSQL/read model runtime authority, local filesystem for photos/artifacts, JSONL timeline export, Web App/PWA frontend, Agno as agent execution layer only.
+- Tech stack direction: local modular monolith, Python/FastAPI/Pydantic backend,
+  PostgreSQL/read model runtime authority, local filesystem for photos/artifacts,
+  JSONL timeline export, Svelte 5/SvelteKit Web App/PWA frontend, and Agno as
+  agent execution layer only.
 - Local-first and private by default. Default exposure is loopback; LAN mode may exist only when explicitly enabled with authentication, authorization, token/session protection, and CORS/origin controls.
 - No production SaaS, hosted cloud sync as an MVP requirement, billing, enterprise identity, multi-Farm tenancy, microservices, broad farm management, full dataset registry, real fine-tuning, sensor runtime dependency, automated physical actuation, or fake/stubbed MVP runtime agent path.
 - `timeline.jsonl`, photo files, manifests, UI Feed, raw chat, raw model reasoning, and unapproved Companion proposals are never mutable runtime authority.

@@ -2,7 +2,7 @@
 description: Global Agent Chat Bus contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -72,12 +72,21 @@ FT-008 implements one strict Plant-scoped object with unknown fields rejected:
 `domain_event_ref` payload is exactly:
 
 ```json
-{"payload_kind":"domain_event_ref","record_type":"daily_checkin|manual_measurement|photo_catalog_item","record_ref":"kind:identifier"}
+{"payload_kind":"domain_event_ref","record_type":"daily_checkin|manual_measurement|photo_catalog_item|decision_record","record_ref":"kind:identifier"}
 ```
 
 It is a compact trigger/reference, not a copied runtime snapshot. A consumer
 loads current authoritative data through its owning repository and current
 authorization boundary.
+
+`record_type=decision_record` is the only Companion-governance entry into the
+Bus. It uses `source_type=domain_record`, `source_id=decision_record_id`, and
+`record_ref=decision_record:<decision_record_id>`. Before publication, the
+publisher reloads the authoritative valid `DecisionRecord`, requires its
+approved compact governance-summary projection and exact
+`safety_gate_authority=not_granted`, and applies the current active-Plant and
+authorization guard. The Bus row stores only the reference; it never copies
+proposal text, rationale, raw chat, UI text, or mutable governance state.
 
 `agent_safe_information` payload is exactly:
 
@@ -102,6 +111,10 @@ no instruction, prompt, tool, command, routing, or authority semantics.
   tool, command, or routing channels. Prompt-like text cannot instruct a
   downstream agent.
 - Approved governance summary facts can be consumable only when derived from a valid DecisionRecord and must include `safety_gate_authority=not_granted`.
+- A `decision_record` event is resolved by the context builder into the exact
+  compact approved-summary shape owned by FT-013. The resolved facts remain
+  typed data; the event reference is not itself a governance decision or a
+  Safety/task command.
 - Unapproved proposals and raw chat remain non-consumable.
 
 ## Context Builders
@@ -115,6 +128,10 @@ no instruction, prompt, tool, command, routing, or authority semantics.
   untrusted in the assembled agent input; it cannot become an agent definition,
   policy, competence, instruction, tool call, or runtime decision.
 - Context builders must exclude UI Feed, spoiler notes, raw model reasoning, raw chat, admin notices, and unapproved Companion content.
+- For `record_type=decision_record`, the builder reloads the current
+  authoritative record and approved-summary projection, rechecks Plant scope,
+  and returns only the compact allowed fields. Missing, rejected, superseded,
+  stale, unauthorized, or non-projectable governance state is omitted.
 
 FT-008 context reads are Plant-scoped, require current `normal_read`
 authorization and `Plant.status=active`, and return at most 100 events ordered
@@ -145,6 +162,9 @@ flattens or concatenates `quoted_text` with instructions.
   context. Physical action routes to Safety Gate; uncertainty permits only a
   non-consumable UI block notice.
 - Bus publication alone never authorizes physical action.
+- A DecisionRecord Bus reference can direct only the FT-013-approved workflow
+  effect through its owning backend rule. It cannot create `action_task`,
+  confirm Plant state, or substitute for Safety Gate or human action approval.
 - Candidate content cannot alter event routing or consumability by stating a
   prompt, command, safety label, or publication instruction; only the matching
   validated classification and current guard select the route.
@@ -171,3 +191,7 @@ Tests must prove:
   creates an `action_task`;
 - archive between model execution and Bus publication fails closed without a
   Plant-scoped Bus event, and restore does not replay the blocked publication.
+- only a valid approved and currently authorized DecisionRecord can produce the
+  `decision_record` domain reference; raw/superseded proposal content never
+  enters the Bus, and the resolved summary always preserves
+  `safety_gate_authority=not_granted`.

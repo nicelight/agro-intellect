@@ -2,7 +2,7 @@
 description: Global dataset governance and trainability lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-06-30
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -18,8 +18,9 @@ Dataset Governance defines the global evidence and trainability boundary for
 photo, measurement, follow-up, review, and agent-output evidence. It does not
 create a full dataset registry or real fine-tuning path in MVP.
 
-Exact dataset fields, lifecycle transitions, recomputation rules, endpoint
-schemas, and UI behavior belong to `/prd-to-tasks FT-014`.
+Exact persistence beyond the global fields below, lifecycle transitions,
+evidence-policy details, derived-value materialization, endpoint schemas, and
+UI behavior belong to `/prd-to-tasks FT-014`.
 
 ## Scope Boundaries
 
@@ -37,7 +38,7 @@ schemas, and UI behavior belong to `/prd-to-tasks FT-014`.
 
 ## Lifecycle Shape
 
-Feature-local specs may refine states, but dataset candidates must distinguish:
+Dataset candidates use one lifecycle field, `candidate_status`, with exactly:
 
 - `candidate`
 - `needs_review`
@@ -45,20 +46,44 @@ Feature-local specs may refine states, but dataset candidates must distinguish:
 - `rejected`
 - `excluded`
 
-Every dataset-related record must carry:
+`candidate_origin` is exactly `raw|agent_labeled` and describes provenance,
+not lifecycle state. `quality_tier` is exactly `standard|gold` and describes
+quality, not lifecycle state.
+
+Every Dataset Candidate governance record must carry:
 
 - `farm_id`
 - `plant_id` when Plant-scoped
 - `evidence_refs`
-- `confirmation_source`
+- nullable `confirmation_source`:
+  `curator_auto|human_review|expert_review|batch_review`
 - `candidate_status`
-- `can_train_on=false` by default
+- `candidate_origin`
+- `quality_tier`
+- derived `can_train_on=false` by default
 - `created_at`
 - `updated_at`
 
 ## Rules
 
-- `can_train_on` is false by default.
+- Dataset Governance is the sole authority that derives `can_train_on`.
+  Commands, agents, source artifacts, manifests, timeline events, UI Feed, and
+  imports cannot set it directly.
+- `can_train_on` is true only when `candidate_status=confirmed`, the canonical
+  FT-014 evidence policy accepts non-empty `evidence_refs`, and an allowed
+  `confirmation_source` is recorded. It is false for every other state.
+- New candidates start with `candidate_status=candidate`,
+  `quality_tier=standard`, nullable `confirmation_source=null`, and derived
+  `can_train_on=false`.
+- `curator_auto` may confirm an ordinary candidate only under the future exact
+  FT-014 strong-evidence policy. A `gold` designation additionally requires
+  human, expert, or batch review and can never be granted by `curator_auto`.
+- Candidate provenance (`raw|agent_labeled`), dataset split, curator output, or
+  a `gold` designation alone never grants trainability.
+- `photo_catalog_items.can_train_on=false` is an immutable Photo Intake
+  assertion: accepting a photo never grants trainability. It is not a second
+  mutable trainability authority; a later Dataset Candidate is evaluated only
+  by Dataset Governance.
 - Evidence refs are required before any future transition that could make data
   trainable.
 - UI Feed, timeline snapshots, manifests, raw agent output, raw Companion
@@ -72,6 +97,10 @@ Every dataset-related record must carry:
 ## Edge Cases And Errors
 
 - Missing evidence refs block any trainability transition.
+- A request or agent result that supplies `can_train_on=true` is rejected;
+  trainability is recomputed from canonical governance state.
+- `quality_tier=gold` on a non-confirmed candidate, or with
+  `confirmation_source=curator_auto|null`, is rejected.
 - Unauthorized Plant evidence must not be mixed into a dataset candidate.
 - Raw model/provider output must not be stored as trainable fact.
 - Server sync/upload wording must not appear because MVP sync status is
@@ -82,6 +111,14 @@ Every dataset-related record must carry:
 Tests must prove:
 
 - New dataset candidates default to `can_train_on=false`.
+- Tests cover the exact `candidate_status` enum and prove that provenance and
+  `gold` are not lifecycle states.
+- Tests prove `can_train_on` is derived, cannot be assigned by a request or
+  agent, and remains false when state, evidence, or confirmation is missing.
+- Tests prove `curator_auto` cannot grant `gold` and that `gold` requires a
+  confirmed candidate plus human/expert/batch review.
+- Photo Intake tests continue to prove its immutable source assertion remains
+  `can_train_on=false` without becoming governance authority.
 - UI Feed, timeline, manifests, and raw agent output cannot set trainability.
 - Evidence refs and Plant scope are preserved.
 - Unauthorized context cannot mix into dataset/export records.

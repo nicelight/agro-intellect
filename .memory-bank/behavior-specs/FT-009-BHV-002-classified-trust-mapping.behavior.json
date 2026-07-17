@@ -1,0 +1,17 @@
+{
+  "id": "FT-009-BHV-002",
+  "feature_id": "FT-009",
+  "title": "Only classified vision output creates a non-confirmed trust record",
+  "given": {
+    "handoff": "matching immutable vision envelope and structured candidate for the same active Plant",
+    "classification": "matching successful safe_information result"
+  },
+  "when": {
+    "action": "persist the candidate through the Plant State service"
+  },
+  "then": {
+    "high_confidence_observation": "present or absent finding at confidence 0.50 or above starts observed",
+    "low_confidence_or_uncertain": "finding below 0.50 or uncertain starts unknown regardless of the pending envelope candidate claim",
+    "confirmation": "no agent-created record starts confirmed and pending or unsafe classification writes nothing"
+  }
+}

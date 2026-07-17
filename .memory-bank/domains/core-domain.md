@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD core domain framing for MVP v2 decomposition.
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -23,7 +23,8 @@ source_of_truth:
 - `BusEventEnvelope`, `MessageEnvelope`, `UIFeedEvent`: high-level boundaries for agent working context and human-facing presentation.
 - `Task`, `Approval`, `Outcome`: operational loop records for checks, measurements, approved human-performed actions, and follow-up.
 - `IssueStack`, `CompanionProposal`, `CompanionConclusion`, `HumanAttentionNeeded`, `DecisionRecord`: Plant-scoped Companion governance records.
-- Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
+- Dataset governance fields: canonical `candidate_status`, provenance, quality,
+  evidence refs, confirmation source, split, and derived `can_train_on`.
 
 ## User Roles
 

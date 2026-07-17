@@ -1,0 +1,19 @@
+{
+  "id": "FT-009-BHV-001",
+  "feature_id": "FT-009",
+  "title": "Authorized accepted photo reaches the real vision model",
+  "given": {
+    "actor": "current Boss or granted Engineer for an active Plant",
+    "photo": "committed tomato fixture accepted through production photo intake with matching catalog size and sha256",
+    "binding": "canonical vision_observation agent bound explicitly to a Gemini image-capable model"
+  },
+  "when": {
+    "action": "run the internal Vision Observation command for that Plant and photo"
+  },
+  "then": {
+    "provider": "exactly one real call receives the strict request and verified in-memory photo bytes",
+    "decision": "the committed tomato fixture returns runtime_decision=speak; clarify and silent do not satisfy this behavior",
+    "handoff": "speak produces one pending non-consumable MessageEnvelope and one matching VisionStateCandidateV1",
+    "authority": "no direct Plant-state, Bus, UI, task, Safety, or confirmation effect occurs"
+  }
+}

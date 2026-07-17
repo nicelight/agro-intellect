@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD lifecycle hints for MVP v2 decomposition.
 status: active
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -24,4 +24,4 @@ and feature cuts. Detailed state machines belong to canonical state specs.
 | Physical-Action Proposal | Risky plant-system advice is blocked/routed until safety and human gates pass. | blocked/pending approval/approved/rejected style states are expected but not specified here. | stale/missing data handling, Safety Gate pass/fail, approver authority, action_task unlock, follow-up. | Exact freshness windows and action taxonomy belong to later specs. |
 | CompanionProposal | Companion proposal is visible to humans but not operative until valid human decision. | pending, approved, rejected, superseded. | supersede previous pending proposal for same Plant issue, approve/reject, create DecisionRecord. | Exact expiry policy is not needed for PRD; no time-based expiry is required by PRD. |
 | DecisionRecord | Typed governance decision directs allowed workflow effects through backend rules. | approved/rejected decision record semantics. | create from valid proposal decision, produce compact agent-consumable summary, route safe task requests. | Exact workflow-effect catalog belongs to /spec-design. |
-| Dataset Candidate | Evidence remains non-trainable until governance rules allow a future change. | raw/agent_labeled/needs_review/confirmed/rejected/gold/excluded style vocabulary exists. | evidence refs, review/confirmation source, split, `can_train_on` recomputation. | Full dataset registry and fine-tuning are out of MVP. |
+| Dataset Candidate | Evidence remains non-trainable until governance rules allow a future change. | `candidate_status`: `candidate`, `needs_review`, `confirmed`, `rejected`, `excluded`; `candidate_origin`: `raw|agent_labeled`; `quality_tier`: `standard|gold`. | evidence refs, review/confirmation source, split, derived `can_train_on`. | Full dataset registry and fine-tuning are out of MVP. |

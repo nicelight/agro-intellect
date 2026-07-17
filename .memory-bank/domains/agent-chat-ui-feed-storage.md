@@ -1,23 +1,27 @@
 ---
-description: PostgreSQL storage and transaction rules for FT-008 Agent Chat Bus, UI Feed, and roster-introduction reconciliation.
+description: PostgreSQL storage and transaction rules for Agent Chat Bus, UI Feed, and roster-introduction reconciliation.
 status: active
 type: data_spec
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/contracts/agent-chat-bus.md
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/contracts/agent-roster-bootstrap.md
   - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/safety-action-routing.md
+  - .memory-bank/states/companion-governance.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Agent Chat And UI Feed Storage
 
 ## Scope
 
-Defines the PostgreSQL authority rows, uniqueness rules, transaction boundaries,
-and restart-safe reconciliation owned by FT-008. It does not define frontend
-layout, Safety classification policy, ordinary tasks, physical-action effects,
-or provider/model execution.
+Defines the PostgreSQL Bus/UI rows, uniqueness rules, transaction boundaries,
+and FT-008 restart-safe introduction reconciliation. FT-011 and FT-013 reuse
+the same UI table only for derived Safety and Companion projections;
+authoritative Safety/governance records remain in their owning storage. This
+spec does not define frontend layout, Safety classification policy, ordinary
+tasks, physical-action effects, or provider/model execution.
 
 ## Tables
 
@@ -117,6 +121,54 @@ payload.
 not store candidate text. `safe_task_request` and `physical_action` create no
 FT-008 rows and remain owned by FT-012 and FT-011 respectively.
 
+## Safety status projection storage
+
+FT-011 reuses `ui_feed_events` for one derived `safety_status` row per immutable
+Safety action decision:
+
+- `ui_event_id` is exactly the UUIDv4 `decision_id` and `source_id` is its
+  canonical UUID text;
+- `source_type=safety`, `display_kind=safety_status`, both agent flags are
+  false, and `agent_id`/`roster_version` are null;
+- `source_refs` and `display_payload` validate against the exact UI Feed Safety
+  variant; candidate/model text is forbidden;
+- `visible_to_roles` is exactly `boss|engineer`; the protected feed read still
+  applies current per-Plant authorization;
+- the authoritative `safety_action_decisions` row and UI row insert in one
+  database transaction, or neither commits;
+- an identical `decision_id` retry is idempotent; any different canonical
+  content is a conflict and writes nothing.
+
+This projection cannot mutate a Safety decision, approve/reject it, create an
+`action_task`, enter Agent Chat Bus, or trigger a device. Archive races fail the
+owning atomic decision/UI transaction; restore does not replay an earlier
+denied handoff.
+
+## Companion projection storage
+
+FT-013 reuses the existing tables; no parallel Bus/UI tables or mutable
+governance copy is allowed.
+
+- `agent_bus_events` accepts the existing `domain_event_ref` payload with
+  `record_type=decision_record`. The row stores only the authoritative
+  DecisionRecord reference and is unique/idempotent under the existing
+  `(plant_id,source_type,source_id,event_type)` key.
+- `ui_feed_events` accepts `source_type=companion_governance`,
+  `display_kind=companion_governance`, and one strict attention, proposal, or
+  decision payload from the UI Feed contract. Both agent flags remain false.
+- Bus/UI rows are derived projections. They cannot approve/reject/supersede a
+  proposal, create a DecisionRecord, advance its workflow effect, or replace
+  authoritative FT-013 records.
+- FT-013 must update the strict model validators and any affected database
+  constraints in the same implementation slice before emitting a new variant.
+  Existing FT-008 rows and variants remain valid and unchanged.
+- Projection writes recheck current authorization and active Plant at their
+  write boundary. Archive blocks new rows; restore causes no replay.
+
+Exact DecisionRecord creation/projection atomicity and UI transition
+idempotency belong to the FT-013 data specification because they depend on its
+record/version and workflow-effect model.
+
 ## Verification
 
 - Migration/model tests inspect UUID PK/FK parity, restricted deletes,
@@ -126,6 +178,12 @@ FT-008 rows and remain owned by FT-012 and FT-011 respectively.
 - Publication tests prove Bus/UI atomicity, current authorization, strict
   classification routing, typed quotation, literal display data, and zero
   writes on denial.
+- Safety projection tests prove exact payload/status constraints,
+  decision/UI atomicity, idempotent duplicate versus conflict, candidate-text
+  absence, current active-Plant guard, and unchanged existing FT-008 rows.
 - Static and integration checks prove UI rows are never loaded by agent context
   builders and Bus rows are never used as mutable Plant authority.
-
+- Companion integration checks prove existing FT-008 variants remain valid,
+  only a valid DecisionRecord reference can enter Bus, all Companion UI rows
+  remain non-consumable, and no projection becomes governance or Safety
+  authority.

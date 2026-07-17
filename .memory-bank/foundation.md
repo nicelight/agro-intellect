@@ -144,7 +144,7 @@ verifies these packages.
 | Admin Account creation/audit tables | FT-003 owns direct local Account creation and admin audit semantics. | `/prd-to-tasks FT-003`. |
 | Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | Applicable feature-level subject specs. |
 | Agent/provider configuration | MVP runtime requires real model-backed flows, but provider secrets/config must not be invented in Foundation. | `/prd-to-tasks FT-007` or explicit provider decision. |
-| Frontend scaffold | Backend/local DB foundation is the immediate blocker; UI belongs to FT-016. | `/prd-to-tasks FT-016`. |
+| Svelte 5/SvelteKit frontend scaffold | Backend/local DB foundation is the immediate blocker; the Operator PWA scaffold belongs to FT-016. | `/prd-to-tasks FT-016`. |
 | Docker-based database path | User target is local Linux Mint. Docker may be optional later, not required by Foundation. | Explicit operator request or deployment spec update. |
 
 ## Foundation Exit Criteria

@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-13
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -30,11 +30,11 @@ source_of_truth:
 - [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/prd-to-tasks FT-007` reconciliation and fresh review approval.
 - [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): verified durable introductions, guarded typed Bus/literal UI publication, current-authority agent-context isolation, and protected Plant feed API; FT-016 retains frontend rendering ownership.
 - [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): visual evidence and state promotion.
-- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): cautious advice and missing-data behavior.
+- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): SDD design complete; one planned T3 advisor-runtime task follows FT-009 Plant-state readiness.
 
 ## EP-004 Safety Tasks And Follow-Up
 
-- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): fail-closed physical-action routing.
+- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): SDD design complete; two planned T3 tasks add model-backed immutable classification and two-hour-evidence Safety routing through pending human approval.
 - [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): human-performed tasks and outcomes.
 
 ## EP-005 Companion Governance

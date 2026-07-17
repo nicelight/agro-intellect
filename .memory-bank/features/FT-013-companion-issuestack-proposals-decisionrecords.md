@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-07-06
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -65,7 +65,13 @@ source_of_truth:
 
 ## SDD Design Gate
 
-- Global/shared status: ready; `AD-007`, Plant lifecycle, and Companion
-  Governance define archived proposal/decision/publication behavior.
+- Global/shared status: complete; `AD-007`, Plant lifecycle, Companion
+  Governance, Agent Chat Bus, UI Feed, shared Bus/UI storage, and Plant Feed
+  HTTP define the archived behavior and exact shared projection routes.
+- Shared projection decision: only a valid DecisionRecord reference may enter
+  Bus; human attention/proposal/decision use the non-agent-consumable
+  `companion_governance` UI route. No parallel Companion Bus/UI contract is
+  allowed.
 - Feature-local status: pending `/prd-to-tasks FT-013` for exact governance
-  schemas, transitions, workflow effects, API/UI projections, and tests.
+  record schemas, compact-summary bounds, transitions, workflow effects,
+  command/API contracts, projection idempotency, and tests.

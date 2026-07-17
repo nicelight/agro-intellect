@@ -1,0 +1,17 @@
+{
+  "id": "FT-009-BHV-003",
+  "feature_id": "FT-009",
+  "title": "Contradictory evidence remains conflicting until explicit human resolution",
+  "given": {
+    "records": "same Plant and observation key have supported present and absent evidence",
+    "assessment": "Plant State candidate references the opposing records"
+  },
+  "when": {
+    "action": "persist the classified conflict and attempt to confirm one side"
+  },
+  "then": {
+    "conflict": "the conflict remains visible and is not collapsed by recency or confidence",
+    "promotion_guard": "confirmation is rejected until the unsupported opposite record is explicitly rejected or later authoritative evidence resolves it",
+    "authority": "a valid Boss or Engineer review may then confirm trust but never grants Safety approval or creates an action task"
+  }
+}

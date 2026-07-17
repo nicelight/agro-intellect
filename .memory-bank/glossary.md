@@ -1,7 +1,7 @@
 ---
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -250,10 +250,18 @@ source_of_truth:
 
 ## Dataset Governance
 
-- `dataset.status`: lifecycle field with values `raw`, `agent_labeled`, `needs_review`, `confirmed`, `rejected`, `gold`, `excluded`.
+- `dataset.candidate_status`: the only dataset-candidate lifecycle field, with
+  values `candidate`, `needs_review`, `confirmed`, `rejected`, or `excluded`.
+- `dataset.candidate_origin`: provenance with values `raw` or `agent_labeled`;
+  it is not lifecycle state and grants no trainability.
+- `dataset.quality_tier`: `standard` or `gold`; `gold` is allowed only for a
+  confirmed candidate approved by human, expert, or batch review. It is not
+  lifecycle state.
 - `dataset.split`: `train`, `eval`, `holdout`, or null.
-- `dataset.curator_decision`: curator field with `selected`, `deferred`, or `rejected`.
-- `dataset.confirmation_source`: source of confirmation such as `curator_auto`, human, expert, or batch review.
+- `dataset.curator_decision`: curator recommendation with `selected`,
+  `deferred`, or `rejected`; it is not lifecycle or trainability authority.
+- `dataset.confirmation_source`: nullable confirmation authority with values
+  `curator_auto`, `human_review`, `expert_review`, or `batch_review`.
 - `dataset.evidence_refs`: refs supporting a dataset decision.
 - `dataset.curator_notes_ref`: pointer to internal curator notes.
 - `dataset.corrected`: flag that human/review corrected label or metadata.
@@ -261,13 +269,16 @@ source_of_truth:
 - `human_review.status`: manual review lifecycle for a data item or label.
 - `review_status`: export alias only when needed; not separate runtime authority.
 - `curator_auto`: evidence-based curator confirmation source for ordinary train items, never for `gold`.
-- `human review`: manual data or label review.
-- `batch review`: batch-level review/approval for dataset decisions.
-- `expert review`: domain expert review/approval.
+- `human_review`: manual data or label review.
+- `batch_review`: batch-level review/approval for dataset decisions.
+- `expert_review`: domain expert review/approval.
 - `evidence_refs`: references to follow-up, outcome, sensor window, repeated photo, review, or agreed observation.
-- `can_train_on`: trainability flag allowed only by dataset governance rules.
-- `gold`: high-quality reviewed example requiring human, expert, or batch review approval.
-- `agent_labeled`: data labeled by an agent; not trainable by default.
+- `can_train_on`: derived Dataset Governance result; it is never directly set
+  by agents, requests, source artifacts, manifests, timeline, or UI Feed.
+- `gold`: quality designation for a confirmed candidate requiring human,
+  expert, or batch review approval; it is not `candidate_status`.
+- `agent_labeled`: candidate provenance for data labeled by an agent; it is not
+  `candidate_status` and is not trainable by itself.
 - `fine-tuning`: future model training path; out of MVP unless evidence and governance gates exist.
 - `evaluation`: future quality-check use of holdout/eval data.
 
@@ -287,7 +298,8 @@ source_of_truth:
 ## Stack Terms
 
 - `FastAPI`: backend framework selected for the MVP.
-- `React / Next.js / PWA`: frontend stack selected for the MVP operator surface.
+- `Svelte 5 / SvelteKit / PWA`: frontend stack selected for the MVP operator
+  surface; components use Svelte 5 Runes and TypeScript.
 - `Capacitor`: possible future mobile wrapper after Web App/PWA.
 - `LLM`: language model used for dialogue and structured outputs.
 - `vision model`: real vision-capable model or real vision model integration used for photo observation in the MVP runtime/demo path.

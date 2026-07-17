@@ -4,6 +4,106 @@ status: active
 ---
 # Changelog
 
+## [2026-07-17] FT-011 SDD closure and task queue
+- Completed FT-011 feature-local design for a real model-backed Safety Gate
+  candidate with backend-owned immutable classification authority.
+- Fixed the MVP approval path to human-performed `ph_adjustment`,
+  `ec_adjustment`, and `solution_change`; device commands and the remaining
+  physical actions are explicitly unsupported.
+- Added canonical Safety Gate runtime, PostgreSQL Safety action routing, and
+  verification specs; extended the existing provider and UI Feed/read surfaces
+  with a project-owned non-imperative status projection and no new endpoint or
+  Timeline event.
+- Kept pH/EC analysis freshness at 24 hours for FT-010 and used the separate
+  existing `approval_input=2h` window for every FT-011 supported action.
+- Added three behavior examples and indexed two T3 tasks,
+  `TASK-037-T3-FT-011-W1` and `TASK-038-T3-FT-011-W2`. FT-012 retains human
+  approval, action-task, completion, follow-up, and outcome ownership.
+
+## [2026-07-17] Companion Bus/UI shared projection repair
+- Extended the existing closed Bus domain-reference union with
+  `decision_record` instead of creating a parallel Companion event contract;
+  Bus stores only the authoritative ref and resolves compact approved facts
+  with `safety_gate_authority=not_granted`.
+- Added one non-agent-consumable `companion_governance` UI route with strict
+  attention, proposal, and decision payload variants, literal summary text,
+  current authorization, and archive/no-replay guards.
+- Reused the existing Bus/UI PostgreSQL tables and Plant Feed endpoint,
+  preserved every FT-008 variant, and routed FT-013-specific records,
+  transition idempotency, workflow effects, and exact summary bounds to
+  `/prd-to-tasks FT-013`.
+- Updated shared verification requirements without claiming unimplemented
+  FT-013 code or creating tasks, migrations, parallel specs, or frontend work.
+
+## [2026-07-17] Svelte frontend stack canonicalization
+- Recorded the explicit owner decision that the active MVP Operator PWA uses
+  Svelte 5 with Runes, TypeScript, and SvelteKit.
+- Replaced stale competing-stack references in the active dossier and glossary,
+  and added Architecture Spine `AD-009` so FT-016 cannot select or reintroduce
+  another frontend stack.
+- Aligned Product, PRD, Spec Backbone, Foundation routing, and FT-016 with the
+  canonical SvelteKit/PWA decision. Historical archive and reports remain
+  unchanged.
+
+## [2026-07-17] Dataset governance KISS lifecycle repair
+- Reconciled the shared dataset vocabulary to one canonical
+  `candidate_status`: `candidate|needs_review|confirmed|rejected|excluded`.
+  `candidate_origin=raw|agent_labeled` now describes provenance and
+  `quality_tier=standard|gold` describes reviewed quality rather than
+  competing lifecycle states.
+- Made Dataset Governance the sole trainability authority. `can_train_on` is a
+  derived result and cannot be set by agents, requests, artifacts, manifests,
+  timeline, or UI Feed.
+- Preserved `photo_catalog_items.can_train_on=false` as an immutable Photo
+  Intake assertion only; it does not compete with future FT-014 governance.
+- Kept exact persistence, strong-evidence policy, confirmation transitions,
+  agent I/O, and API/testing work routed to `/prd-to-tasks FT-014`; no code,
+  task records, new spec files, or extra architecture layers were added.
+
+## [2026-07-17] FT-010 SDD closure and task queue
+- Completed FT-010 feature-local design for current authorized pH/EC and
+  classified Plant-state input, independent 24-hour analysis freshness,
+  deterministic missing-data requests, and pending-only Safety/task handoff.
+- Added canonical Hydroponics Advisor runtime and verification specs plus three
+  behavior examples; extended the existing provider/runbook registries without
+  widening generic Agent Runtime authority.
+- Fixed version-1 missing/stale behavior to exact project-owned measurement-
+  request wording and refs. Fresh-evidence model text remains opaque pending
+  candidate data; FT-010 creates no classification, task, approval, Bus/UI
+  publication, confirmed state, or physical action.
+- Added and indexed one cohesive T3 task,
+  `TASK-036-T3-FT-010-W1`, planned behind FT-009 Plant-state readiness.
+  FT-011, FT-012, and FT-016 retain classifier/task/browser ownership.
+
+## [2026-07-16] FT-009 KISS semantic repair
+- Aligned classified Plant-state persistence with canonical
+  `SafetyClassificationResultV1.classification` and matching `message_id`.
+- Made trust mapping deterministic: qualifying `present|absent` Vision findings
+  become `observed`, lower-confidence/uncertain findings become `unknown`, and
+  Plant State trends become `hypothesis`.
+- Kept missing/unavailable photo handling on the existing fail-closed
+  `context_denied/input_contract_violation` path; FT-016 owns an optional upload
+  prompt and FT-012 owns any later follow-up task. No new outcome or layer was
+  added.
+- Fixed TASK-034/BHV-001 fixture acceptance to require
+  `runtime_decision=speak` with both pending MessageEnvelope and
+  `VisionStateCandidateV1`; `clarify` stays envelope-only and `silent` stays
+  artifact-free, so neither satisfies the committed tomato fixture.
+
+## [2026-07-15] FT-009 SDD closure and task queue
+- Completed FT-009 feature-local design for catalog-authorized real-photo
+  Vision Observation, Gemini-only v1 image egress, Plant State assessments,
+  PostgreSQL trust records, explicit conflicts, human promotion, and protected
+  trust-record reads/review.
+- Added canonical Vision Observation runtime, Plant State runtime, Plant state
+  data, Plant state HTTP, and verification specs plus three behavior examples.
+- Kept model output pending/non-authoritative until matching project-owned
+  `safe_information` classification; no agent can confirm Plant state or grant
+  Safety/task/action authority.
+- Added and indexed two T3 tasks: W1 real-photo vision execution and W2 Plant
+  state persistence/assessment/review. Browser rendering remains FT-016 and
+  Safety/task effects remain FT-011/FT-012.
+
 ## [2026-07-13] FT-008 human checkpoint confirmation
 - Recorded the user's confirmation of `HUMAN_CHECKPOINT: done` for TASK-032
   and TASK-033 after the completed results were checked.

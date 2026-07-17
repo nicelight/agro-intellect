@@ -5,7 +5,21 @@ type: feature
 feature_id: FT-009
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-16
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/contracts/vision-observation-runtime.md
+  - .memory-bank/contracts/plant-state-runtime.md
+  - .memory-bank/domains/plant-state-observations.md
+  - .memory-bank/contracts/plant-state-http.md
+  - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/contracts/agent-model-provider-profiles.md
+  - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/domains/photo-artifacts.md
+  - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
+  - .memory-bank/testing/vision-observation-plant-state.md
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -29,16 +43,27 @@ source_of_truth:
 
 ## Edge Cases & Failure Modes
 
-- Low-confidence vision output remains probable/unknown and does not become confirmed.
+- Low-confidence or uncertain vision output remains `unknown` and does not become confirmed.
 - Contradictory evidence is represented as conflict, not silently resolved.
-- Missing photo data prevents vision processing and produces safe clarification/follow-up behavior.
+- Missing or unavailable photo data prevents vision processing and returns
+  `context_denied/input_contract_violation` before provider I/O. FT-009 creates
+  no clarification envelope or follow-up task for this branch; FT-016 may show
+  an upload/reselect prompt, and FT-012 owns any later follow-up task.
 - Unauthorized photo context cannot enter vision context.
 
 ## Verification Targets
 
 - Integration: real photo input reaches real vision/model-backed path.
+- Integration: missing/unavailable photo data returns the exact fail-closed
+  denial with no provider call, runtime audit, envelope, or state candidate.
 - Unit: trust status and promotion gate rules after spec defines states.
 - E2E: uploaded `tomato_001` photo produces visible observation/trust status without unsafe action wording.
+
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-009-BHV-001-real-photo-vision.behavior.json`
+- `.memory-bank/behavior-specs/FT-009-BHV-002-classified-trust-mapping.behavior.json`
+- `.memory-bank/behavior-specs/FT-009-BHV-003-conflict-human-promotion.behavior.json`
 
 ## Normative Backbone Links
 
@@ -52,3 +77,13 @@ source_of_truth:
 
 - Exact vision input refs, observation schema, trust statuses, promotion gates,
   contradiction handling, real vision/provider configuration, and tests.
+
+## Feature-Local Not Applicable
+
+- Browser/PWA rendering is downstream FT-016 work; FT-009 owns the protected
+  backend trust-record API and does not invent a frontend scaffold.
+- Safety classification policy, physical-action approval, and action-task
+  effects remain FT-011/FT-012 work. FT-009 consumes only a matching successful
+  `safe_information` classification and grants no Safety authority.
+- Automatic background orchestration is not required: model invocation remains
+  an internal application command until the owning workflow/UI composes it.

@@ -2,7 +2,7 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-12
+last_updated: 2026-07-15
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -35,7 +35,13 @@ Plant state.
 
 - BusEventEnvelope storage, Bus context queries, and UI Feed projection; FT-008
   owns those concerns.
-- Vision-specific input and observation semantics; FT-009 owns them.
+- Vision-specific input and observation semantics are owned by
+  [.memory-bank/contracts/vision-observation-runtime.md](vision-observation-runtime.md),
+  which composes this outcome/authorization/audit boundary without widening
+  generic `ProviderRequestV1`.
+- Plant State trust-record input and structured assessment semantics are owned
+  by [.memory-bank/contracts/plant-state-runtime.md](plant-state-runtime.md)
+  under the same shared outcome/authorization/audit boundary.
 - Hydroponics Advisor missing-data policy; FT-010 owns it.
 - Safety classifier implementation and action approval; the shared
   `SafetyClassificationResultV1` wire contract lives in the Safety Action
@@ -212,8 +218,9 @@ Rules:
   2000-code-point Plant Operations contract, assembly returns the stable
   pre-invocation `outcome_kind=context_denied` result with
   `reason_code=input_contract_violation` and makes no provider or audit call.
-- Photo binary/metadata is not in FT-007 input v1; FT-009 must define its
-  vision-specific typed boundary before sending real photo data to a model.
+- Photo binary/metadata is not in FT-007 input v1. FT-009 now defines its
+  vision-specific typed boundary in `vision-observation-runtime.md`; generic
+  `ProviderRequestV1` remains text/domain-record only.
 - `ProviderRequestV1.source_refs` is derived internally in record order and is
   exactly equal to the typed-record refs. A non-silent model result uses a
   non-empty unique subset in the same relative order as the request;

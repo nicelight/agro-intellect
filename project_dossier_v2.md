@@ -2782,7 +2782,7 @@ JSONL for timeline export
 Frontend:
 
 ```text
-React / Next.js / PWA
+Svelte 5 / SvelteKit / PWA
 role-aware UI
 Plant selector
 chat/feed surface

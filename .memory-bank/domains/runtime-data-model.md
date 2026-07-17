@@ -2,7 +2,7 @@
 description: Global runtime data authority model for MVP v2.
 status: active
 type: domain
-last_updated: 2026-07-10
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -81,7 +81,8 @@ agent, Safety Gate, governance, or UI projection schemas.
 - `TimelineEvent`: append-only audit/export event.
 - `Task`, `Approval`, `Outcome`: operational loop records.
 - `IssueStack`, `CompanionProposal`, `CompanionConclusion`, `HumanAttentionNeeded`, `DecisionRecord`: Plant-scoped governance records.
-- Dataset governance fields: lifecycle status, evidence refs, confirmation source, split, and `can_train_on`.
+- Dataset governance fields: canonical `candidate_status`, provenance, quality,
+  evidence refs, confirmation source, split, and derived `can_train_on`.
 
 Detailed state authority for Plant trust, Safety action lifecycle, Companion
 governance, and dataset trainability lives in the active state specs under
@@ -156,7 +157,11 @@ Verification target:
   project-owned adapter validation, strict safety classification, current
   authorization, and the applicable Bus/UI/task/Safety boundary.
 - DecisionRecord can create governance/workflow direction only inside backend rules.
-- `can_train_on` is false unless dataset governance rules explicitly allow a later transition.
+- Dataset Governance is the sole mutable authority for trainability.
+  `can_train_on` is derived from its canonical state/evidence/confirmation
+  rules and is false otherwise. Source records such as Photo Intake may retain
+  an immutable `can_train_on=false` assertion, but cannot become a second
+  mutable authority.
 
 ## Subject Detail Routing
 

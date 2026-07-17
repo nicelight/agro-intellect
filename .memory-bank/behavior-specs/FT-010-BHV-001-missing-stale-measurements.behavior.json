@@ -1,0 +1,25 @@
+{
+  "id": "FT-010-BHV-001",
+  "feature_id": "FT-010",
+  "title": "Missing or stale pH and EC produce only a measurement request",
+  "given": {
+    "plant": "active and authorized",
+    "analysis_freshness": {
+      "ph": "missing",
+      "ec": "stale"
+    }
+  },
+  "when": {
+    "agent": "hydroponics_advisor",
+    "analysis_goal": "missing_data_review"
+  },
+  "then": {
+    "runtime_outcome": "envelope_ready",
+    "candidate_claim_type": "task_request",
+    "requested_measurements": [
+      "ph",
+      "ec"
+    ],
+    "direct_effects": []
+  }
+}

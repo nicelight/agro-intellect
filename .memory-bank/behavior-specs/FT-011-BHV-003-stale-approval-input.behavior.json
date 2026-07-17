@@ -1,0 +1,23 @@
+{
+  "id": "FT-011-BHV-003",
+  "feature_id": "FT-011",
+  "title": "Analysis-fresh evidence may still be stale for approval",
+  "given": {
+    "plant": "active",
+    "actor": "current authorized approver",
+    "message_envelope": "validated pending manual solution-change recommendation",
+    "ph": "fresh within 2 hours",
+    "ec": "older than 2 hours but not older than the advisor analysis window"
+  },
+  "when": {
+    "model_candidate": "physical_action/solution_change",
+    "backend_action": "evaluate evidence with purpose approval_input"
+  },
+  "then": {
+    "safety_status": "needs_fresh_evidence",
+    "reason_code": "approval_input_missing_or_stale",
+    "analysis_window_used_for_approval": false,
+    "pending_human_approval": false,
+    "approval_or_action_task_created": false
+  }
+}

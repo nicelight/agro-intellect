@@ -2,7 +2,7 @@
 description: Photo artifact authority, catalog, local storage layout, and capture manifest contract for MVP v2.
 status: active
 type: domain
-last_updated: 2026-07-10
+last_updated: 2026-07-15
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -40,6 +40,8 @@ capture manifest, and upload atomicity policy below.
     defines trust/promotion rules for photo-derived observations.
   - [.memory-bank/states/dataset-governance.md](../states/dataset-governance.md):
     defines trainability state.
+  - [.memory-bank/contracts/vision-observation-runtime.md](../contracts/vision-observation-runtime.md):
+    defines catalog-authorized byte loading and real vision egress.
 
 ## Artifact Identity
 

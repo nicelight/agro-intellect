@@ -1,0 +1,178 @@
+{
+  "id": "TASK-035-T3-FT-009-W2",
+  "title": "Persist and review Plant state trust with explicit conflicts",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-009",
+  "reqs": [
+    "REQ-003",
+    "REQ-010",
+    "REQ-011",
+    "REQ-012",
+    "REQ-013"
+  ],
+  "depends_on": [
+    "TASK-034-T3-FT-009-W1"
+  ],
+  "touched_files": [
+    "backend/app/plant_state/",
+    "backend/app/agent_runtime/providers.py",
+    "backend/app/api/plant_state.py",
+    "backend/app/api/__init__.py",
+    "backend/app/main.py",
+    "backend/migrations/versions/ft009_plant_state.py",
+    "tests/backend/plant_state/",
+    "tests/backend/api/test_ft009_plant_state_routes.py",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/photo_intake/test_ft005_migration_models.py",
+    "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/test_foundation_database_contract.py",
+    ".memory-bank/tasks/TASK-035-T3-FT-009-W2.task.json"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "plant-state-focused-tests",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_state tests/backend/api/test_ft009_plant_state_routes.py -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "plant-state-product-agent-smoke",
+      "command": "AGENT_REAL_PLANT_STATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/plant_state/test_real_plant_state_smoke.py -m real_model -q",
+      "required": false
+    },
+    {
+      "name": "vision-access-regression",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime tests/backend/vision_observation tests/backend/plant_state tests/backend/api/test_ft009_plant_state_routes.py -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "full-deterministic-suite",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": false
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": false
+    }
+  ],
+  "verify": [
+    "Migration/model inspection proves the exact plant_state_records shape, native UUID/restrictive FKs, record-kind and confirmation checks, confidence/version bounds, unique message id, required indexes, and guarded non-empty downgrade.",
+    "One record is inserted only from a matching immutable envelope, strict feature candidate, canonical SafetyClassificationResultV1 with classification=safe_information and the same message_id, and fresh same-transaction active-Plant authorization; pending/unsafe/mismatched input writes nothing.",
+    "Initial trust mapping is exact: present/absent at confidence 0.50 or above becomes observed; lower-confidence or uncertain/not_assessable Vision finding becomes unknown regardless of pending envelope candidate_claim_type; Plant State trend becomes hypothesis; no agent-created record begins confirmed or gains Safety/task/action authority.",
+    "The canonical plant_state agent reads only the latest authorized non-rejected PostgreSQL trust records, validates structural trend/conflict/unknown evidence, and returns only a pending assessment handoff before classified persistence.",
+    "Opposing same-key present/absent evidence remains explicit conflicting state; newest/highest-confidence evidence never silently wins and unresolved conflict blocks confirmation.",
+    "Boss and authorized Engineer can confirm/reject through optimistic expected_version; Consultant, wrong Farm, revoked access, disabled membership, stale version, and archived Plant fail before mutation.",
+    "List/review HTTP follows exact schemas, no-store, retained-history authorization, stable complete cursor pagination, wrong-Plant cursor rejection, no enumeration, and internal/provider/auth field exclusion.",
+    "A non-skipped credentialed canonical plant_state smoke invokes one explicitly bound real DeepSeek or Gemini model over persisted classified Plant records and returns audited envelope_ready with a valid pending assessment for the seeded conflict/trend fixture; model silence does not satisfy the fixture."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-009-vision-observation-plant-state-trust.md",
+    ".memory-bank/domains/plant-state-observations.md",
+    ".memory-bank/contracts/plant-state-runtime.md",
+    ".memory-bank/contracts/plant-state-http.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/testing/vision-observation-plant-state.md",
+    ".memory-bank/tasks/plans/IMPL-FT-009.md"
+  ],
+  "evidence_required": [
+    "migration model constraint and guarded downgrade inspection",
+    "classified-only atomic persistence and idempotency conflict matrix",
+    "confidence boundary trust mapping and no-agent-confirmation evidence",
+    "Plant State typed context and structural trend conflict unknown tests",
+    "human review authorization conflict version and archive retention tests",
+    "protected list review pagination no-store OpenAPI evidence",
+    "non-skipped canonical plant_state real-provider smoke",
+    "focused and full deterministic test summaries",
+    "node scripts/mb-lint.mjs output",
+    "git diff --check output"
+  ],
+  "purpose": "Create the authoritative Plant state trust path that persists only classified agent findings, tracks trends and contradictions without silent promotion, and lets authorized humans explicitly confirm or reject retained records through a protected backend boundary.",
+  "success_outcome": "Authorized classified vision and Plant State findings are durable, idempotent, paginated PostgreSQL records with deterministic unknown/observed/hypothesis/conflicting trust; contradictory evidence remains unresolved until explicit authorized review, and confirmed state can arise only through the guarded human/evidence promotion service without granting Safety, task, action, Bus, UI, or actuation authority.",
+  "anti_goals": [
+    "No change to Vision W1 input/provider semantics, Safety classifier policy, physical-action approval/action task, Bus/UI publication, frontend rendering, Companion, dataset, or sensor behavior.",
+    "No event sourcing, graph database, separate review table, newest-wins conflict collapse, batch confirmation, delete/reset endpoint, background worker, or public model prompt endpoint.",
+    "No raw provider response, hidden reasoning, UI/chat, timeline replay, local path, credential, or mutable authorization snapshot in records or agent context."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/plant_state/",
+      "backend/app/agent_runtime/providers.py",
+      "backend/app/api/plant_state.py",
+      "backend/app/api/__init__.py",
+      "backend/app/main.py",
+      "backend/migrations/versions/ft009_plant_state.py",
+      "tests/backend/plant_state/",
+      "tests/backend/api/test_ft009_plant_state_routes.py",
+      "tests/backend/access_admin/test_ft002_schema_migration.py",
+      "tests/backend/photo_intake/test_ft005_migration_models.py",
+      "tests/backend/plant_operations/test_ft004_migration_models.py",
+      "tests/backend/test_foundation_database_contract.py",
+      ".protocols/TASK-035-T3-FT-009-W2/",
+      ".tasks/TASK-035-T3-FT-009-W2/",
+      ".memory-bank/tasks/TASK-035-T3-FT-009-W2.task.json"
+    ],
+    "forbidden_scope": [
+      "TASK-034 lifecycle/evidence or Vision request/media/provider contract changes",
+      "Safety classifier/action approval/task, Bus/UI publication, frontend, Companion, dataset, sensor, or automated actuation implementation",
+      "public prompt/model API, background worker/outbox/event sourcing/graph store, or provider history/raw response persistence",
+      "secrets, auth/session material, local paths, photo bytes, raw chat/UI, timeline replay, provider payloads, prompts, or hidden reasoning"
+    ],
+    "stop_conditions": [
+      "Correctness would require persisting a pending/unclassified/mismatched model handoff or treating model confidence as confirmation authority.",
+      "The classified persistence and current active-Plant authorization checks cannot share one transaction boundary.",
+      "Conflict correctness would require silently selecting a winner or changing the global Plant State/Safety authority rules.",
+      "The Plant State product-agent smoke would require fake/canned/fallback/skipped/unaudited output or exposing provider/auth data.",
+      "Browser visibility would require inventing the absent FT-016 frontend rather than preserving the exact HTTP handoff."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-009-vision-observation-plant-state-trust.md",
+    ".memory-bank/behavior-specs/FT-009-BHV-002-classified-trust-mapping.behavior.json",
+    ".memory-bank/behavior-specs/FT-009-BHV-003-conflict-human-promotion.behavior.json",
+    ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json",
+    ".memory-bank/tasks/plans/IMPL-FT-009.md",
+    ".protocols/FT-009/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/plant-state-observations.md",
+    ".memory-bank/contracts/plant-state-runtime.md",
+    ".memory-bank/contracts/plant-state-http.md",
+    ".memory-bank/contracts/vision-observation-runtime.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/vision-observation-plant-state.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Persist only matching handoffs whose canonical SafetyClassificationResultV1 has classification=safe_information and the same message_id, under a fresh active-Plant write guard; duplicate identical message ids are idempotent and conflicting duplicates write nothing.",
+    "Implement exact record-kind field checks, trust mapping, structural assessment validation, conflict transitions, optimistic review versioning, and retained-history rules from the canonical data spec.",
+    "Expose only the exact protected list/review HTTP shapes; clients cannot submit trust, evidence, agent, provider, confirmation, or Safety fields."
+  ],
+  "invariants": [
+    "PostgreSQL is mutable Plant trust authority; photo files, MessageEnvelope, Timeline, Bus, UI, raw model output, and model confidence are not.",
+    "Agent-created observations/assessments never start confirmed; conflict stays visible until explicit authorized resolution and promotion.",
+    "Confirmation changes Plant trust only and never grants Safety approval, creates a task/action, publishes Bus/UI, or authorizes actuation.",
+    "Archived Plants retain trust history but deny invocation, persistence, review, and state advance; restore never replays prior work."
+  ],
+  "verification_targets": [
+    ".venv/bin/python -m pytest tests/backend/plant_state tests/backend/api/test_ft009_plant_state_routes.py -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime tests/backend/vision_observation tests/backend/plant_state tests/backend/api/test_ft009_plant_state_routes.py -m \"not real_model\" -q",
+    "AGENT_REAL_PLANT_STATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/plant_state/test_real_plant_state_smoke.py -m real_model -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    "Trace FT-009-BHV-002 and BHV-003 through classified-only creation, confidence boundary, explicit conflict, review authorization/versioning, and zero Safety/task/action effect."
+  ]
+}

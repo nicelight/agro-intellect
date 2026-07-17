@@ -17,6 +17,11 @@ source_of_truth:
 - [Photo Artifacts](photo-artifacts.md): local artifact authority, catalog, layout, and capture manifests.
 - [Plant History](plant-history.md): Plant card/history projections, retained-history access, and timeline-ref authority boundaries.
 - [Agent Chat And UI Feed Storage](agent-chat-ui-feed-storage.md): Bus/UI PostgreSQL authority, atomic publication, and introduction reconciliation.
+- [Plant State Observations](plant-state-observations.md): visual/state
+  observations, assessments, conflicts, and explicit human promotion.
+- [Safety Action Routing](safety-action-routing.md): immutable classification,
+  physical-action Safety decision, approval-input evidence, and pending
+  proposal persistence.
 
 ## Subject data specs
 

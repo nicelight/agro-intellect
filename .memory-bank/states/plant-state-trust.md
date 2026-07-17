@@ -2,7 +2,7 @@
 description: Global Plant state trust and promotion boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-06-30
+last_updated: 2026-07-15
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -33,6 +33,10 @@ and UI labels belong to feature-level SDD design.
     defines observation/hypothesis output boundary.
   - [.memory-bank/states/safety-action-lifecycle.md](safety-action-lifecycle.md):
     defines physical-action routing after Plant state evidence is evaluated.
+  - [.memory-bank/contracts/vision-observation-runtime.md](../contracts/vision-observation-runtime.md):
+    defines the exact authorized real-photo model boundary.
+  - [.memory-bank/domains/plant-state-observations.md](../domains/plant-state-observations.md):
+    defines exact PostgreSQL records, trust mapping, conflicts, and promotion.
 
 ## Trust Shape
 

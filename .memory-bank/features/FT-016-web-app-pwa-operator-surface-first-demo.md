@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-016
 epic: EP-006
 lifecycle: planned
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -22,6 +22,8 @@ source_of_truth:
 
 ## Acceptance Criteria
 
+- Frontend implementation uses Svelte 5 Runes with TypeScript and SvelteKit;
+  alternative or mixed-framework implementations do not satisfy FT-016.
 - First demo includes Boss and at least one Engineer path on `tomato_001`.
 - First demo includes Plant selector access checks, daily check-in, photo upload with file/catalog/sha256/manifest refs, manual pH/EC, real model-backed product agents, real vision processing, Plant State trust statuses, Hydroponics Advisor missing-data behavior, Task & Follow-up behavior, Safety Gate behavior, Companion HumanAttentionNeeded/proposal/decision path, dataset fields, timeline audit/export, and local storage prompt.
 - UI remains role-aware and presentation-only where applicable.
@@ -65,9 +67,9 @@ source_of_truth:
 
 ## SDD Design Gate
 
-- Global/shared status: complete; AD-004, MessageEnvelope, UI Feed, Agent Chat
-  Bus, and Safety Action Lifecycle define opaque candidate data, literal
-  presentation, no instruction-channel promotion, and unchanged authority
-  boundaries.
+- Global/shared status: complete; AD-004 and AD-009, MessageEnvelope, UI Feed,
+  Agent Chat Bus, Safety Action Lifecycle, and the Svelte 5 project rules define
+  the SvelteKit/PWA stack, opaque candidate data, literal presentation, no
+  instruction-channel promotion, and unchanged authority boundaries.
 - Feature-local status: pending `/prd-to-tasks FT-016` for concrete component,
   route/view, and e2e mechanics.

@@ -1,0 +1,23 @@
+{
+  "id": "FT-011-BHV-001",
+  "feature_id": "FT-011",
+  "title": "Supported manual action reaches only pending human approval",
+  "given": {
+    "plant": "active",
+    "actor": "current Boss or Engineer with plant_approve_actions",
+    "message_envelope": "validated pending recommendation for manual nutrient addition",
+    "ph_and_ec": "both fresh for approval_input within 2 hours"
+  },
+  "when": {
+    "model_candidate": "physical_action/ec_adjustment",
+    "backend_action": "validate, persist classification, and evaluate Safety"
+  },
+  "then": {
+    "classification_authority": "project-owned persisted physical_action",
+    "safety_status": "pending_human_approval",
+    "proposal_text": "project-owned non-imperative summary only",
+    "expiry": "minimum of pH and EC measured_at plus 2 hours",
+    "raw_candidate_visible": false,
+    "approval_or_action_task_created": false
+  }
+}

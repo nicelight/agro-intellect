@@ -1,0 +1,190 @@
+{
+  "id": "TASK-038-T3-FT-011-W2",
+  "title": "Implement physical-action Safety decision and pending proposal routing",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-011",
+  "reqs": [
+    "REQ-003",
+    "REQ-004",
+    "REQ-008",
+    "REQ-013",
+    "REQ-014",
+    "REQ-015",
+    "REQ-018"
+  ],
+  "depends_on": [
+    "TASK-037-T3-FT-011-W1"
+  ],
+  "touched_files": [
+    "backend/app/safety_gate/",
+    "backend/app/plant_operations/repository.py",
+    "backend/app/plant_operations/service.py",
+    "backend/app/agent_chat/contracts.py",
+    "backend/app/agent_chat/models.py",
+    "backend/app/agent_chat/repository.py",
+    "backend/app/agent_chat/publication.py",
+    "backend/app/api/feed.py",
+    "backend/app/main.py",
+    "backend/migrations/versions/*_ft011_safety_action_decisions.py",
+    "tests/backend/safety_gate/test_action_routing.py",
+    "tests/backend/safety_gate/test_migration_models.py",
+    "tests/backend/agent_chat/",
+    "tests/backend/api/test_ft008_feed_routes.py",
+    "tests/backend/plant_operations/test_ft004_service.py",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/photo_intake/test_ft005_migration_models.py",
+    "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/test_foundation_database_contract.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "safety_action_and_ui_slice",
+      "command": ".venv/bin/python -m pytest tests/backend/safety_gate/test_action_routing.py tests/backend/safety_gate/test_migration_models.py tests/backend/agent_chat/test_ft008_guarded_publication.py tests/backend/api/test_ft008_feed_routes.py -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "safety_aggregate_regression",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/agent_chat tests/backend/hydroponics_advisor tests/backend/safety_gate -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "migration_head_compatibility",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+      "required": true
+    },
+    {
+      "name": "full_deterministic_regression",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-011-safety-gate-physical-action-routing.md",
+    ".memory-bank/domains/safety-action-routing.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/testing/safety-gate.md",
+    ".memory-bank/tasks/plans/IMPL-FT-011.md"
+  ],
+  "evidence_required": [
+    "Focused PostgreSQL Safety action and migration/model test results.",
+    "Role, freshness, expiry, unsupported-action, and archive-race matrix evidence.",
+    "Atomic decision/UI duplicate/conflict and rollback evidence.",
+    "Feed response evidence showing strict project-owned safety_status data, no candidate text, and both agent flags false.",
+    "Regression evidence that existing FT-004, FT-007, FT-008, and FT-010 contracts remain valid."
+  ],
+  "purpose": "Route persisted project-owned classifications through current authorization, exact physical-action support, two-hour approval evidence, and immutable Safety decision/UI projection boundaries without entering FT-012 human-decision state.",
+  "success_outcome": "Every persisted class selects only its allowed guarded route; supported human ph_adjustment, ec_adjustment, or solution_change reaches immutable pending_human_approval only for a current authorized approver with both pH and EC fresh within 2 hours, unsupported/unauthorized/stale cases produce the exact non-imperative blocked or evidence-needed decision/UI status, retries and archive races fail safely, and no raw candidate, approval, action_task, Timeline/Bus physical text, device command, or automated effect is created.",
+  "anti_goals": [
+    "Do not implement FT-012 approve/reject HTTP, Approval, action_task, completion, follow-up, or outcome records.",
+    "Do not add a new FT-011 public endpoint, frontend component, Timeline event, physical-action Bus payload, or automated actuator integration.",
+    "Do not calculate target pH/EC, quantities, dosing recipes, schedules, or agronomic execution instructions.",
+    "Do not reuse FT-010 analysis freshness for approval."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/safety_gate/",
+      "backend/app/plant_operations/repository.py",
+      "backend/app/plant_operations/service.py",
+      "backend/app/agent_chat/contracts.py",
+      "backend/app/agent_chat/models.py",
+      "backend/app/agent_chat/repository.py",
+      "backend/app/agent_chat/publication.py",
+      "backend/app/api/feed.py",
+      "backend/app/main.py",
+      "backend/migrations/versions/",
+      "tests/backend/safety_gate/",
+      "tests/backend/agent_chat/",
+      "tests/backend/api/test_ft008_feed_routes.py",
+      "tests/backend/plant_operations/test_ft004_service.py",
+      "tests/backend/access_admin/test_ft002_schema_migration.py",
+      "tests/backend/photo_intake/test_ft005_migration_models.py",
+      "tests/backend/plant_operations/test_ft004_migration_models.py",
+      "tests/backend/test_foundation_database_contract.py",
+      ".memory-bank/features/FT-011-safety-gate-physical-action-routing.md",
+      ".memory-bank/domains/safety-action-routing.md",
+      ".memory-bank/contracts/ui-feed.md",
+      ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+      ".memory-bank/contracts/plant-feed-http.md",
+      ".memory-bank/testing/safety-gate.md",
+      ".memory-bank/tasks/TASK-038-T3-FT-011-W2.task.json",
+      ".protocols/TASK-038-T3-FT-011-W2/",
+      ".tasks/TASK-038-T3-FT-011-W2/"
+    ],
+    "forbidden_scope": [
+      "Frontend/PWA implementation.",
+      "FT-012-owned approval/task/follow-up/outcome modules or schemas.",
+      "Agent Chat Bus publication of physical-action candidate text.",
+      "Automated device commands, dosing, pumps, lights, or other actuator integrations."
+    ],
+    "stop_conditions": [
+      "Current Plant Operations cannot provide authoritative latest pH/EC reads inside the Safety decision transaction without changing its public contract materially.",
+      "The existing UI Feed/feed API union cannot be extended additively without invalidating stored FT-008 rows.",
+      "Implementation requires exposing raw candidate wording, adding approval controls, or entering FT-012 lifecycle states.",
+      "The current migration head or existing uncommitted work makes a safe additive decision/UI migration ambiguous."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-011-safety-gate-physical-action-routing.md",
+    ".memory-bank/epics/EP-004-safety-tasks-follow-up.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md",
+    ".memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md",
+    ".memory-bank/behavior-specs/FT-011-BHV-001-supported-manual-action.behavior.json",
+    ".memory-bank/behavior-specs/FT-011-BHV-002-device-action-blocked.behavior.json",
+    ".memory-bank/behavior-specs/FT-011-BHV-003-stale-approval-input.behavior.json",
+    ".protocols/FT-011/decision-log.md",
+    ".memory-bank/tasks/plans/IMPL-FT-011.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/safety-action-routing.md",
+    ".memory-bank/contracts/safety-gate-runtime.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/testing/safety-gate.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "The supported action set is exactly ph_adjustment, ec_adjustment, and solution_change; all seven other physical kinds are unsupported.",
+    "Manual nutrient addition/top-up is ec_adjustment; dosing_command always means an unsupported device command.",
+    "Supported actions require current approve_action authority and independently fresh PostgreSQL pH and EC under approval_input=2h in the decision transaction.",
+    "A pending decision expires at the minimum of the selected pH and EC measured_at plus 2 hours and is not reusable approval authority.",
+    "Decision and safety_status UI rows commit atomically; the projection contains only exact project-owned non-imperative data and no candidate text.",
+    "No dedicated Timeline event or new public HTTP endpoint is introduced."
+  ],
+  "invariants": [
+    "Fresh pH/EC and current actor permission are necessary but never human approval or action execution.",
+    "Consultant never reaches pending_human_approval; Engineer requires the current active grant flag and Boss still passes current Safety guards.",
+    "Physical-action candidate text never enters Agent Chat Bus, UI projection, instructions, commands, or task/action authority.",
+    "Archive preserves committed rows unchanged, blocks every new effect, and restore never replays or refreshes the decision.",
+    "FT-011 ends at pending_human_approval and cannot create Approval, action_task, follow-up, outcome, or device effects."
+  ],
+  "verification_targets": [
+    "PostgreSQL migration/model tests prove exact decision fields, enums, FKs, uniqueness, UI constraints, and the current product migration head; all existing exact-head regression assertions advance from the W1 classification revision to the W2 action-decision revision.",
+    "Service tests cover all supported and unsupported kinds, Boss/Engineer/Consultant authority, missing/revoked grants, and manual EC versus device dosing semantics.",
+    "Freshness tests cover independent pH/EC missing, stale, future, exact two-hour boundary, same-row deduplication, and expiry while proving the 24-hour analysis window is not used.",
+    "Decision/UI transaction tests prove atomic commit/rollback, identical duplicate, conflicting retry, exact safe payloads, candidate absence, and both agent flags false.",
+    "Archive/revoke races write no new decision/projection; restore performs no replay and a new message request is required.",
+    "Regression tests prove safe-information/block routes remain guarded, physical text never enters Bus, existing feed variants remain valid, and no approval/task/Timeline/device effect exists."
+  ]
+}

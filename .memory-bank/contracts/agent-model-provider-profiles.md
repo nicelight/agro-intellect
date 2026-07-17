@@ -2,7 +2,7 @@
 description: Explicit Agent Runtime provider profiles, deploy-time model binding, credential boundary, and external-egress rules.
 status: active
 type: interface_contract
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -120,16 +120,28 @@ responses, credential-bearing endpoints, and raw SDK objects are forbidden.
 ## External-egress payload
 
 The owner permits external processing, but the provider receives exactly one
-strict `ProviderRequestV1` from the Agent Runtime contract: project-owned
-definition/schema instructions, ordered `AgentInputRecordV1` records, and the
-ordered internally derived safe refs. No adjacent executor argument or hidden
-metadata may add business/context fields.
+registered strict request for the invoked competence: generic
+`ProviderRequestV1`, FT-009 `VisionProviderRequestV1` plus its single in-memory
+media attachment, FT-009 `PlantStateProviderRequestV1`, or FT-010
+`HydroponicsAdvisorProviderRequestV1`, or FT-011
+`SafetyGateProviderRequestV1`. Every request keeps project-owned
+definition/schema instructions and its exact subject allowlist. No adjacent
+executor argument or hidden metadata may add business/context fields beyond
+the explicit Vision media value.
 
 It must not receive ActorContext, session/account/membership objects, tokens,
 cookies, headers, provider credentials, UI Feed, raw chat, admin notices,
 timeline replay, provider history, hidden reasoning, unapproved governance
-content, or local absolute paths. Photo data remains excluded until FT-009
-defines its authorized vision-specific typed boundary.
+content, or local absolute paths. Photo data remains excluded from generic
+`ProviderRequestV1`. FT-009 permits one catalog-authorized, freshly verified
+in-memory image only through `vision-observation-runtime.md`; version 1
+requires the existing `gemini` profile and fails closed for other profiles
+without fallback. FT-010 permits only the PostgreSQL-derived request from
+`hydroponics-advisor-runtime.md`; project-computed freshness is policy metadata,
+not model-selected evidence or reusable authorization. FT-011 permits only the
+five-field pending-message candidate from `safety-gate-runtime.md`; Farm/Plant,
+ActorContext, source refs, evidence, approval state, and downstream routes stay
+outside provider egress.
 
 Provider request/response bodies are never persisted. Sanitized audit may
 record only fields allowed by the Timeline Event contract.
@@ -180,6 +192,9 @@ Tests must prove:
 - outbound object graphs contain only the typed allowlist;
 - outbound-spy snapshots match the exact `ProviderRequestV1` shape and record
   order, and prove authorization/ActorContext/session/role/grant data is absent;
+- competence-specific outbound snapshots match the registered Vision, Plant
+  State, Hydroponics Advisor, and Safety Gate request allowlists without
+  widening generic `ProviderRequestV1`;
 - logs, timeline, pytest output, and task evidence contain no credentials or
   raw provider payload;
 - an explicitly enabled DeepSeek or Gemini smoke invokes exactly one real

@@ -1,7 +1,7 @@
 ---
 description: Router for active testing strategy and subject verification specifications.
 status: active
-last_updated: 2026-07-11
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/testing/strategy.md
@@ -35,6 +35,14 @@ source_of_truth:
   audit, and archive-race evidence.
 - [Agent Chat Bus And UI Feed Verification](agent-chat-ui-feed.md): durable
   introductions, guarded publication, context hygiene, and Plant feed API.
+- [Vision Observation And Plant State Verification](vision-observation-plant-state.md):
+  real image input, provider anti-cheat, trust persistence, conflict, review,
+  and Plant state HTTP evidence.
+- [Hydroponics Advisor Verification](hydroponics-advisor.md): pH/EC freshness,
+  missing-data policy, real-model execution, and pending Safety/task handoff.
+- [Safety Gate Verification](safety-gate.md): real model-backed classification,
+  immutable Safety decisions, 2-hour approval input, UI projection, and
+  concurrency/archive guards.
 
 ## Archive
 

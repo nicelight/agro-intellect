@@ -2,7 +2,7 @@
 description: Local configuration and credentialed smoke runbook for Agent Runtime provider profiles.
 status: active
 type: runbook
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/contracts/agent-model-provider-profiles.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -96,6 +96,71 @@ evidence must not claim them.
 node scripts/mb-lint.mjs
 git diff --check
 ```
+
+## FT-009 product-agent smokes
+
+FT-009 uses canonical production definitions rather than the isolated FT-007
+transport definition. Configure `AGENT_MODEL_BINDINGS_JSON` with:
+
+- `vision_observation`: `provider_profile=gemini` and an explicit
+  image-capable model id;
+- `plant_state`: an explicit `deepseek` or `gemini` model id.
+
+Enable egress and supply only the matching credential. Then run:
+
+```bash
+AGENT_REAL_VISION_SMOKE=1 .venv/bin/python -m pytest tests/backend/vision_observation/test_real_vision_smoke.py -m real_model -q
+AGENT_REAL_PLANT_STATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/plant_state/test_real_plant_state_smoke.py -m real_model -q
+```
+
+The vision smoke must accept the committed fixture through production photo
+intake and send the freshly verified bytes, not a URL/path/canned description.
+Both smokes fail when explicitly requested but skipped, faked, unconfigured,
+unaudited, blocked, provider-failed, `clarify`, or model-silent for the
+committed fixtures. The vision fixture must return `runtime_decision=speak`
+with one pending envelope and one matching state candidate.
+Record only safe model/outcome/event refs; never record photo bytes, prompts,
+raw responses, or credentials.
+
+## FT-010 product-agent smoke
+
+Configure the canonical `hydroponics_advisor` binding with one explicit
+DeepSeek or Gemini model id, enable egress, and supply only the matching
+credential. Seed the smoke Plant through production PostgreSQL paths with the
+specified missing/stale pH/EC fixture and run:
+
+```bash
+AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q
+```
+
+The smoke must make exactly one real provider call and return audited
+`envelope_ready` with the exact project-validated measurement set and pending
+`task_request` MessageEnvelope. Recommendation, hypothesis, clarification,
+silence, skip/xfail, fake executor, fallback, unconfigured/blocked/failed/
+audit-failed result, or any direct task/Safety/Bus/UI/state effect fails the
+fixture. Record only safe model/outcome/event refs and the expected project-
+owned request phrase; never record prompts, raw responses, credentials, auth
+state, or hidden reasoning.
+
+## FT-011 Safety Gate product-agent smoke
+
+Configure the canonical `safety_gate` binding with one explicit DeepSeek or
+Gemini model id, enable egress, and supply only the matching credential. Seed a
+validated pending MessageEnvelope containing one unambiguous manual
+solution-related action and run:
+
+```bash
+AGENT_REAL_SAFETY_GATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/safety_gate/test_real_safety_gate_smoke.py -m real_model -q
+```
+
+The smoke must make exactly one real provider call over the strict
+`SafetyGateProviderRequestV1`, return the expected closed model candidate, and
+persist the matching project-owned classification. It must not send
+Farm/Plant/auth/evidence data to the provider or create approval, task, Bus,
+Timeline, or action effects. Skip/xfail, fake executor, fallback,
+unconfigured/provider-failed/output-invalid/guard-denied/persistence-failed
+outcome, unexpected class/kind, or direct action effect fails the fixture.
+Record only the safe model ref and classification record/result refs.
 
 ## Troubleshooting
 

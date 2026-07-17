@@ -5,11 +5,28 @@ type: feature
 feature_id: FT-011
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/contracts/safety-gate-runtime.md
+  - .memory-bank/domains/safety-action-routing.md
+  - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/contracts/agent-model-provider-profiles.md
+  - .memory-bank/contracts/agent-roster-bootstrap.md
+  - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/plant-operations.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/states/plants/plant-and-access-lifecycle.md
+  - .memory-bank/contracts/agent-chat-bus.md
+  - .memory-bank/contracts/ui-feed.md
+  - .memory-bank/domains/agent-chat-ui-feed-storage.md
+  - .memory-bank/contracts/plant-feed-http.md
+  - .memory-bank/testing/safety-gate.md
 ---
 # FT-011 Safety Gate Physical-Action Routing
 
@@ -34,6 +51,10 @@ source_of_truth:
   class; semantic physical-action/uncertainty handling and every existing
   Safety/current-guard rule remain unchanged.
 - Safety Gate approval is distinct from Companion governance approval.
+- The MVP approval route supports only human-performed pH adjustment, EC
+  adjustment (including manual nutrient addition/top-up), and complete solution
+  change; every supported kind requires both pH and EC fresh within the
+  existing two-hour approval-input window.
 - Boss may approve for Farm Plants only after Safety Gate rules pass.
 - Engineer may approve only with `plant_approve_actions` for that Plant.
 - Consultant never approves physical actions in MVP.
@@ -45,7 +66,9 @@ source_of_truth:
 - Governance DecisionRecord cannot be treated as Safety Gate approval.
 - Superseded CompanionProposal cannot unlock action flow.
 - Safety Gate cannot authorize automated actuation.
-- High-risk non-pH/EC actions require later exact freshness/action taxonomy in specs.
+- Pump/light/device-dosing commands, pruning, transplanting, root trimming, and
+  other physical actions remain explicitly unsupported and cannot reach
+  approval.
 - Archive leaves open safety/approval records unchanged and non-operative;
   restore requires current authorization, record-version, evidence freshness,
   and Safety Gate checks.
@@ -54,7 +77,7 @@ source_of_truth:
 
 - Unit: exact shared classification matrix, adversarial model-label bypass, and
   fail-closed policy, including prompt-like candidate data that cannot override
-  classifier results; feature design later adds the domain action taxonomy.
+  classifier results, plus the linked exact domain action taxonomy.
 - Integration: stale/missing data and missing authority block approval path.
 - Integration: archive blocks an already-open approval without mutating it;
   restore cannot bypass current freshness, replay, or authority checks.
@@ -71,8 +94,14 @@ source_of_truth:
 
 ## Feature-Local Design Pressure
 
-- Exact action taxonomy, freshness rules, Safety Gate decision contract,
-  approval routing, replay/stale handling, and tests.
+- Resolved by the linked Safety Gate Runtime, Safety Action Routing, UI Feed,
+  and Safety Gate Verification subject specs.
+
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-011-BHV-001-supported-manual-action.behavior.json`
+- `.memory-bank/behavior-specs/FT-011-BHV-002-device-action-blocked.behavior.json`
+- `.memory-bank/behavior-specs/FT-011-BHV-003-stale-approval-input.behavior.json`
 
 ## SDD Design Gate
 
@@ -80,5 +109,9 @@ source_of_truth:
   matrix, opaque untrusted candidate semantics, archived approval behavior, and
   restore revalidation are defined by `AD-008`, Plant lifecycle, and Safety
   Action Lifecycle.
-- Feature-local status: pending `/prd-to-tasks FT-011` for exact taxonomy,
-  freshness, decision, route, replay, and error contracts.
+- Feature-local status: complete. The canonical design defines the real
+  model-backed candidate, backend-owned durable classification, exact supported
+  and unsupported action kinds, independent `approval_input=2h` evidence,
+  immutable decision/proposal rows, safe feed projection, replay/concurrency
+  behavior, and executable verification. FT-011 stops at
+  `pending_human_approval`; FT-012 owns every later human decision and task.

@@ -1,0 +1,18 @@
+{
+  "id": "FT-010-BHV-003",
+  "feature_id": "FT-010",
+  "title": "Archive or revoke during model execution blocks the advisor handoff",
+  "given": {
+    "invocation_started": true,
+    "initial_scope": "authorized active Plant"
+  },
+  "when": {
+    "current_scope_before_handoff": "archived Plant or revoked access"
+  },
+  "then": {
+    "runtime_outcome": "publication_guard_denied",
+    "message_envelope": null,
+    "direct_effects": [],
+    "replay_after_restore": false
+  }
+}

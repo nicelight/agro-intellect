@@ -2,7 +2,7 @@
 description: Global Companion governance lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-07-06
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -70,6 +70,31 @@ Decision records must include:
 - `decided_at`
 - `source_refs`
 - `safety_gate_authority=not_granted`
+
+## Shared Bus And UI Projection Boundary
+
+- Human-facing `HumanAttentionNeeded`, `CompanionProposal`, and
+  `DecisionRecord` projections use the single `companion_governance` UI Feed
+  route and its strict attention/proposal/decision payload variants.
+- No `HumanAttentionNeeded` or `CompanionProposal` record enters Agent Chat
+  Bus, regardless of proposal state. Raw proposal text, rationale, raw chat,
+  and UI content are always excluded.
+- Only a valid projectable `DecisionRecord` may publish the existing Bus
+  `domain_event_ref` with `record_type=decision_record`. The Bus stores a
+  reference, and the context builder loads only the compact approved governance
+  summary from authoritative FT-013 storage.
+- Every loaded summary preserves `safety_gate_authority=not_granted`; neither
+  Bus nor UI projection creates governance, Plant-state, task, or Safety
+  authority.
+- Projection writes require the same current active-Plant and authorization
+  guards as their owning governance command. Archive blocks new projections
+  and restore never replays them automatically.
+
+Exact shared envelope variants live in
+[.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md) and
+[.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md). Exact FT-013
+record fields, summary bounds, transition idempotency, and workflow-effect
+catalog remain feature-local design.
 
 ## Rules
 

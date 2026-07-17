@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -17,6 +17,7 @@ source_of_truth:
   - .memory-bank/states/safety-action-lifecycle.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
   - .memory-bank/states/dataset-governance.md
+  - .agents/rules/svelte5.md
 ---
 # System Architecture
 
@@ -41,6 +42,8 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - UI Feed, raw chat, raw model reasoning, admin notices, and unapproved Companion proposals never become agent working context.
 - Safety Gate and authorized human approval are required before physical-action wording can become a human-performed action task.
 - MVP data remains local/private by default with `local_only` sync status.
+- Operator frontend uses Svelte 5 with SvelteKit as the Web App/PWA framework;
+  alternative and mixed frontend stacks are outside the active MVP design.
 
 ## Non-Goals
 
@@ -129,7 +132,10 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   Companion content from making data trainable by implication.
 - Rule: dataset candidates are non-trainable by default; any future
   trainability transition must be explicit, evidence-referenced, Plant-scoped,
-  and owned by dataset governance.
+  and owned by dataset governance. `candidate_status` is the sole lifecycle;
+  `candidate_origin` and `quality_tier` are separate, and `can_train_on` is
+  derived rather than caller- or agent-writable. Photo Intake's immutable false
+  flag is only a source assertion, not a second trainability authority.
 - Verification: tests prove new candidates default to `can_train_on=false`,
   evidence refs are required, unauthorized context is excluded, and no MVP path
   performs fine-tuning or server upload.
@@ -179,12 +185,26 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md),
   [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md).
 
+#### AD-009 - Operator frontend uses Svelte 5 and SvelteKit
+- Binds: FT-016, the Operator PWA module, every frontend component, route,
+  browser integration, and frontend verification task.
+- Prevents: introducing a competing or mixed frontend framework, or drafting
+  FT-016 against a stack that conflicts with the project frontend rules.
+- Rule: the MVP frontend scaffold uses Svelte 5 with Runes, TypeScript, and
+  SvelteKit; PWA behavior is implemented only within that stack.
+- Verification: the selected SvelteKit versions and configuration are recorded
+  in the future FT-016 scaffold, `npm run check` passes, applicable builds and
+  browser/e2e checks pass, and no competing frontend dependency is introduced.
+- Source: explicit owner decision,
+  [Svelte 5 project rules](../../.agents/rules/svelte5.md), and
+  [.memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md](../features/FT-016-web-app-pwa-operator-surface-first-demo.md).
+
 ## Architecture Style
 
 Use a local modular monolith:
 
 - Backend: Python/FastAPI with Pydantic-style schema validation.
-- Frontend: role-aware Web App/PWA.
+- Frontend: Svelte 5 + SvelteKit role-aware Web App/PWA.
 - Runtime state: PostgreSQL/read model.
 - Local artifacts: filesystem photo originals/derived files and manifests.
 - Audit/export: append-only JSONL timeline.

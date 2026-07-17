@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 ---
 # PRD
 
@@ -190,7 +190,8 @@ from first demo.
 ## Integrations / Dependencies
 
 - Backend: Python, FastAPI, Pydantic/schema validation, PostgreSQL/read model, local filesystem for photos/artifacts, JSONL timeline export.
-- Frontend: Web App/PWA with role-aware UI, Plant selector, chat/feed surface, task/approval cards, and minimal Boss Admin Surface.
+- Frontend: Svelte 5/SvelteKit Web App/PWA with role-aware UI, Plant selector,
+  chat/feed surface, task/approval cards, and minimal Boss Admin Surface.
 - AI runtime: Agno SDK as execution layer only, real LLM-backed product agents, real vision-capable model or real vision model integration for photos, and project-owned domain adapters.
 - Model provider profiles: DeepSeek and Gemini native adapters plus a
   fail-closed `chatgpt_oauth` profile behind a future project-approved

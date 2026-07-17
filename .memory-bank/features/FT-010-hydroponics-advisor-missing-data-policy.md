@@ -5,7 +5,18 @@ type: feature
 feature_id: FT-010
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-06-26
+last_updated: 2026-07-17
+spec_design_status: complete
+spec_design_links:
+  - .memory-bank/contracts/hydroponics-advisor-runtime.md
+  - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/contracts/agent-model-provider-profiles.md
+  - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/domains/plant-operations.md
+  - .memory-bank/domains/plant-state-observations.md
+  - .memory-bank/states/plant-state-trust.md
+  - .memory-bank/states/safety-action-lifecycle.md
+  - .memory-bank/testing/hydroponics-advisor.md
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -52,3 +63,20 @@ source_of_truth:
 
 - Exact advisor inputs, freshness policy, output contract, missing-data task
   handoff, Safety Gate handoff, and tests.
+
+## Behavior specs
+
+- `.memory-bank/behavior-specs/FT-010-BHV-001-missing-stale-measurements.behavior.json`
+- `.memory-bank/behavior-specs/FT-010-BHV-002-fresh-evidence-pending-safety.behavior.json`
+- `.memory-bank/behavior-specs/FT-010-BHV-003-current-authority-race.behavior.json`
+
+## SDD Design Gate
+
+- Feature-local status: complete. The canonical advisor runtime fixes the
+  authorized input, independent 24-hour pH/EC freshness policy, strict result
+  matrix, project-owned measurement-request wording, real-provider acceptance,
+  and pending MessageEnvelope handoff.
+- No new storage or public HTTP contract is required: FT-010 reads current
+  PostgreSQL authority and returns the existing transient envelope outcome.
+- Safety classification, ordinary task persistence, action approval, and
+  browser composition remain owned by FT-011, FT-012, and FT-016 respectively.

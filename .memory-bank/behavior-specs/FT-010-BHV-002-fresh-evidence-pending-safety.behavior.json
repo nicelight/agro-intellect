@@ -1,0 +1,19 @@
+{
+  "id": "FT-010-BHV-002",
+  "feature_id": "FT-010",
+  "title": "Fresh evidence does not bypass pending Safety classification",
+  "given": {
+    "plant": "active and authorized",
+    "ph": "fresh_for_analysis",
+    "ec": "fresh_for_analysis"
+  },
+  "when": {
+    "agent_output": "schema-valid recommendation that implies a physical action"
+  },
+  "then": {
+    "message_state": "pending_classification",
+    "consumable_by_agents": false,
+    "direct_task_or_action": false,
+    "required_downstream_owner": "FT-011"
+  }
+}

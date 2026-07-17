@@ -1,0 +1,145 @@
+---
+description: Implementation plan for FT-010 Hydroponics Advisor missing-data policy and pending handoff.
+status: active
+type: implementation_plan
+feature_id: FT-010
+last_updated: 2026-07-17
+source_of_truth:
+  - .memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md
+  - .memory-bank/contracts/hydroponics-advisor-runtime.md
+  - .memory-bank/testing/hydroponics-advisor.md
+---
+# IMPL FT-010 Hydroponics Advisor Missing Data Policy
+
+## Goal
+
+Run the canonical Hydroponics Advisor over current authorized PostgreSQL Plant
+evidence, enforce the independent 24-hour pH/EC missing-data policy, and return
+only the existing pending MessageEnvelope handoff without inventing evidence
+or gaining Safety/task/action authority.
+
+## Scope
+
+- Add bounded `backend/app/hydroponics_advisor/` command, strict value objects,
+  PostgreSQL assembler, policy validation, definition, service, and tests.
+- Reuse current ActorContext/active-Plant authorization, Plant Operations
+  measurement freshness, classified Plant-state records, explicit provider
+  bindings, post-model guard, sanitized audit, common closed outcome, and
+  pending MessageEnvelope.
+- Register the strict advisor request/result with production provider
+  composition and add deterministic plus credentialed product-agent evidence.
+- Use project-owned concise wording for missing/stale pH/EC measurement
+  requests; keep fresh-evidence model text opaque and pending.
+
+## Non-goals
+
+- No Safety classifier, Safety Gate decision, ordinary/action task storage,
+  approval, follow-up, Bus/UI publication, Plant-state mutation, frontend, or
+  automated device action.
+- No public prompt/model or advisor HTTP endpoint, background worker, outbox,
+  new table/migration, provider history, Agno memory/RAG/tools/Team, or raw
+  response persistence.
+- No sensor ingestion, crop recipes, target ranges, nutrient schedules, dosage
+  formulas, or agronomic rule engine.
+
+## Ordered implementation strategy
+
+1. Implement strict advisor command/request/result values and canonical
+   `hydroponics_advisor` definition.
+2. Assemble current authorized Plant/check-in/pH/EC/Plant-state rows in exact
+   order and compute independent analysis freshness from PostgreSQL.
+3. Enforce the missing-data matrix and project-owned measurement-request
+   mapping before creating the common pending envelope.
+4. Reuse explicit DeepSeek/Gemini composition, post-model current guard, and
+   sanitized Agent Runtime audit with no fallback or new storage.
+5. Add deterministic policy/authorization/privacy regressions and one
+   non-skipped credentialed missing-data product-agent smoke.
+
+## Dependencies
+
+- `TASK-035-T3-FT-009-W2` supplies classified PostgreSQL Plant-state records
+  and is the direct dependency.
+- Through TASK-035, completed FT-004/FT-005/FT-007 work supplies canonical
+  pH/EC freshness, accepted evidence, provider/runtime/envelope seams, and the
+  verified Foundation dependency chain.
+- FT-011 and FT-012 are downstream consumers, not prerequisites: until they
+  exist, every advisor output remains pending and effect-free.
+
+## Expected touched files
+
+- `backend/app/hydroponics_advisor/`
+- `backend/app/agent_runtime/providers.py`
+- `tests/backend/hydroponics_advisor/`
+- focused Agent Runtime, Plant Operations, and Plant State regressions only as
+  necessary to prove compatibility.
+
+## Constitution Check
+
+- Spec Before Code: the exact advisor runtime and verification specs govern the
+  task card.
+- KISS/low maintenance: one read-only internal module, no API, table, worker,
+  outbox, rule engine, or alternate context/provider framework.
+- Authority/safety: PostgreSQL remains evidence authority; model output remains
+  pending; FT-010 creates no task, approval, confirmed state, or action.
+- Bounded autonomy: missing/stale data produces only a safe measurement request
+  candidate; physical-action meaning remains blocked behind project-owned
+  classification and human approval.
+- Blockers: none in planning. TASK-035 completion and provider credentials/
+  model/egress are execution inputs; the real-model outcome cannot be claimed
+  until a non-skipped smoke passes.
+
+## Source Artifacts
+
+- `.memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md`
+- `.memory-bank/epics/EP-003-agent-runtime-context-hygiene.md`
+- `.memory-bank/requirements.md`: REQ-003, REQ-008, REQ-011, REQ-013, REQ-014.
+- FT-010 BHV-001 through BHV-003.
+
+## Normative Inputs
+
+- `.memory-bank/contracts/hydroponics-advisor-runtime.md`
+- `.memory-bank/contracts/agent-runtime-adapter.md`
+- `.memory-bank/contracts/agent-model-provider-profiles.md`
+- `.memory-bank/contracts/agent-roster-bootstrap.md`
+- `.memory-bank/contracts/message-envelope.md`
+- `.memory-bank/contracts/access/actor-context.md`
+- `.memory-bank/domains/plant-operations.md`
+- `.memory-bank/domains/plant-state-observations.md`
+- `.memory-bank/states/plant-state-trust.md`
+- `.memory-bank/states/safety-action-lifecycle.md`
+- `.memory-bank/states/plants/plant-and-access-lifecycle.md`
+- `.memory-bank/testing/hydroponics-advisor.md`
+
+## Constraints and invariants
+
+- Both pH and EC are independently required fresh for analysis under the
+  existing 24-hour closed interval before recommendation/hypothesis/
+  clarification is accepted.
+- Any missing/stale set maps only to the exact project-owned measurement
+  request; the model cannot invent values, refs, task kind, action, or wording.
+- Fresh-evidence candidate text remains opaque and cannot publish or classify
+  itself; source refs include both authoritative measurement inputs.
+- UI Feed, raw chat, Timeline replay, provider history, auth material,
+  credentials, local paths, and hidden reasoning never enter provider input or
+  evidence.
+- Archive/revoke/audit failure after model I/O blocks handoff and restore never
+  replays it.
+
+## Verification Targets
+
+- `.venv/bin/python -m pytest tests/backend/hydroponics_advisor -m "not real_model" -q`
+- `.venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/plant_state tests/backend/hydroponics_advisor -m "not real_model" -q`
+- `AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q`
+- `.venv/bin/python -m pytest tests -m "not real_model" -q`
+- `node scripts/mb-lint.mjs`
+- `git diff --check`
+
+## UAT
+
+Seed one authorized active Plant with the specified missing/stale pH/EC mix,
+invoke the canonical advisor through one explicit DeepSeek or Gemini binding,
+and verify exactly one real call returns an audited pending `task_request`
+MessageEnvelope with the project-computed measurement set and exact safe
+wording. Confirm zero task, Safety, Bus/UI, Plant-state, approval, or action
+effects. Browser composition and actual measurement-task creation follow in
+FT-016 and FT-012.

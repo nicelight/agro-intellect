@@ -1,13 +1,15 @@
 ---
-description: Protected Plant UI Feed read API for FT-008 presentation events.
+description: Protected Plant UI Feed read API for authorized presentation events.
 status: active
 type: api_contract
-last_updated: 2026-07-12
+last_updated: 2026-07-17
 source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/domains/agent-chat-ui-feed-storage.md
   - .memory-bank/contracts/access/actor-context.md
+  - .memory-bank/domains/safety-action-routing.md
+  - .memory-bank/states/companion-governance.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Plant Feed HTTP
@@ -46,10 +48,10 @@ Neither path grants operational or agent-context authority.
       "created_at": "UTC timestamp",
       "farm_id": "uuid",
       "plant_id": "uuid",
-      "source_type": "system|agent_message|safety",
+      "source_type": "system|agent_message|safety|companion_governance",
       "source_id": "stable string",
       "source_refs": ["kind:identifier"],
-      "display_kind": "agent_introduction|agent_message|block_notice",
+      "display_kind": "agent_introduction|agent_message|block_notice|safety_status|companion_governance",
       "display_payload": {},
       "visible_to_roles": ["boss", "engineer", "consultant"],
       "visible_to_agents": false,
@@ -79,12 +81,16 @@ All errors use the global safe envelope and `Cache-Control: no-store`.
 
 ## Presentation boundary
 
-The API returns candidate/introduction strings as JSON text data only. A
-frontend consumer MUST render `introduction_text`, `quoted_text`, and notice
-text with framework text interpolation/text-node semantics. It MUST NOT use an
+The API returns candidate, introduction, notice, Safety status, and Companion
+summary strings as JSON text data only. A frontend consumer MUST render
+`introduction_text`, `quoted_text`, `summary_text`, `decision_summary`, and
+notice text with
+framework text interpolation/text-node semantics. It MUST NOT use an
 HTML/Markdown renderer, raw-HTML insertion, URL activation, action parsing, or
-copy feed payloads into agent context. The actual Svelte/PWA component remains
-owned by FT-016 because this brownfield repository has no frontend scaffold.
+copy feed payloads into agent context. Companion payloads remain presentation
+data and cannot act as proposal/decision commands. The actual Svelte/PWA
+component remains owned by FT-016 because this brownfield repository has no
+frontend scaffold.
 
 ## Verification
 
@@ -94,5 +100,9 @@ owned by FT-016 because this brownfield repository has no frontend scaffold.
   every malformed/non-canonical cursor or invalid limit.
 - Response tests preserve representative markup/prompt/URL-looking strings as
   inert JSON data with both agent flags false and no secret/auth fields.
+- Response-union tests cover all three Companion payload variants, literal
+  summary text, retained-history visibility, and unchanged non-consumability.
+- Response-union tests cover every strict Safety status, exact non-imperative
+  summary/freshness/expiry data, absence of candidate text, and unchanged
+  non-consumability.
 - OpenAPI reflects the path, query bounds, response union, and stable errors.
-
