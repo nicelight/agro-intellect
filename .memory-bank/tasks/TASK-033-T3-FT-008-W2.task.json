@@ -54,7 +54,7 @@
     "Strict value-object tests reject unknown fields, invalid identity/ref/role/flag/payload combinations, unsafe source content, and every candidate-to-control-channel promotion.",
     "A matching safe_information classification plus fresh authorized active-Plant guard atomically writes one quoted Bus event and one literal UI message; duplicate is idempotent and conflict/denial writes zero.",
     "blocked_uncertain creates only the canonical generic non-consumable notice without candidate text; safe_task_request and physical_action create no FT-008 Bus/UI effect.",
-    "Agent context reads require current ActorContext, active Plant, and can_read; exclude UI Feed, raw chat, admin notices, provider/hidden reasoning, unauthorized Plants, archived Plants, and unapproved proposals.",
+    "Bus context reads require current ActorContext, active Plant, and can_read; exclude UI Feed, raw chat, admin notices, provider/hidden reasoning, unauthorized Plants, and archived Plants. Agent-specific provider assemblers own any typed governance input.",
     "Markup/HTML/prompt/instruction/command/URL-looking candidate text remains unchanged inside quoted_text and literal JSON display data but cannot alter routing, consumability, instructions, tools, links, or actions.",
     "GET /api/plants/{plant_id}/feed enforces active or explicit archived retained-history authorization, strict canonical cursor/limit parsing, stable order, no-store, safe errors, exact payload variants, and both agent flags false.",
     "OpenAPI and regression tests prove no frontend visibility check replaces backend authorization and no Bus/UI/timeline row becomes mutable Plant authority.",
@@ -199,7 +199,7 @@
     "Implement the canonical Plant feed order, cursor, limit, error envelope, no-store header, and retained-history authorization without frontend-derived trust."
   ],
   "invariants": [
-    "UI Feed, raw chat/UI, admin notices, spoiler notes, provider history, hidden reasoning, and unapproved proposals never become agent working context.",
+    "UI Feed, raw chat/UI, admin notices, spoiler notes, provider history, and hidden reasoning never become agent working context; registered agent-specific requests may separately load authorized typed governance input as non-authoritative context.",
     "Bus events are working context references/data only; UI events are presentation only; neither replaces PostgreSQL Plant authority or Safety/task authority.",
     "Archived Plant denies agent context and new publication; restore never replays a denied handoff.",
     "Candidate syntax is inert: literal UI text and typed quotation do not create markup, links, actions, instructions, routing, or authority."
@@ -211,6 +211,6 @@
     "node scripts/mb-lint.mjs",
     "git diff --check",
     "Trace FT-008-BHV-003 to adversarial safe-information tests covering unchanged markup/prompt/URL-looking text, typed Bus quotation, literal UI JSON, and no instruction/routing/action effect.",
-    "Run static scans proving UI Feed/raw chat/admin/unapproved/provider/history sources are absent from agent context construction and no frontend/FT-011/FT-012 effect was implemented."
+    "Run static scans proving UI Feed/raw chat/admin/provider/history sources are absent from FT-008 Bus context construction, typed governance input remains owned by agent-specific provider assemblers, and no frontend/FT-011/FT-012 effect was implemented."
   ]
 }

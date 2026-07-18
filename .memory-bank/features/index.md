@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -39,7 +39,7 @@ source_of_truth:
 
 ## EP-005 Companion Governance
 
-- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md): typed governance discussion and decisions.
+- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md): design is complete after removing the blanket approval-status ban and retaining selected open-Issue `summary_text` as typed, non-authoritative Companion input; three reconciled T3 cards await fresh task-plan review.
 
 ## EP-006 Local Privacy And Operator Surface
 

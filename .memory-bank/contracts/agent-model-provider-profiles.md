@@ -2,7 +2,7 @@
 description: Explicit Agent Runtime provider profiles, deploy-time model binding, credential boundary, and external-egress rules.
 status: active
 type: interface_contract
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -125,24 +125,27 @@ registered strict request for the invoked competence: generic
 media attachment, FT-009 `PlantStateProviderRequestV1`, FT-010
 `HydroponicsAdvisorProviderRequestV1`, FT-011
 `SafetyGateProviderRequestV1`, or FT-012
-`TaskFollowUpProviderRequestV1`. Every request keeps project-owned
+`TaskFollowUpProviderRequestV1`, or FT-013
+`CompanionProviderRequestV1`. Every request keeps project-owned
 definition/schema instructions and its exact subject allowlist. No adjacent
 executor argument or hidden metadata may add business/context fields beyond
 the explicit Vision media value.
 
 It must not receive ActorContext, session/account/membership objects, tokens,
 cookies, headers, provider credentials, UI Feed, raw chat, admin notices,
-timeline replay, provider history, hidden reasoning, unapproved governance
-content, or local absolute paths. Photo data remains excluded from generic
-`ProviderRequestV1`. FT-009 permits one catalog-authorized, freshly verified
-in-memory image only through `vision-observation-runtime.md`; version 1
-requires the existing `gemini` profile and fails closed for other profiles
-without fallback. FT-010 permits only the PostgreSQL-derived request from
-`hydroponics-advisor-runtime.md`; project-computed freshness is policy metadata,
-not model-selected evidence or reusable authorization. FT-011 permits only the
-five-field pending-message candidate from `safety-gate-runtime.md`; Farm/Plant,
-ActorContext, source refs, evidence, approval state, and downstream routes stay
-outside provider egress.
+timeline replay, provider history, hidden reasoning, or local absolute paths.
+Governance content is governed by each registered request's exact typed
+allowlist rather than a blanket approval-status prohibition; it remains
+untrusted and grants no domain or publication authority.
+Photo data remains excluded from generic `ProviderRequestV1`. FT-009 permits
+one catalog-authorized, freshly verified in-memory image only through
+`vision-observation-runtime.md`; version 1 requires the existing `gemini`
+profile and fails closed for other profiles without fallback. FT-010 permits
+only the PostgreSQL-derived request from `hydroponics-advisor-runtime.md`;
+project-computed freshness is policy metadata, not model-selected evidence or
+reusable authorization. FT-011 permits only the five-field pending-message
+candidate from `safety-gate-runtime.md`; Farm/Plant, ActorContext, source refs,
+evidence, approval state, and downstream routes stay outside provider egress.
 
 FT-012 permits only the strict task/outcome/evidence record union from
 `task-follow-up-runtime.md`. Task display text remains a typed untrusted
@@ -151,6 +154,38 @@ raw chat, UI Feed, Bus/Timeline replay, approval state, prompts, caller refs,
 and arbitrary evidence payloads remain forbidden. The model may propose only
 `check|measurement|follow_up`; no provider field can create action, approve,
 complete, record an Outcome, or mutate Plant state.
+
+FT-013 permits only the strict active Plant, selected open issue, latest
+check-in, and latest manual-measurement record union from
+`companion-runtime.md`. It excludes ActorContext, raw chat, UI/Bus/Timeline
+replay, raw prior proposals/decisions, and caller prompts. The model may propose
+only a typed human-attention/proposal candidate with
+`discussion_only|check|measurement|follow_up|none`; it cannot create a
+DecisionRecord, approve/reject, create `action`, mutate Plant state, or bypass
+the project classifier/governance transaction.
+
+The selected persisted open issue's normalized `summary_text` is permitted
+inside the exact
+`companion_issue` record of `CompanionProviderRequestV1` for
+`target_mode=existing_issue`. The assembler may copy it only from the current
+PostgreSQL issue whose Plant, `issue_id`, open status, and `record_version`
+match the authorized explicit command. `target_mode=new_issue` carries no issue
+or issue summary. This field is non-authoritative context: sending it grants no
+approval, DecisionRecord, Task, Safety, Plant-state, Bus, or agent-context
+authority. It does not permit attention/proposal/rationale/decision text,
+proposal history, UI/Timeline copies, caller-supplied summaries, or arbitrary
+governance fields. No generic request/schema, persisted egress receipt, or new
+approval pipeline is added by this rule.
+
+For this competence, "latest" is not inherited from the generic independent
+pH/EC assembler: Companion selects the check-in by
+`(recorded_at DESC,check_in_id DESC)` and exactly one manual-measurement row by
+`(measured_at DESC,measurement_id DESC)`, without merging values from different
+rows. The complete production proposal path resolves two explicit bindings
+from the same deployment map: `companion` for the proposal candidate and
+`safety_gate` for the required persisted project classification. Each may use
+its own DeepSeek/Gemini profile/model id and matching credential; selection,
+failure, or missing configuration never falls back between them.
 
 Provider request/response bodies are never persisted. Sanitized audit may
 record only fields allowed by the Timeline Event contract.
@@ -202,9 +237,14 @@ Tests must prove:
 - outbound-spy snapshots match the exact `ProviderRequestV1` shape and record
   order, and prove authorization/ActorContext/session/role/grant data is absent;
 - competence-specific outbound snapshots match the registered Vision, Plant
-  State, Hydroponics Advisor, Safety Gate, and Task and Follow-Up request
-  allowlists without
+  State, Hydroponics Advisor, Safety Gate, Task and Follow-Up, and Companion
+  request allowlists without
   widening generic `ProviderRequestV1`;
+- Companion outbound snapshots prove an authorized existing-issue request
+  carries exactly the persisted matching `companion_issue.summary_text`, a
+  new-issue request carries none, and no attention/proposal/rationale/decision,
+  UI/Timeline, caller-supplied, or other field outside the registered request
+  allowlist crosses egress;
 - logs, timeline, pytest output, and task evidence contain no credentials or
   raw provider payload;
 - an explicitly enabled DeepSeek or Gemini smoke invokes exactly one real

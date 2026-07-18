@@ -103,7 +103,7 @@
     "forbidden_scope": [
       "TASK-039 database schema, HTTP contract, or lifecycle semantics except a narrowly proven compatibility repair.",
       "Generic ProviderRequestV1, MessageEnvelope, SafetyClassificationResultV1, or canonical roster identity widening.",
-      "Frontend/PWA, public agent API, Agent Chat Bus task payload, UI Feed context, Timeline replay, raw chat, or unapproved governance input.",
+      "Frontend/PWA, public agent API, Agent Chat Bus task payload, UI Feed context, Timeline replay, raw chat, or governance fields outside the registered Task Follow-Up request allowlist.",
       "Approval/action/completion/Outcome/Plant-state/device authority, automated actuation, tools, RAG, memory, fallback, or fake production output.",
       "ChatGPT/Codex credential stores, default provider/model selection, or cross-provider retry."
     ],

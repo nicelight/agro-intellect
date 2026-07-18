@@ -1,0 +1,19 @@
+{
+  "id": "FT-013-BHV-001",
+  "feature_id": "FT-013",
+  "title": "A later explicit Companion run supersedes the current proposal and reuses active attention",
+  "given": {
+    "plant": "active and authorized for a granted Engineer with can_operate=true",
+    "issue": "open, focused, and version-matched",
+    "attention": "active and pointing to one pending proposal"
+  },
+  "when": {
+    "command": "the Engineer explicitly invokes Companion for that issue",
+    "result": "the real-model route returns a valid newly classified proposal"
+  },
+  "then": {
+    "proposal": "the previous proposal becomes superseded and the new proposal becomes the only pending proposal",
+    "attention": "the same attention row points to the new proposal and remains active",
+    "authority": "neither proposal enters Agent Chat Bus or creates a DecisionRecord or Task"
+  }
+}

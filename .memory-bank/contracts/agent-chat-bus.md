@@ -2,7 +2,7 @@
 description: Global Agent Chat Bus contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -11,6 +11,7 @@ source_of_truth:
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/contracts/message-envelope.md
   - .memory-bank/states/companion-governance.md
+  - .memory-bank/domains/companion-governance.md
   - .memory-bank/states/plants/plant-and-access-lifecycle.md
 ---
 # Agent Chat Bus
@@ -49,6 +50,13 @@ prepared before archive cannot be published after archive. Existing retained
 events may remain audit/reference data but are excluded from archived Plant
 working context.
 
+Persisted Safety classification is evidence, not automatic publication
+authority. Candidate publication additionally requires the derived
+`ClassificationConsumerRouteV1=ordinary_dispatch`. Canonical
+`origin_agent_id=companion` always derives
+`companion_governance_hold` and cannot use `agent_safe_information`, even when
+its classification is `safe_information`.
+
 ## BusEventEnvelope version 1
 
 FT-008 implements one strict Plant-scoped object with unknown fields rejected:
@@ -76,8 +84,10 @@ FT-008 implements one strict Plant-scoped object with unknown fields rejected:
 ```
 
 It is a compact trigger/reference, not a copied runtime snapshot. A consumer
-loads current authoritative data through its owning repository and current
-authorization boundary.
+  loads current authoritative data through its owning repository and current
+  authorization boundary. For `decision_record`, the exact resolved DTO is
+  `ApprovedGovernanceSummaryV1` from the Companion Governance data spec; it is
+  not `CompanionConclusionV1` and is not a copied HTTP/UI projection.
 
 `record_type=decision_record` is the only Companion-governance entry into the
 Bus. It uses `source_type=domain_record`, `source_id=decision_record_id`, and
@@ -110,12 +120,17 @@ no instruction, prompt, tool, command, routing, or authority semantics.
   concatenate candidate content into system, developer, instruction, prompt,
   tool, command, or routing channels. Prompt-like text cannot instruct a
   downstream agent.
-- Approved governance summary facts can be consumable only when derived from a valid DecisionRecord and must include `safety_gate_authority=not_granted`.
+- Approved governance summary facts can be consumable only when derived from a
+  valid DecisionRecord and must use the exact non-persisted
+  `ApprovedGovernanceSummaryV1` field/type/order/source-ref schema with
+  `safety_gate_authority=not_granted`.
 - A `decision_record` event is resolved by the context builder into the exact
-  compact approved-summary shape owned by FT-013. The resolved facts remain
-  typed data; the event reference is not itself a governance decision or a
-  Safety/task command.
-- Unapproved proposals and raw chat remain non-consumable.
+  compact approved-summary shape owned by the Companion Governance data spec.
+  The resolved facts remain typed data; the event reference is not itself a
+  governance decision or a Safety/task command. Current issue focus/status,
+  HumanAttentionNeeded, CompanionConclusion, proposal/task text, rationale,
+  and mutable Task state are never substituted into that immutable summary.
+- Proposal rows and raw chat do not become Bus-consumable merely by existing. An owning agent-specific provider contract may separately load an authorized typed governance subset without publishing it to Bus.
 
 ## Context Builders
 
@@ -127,11 +142,12 @@ no instruction, prompt, tool, command, routing, or authority semantics.
 - Candidate-derived quoted data, when allowed, remains visibly typed and
   untrusted in the assembled agent input; it cannot become an agent definition,
   policy, competence, instruction, tool call, or runtime decision.
-- Context builders must exclude UI Feed, spoiler notes, raw model reasoning, raw chat, admin notices, and unapproved Companion content.
+- Bus context builders must exclude UI Feed, spoiler notes, raw model reasoning, raw chat, and admin notices. Agent-specific direct provider assemblers may load only the governance fields registered by their own strict contract.
 - For `record_type=decision_record`, the builder reloads the current
-  authoritative record and approved-summary projection, rechecks Plant scope,
-  and returns only the compact allowed fields. Missing, rejected, superseded,
-  stale, unauthorized, or non-projectable governance state is omitted.
+  authoritative DecisionRecord plus its approved version-2 proposal, rechecks
+  Plant scope, and returns exactly `ApprovedGovernanceSummaryV1`. Missing,
+  rejected, superseded, mismatched, stale, archived, unauthorized, or
+  non-projectable governance state is omitted.
 
 FT-008 context reads are Plant-scoped, require current `normal_read`
 authorization and `Plant.status=active`, and return at most 100 events ordered
@@ -154,33 +170,48 @@ flattens or concatenates `quoted_text` with instructions.
 
 - A pending MessageEnvelope cannot publish to Bus. `safe_information` requires
   its matching `SafetyClassificationResultV1` and the canonical current
-  publication guard. Neither artifact is authorization.
-- A `safe_task_request` first creates its ordinary task record; any Bus event
-  references that authoritative task rather than treating candidate text as a
-  command.
+  publication guard under `ordinary_dispatch`. Neither artifact is
+  authorization.
+- Under `ordinary_dispatch`, a `safe_task_request` first creates its ordinary
+  task record; any Bus event references that authoritative task rather than
+  treating candidate text as a command. A Companion-held request does not
+  create that Task.
 - `physical_action|blocked_uncertain` candidate text never enters agent working
-  context. Physical action routes to Safety Gate; uncertainty permits only a
-  non-consumable UI block notice.
+  context. Under `ordinary_dispatch`, physical action routes to Safety Gate and
+  uncertainty permits only a non-consumable UI block notice; under the
+  Companion hold both have no downstream effect.
 - Bus publication alone never authorizes physical action.
 - A DecisionRecord Bus reference can direct only the FT-013-approved workflow
   effect through its owning backend rule. It cannot create `action_task`,
   confirm Plant state, or substitute for Safety Gate or human action approval.
 - Candidate content cannot alter event routing or consumability by stating a
   prompt, command, safety label, or publication instruction; only the matching
-  validated classification and current guard select the route.
+  validated classification, server-derived consumer route, and current guard
+  select the boundary.
+
+For `companion_governance_hold`, `safe_information` and
+`safe_task_request` are classification-only proposal evidence. They write no
+candidate Bus row; `physical_action|blocked_uncertain|mismatch|failure` also
+write no Bus row. Only a later valid approved DecisionRecord may use the
+separate `domain_event_ref/decision_record` path, which reconstructs a compact
+typed fact and never the held candidate/proposal/rationale/provider text.
 
 For `safe_information`, FT-008 validates the immutable envelope plus matching
 strict classification, re-resolves current ActorContext, checks the active
-Plant in the write transaction, and atomically writes the Bus event plus its UI
-Feed projection. `safe_task_request|physical_action` write no FT-008 event;
-`blocked_uncertain` may write only the generic UI notice defined by UI Feed.
+Plant in the write transaction, requires `ordinary_dispatch`, and atomically
+writes the Bus event plus its UI Feed projection.
+`safe_task_request|physical_action` write no FT-008 event; under
+`ordinary_dispatch`, `blocked_uncertain` may write only the generic UI notice
+defined by UI Feed.
+Classification retry, restore, startup, or reconciliation never replays either
+ordinary or held classified publication.
 
 ## Verification
 
 Tests must prove:
 
 - unauthorized Plant events are filtered out;
-- UI Feed/raw chat/unapproved proposal content is absent from agent context;
+- UI Feed/raw chat content is absent from Bus-built agent context; agent-specific typed governance input is verified against its owning allowlist;
 - raw provider output cannot bypass adapters;
 - classified candidate content uses a typed quotation field and never an
   instruction/prompt channel; prompt-like text cannot alter downstream agent
@@ -193,5 +224,9 @@ Tests must prove:
   Plant-scoped Bus event, and restore does not replay the blocked publication.
 - only a valid approved and currently authorized DecisionRecord can produce the
   `decision_record` domain reference; raw/superseded proposal content never
-  enters the Bus, and the resolved summary always preserves
+  enters the Bus, and the resolved summary matches every
+  `ApprovedGovernanceSummaryV1` field and ordered ref exactly while preserving
   `safety_gate_authority=not_granted`.
+- Companion `safe_information` creates no FT-008 Bus candidate, held
+  task/physical/blocked/mismatched/failed results create no Bus row, and
+  ordinary non-Companion safe-information publication remains unchanged.

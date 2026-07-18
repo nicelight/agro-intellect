@@ -109,8 +109,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
   not satisfy runtime/demo acceptance.
 - Test doubles remain visibly scoped to test fixtures and never become the
   runtime product-agent path.
-- UI Feed, UI markdown, spoiler notes, raw chat, admin notices, unapproved
-  proposals, and raw model reasoning never enter agent-context fixtures.
+- UI Feed, UI markdown, spoiler notes, raw chat, admin notices, and raw model
+  reasoning never enter agent-context fixtures. Agent-specific governance
+  fixtures must match their strict typed allowlist and remain non-authoritative.
 - Markup- and prompt-looking candidate data stays inert: tests prove no
   HTML/Markdown rendering, unsafe link/action activation, instruction-channel
   promotion, classifier override, or direct action authorization.

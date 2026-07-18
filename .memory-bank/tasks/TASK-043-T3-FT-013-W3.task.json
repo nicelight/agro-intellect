@@ -1,0 +1,197 @@
+{
+  "id": "TASK-043-T3-FT-013-W3",
+  "title": "Invoke real Companion explicitly and persist one classified current proposal",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-003",
+    "REQ-011",
+    "REQ-013",
+    "REQ-017",
+    "REQ-018",
+    "REQ-022"
+  ],
+  "depends_on": [
+    "TASK-042-T3-FT-013-W2",
+    "TASK-040-T3-FT-012-W2"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/",
+    "backend/app/agent_runtime/providers.py",
+    "backend/app/agent_runtime/__init__.py",
+    "backend/app/api/companion.py",
+    "backend/app/main.py",
+    "tests/backend/companion_governance/test_runtime.py",
+    "tests/backend/companion_governance/test_real_companion_smoke.py",
+    "tests/backend/api/test_ft013_companion_run_route.py",
+    "tests/backend/api/test_ft013_companion_app_registration.py",
+    "tests/backend/agent_runtime/test_ft007_roster_providers.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "companion_runtime_deterministic",
+      "command": ".venv/bin/python -m pytest tests/backend/companion_governance/test_runtime.py tests/backend/api/test_ft013_companion_read_routes.py tests/backend/api/test_ft013_companion_decision_routes.py tests/backend/api/test_ft013_companion_run_route.py tests/backend/api/test_ft013_companion_app_registration.py tests/backend/agent_runtime -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "companion_input_and_classifier_contract",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/safety_gate/test_classifier.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/safety_gate/test_migration_models.py tests/backend/companion_governance/test_runtime.py -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "companion_trigger_classifier_governance_regression",
+      "command": ".venv/bin/python -m pytest tests/backend/companion_governance tests/backend/agent_runtime tests/backend/agent_chat tests/backend/safety_gate tests/backend/task_follow_up -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "credentialed_companion_smoke",
+      "command": "AGENT_REAL_COMPANION_SMOKE=1 .venv/bin/python -m pytest tests/backend/companion_governance/test_real_companion_smoke.py -m real_model -q",
+      "required": false
+    },
+    {
+      "name": "full_deterministic_regression",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
+    ".memory-bank/contracts/companion-runtime.md",
+    ".memory-bank/domains/companion-governance.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/safety-gate-runtime.md",
+    ".memory-bank/domains/safety-action-routing.md",
+    ".memory-bank/testing/safety-gate.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/runbooks/agent-runtime-providers.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/tasks/plans/IMPL-FT-013.md"
+  ],
+  "evidence_required": [
+    "Exact Companion request/result/orchestration schema, target/effect matrix, and outbound snapshot results.",
+    "Current authorized PostgreSQL Plant/selected issue evidence plus exact persisted existing-issue summary_text, exact (recorded_at DESC,check_in_id DESC) check-in and one-row (measured_at DESC,measurement_id DESC) measurement selection, including new-issue summary absence, different latest pH/EC rows, equal-time ties, null preservation, and forbidden cross-row synthesis or other governance-field egress evidence.",
+    "Proof that only explicit run POST invokes Companion and every GET/feed/event/Task/startup/reconciliation non-trigger makes zero calls.",
+    "Proof that TASK-043 alone registers the complete Companion router in production main.py after TASK-040, while all read/decision/run routes and OpenAPI are reachable exactly once.",
+    "Pending MessageEnvelope, matching classification, TASK-041 current proposal/attention persistence, early duplicate with null runtime outcome and zero provider/envelope reconstruction, supersede, and no-governance-on-failure evidence.",
+    "Pre/post-provider, issue-version, grant/revoke, archive, classifier, and proposal-write race evidence plus no fallback/fake/canned output and safe audit/redaction.",
+    "For REQ-011 acceptance, one non-skipped production-route smoke with explicit companion and safety_gate DeepSeek/Gemini bindings, external egress and matching credentials; exactly one real call to each binding over a PostgreSQL Plant/check-in/measurement fixture; one persisted matching classification/current proposal; and zero Safety decision/DecisionRecord/Task/action effect."
+  ],
+  "purpose": "Make canonical companion operational through one production-registered protected router and explicit real-model command whose only successful product handoff is a strictly classified current proposal persisted by TASK-041 authority, after TASK-042 and TASK-040 have completed the governance, shared Task package, provider-composition, and Safety-classifier boundaries.",
+  "success_outcome": "The complete Companion router is registered exactly once in the production app after TASK-040; one authorized explicit POST deterministically selects the canonical check-in and exactly one manual-measurement row, invokes exactly one explicitly configured real companion model and one explicitly configured real safety_gate classifier, maps their strict matching results through pending MessageEnvelope and persisted classification, and persists exactly one current proposal with active attention through TASK-041, while an identical committed retry returns duplicate refs with no provider call, runtime outcome, or envelope reconstruction and every non-trigger/failure path creates no governance or Task/action effect.",
+  "anti_goals": [
+    "Do not widen generic ProviderRequestV1, MessageEnvelope, SafetyClassificationResultV1, roster identity, TASK-041 proposal authority, or TASK-042 DecisionRecord semantics.",
+    "Do not add automatic domain-event, Task-completion, feed-refresh, startup, scheduler, worker, or reconciliation triggers.",
+    "Do not let the model decide, approve/reject, close, create a DecisionRecord or Task, authorize action, mutate Plant state, invoke tools/devices, or bypass classification/governance authority.",
+    "Do not add caller prompts/provider selection, UI/Bus/Timeline replay context, raw chat, memory, Team/tools/RAG, fallback, fake production output, or failure-silence substitution.",
+    "Do not use an injected/fake classifier, omit the explicit safety_gate binding, merge pH/EC from different measurement rows, or treat generic independent pH/EC selection as Companion input.",
+    "Do not claim FT-013's REQ-011 acceptance from deterministic tests, a skipped smoke, transport-only evidence, or blocked/failed/model-silent output."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/companion_governance/",
+      "backend/app/agent_runtime/providers.py",
+      "backend/app/agent_runtime/__init__.py",
+      "backend/app/api/companion.py",
+      "backend/app/main.py",
+      "tests/backend/companion_governance/test_runtime.py",
+      "tests/backend/companion_governance/test_real_companion_smoke.py",
+      "tests/backend/api/test_ft013_companion_run_route.py",
+      "tests/backend/api/test_ft013_companion_app_registration.py",
+      "tests/backend/agent_runtime/test_ft007_roster_providers.py",
+      ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
+      ".memory-bank/contracts/companion-runtime.md",
+      ".memory-bank/contracts/agent-model-provider-profiles.md",
+      ".memory-bank/runbooks/agent-runtime-providers.md",
+      ".memory-bank/testing/companion-governance.md",
+      ".memory-bank/tasks/TASK-043-T3-FT-013-W3.task.json",
+      ".protocols/TASK-043-T3-FT-013-W3/",
+      ".tasks/TASK-043-T3-FT-013-W3/"
+    ],
+    "forbidden_scope": [
+      "TASK-041 tables/focus/attention/proposal lifecycle or TASK-042 DecisionRecord/effect/close semantics except a narrowly proven compatibility repair.",
+      "Generic ProviderRequestV1, MessageEnvelope, SafetyClassificationResultV1, or canonical roster identity widening.",
+      "Frontend/PWA, automatic triggers, UI Feed/Bus/Timeline replay, raw chat, governance fields outside the exact registered Companion request allowlist, caller prompt, or arbitrary provider selection.",
+      "Decision/approval/close/Task/action/completion/Outcome/Plant-state/device authority, automated actuation, tools, RAG, memory, fallback, or fake production output.",
+      "ChatGPT/Codex credential stores, default provider/model selection, or cross-provider retry."
+    ],
+    "stop_conditions": [
+      "TASK-041 proposal persistence cannot accept the validated runtime/classification handoff without widening its governance, effect, or authorization contract.",
+      "TASK-040 provider composition cannot construct a competence-specific Companion request without generic request widening or shared-file contract conflict.",
+      "The canonical project classifier cannot preserve exact proposed effect/task-kind matching for the governance handoff.",
+      "The production or credentialed smoke cannot resolve both explicit companion and safety_gate bindings without fallback, fake classification, or unredacted configuration.",
+      "Production composition would require fake/canned output, provider fallback, caller prompts, auth/UI/Bus/Timeline data egress, or direct decision/effect authority.",
+      "Existing uncommitted work makes shared provider/API/main/package edits unsafe to reconcile."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
+    ".memory-bank/epics/EP-005-companion-governance.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/behavior-specs/FT-013-BHV-001-proposal-supersede-attention-reuse.behavior.json",
+    ".memory-bank/behavior-specs/FT-013-BHV-003-real-companion-explicit-run.behavior.json",
+    ".protocols/FT-013/decision-log.md",
+    ".memory-bank/tasks/plans/IMPL-FT-013.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/companion-runtime.md",
+    ".memory-bank/domains/companion-governance.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/contracts/agent-roster-bootstrap.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/contracts/safety-gate-runtime.md",
+    ".memory-bank/domains/safety-action-routing.md",
+    ".memory-bank/testing/safety-gate.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/runbooks/agent-runtime-providers.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "CompanionProviderRequestV1 contains only the canonical definition, explicit_user_command trigger, target mode, and one to four ordered authorized PostgreSQL records: Plant, selected issue with the exact persisted summary_text only for existing_issue, check-in by (recorded_at DESC,check_in_id DESC), and exactly one manual measurement by (measured_at DESC,measurement_id DESC), with no issue summary for new_issue, exactly matching refs, and no cross-row pH/EC synthesis.",
+    "CompanionModelResultV1 may speak only the closed governance proposal matrix or produce strict model-declared silence; action, physical/Safety approval, target, quantity, command, Plant-state, and unknown fields are schema-invalid.",
+    "Task effects map to a pending task_request envelope and require persisted safe_task_request with the exact same kind; discussion_only and none map to team_signal and require safe_information.",
+    "Only POST /api/plants/{plant_id}/companion/runs invokes the model; all reads, refreshes, events, Task completions, startup, and reconciliation paths are proven non-triggers.",
+    "TASK-043 alone edits backend/app/main.py for FT-013 and registers the already verified read/decision router plus run route only after both TASK-042 and TASK-040, making production composition sequential in the executable DAG.",
+    "Explicit companion and safety_gate provider/model bindings are used with egress opt-in, matching credentials, and no fallback; sequential identical run retry returns persisted proposal/classification refs with runtime_outcome=null before another provider call or MessageEnvelope construction, provider I/O is outside transactions, and current session/grant/Plant/issue guards repeat before TASK-041 persistence.",
+    "Credentialed UAT requires exactly one real Companion call, one real Safety classifier call, and one classified current proposal; skip, fake executor/classifier, missing binding/call, fallback, silence, blocked/mismatch, failure, or any direct Safety decision/DecisionRecord/Task/action effect is not acceptance."
+  ],
+  "invariants": [
+    "Model output, MessageEnvelope, and classification are candidate/routing data; only TASK-041 authority persists current proposal/attention and only TASK-042 plus a human command creates later binding decisions.",
+    "The Companion model can never approve/reject/close, create DecisionRecord or Task, grant Safety/action authority, confirm Plant state, or produce a device effect.",
+    "The registered Companion allowlist includes exact persisted current open-Issue summary_text for existing_issue as untrusted non-authoritative governance context; Farm/auth/session/grant, UI Feed, Bus/Timeline replay, raw chat, attention/proposal/rationale/decision/history/caller content, prompts, provider history, hidden reasoning, credentials, local paths, and every unlisted field stay outside provider input.",
+    "Archived, unauthorized, revoked, or version-stale scope creates no proposal/effect, and restore never replays the denied run.",
+    "No Companion runtime receipt or MessageEnvelope replay row is persisted; a committed duplicate is reconstructed only as safe governance/classification refs and never as a fresh common runtime outcome.",
+    "No fake, canned, hardcoded, skipped, fallback, or failure-silence path satisfies product-agent acceptance."
+  ],
+  "verification_targets": [
+    "Strict request/result tests prove exact record union/order, canonical ref grammar, target/effect/task-text matrices, bounds, unknown-field rejection, source-ref subset, pending-envelope mapping, public/internal reason nullability, and runtime_outcome nullability for committed duplicates.",
+    "Outbound spies prove only authorized PostgreSQL Plant/issue, the deterministic latest check-in, and exactly one deterministic manual-measurement row cross egress; existing_issue carries exactly its persisted matching summary_text, new_issue carries none, different latest pH/EC rows are not merged, and every forbidden auth/UI/Bus/Timeline/chat/attention/proposal/rationale/decision/caller/prompt/provider field is absent.",
+    "Trigger tests prove only explicit POST invokes Companion and GET/detail/feed refresh/domain event/Task completion/startup/reconciliation each make zero calls.",
+    "Integration tests prove the direct SafetyGateClassificationService/storage contract, exact classification matching, one TASK-041 current proposal/attention on success, sequential identical duplicate with persisted refs and no provider/runtime/envelope replay, same-run concurrent single effect, distinct-run serialized supersede/refocus with the displaced open issue still readable as awaiting_human or decided, and no Safety decision/DecisionRecord/Task/action/Plant/device effect.",
+    "Production-app tests prove all Companion routes and OpenAPI entries are registered exactly once by this wave and that every affected backend/app/main.py owner is serialized through TASK-039 -> TASK-040 -> TASK-042 -> TASK-043 before the FT-013 registration.",
+    "Authorization/provider tests prove current pre/post-model grant/archive/version races, explicit Companion and Safety Gate DeepSeek/Gemini construction, classifier not-configured/blocked/mismatch/no-proposal branches, no default/fallback/fake output, and redacted audit/evidence.",
+    "An explicitly requested AGENT_REAL_COMPANION_SMOKE=1 run uses AGENT_MODEL_BINDINGS_JSON entries for companion and safety_gate plus egress and matching credentials, is non-skipped, invokes each selected binding exactly once over a real persisted Plant/check-in/measurement new-issue context, and writes exactly one matching classification/current proposal before FT-013 claims REQ-011 acceptance."
+  ]
+}

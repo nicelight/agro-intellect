@@ -2,12 +2,13 @@
 description: Protected HTTP reads and commands for human approvals, tasks, completion, and follow-up outcomes.
 status: active
 type: api_contract
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/domains/task-approval-outcomes.md
   - .memory-bank/states/task-follow-up-lifecycle.md
+  - .memory-bank/states/companion-governance.md
 ---
 # Task And Approval HTTP
 
@@ -162,15 +163,142 @@ Success returns `200 RecordOutcomeResultV1` containing exactly:
 Outcome creation and follow-up completion are one PostgreSQL transaction. The
 response does not claim confirmed Plant-state promotion.
 
-## Internal ordinary-task command
+## Canonical internal ordinary-task command
 
-The non-HTTP `create_ordinary_task` command is the only arbitrary-looking task
-creation path. It accepts service-side current ActorContext, a validated
-pending MessageEnvelope, its persisted matching Safety classification, and a
-request id equal to the immutable envelope `run_id`. It has no public JSON body
-and creates only the exact classified `check|measurement|follow_up` kind.
-`action`, mismatched kind/scope, unpersisted classification,
-unauthorized/archived Plant, and conflicting message reuse fail closed.
+The non-HTTP `create_ordinary_task` command is the single canonical internal
+ordinary-Task creation seam. FT-012 and FT-013 MUST extend this command, not
+introduce a second Task creation service, repository shortcut, or public
+arbitrary-task endpoint.
+
+`OrdinaryTaskCreateCommandV1` is a strict union discriminated by exactly
+`source_branch=classified_message|governance_decision`. Both branches contain
+`schema_version=1`, service-side current `actor_context`, and an exact
+`task_kind=check|measurement|follow_up`. The source branch owns every other
+input; a caller cannot supply Farm/Plant scope, attribution, task source refs,
+display text, authorization snapshots, Safety approval, or an `action` kind.
+
+### `classified_message`
+
+The branch contains exactly:
+
+- one validated immutable pending `MessageEnvelopeV1`;
+- its durably persisted matching `SafetyClassificationResultV1` row;
+- `request_id` fixed to the envelope's immutable `run_id`.
+
+The envelope and classification MUST have the same `message_id`, Farm, Plant,
+origin agent, and persisted input identity. Classification MUST be exactly
+`safe_task_request` and its `safe_task_kind` MUST equal `task_kind`.
+The derived classification consumer route MUST be `ordinary_dispatch`;
+canonical `origin_agent_id=companion` is held for governance and is
+ineligible for this branch.
+`classification_message_id` is the natural uniqueness key. The Task source
+refs are derived by the service in this exact order:
+
+1. `message_envelope:<message_id>`;
+2. `safety_classification:<message_id>`;
+3. the envelope's already ordered authoritative `source_refs`.
+
+The lowercase SHA-256 request fingerprint is computed from canonical compact
+JSON containing exactly `schema_version`, `source_branch`, `request_id`,
+`message_id`, `task_kind`, normalized envelope `candidate_output` as
+`display_text`, and the derived ordered `source_refs`.
+
+The ordinary-task service owns the SQLAlchemy Session/UoW for this branch. It
+re-resolves current membership, same-Farm active Plant, and
+`can_create_domain_tasks=true` in the write transaction, inserts the Task,
+appends and stores the required `task_created` Timeline ref, and commits before
+returning success.
+
+### `governance_decision`
+
+The branch contains exactly:
+
+- one immutable approved `DecisionRecord`, either already committed for an
+  identical retry or flushed in the caller-owned decision UoW;
+- its owning locked `CompanionProposal`, which the canonical decision owner
+  proved was the current pending version `1` at decision start and has now
+  transitioned in that same UoW to `status=approved`, `record_version=2`, and
+  `decision_record_id` equal to the supplied DecisionRecord;
+- the proposal's durably persisted matching Safety classification;
+- exact `task_kind=check|measurement|follow_up` and the proposal's normalized
+  `task_display_text`;
+- the DecisionRecord `request_id` and `request_fingerprint` as immutable
+  command identity;
+- the caller-owned SQLAlchemy Session/UoW for the complete governance decision
+  transaction.
+
+The DecisionRecord, proposal, classification, issue, Farm, and Plant MUST
+match. The approved DecisionRecord effect, proposal effect, classification
+`safe_task_kind`, and command `task_kind` MUST be identical. The proposal's
+approved terminal state is the required post-transition source state for this
+branch, not a terminal/non-current rejection: the same DecisionRecord must own
+that transition, the linked attention must be satisfied by that DecisionRecord,
+and the source graph must be visible in the supplied Session/UoW. A proposal
+still pending at Task-command entry, `rejected`, `superseded`, approved for a
+different DecisionRecord, or otherwise unrelated to the canonical locked
+decision transition is ineligible. Rejection, `discussion_only`, `none`,
+`action`, an unknown effect, or an unpersisted/mismatched classification is
+also ineligible.
+`decision_record_id` is the natural uniqueness key. The Task source refs are
+derived in this exact order, removing a later duplicate while preserving the
+remaining proposal-ref order:
+
+1. `decision_record:<decision_record_id>`;
+2. `companion_proposal:<proposal_id>`;
+3. `message_envelope:<source_message_id>`;
+4. `safety_classification:<source_classification_message_id>`;
+5. each remaining ordered authoritative proposal `source_ref` not already
+   present.
+
+The ordinary-task request fingerprint is computed independently from
+canonical compact JSON containing exactly `schema_version`, `source_branch`,
+DecisionRecord `request_id`, DecisionRecord `request_fingerprint`,
+`decision_record_id`, `proposal_id`, `task_kind`, normalized
+`task_display_text`, and the derived ordered Task `source_refs`.
+The service derives and stores this ordinary-task fingerprint; it is distinct
+from, but incorporates and validates, the immutable DecisionRecord request
+fingerprint. Caller-supplied replacement identity/content is forbidden.
+
+The service re-runs current same-Farm active-Plant and
+`can_create_domain_tasks=true` guards inside the supplied UoW, locks/reloads
+the source graph through that same Session, inserts or re-reads the Task, and
+appends/stores the required `task_created` Timeline ref. Same-UoW sources need
+not be committed independently, but they MUST be flushed and satisfy the exact
+approved-version-2/same-DecisionRecord relation above. The service flushes but
+MUST NOT commit, roll back, close, or replace the caller's Session/UoW. The
+Companion decision owner commits or rolls back DecisionRecord, proposal/
+attention/issue transitions, Task, Bus/UI projections, and stored Timeline
+refs together under the canonical append-before-commit policy.
+
+### Result and authority limits
+
+Successful creation returns the strict internal
+`OrdinaryTaskCreateResultV1={schema_version:1,result:created|duplicate,
+task_id,task_ref,kind,source_branch,task_source_type}`. `task_ref` is
+`task:<task_id>`; `task_source_type` is `safe_task_request` for the classified
+branch and `governance_decision` for the governance branch.
+`duplicate` is returned only when the natural key, request identity,
+fingerprint, exact canonical content, scope, and source relations match the
+first committed/in-UoW Task. Natural-key or request reuse with different
+content is the typed `TASK_VERSION_CONFLICT` failure and creates no Task;
+missing, mismatched, ineligible, or unpersisted source authority is
+`TASK_SOURCE_INVALID`. Current authorization/archive denial remains
+`TASK_COMMAND_FORBIDDEN|TASK_PLANT_NOT_ACTIVE` without an existence leak.
+
+Neither branch may create `action`, act as Safety Gate or human approval,
+mutate Plant state or devices, complete a Task, record an Outcome, publish raw
+candidate/proposal/rationale text to Bus/UI, or replay a denied effect after
+restore. Verification MUST cover both branches, exact source-ref/fingerprint
+derivation, created/duplicate/conflict, branch-specific commit ownership,
+current guard/archive races, full governance rollback on Task/audit failure,
+and unchanged classified-message behavior.
+
+Governance-branch phase verification MUST cover creation from the flushed
+approved proposal/DecisionRecord graph in one caller-owned UoW, identical
+retry from the committed graph, and rejection of pending-at-entry, rejected,
+superseded, or differently linked approved proposals. No test may satisfy the
+contract by calling a second Task writer or committing the source transition
+before the owning governance transaction.
 
 ## Error mapping
 

@@ -39,7 +39,7 @@
     "Context builders use ActorContext and the canonical PlantPermissionContext interface envelope before returning scoped context.",
     "PlantPermissionContext compatibility checks cover plant_id, plant_status, can_read, can_comment, can_operate, can_create_domain_tasks, can_manage_access, can_approve_actions, source, and optional grant_id.",
     "Denied Plant context, including source=denied, missing grant, revoked grant, and archived-normal-operation denial, is filtered before Bus/model context is prepared.",
-    "Bus/context-builder output excludes session IDs, tokens, token hashes, password hashes, auth headers, cookies, UI Feed, raw chat, and unapproved proposal content.",
+    "Bus/context-builder output excludes session IDs, tokens, token hashes, password hashes, auth headers, cookies, UI Feed, and raw chat; agent-specific provider assemblers govern typed governance input separately.",
     "Generic protected-route/context-builder Plant denial uses AUTH_PLANT_FORBIDDEN without leaking Plant existence; the concrete FT-002 HTTP catalog remains deferred.",
     "T3 closure should consider /verify, /red-verify, a human checkpoint, and wave-boundary /mb-sync; these are advisory unless the owner makes a concrete gate mandatory.",
     "2026-07-05 /verify: VERDICT: FAIL — authorized context accepts auth material in arbitrary source_ref and nested payload string values; superseded historical result retained in task history.",
@@ -95,7 +95,7 @@
     "Preserve verified FT-000 app factory, settings, database/session, migration, readiness, runtime-root, and redaction anchors per Foundation Runtime Substrate, Foundation Data Substrate, and Evidence Redaction specs; stop if implementation contradicts the brownfield baseline."
   ],
   "invariants": [
-    "UI Feed, raw chat, raw reasoning, admin notices, and unapproved Companion proposals never become agent working context.",
+    "UI Feed, raw chat, raw reasoning, and admin notices never become agent working context; registered agent-specific requests may separately load authorized typed governance input as non-authoritative context.",
     "Agent-originated domain output must pass project-owned runtime decision, MessageEnvelope, and Agent Chat Bus boundaries.",
     "Secrets/auth material must not enter agent context."
   ],
@@ -107,7 +107,7 @@
     "Check changed code preserves linked Foundation Runtime Substrate, Foundation Data Substrate, Foundation Smoke API when relevant, and Evidence Redaction contracts or records a blocker.",
     "Check context-builder tests prove canonical PlantPermissionContext shape compatibility with FT-002 fields and denial filtering before scoped context leaves the boundary.",
     "Check generic Plant denial uses AUTH_PLANT_FORBIDDEN without leaking Plant existence or inventing FT-002 HTTP errors.",
-    "Check context-builder output excludes auth material, UI Feed, raw chat, admin notices, and unapproved proposal content per the Bus, MessageEnvelope, and UI Feed contracts."
+    "Check Bus context-builder output excludes auth material, UI Feed, raw chat, and admin notices per the Bus, MessageEnvelope, and UI Feed contracts; agent-specific provider input follows its own strict allowlist."
   ],
   "purpose": "Provide the reusable protected-route and context-builder seams that later product features must call before Farm/Plant data access.",
   "success_outcome": "Later routes and context builders can require ActorContext and produce safe authorization-scoped context without leaking auth material.",

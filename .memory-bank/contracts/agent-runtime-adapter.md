@@ -2,7 +2,7 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-15
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -43,6 +43,10 @@ Plant state.
   by [.memory-bank/contracts/plant-state-runtime.md](plant-state-runtime.md)
   under the same shared outcome/authorization/audit boundary.
 - Hydroponics Advisor missing-data policy; FT-010 owns it.
+- Companion IssueStack/proposal input and orchestration semantics are owned by
+  [.memory-bank/contracts/companion-runtime.md](companion-runtime.md), which
+  composes this outcome/authorization/audit boundary without widening generic
+  `ProviderRequestV1`.
 - Safety classifier implementation and action approval; the shared
   `SafetyClassificationResultV1` wire contract lives in the Safety Action
   Lifecycle, while FT-011 owns the concrete classifier/policy implementation.
@@ -175,8 +179,12 @@ Rules:
 - Only safe JSON values and source refs matching the existing
   `kind:identifier` grammar cross into the model input.
 - ActorContext objects, session ids, tokens, cookies, headers, credentials,
-  provider keys, UI Feed, raw chat, admin notices, hidden reasoning, and
-  unapproved proposal content never cross this boundary.
+  provider keys, UI Feed, raw chat, admin notices, and hidden reasoning never
+  cross this boundary.
+- The generic `ProviderRequestV1` has no governance record union. Registered
+  agent-specific contracts may define an authorized typed governance subset;
+  such input remains untrusted and non-authoritative and does not widen this
+  generic request.
 - Agent Runtime does not create a second generic context authority. It adds one
   exact PostgreSQL-to-typed-input assembler on top of the existing seam; typed
   Bus producer payloads and Bus context reconstruction remain FT-008 work.

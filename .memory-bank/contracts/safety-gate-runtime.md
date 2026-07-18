@@ -2,7 +2,7 @@
 description: Model-backed Safety Gate classification candidate and project-owned authoritative mapping contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-011-safety-gate-physical-action-routing.md
   - .memory-bank/contracts/message-envelope.md
@@ -145,15 +145,24 @@ Backend validation, not the provider, constructs the exact shared
 
 Provider unavailability, provider failure, invalid/unknown output, or any
 candidate-matrix conflict also maps fail-closed to the shared
-`blocked_uncertain/classification_uncertain` result. It may produce only the
-generic non-consumable block route. It never becomes model silence, safe
-information, a task, a Safety pass, or an approval.
+`blocked_uncertain/classification_uncertain` result. Under the ordinary
+consumer route it may produce only the generic non-consumable block route;
+under the Companion governance hold it produces no downstream row. It never
+becomes model silence, safe information, a task, a Safety pass, or an approval.
 
 The classifier model candidate is never stored as authority. The backend
 persists only the final shared result, nullable validated physical-action kind,
 safe provider status/model ref, and fingerprints defined by the Safety Action
 Routing data spec. Raw candidate text, request/response bodies, prompts,
 reasoning, and parser diagnostics are not persisted.
+
+Persistence does not dispatch the result. The classifier result carries no
+consumer field. After the immutable row exists, the project orchestrator
+derives the exact shared `ClassificationConsumerRouteV1` from the validated
+envelope `agent_id` and persisted matching `origin_agent_id`: canonical
+`companion` is `companion_governance_hold`; every matching non-Companion agent
+is `ordinary_dispatch`. The route is server-owned, cannot cross provider
+egress, and requires no classification-schema or migration change.
 
 ## Invocation and concurrency flow
 
@@ -170,15 +179,21 @@ reasoning, and parser diagnostics are not persisted.
 6. Re-resolve current session/account/membership/grant authority and active
    Plant in the classification write transaction, then persist through the
    immutable first-write-wins rule.
-7. Select a downstream handoff only from the persisted project-owned result.
-   Each owning writer repeats its own current guard in the same transaction as
-   its effect.
+7. Return the persisted project-owned result to the explicit orchestrator; the
+   classifier performs no automatic downstream dispatch.
+8. The orchestrator derives and validates `ClassificationConsumerRouteV1`.
+   `ordinary_dispatch` may invoke only the existing classification matrix;
+   `companion_governance_hold` may invoke only the matching guarded
+   `persist_companion_proposal` handoff and suppresses FT-008, FT-011, and
+   FT-012 ordinary consumers. Each allowed owning writer repeats its own
+   current guard in the same transaction as its effect.
 
 Concurrent invocations may both reach provider I/O. The first successful
 classification insert for a `message_id` remains immutable. An identical
-fingerprint is an idempotent duplicate. A different input or result fingerprint
-returns transient `blocked_uncertain` with `no_effect`; it cannot mutate the
-first row or invoke any downstream route.
+fingerprint is an idempotent evidence duplicate and does not replay any
+consumer effect. A different input or result fingerprint returns transient
+`blocked_uncertain` with `no_effect`; it cannot mutate the first row or invoke
+any downstream route.
 
 Archive, session revocation, membership/grant change, or Farm/Plant mismatch at
 either current guard produces no classification/effect and no restore replay.
@@ -213,6 +228,13 @@ upstream-label bypass resistance, prompt-like text isolation, every fail-closed
 provider branch, first-write-wins concurrency, identical idempotency, current
 authorization/archive races, redaction, no Timeline event, and no direct task,
 approval, Bus, UI, or actuation authority.
+
+Compatibility tests MUST also prove the derived consumer-route union is closed
+and server-owned; Companion `safe_information` cannot invoke FT-008 candidate
+publication, Companion `safe_task_request` cannot invoke the FT-012
+classified-message Task branch, held physical/blocked/mismatch/failure creates
+no downstream effect, retry/restore/reconciliation does not replay a held
+effect, and ordinary non-Companion routing is unchanged.
 
 One opt-in credentialed product-agent smoke MUST invoke exactly one explicit
 DeepSeek or Gemini `safety_gate` binding over a real validated pending envelope

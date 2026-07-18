@@ -2,7 +2,7 @@
 description: Global timeline audit/export event contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -83,6 +83,12 @@ The following event types are registered for the current taskable features:
 | `task_completed` | Task and Follow-Up service | `task` | `task_id` | `.memory-bank/domains/task-approval-outcomes.md` |
 | `approval_decided` | Task and Follow-Up service | `approval` | `approval_id` | `.memory-bank/domains/task-approval-outcomes.md` |
 | `follow_up_outcome_recorded` | Task and Follow-Up service | `outcome` | `outcome_id` | `.memory-bank/domains/task-approval-outcomes.md` |
+| `companion_issue_opened` | Companion Governance service | `companion_issue` | `issue_id` | `.memory-bank/domains/companion-governance.md` |
+| `companion_proposal_created` | Companion Governance service | `companion_proposal` | `proposal_id` | `.memory-bank/domains/companion-governance.md` |
+| `companion_proposal_superseded` | Companion Governance service | `companion_proposal` | superseded `proposal_id` | `.memory-bank/domains/companion-governance.md` |
+| `companion_decision_recorded` | Companion Governance service | `decision_record` | `decision_record_id` | `.memory-bank/domains/companion-governance.md` |
+| `companion_issue_resolved` | Companion Governance service | `companion_issue` | `issue_id` | `.memory-bank/domains/companion-governance.md` |
+| `companion_issue_closed` | Companion Governance service | `companion_issue` | `issue_id` | `.memory-bank/domains/companion-governance.md` |
 
 New event types require the emitting feature's subject spec to define producer,
 source identity, payload summary, redaction, failure behavior, and verification
@@ -123,6 +129,48 @@ Approval materialization alone emits no event. The task/approval/outcome data
 spec owns append-before-commit behavior and persisted refs. An appended event
 left by a later failed PostgreSQL commit is non-authoritative audit noise;
 Timeline replay cannot create or repair the missing row.
+
+### Companion governance payload summaries
+
+The FT-013 payloads are strict redacted correlation summaries:
+
+- `companion_issue_opened`: `issue_status=open`, `is_focused=true`, and
+  `source_ref_count`;
+- `companion_proposal_created`: `proposal_sequence`,
+  `proposed_effect=discussion_only|check|measurement|follow_up|none`,
+  `suggested_resolution=keep_open|resolved`, `attention_sequence`, and
+  `source_ref_count`;
+- `companion_proposal_superseded`: `proposal_sequence`,
+  `replacement_proposal_id`, and `record_version=2`;
+- `companion_decision_recorded`: `decision=approved|rejected`, exact
+  `allowed_workflow_effect`, `issue_resolution=keep_open|resolved`, nullable
+  safe `workflow_effect_ref`, and
+  `safety_gate_authority=not_granted`;
+- `companion_issue_resolved`: `issue_status=resolved` and
+  `decision_record_id`;
+- `companion_issue_closed`: `issue_status=closed`.
+
+Actor attribution uses the standard safe actor ref. Payloads MUST NOT contain
+issue/proposal/attention/decision text, rationale, Task display text, raw model
+output, MessageEnvelope candidate text, request ids/fingerprints, ActorContext,
+session/grant objects, prompts, provider data, credentials, or arbitrary
+metadata.
+
+Cardinality follows the authoritative transaction:
+
+- new-issue run: one `companion_issue_opened` plus one
+  `companion_proposal_created`;
+- existing-issue run: one `companion_proposal_created` and, when replacing a
+  pending proposal, one `companion_proposal_superseded` first;
+- decision: one `companion_decision_recorded`, plus one
+  `companion_issue_resolved` when selected, plus the existing `task_created`
+  only for an operative ordinary-task effect;
+- close: one `companion_issue_closed`.
+
+No event exists for derived CompanionConclusion or attention satisfaction by
+itself. The Companion data spec owns append-before-commit refs and rollback;
+Timeline replay cannot create, supersede, decide, focus, resolve, close, or
+publish governance state.
 
 ### `agent_runtime_decided` payload summary
 

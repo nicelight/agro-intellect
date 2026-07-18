@@ -2,11 +2,13 @@
 description: Local configuration and credentialed smoke runbook for Agent Runtime provider profiles.
 status: active
 type: runbook
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/contracts/agent-model-provider-profiles.md
   - .memory-bank/contracts/agent-runtime-adapter.md
   - .memory-bank/testing/agent-runtime.md
+  - .memory-bank/contracts/companion-runtime.md
+  - .memory-bank/testing/companion-governance.md
   - .memory-bank/contracts/evidence-redaction.md
 ---
 # Agent Runtime Providers Runbook
@@ -190,6 +192,63 @@ requested smoke. Record only safe model, run/event, classification, and Task
 refs; never record Task text, prompts, raw responses, credentials, auth state,
 or hidden reasoning. Without this accepted smoke, do not claim FT-012's
 product-agent portion of REQ-011.
+
+## FT-013 Companion product-agent smoke
+
+Configure both canonical production bindings in the same strict deployment
+map: `companion` for the proposal and `safety_gate` for the mandatory project
+classification. Each binding has one explicit DeepSeek or Gemini model id;
+they may use the same profile or different profiles, but neither may fall back
+to the other. For example, with non-secret placeholders:
+
+```text
+AGENT_MODEL_BINDINGS_JSON={"companion":{"provider_profile":"deepseek","model_id":"<companion-model-id>"},"safety_gate":{"provider_profile":"deepseek","model_id":"<safety-model-id>"}}
+AGENT_EXTERNAL_EGRESS_ENABLED=true
+AGENT_REAL_COMPANION_SMOKE=1
+```
+
+Provide `DEEPSEEK_API_KEY` and/or `GOOGLE_API_KEY` for every distinct selected
+profile without printing them. Use the normal Foundation/PostgreSQL
+`DATABASE_URL`, apply the current migration head, and seed one active Plant
+authorized for the smoke actor with:
+
+- two completed check-ins that prove selection by
+  `(recorded_at DESC,check_in_id DESC)`;
+- competing pH-only and EC-only manual rows plus an equal-`measured_at` tie
+  that prove exactly one row is selected by
+  `(measured_at DESC,measurement_id DESC)` and no synthetic pH/EC merge occurs.
+
+This real smoke intentionally uses `new_issue` and therefore sends no issue
+summary. The deterministic FT-013 outbound-spy suite separately proves that an
+authorized `existing_issue` request sends exactly its persisted matching
+`companion_issue.summary_text` and no field outside the registered Companion
+request allowlist.
+
+Then use the new-issue explicit-run request from the FT-013 testing contract.
+Run:
+
+```bash
+AGENT_REAL_COMPANION_SMOKE=1 .venv/bin/python -m pytest tests/backend/companion_governance/test_real_companion_smoke.py -m real_model -q
+```
+
+The smoke must invoke the protected explicit-run command, make exactly one real
+`companion` provider call over `CompanionProviderRequestV1`, make exactly one
+real `safety_gate` provider call over `SafetyGateProviderRequestV1`, return the
+committed strict non-silent proposal plus matching classification, and persist
+exactly one classification and one current proposal plus its active
+HumanAttentionNeeded projection. It must create no Safety decision,
+DecisionRecord, ordinary Task, approval, action Task, Plant mutation, or device
+effect.
+
+Skip/xfail, fake executor or classifier, canned output, fallback, model
+silence, either missing binding/credential/provider call,
+unconfigured/provider-failed/output-invalid/guard-denied/audit-failed result,
+blocked or mismatched classification, any implicit domain-event/task/feed/
+startup trigger, or direct decision/effect fails an explicitly requested
+smoke. Record only both safe model refs, run/event, issue/proposal/attention,
+and classification refs; never record proposal text, prompts, raw responses,
+credentials, auth state, or hidden reasoning. Without this accepted smoke, do
+not claim FT-013's product-agent portion of REQ-011.
 
 ## Troubleshooting
 

@@ -36,7 +36,7 @@ source_of_truth:
 
 - Agent Chat Bus is the domain-owned working stream for agents.
 - UI Feed is presentation-only.
-- UI Feed, spoiler notes, UI markdown, raw chat, admin notices, and unapproved Companion proposals do not enter agent working context.
+- UI Feed, spoiler notes, UI markdown, raw chat, and admin notices do not enter agent working context. Agent-specific typed governance input is outside the FT-008 Bus context-builder path.
 - MessageEnvelope and Bus/UI projections preserve source refs and consumability boundaries.
 - Authorized/classified candidate text is literal escaped/text-node UI data;
   no Markdown/HTML rendering, unsafe URL/action activation, or reuse as agent
@@ -56,7 +56,7 @@ source_of_truth:
 
 - Presentation-only summary cannot be replayed into agent context.
 - Unauthorized Plant context cannot leak through Bus or UI projections.
-- Raw CompanionProposal content remains human-visible only until a valid DecisionRecord produces compact approved governance summary facts.
+- FT-008 publishes only compact approved DecisionRecord facts to Agent Chat Bus. An owning feature may separately assemble strict typed governance input directly for its model without routing it through UI Feed or Bus.
 - UI spoiler notes remain `visible_to_agents=false` and `consumable_by_agents=false` when represented.
 - An event prepared before archive cannot publish after archive, and restore
   does not replay it.

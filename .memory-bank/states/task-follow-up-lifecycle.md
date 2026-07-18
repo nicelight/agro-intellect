@@ -2,7 +2,7 @@
 description: Human approval, task completion, automatic follow-up, and outcome lifecycle for the Safety and Task Loop.
 status: active
 type: state_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/safety-action-lifecycle.md
@@ -38,7 +38,12 @@ recording. It never authorizes or performs a physical device effect.
 expiry is the derived predicate `now > valid_until`. A record is retained when
 its Plant is archived; archive does not create another lifecycle state.
 
-## Ordinary safe-task route
+## Ordinary safe-task routes
+
+Both source routes below invoke the one closed
+`OrdinaryTaskCreateCommandV1` union owned by the Task contract. They are not
+separate Task services and cannot bypass the shared persistence, current
+authorization, archive, idempotency, Timeline, or authority guards.
 
 An ordinary Task may be created only from:
 
@@ -48,17 +53,49 @@ An ordinary Task may be created only from:
 3. a task kind equal to the classification `safe_task_kind`; and
 4. a current ActorContext that permits domain-task creation for the same active
    Plant at the write boundary, with every envelope source ref reloaded from
-   its owning PostgreSQL authority and matched to that Plant.
+   its owning PostgreSQL authority and matched to that Plant; and
+5. derived `ClassificationConsumerRouteV1=ordinary_dispatch`.
 
 The only permitted ordinary kinds are `check|measurement|follow_up`.
 `safe_task_request` can never create `action`. Candidate text remains literal
 human-facing task data, not an executable instruction, evidence fact, or
-authorization claim. An identical `message_id` retry is idempotent; different
-content for the same key conflicts without replacing the first Task.
+authorization claim. A canonical Companion classification is
+`companion_governance_hold` and cannot enter this route before an approved
+DecisionRecord uses the separate governance branch. The service derives the
+exact MessageEnvelope, classification, and upstream source refs plus request
+fingerprint defined by the command contract. An identical
+`classification_message_id` natural-key retry is idempotent; different content
+for that key or request id conflicts without replacing the first Task. This
+branch uses the service-owned Session/UoW and commits only after the Task plus
+its required Timeline ref are ready.
 
-A future valid DecisionRecord workflow effect may call this same service, but
-cannot select `action`, bypass current authorization, or reuse governance
-approval as Safety approval.
+FT-013 adds one narrow `governance_decision` source route to this same service:
+
+1. one immutable successful DecisionRecord and its proposal source graph,
+   either committed for an identical retry or flushed in the caller-owned UoW;
+2. effect exactly `check|measurement|follow_up`;
+3. the proposal's persisted matching `safe_task_request` classification with
+   the same kind;
+4. current Boss/granted-Engineer Task authority for the same active Plant; and
+5. every proposal/run source ref reloaded from its owning PostgreSQL authority.
+
+At decision start the canonical Companion owner MUST have locked and validated
+the proposal as current `pending`, version `1`. At ordinary-Task command entry
+that same-UoW proposal MUST already be `approved`, version `2`, linked to the
+same DecisionRecord, with its attention satisfied by that record. This required
+approved terminal source is eligible; a still-pending, rejected, superseded,
+or differently linked approved proposal is not. The rule also permits an
+identical committed retry to re-read the same approved graph.
+
+The DecisionRecord id is the natural uniqueness key. The command derives the
+exact DecisionRecord/proposal/message/classification/upstream source-ref order
+and fingerprint from immutable authority. The caller supplies the existing
+SQLAlchemy Session/UoW so Task insertion participates in the complete FT-013
+decision transaction; the Task service flushes but never commits or rolls that
+UoW back. An identical source/fingerprint returns the same Task; any different
+kind/text/refs or request reuse conflicts. This route cannot select `action`,
+bypass current authorization, use governance as Safety approval, or create a
+Task from `discussion_only|none|rejected`.
 
 ## Approval materialization
 
@@ -189,6 +226,17 @@ transaction rollback, natural uniqueness, identical-versus-conflicting
 retries, automatic +48-hour follow-up, evidence policy, no Plant-state
 promotion, no automated actuation, archive/restore freeze, and concurrent
 first-insert behavior.
+
+FT-013 compatibility tests additionally prove the DecisionRecord source route
+uses the same ordinary-task guards and transaction, creates only one matching
+ordinary Task, derives the canonical source refs/fingerprint, does not commit
+the caller's UoW, and rolls back the whole governance decision on Task or
+required audit failure. Cross-branch tests prove there is one command/service,
+not two competing Task creation seams. Phase tests start from a locked pending
+proposal, transition and flush its approved version-2/same-DecisionRecord graph
+inside the caller UoW, then create the Task without an intermediate commit;
+they also cover committed duplicate and pending/rejected/superseded/wrong-
+DecisionRecord rejection.
 
 ## Related specs
 

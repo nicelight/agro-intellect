@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -32,6 +32,8 @@ source_of_truth:
 - [Task And Follow-Up Agent Runtime](task-follow-up-runtime.md): strict
   authorized Task/Outcome/evidence input, typed ordinary-task proposal, and
   classified Task handoff.
+- [Companion Runtime](companion-runtime.md): explicit authorized real-model
+  input/result, closed trigger policy, classification, and proposal handoff.
 - [MessageEnvelope](message-envelope.md): validated pending pre-safety agent
   output.
 - [UI Feed](ui-feed.md): human presentation only.
@@ -46,7 +48,10 @@ source_of_truth:
 - [Plant Management HTTP](farm/plant-management-http.md): Farm/Plant lifecycle and PlantAccessGrant API.
 - [Plant Operations HTTP](plant-operations-http.md): daily check-in and manual measurement API.
 - [Task And Approval HTTP](task-approval-http.md): protected Approval decision,
-  Task read/completion, and follow-up Outcome API.
+  Task read/completion/follow-up API and the one canonical internal
+  ordinary-task source union.
+- [Companion Governance HTTP](companion-governance-http.md): protected
+  IssueStack/detail reads, explicit model run, proposal decision, and close.
 - [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
 - [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
 - [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination and archived retained-history reads.

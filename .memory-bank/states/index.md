@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical lifecycle and state specifications.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/spec-backbone.md
@@ -12,7 +12,8 @@ source_of_truth:
 
 - [Lifecycle Map](lifecycle-map.md): pre-PRD lifecycle hints.
 - [Plant State Trust](plant-state-trust.md): observation/trust promotion.
-- [Safety Action Lifecycle](safety-action-lifecycle.md): Safety Gate and action flow.
+- [Safety Action Lifecycle](safety-action-lifecycle.md): evidence-only
+  classification consumer routing, Safety Gate, and action flow.
 - [Task And Follow-Up Lifecycle](task-follow-up-lifecycle.md): human Approval,
   Task completion, automatic follow-up, and Outcome transitions.
 - [Companion Governance](companion-governance.md): proposal/decision lifecycle.

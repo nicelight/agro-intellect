@@ -2,7 +2,7 @@
 description: PostgreSQL authority for ordinary and action tasks, human approvals, automatic follow-ups, outcomes, and their audit refs.
 status: active
 type: data_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/domains/safety-action-routing.md
@@ -87,10 +87,12 @@ Every operational Task row contains:
 - `status`: `open|completed`;
 - `display_text`: normalized literal UTF-8 text, 1..2000 Unicode code points;
 - `source_type`:
-  `safe_task_request|approved_action|automatic_follow_up`;
+  `safe_task_request|governance_decision|approved_action|automatic_follow_up`;
 - `source_refs`: ordered safe refs;
 - nullable `classification_message_id`: restrictive unique FK to
   `safety_classifications.message_id` for `safe_task_request` only;
+- nullable `decision_record_id`: restrictive unique FK to
+  `decision_records.decision_record_id` for `governance_decision` only;
 - nullable `approval_id`: restrictive unique FK to `approvals.approval_id` for
   `approved_action` only;
 - nullable `parent_action_task_id`: restrictive self-FK, unique for
@@ -111,6 +113,10 @@ Every operational Task row contains:
 Checks enforce:
 
 - exactly one source identity appropriate to `source_type`;
+- `governance_decision` iff kind is `check|measurement|follow_up`,
+  `decision_record_id` is non-null, and classification/approval/parent ids are
+  null; its source refs still retain the validated proposal message and
+  classification refs;
 - `action` iff `source_type=approved_action` with non-null unique Approval;
 - `automatic_follow_up` iff `kind=follow_up`, parent is an `action`, and
   `due_at=parent.completed_at + 48 hours` at service validation;
@@ -122,17 +128,38 @@ Checks enforce:
 - `display_text` is literal data and never contains a serialized command,
   approval, provider object, auth state, or arbitrary JSON payload.
 
-For an ordinary task, `classification_message_id` is the natural uniqueness
-key and the row stores the MessageEnvelope/classification refs. The service
+For a classified-message ordinary task, `classification_message_id` is the
+natural uniqueness key. The row stores source refs exactly as
+`message_envelope:<message_id>`, `safety_classification:<message_id>`, then the
+ordered authoritative envelope refs. The service
 loads both artifacts, requires identical `message_id` and scope, matching
-`safe_task_kind`, and current task-creation authority. It reloads every
+`safe_task_kind`, derived `ordinary_dispatch`, and current task-creation
+authority. Canonical `origin_agent_id=companion` is governance-held and is
+rejected by this source branch. The service reloads every
 envelope source ref from the owning PostgreSQL repository and requires the same
 Farm/Plant scope; Timeline, UI, missing, unauthorized, or mismatched refs fail
 closed. The envelope text is stored literally as `display_text`; it cannot
-select `action` or execute anything. A future DecisionRecord adapter must call this same closed
-  ordinary-task authority and add its canonical source identity through a
-  scoped FT-013-compatible extension; it cannot select `action` or bypass any
-  current guard.
+select `action` or execute anything.
+
+For a governance-decision ordinary Task, `decision_record_id` is the natural
+uniqueness key. Its source refs are exactly the DecisionRecord, owning
+proposal, proposal message, matching classification, then the remaining
+ordered authoritative proposal refs after stable duplicate removal. FT-013
+loads the immutable approved DecisionRecord, the owning proposal that was
+locked current-pending version `1` at decision start and is now approved
+version `2` for that same record in the caller-owned UoW, matching persisted
+classification, satisfied attention, issue/Plant scope, and every source ref;
+requires the same `check|measurement|follow_up` kind at every boundary; and
+calls the ordinary-task insert inside the owning governance transaction. The
+Task stores literal proposal task text, never proposal rationale or an
+executable instruction. An insertion/audit failure aborts the whole
+DecisionRecord transaction.
+
+The approved proposal source may be flushed-but-uncommitted in that UoW or
+already committed for an identical retry. It is not rejected merely because it
+is terminal: `approved`, `record_version=2`, and the same non-null
+`decision_record_id` are the required command-entry state. Pending-at-entry,
+rejected, superseded, or approved-for-another-record sources are invalid.
 
 For an approved action, `approval_id` is the natural uniqueness key. Approval
 `pending -> approved` and Task insert are one transaction. Rejection inserts no
@@ -173,11 +200,18 @@ value, and refs match exactly.
 
 ## Mutation fingerprints
 
-The command bodies used for persisted fingerprints are exact:
+The one internal `create_ordinary_task` service accepts the closed
+`classified_message|governance_decision` source union defined by the Task
+contract. The command bodies used for persisted fingerprints are exact:
 
-- ordinary task: schema version, request id equal to the immutable
-  MessageEnvelope `run_id`, message id, safe task kind, and ordered revalidated
-  source refs;
+- classified-message ordinary task: schema version,
+  `source_branch=classified_message`, request id equal to the immutable
+  MessageEnvelope `run_id`, message id, safe task kind, normalized envelope
+  candidate output as display text, and ordered revalidated source refs;
+- governance ordinary task: schema version,
+  `source_branch=governance_decision`, DecisionRecord request id and request
+  fingerprint, DecisionRecord id, proposal id, exact ordinary kind, normalized
+  task display text, and ordered revalidated source refs;
 - approval decision: schema version, request id, safety decision id,
   expected version, and `approved|rejected`;
 - task completion: schema version, request id, task id;
@@ -192,7 +226,11 @@ caller-controlled identity.
 
 The services use the existing transaction/UoW and Timeline append seam:
 
-- ordinary Task creation appends `task_created` then persists its ref;
+- classified-message Task creation uses a service-owned UoW, appends
+  `task_created`, persists its ref, and commits before returning;
+- governance-decision Task creation uses the caller-owned DecisionRecord UoW,
+  appends `task_created`, persists its ref, flushes, and never commits or rolls
+  back independently;
 - reject appends `approval_decided` then commits the terminal Approval;
 - approve appends `approval_decided` and `task_created`, then commits the
   Approval and exactly one action Task together;
@@ -222,6 +260,11 @@ Existing exact-head migration assertions advance to this revision in the same
 wave. Downgrade removes only FT-012 objects in reverse FK order and never
 rewrites FT-011 or earlier rows.
 
+The later FT-013 migration adds only the `governance_decision` source value,
+nullable unique restrictive `decision_record_id`, and the extended exact source
+check after DecisionRecord storage exists. Existing FT-012 rows and source
+matrices remain unchanged.
+
 ## Verification
 
 Migration/model tests inspect UUID/FK parity, enum/check matrices, uniqueness,
@@ -230,6 +273,12 @@ read/write round trips, parent-row locking plus uniqueness races, approval/task
 and action/follow-up rollback, Outcome atomicity, exact fingerprints,
 Timeline failure behavior, archive/current-guard races, and absence of device,
 raw candidate, provider, auth, or Plant-state side effects.
+
+FT-013 integration additionally proves DecisionRecord/Task atomicity,
+identical-versus-conflicting DecisionRecord retries, exact classification-kind
+matching, same-UoW pending-to-approved phase eligibility without an intermediate
+commit, rejection of every wrong proposal terminal/link state, and zero
+Task/DecisionRecord effect on archive or insert failure.
 
 ## Related specs
 

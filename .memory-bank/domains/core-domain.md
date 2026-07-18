@@ -48,7 +48,7 @@ source_of_truth:
 - Backend authorization enforces Farm/Plant access; UI visibility controls are presentation only.
 - MVP permission overrides are limited to `plant_approve_actions`; other permissions come from role presets and PlantAccessGrant.
 - Product-agent runtime/demo outputs must use real LLM/model-backed flows over actual scoped Plant data.
-- UI Feed, raw chat, raw reasoning, spoiler notes, admin UI text, and unapproved proposals must not become agent working context.
+- UI Feed, raw chat, raw reasoning, spoiler notes, and admin UI text must not become agent working context. Authorized typed governance content may be supplied through an owning agent-specific provider contract without gaining fact or authority semantics.
 - Physical-action wording requires fresh data, Safety Gate pass, authorized human approval, and task/action tracking.
 - Governance DecisionRecord is not Safety Gate approval and cannot mutate Plant state or unlock physical action.
 - Dataset items are non-trainable by default until dataset governance allows otherwise.

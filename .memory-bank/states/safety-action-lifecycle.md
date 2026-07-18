@@ -2,7 +2,7 @@
 description: Global Safety Gate and physical-action lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-07-12
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -66,12 +66,32 @@ The strict result contains exactly:
 - one exact `reason_code` from the matrix below.
 
 Unknown fields are rejected. The result does not copy envelope text, refs,
-Plant identity, authorization, or timestamps. `message_id` is the result key:
-one MessageEnvelope accepts one classification, an identical retry is
-idempotent, and a conflicting result fails closed. Reclassification requires a
-new Agent Runtime invocation and `message_id`.
+Plant identity, authorization, timestamps, downstream dispatch authority, or
+a consumer-route field. `message_id` is the result key: one MessageEnvelope
+accepts one classification, an identical retry is idempotent, and a
+conflicting result fails closed. Reclassification requires a new Agent Runtime
+invocation and `message_id`.
 
-| Classification | Task kind | Reason | Permitted next boundary |
+The result is persisted routing evidence, never an automatic dispatcher
+command. After persistence, the project orchestrator derives exactly one
+strict internal `ClassificationConsumerRouteV1`:
+
+- `ordinary_dispatch` when the validated envelope and matching persisted
+  classification have the same non-`companion` `origin_agent_id`;
+- `companion_governance_hold` when both identify canonical
+  `origin_agent_id=companion`.
+
+The route is server-owned and derived; it is never accepted from the user,
+provider, model result, MessageEnvelope, or classification result. No new
+persisted discriminant is required because `safety_classifications` already
+stores the matching `origin_agent_id`. A missing/mismatched identity fails
+closed. Every downstream consumer validates the derived route; the classifier
+itself writes only evidence and invokes no Bus, UI, Task, Safety-decision, or
+governance repository.
+
+The existing ordinary-dispatch matrix remains:
+
+| Classification | Task kind | Reason | `ordinary_dispatch` next boundary |
 |---|---|---|---|
 | `safe_information` | null | `non_physical_information` | guarded FT-008 UI/Bus publication |
 | `safe_task_request` | `check` | `safe_check_request` | ordinary FT-012 check task |
@@ -80,18 +100,49 @@ new Agent Runtime invocation and `message_id`.
 | `physical_action` | null | `physical_action_detected` | FT-011 Safety Gate |
 | `blocked_uncertain` | null | `classification_uncertain` | generic non-consumable UI block notice |
 
-`safe_information` may be projected only after the FT-008 current publication
-guard. `safe_task_request` may enter the ordinary FT-012 task service but can
-never create an `action_task`. `physical_action` enters the Safety Gate
-lifecycle and its wording remains non-operative until every later gate passes.
+Under `ordinary_dispatch`, `safe_information` may be projected only after the
+FT-008 current publication guard. `safe_task_request` may enter the ordinary
+FT-012 task service but can never create an `action_task`. `physical_action`
+enters the Safety Gate lifecycle and its wording remains non-operative until
+every later gate passes.
 `blocked_uncertain` permits only a generic human-visible block/clarification
 notice; the original candidate text remains non-consumable and non-operative.
+
+For `companion_governance_hold`, the matrix is instead closed as follows:
+
+| Classification | Companion model effect | Only permitted result |
+|---|---|---|
+| `safe_information` | `discussion_only|none` | call `persist_companion_proposal` after its current governance guard |
+| `safe_task_request` | exact matching `check|measurement|follow_up` | call `persist_companion_proposal` after its current governance guard |
+| `physical_action|blocked_uncertain` | any | no governance row and no downstream effect |
+| mismatch, conflict, classifier failure, or current-guard denial | any | no governance row and no downstream effect |
+
+A held classification never invokes FT-008 classified publication or generic
+block-notice projection, FT-011 Safety-decision routing, or the FT-012
+`classified_message` ordinary-task branch. Raw candidate/proposal/rationale or
+provider text never enters Bus, UI Feed, or agent context. The dedicated
+governance writer may persist authoritative proposal fields and compact
+non-agent-consumable governance summaries under its own contract; that is not
+FT-008 candidate publication.
+
+Only a later committed approved DecisionRecord may invoke the separate
+`governance_decision` branch of the canonical ordinary-task command and/or the
+guarded compact DecisionRecord Bus-fact path. Classification evidence alone
+can do neither.
 
 `SafetyClassificationResultV1` is routing data, not authorization. Before a
 downstream write, the owning FT-008/FT-011/FT-012 service applies its canonical
 current authorization and active-Plant guard in the same transaction/locking
-boundary. Denial creates no effect and the handoff is not replayed after
-restore; a new current-state request is required.
+boundary; the FT-013 proposal writer applies its own equivalent current
+governance guard. Denial creates no effect and the handoff is not replayed
+after restore; a new current-state request is required.
+
+There is no generic classification replay dispatcher, outbox, restore hook,
+startup reconciliation, or retry worker. An identical classification retry
+returns evidence only and does not repeat its prior consumer effect. In
+particular, restart/restore/reconciliation cannot turn a held Companion row
+into FT-008 publication, FT-011 routing, or an FT-012 Task. Ordinary
+non-Companion flows retain the matrix and behavior above.
 
 ## Lifecycle Shape
 
@@ -163,6 +214,9 @@ Every safety/action record must carry:
   check/measurement request into physical-action approval.
 - Any implementation path that would issue pump, dosing, pH/EC correction,
   light-control, autowatering, or autodosing commands is out of MVP.
+- A caller/provider-selected consumer route, a generic dispatcher that ignores
+  `origin_agent_id`, or reuse of a held Companion classification by an
+  ordinary FT-008/FT-011/FT-012 consumer is invalid and fails closed.
 
 ## Verification
 
@@ -183,3 +237,8 @@ Tests must prove:
 - Archiving with open safety/task records leaves those records unchanged,
   blocks every transition while archived, and restore does not bypass current
   freshness, replay, authorization, or Safety Gate checks.
+- Consumer-route tests prove Companion `safe_information` produces no FT-008
+  Bus/UI candidate publication, Companion `safe_task_request` produces no
+  FT-012 Task, held physical/blocked/mismatch/failure produces no downstream
+  row, retry/restore/reconciliation performs no held effect, and unchanged
+  non-Companion classifications still follow the ordinary matrix.

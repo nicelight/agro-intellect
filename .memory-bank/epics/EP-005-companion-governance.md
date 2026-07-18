@@ -25,7 +25,10 @@ Let Companion coordinate Plant-scoped discussion and workflow direction through 
 - Companion can raise HumanAttentionNeeded and propose a Plant-scoped decision path.
 - Only the current proposal for a Plant-scoped issue can be approved/rejected.
 - DecisionRecord creates only allowed governance/workflow effects.
-- Agents consume only compact approved governance summary facts and refs.
+- General agent working context consumes only compact approved governance
+  summary facts and refs; the explicit Companion existing-issue request has the
+  separate narrow persisted issue-summary exception defined by its provider
+  contract.
 
 ## Acceptance Criteria
 
@@ -37,7 +40,9 @@ Let Companion coordinate Plant-scoped discussion and workflow direction through 
 
 - Companion governance is Plant-scoped in MVP.
 - Farm-level issue governance and separate Farm-level chat are deferred.
-- Raw proposal text, rationale, UI markdown, and chat discussion stay non-consumable by agents.
+- UI markdown and raw chat stay excluded from agent input. Only the exact
+  persisted issue-summary exception crosses the strict Companion provider
+  boundary, and it remains untrusted and non-authoritative.
 
 ## Feature-Local Design Pressure
 

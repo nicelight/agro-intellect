@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -34,12 +34,13 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Local photo files and manifests are artifacts, not mutable runtime authority.
 - `timeline.jsonl` is append-only audit/export, not mutable runtime authority.
 - Agent output must pass project-owned runtime decision, pending MessageEnvelope,
-  Safety & Task Loop classification, and only then applicable Agent Chat Bus/UI
-  Feed boundaries.
+  Safety & Task Loop classification, a server-owned classification-consumer
+  route, and only then an applicable domain boundary. Classification is
+  persisted evidence, never automatic dispatch authority.
 - Model `candidate_output` is opaque untrusted normalized text. Markup- or
   prompt-looking sequences have no markup, instruction, command, or authority
   semantics at any boundary.
-- UI Feed, raw chat, raw model reasoning, admin notices, and unapproved Companion proposals never become agent working context.
+- UI Feed, raw chat, raw model reasoning, and admin notices never become agent working context. Authorized typed governance content may enter only an owning agent-specific provider request and remains untrusted, non-authoritative input.
 - Safety Gate and authorized human approval are required before physical-action wording can become a human-performed action task.
 - MVP data remains local/private by default with `local_only` sync status.
 - Operator frontend uses Svelte 5 with SvelteKit as the Web App/PWA framework;
@@ -172,18 +173,30 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Prevents: model labels bypassing Safety Gate or turning ordinary checks into
   physical-action tasks.
 - Rule: provider fields are candidate data. Only the project-owned classifier
-  defined by the Safety Action Lifecycle selects the downstream boundary.
-  Candidate text may look like Markdown, HTML, a prompt, or an instruction, but
-  those sequences have no executable semantics and do not make schema-valid
-  output invalid. Pending text has no Bus/UI/task authority;
-  `safe_task_request` can create only an ordinary task.
+  defined by the Safety Action Lifecycle creates persisted routing evidence;
+  it never dispatches by itself. The server derives the exact closed consumer
+  route from matching origin identity: non-Companion output uses
+  `ordinary_dispatch`, while canonical Companion output uses
+  `companion_governance_hold`. The hold permits only guarded proposal
+  persistence for an exact matching safe class/kind and suppresses ordinary
+  Bus/UI, Safety-decision, and Task consumers until a later approved
+  DecisionRecord. Candidate text may look like Markdown, HTML, a prompt, or an
+  instruction, but those sequences have no executable semantics and do not
+  make schema-valid output invalid. Pending text has no Bus/UI/task authority;
+  ordinary-dispatch `safe_task_request` can create only an ordinary task
+  through the single canonical Task command.
 - Verification: representative markup- and prompt-looking strings remain
   opaque data; mislabeled physical wording still fails closed; safe check,
-  measurement, and follow-up requests never create `action_task`.
+  measurement, and follow-up requests never create `action_task`; Companion
+  safe information/task classification produces no ordinary publication/Task,
+  retry/restore performs no held replay, and non-Companion routing remains
+  unchanged.
 - Source: [.memory-bank/constitution.md](../constitution.md),
   [.memory-bank/requirements.md](../requirements.md),
   [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md),
-  [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md).
+  [.memory-bank/states/safety-action-lifecycle.md](../states/safety-action-lifecycle.md),
+  [.memory-bank/contracts/task-approval-http.md](../contracts/task-approval-http.md),
+  [.memory-bank/contracts/companion-runtime.md](../contracts/companion-runtime.md).
 
 #### AD-009 - Operator frontend uses Svelte 5 and SvelteKit
 - Binds: FT-016, the Operator PWA module, every frontend component, route,
@@ -249,7 +262,7 @@ Runtime authority:
 | Runtime State & Audit | PostgreSQL/read model, timeline audit/export refs, retained Plant history. | UI presentation, raw model output, physical actuation. |
 | Agent Runtime | Model invocation adapters, runtime decision, pending non-consumable MessageEnvelope preparation. | Domain source of truth, direct DB mutation of Plant facts, safety classification authority, UI Feed context. |
 | Agent Chat Bus & UI Feed | Bus working events and UI presentation projections. | Raw provider history, hidden reasoning, unauthorized context, Safety Gate approval. |
-| Safety & Task Loop | Project-owned output classification, Safety Gate routing, physical-action approval authority, human-performed action tasks, follow-up outcomes. | Automated device execution, model-selected safety authority, governance approval semantics. |
+| Safety & Task Loop | Project-owned output classification evidence, server-owned consumer routing, the single ordinary-task creation command, Safety Gate routing, physical-action approval authority, human-performed action tasks, follow-up outcomes. | Automated device execution, model-selected safety authority, governance approval semantics, or a second Task creation service. |
 | Companion Governance | IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, DecisionRecord, approved governance summary. | Plant-state confirmation, Safety Gate approval, action_task creation by itself. |
 | Dataset Governance | Dataset fields, evidence refs, trainability default false, future trainability gates. | Full dataset registry, model fine-tuning, UI Feed-derived trainability. |
 | Operator PWA | Role-aware UI, Plant selector, admin and operations surfaces, cards/prompts/history. | Backend authorization, runtime authority, agent working context. |
@@ -272,11 +285,15 @@ flowchart LR
   Adapter --> Model[Agno / LLM / vision model]
   Model --> Adapter
   Adapter --> Envelope[MessageEnvelope]
-  Envelope --> Classifier[Project-owned classification]
-  Classifier -->|safe information| Bus
-  Classifier -->|safe information / block notice| Feed[UI Feed]
-  Classifier -->|physical action| Safety[Safety Gate]
-  Classifier -->|safe task request| OrdinaryTasks[Ordinary check / measurement / follow-up tasks]
+  Envelope --> Classifier[Persisted project-owned classification evidence]
+  Classifier --> ConsumerRoute{Server-owned consumer route}
+  ConsumerRoute -->|ordinary: safe information| Bus
+  ConsumerRoute -->|ordinary: safe information / block notice| Feed[UI Feed]
+  ConsumerRoute -->|ordinary: physical action| Safety[Safety Gate]
+  ConsumerRoute -->|ordinary: safe task request| OrdinaryTasks[Canonical ordinary Task command]
+  ConsumerRoute -->|Companion governance hold: matching safe evidence| Governance[Companion proposal authority]
+  Governance -->|approved DecisionRecord task effect| OrdinaryTasks
+  Governance -->|approved compact DecisionRecord fact| Bus
   Safety --> ActionTasks[Approvals / human action tasks / follow-up]
   Feed --> UI
   OrdinaryTasks --> State
@@ -345,6 +362,9 @@ Shared state/data guardrails:
   syntax.
 - Human approval unlocks only human-performed task tracking, never automated execution.
 - Companion governance approval is not Safety Gate approval.
+- Safety classification is evidence, not automatic dispatch authority. A held
+  Companion classification cannot enter ordinary Bus/UI/Safety/Task consumers;
+  only a later approved DecisionRecord may authorize its bounded effect.
 - Archived Plant is a fail-closed operational boundary for new and already-open
   Plant-scoped workflows; restore never implies automatic resumption.
 - Dataset candidates are non-trainable by default and require evidence refs for
@@ -379,7 +399,7 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 - Authz implemented only in UI would break the architecture.
 - Governance approval could be confused with Safety Gate approval.
 - Raw agent/model output could bypass project-owned adapters.
-- UI Feed or unapproved proposal content could leak into agent context.
+- UI Feed or governance content outside a registered typed provider allowlist could leak into agent context.
 - Real model-backed agent requirement adds integration risk.
 - Accounts/Farm/Admin scope could expand into broad farm management.
 - A stale UI or worker could advance an already-open Plant workflow after

@@ -2,7 +2,7 @@
 description: PostgreSQL storage and transaction rules for Agent Chat Bus, UI Feed, and roster-introduction reconciliation.
 status: active
 type: data_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/contracts/agent-chat-bus.md
   - .memory-bank/contracts/ui-feed.md
@@ -61,8 +61,12 @@ input.
 - `farm_id`, `plant_id`: native UUID foreign keys with `ON DELETE RESTRICT`.
 - `created_at`, `event_type`, `source_type`, `source_id`.
 - `actor_ref`: strict safe attribution JSON or `null` for a system/domain source.
-- `payload`, `source_refs`, `authorization_scope`: strict JSON values validated
-  against the Agent Chat Bus contract before persistence.
+- `payload`, `source_refs`: strict JSON values validated against the Agent Chat
+  Bus contract before persistence.
+- `authorization_scope`: strict non-null JSON for actor-originated
+  `classified_publication`, and `null` only for a backend-owned
+  `domain_record` written after the owning domain transaction has completed
+  its own authorization and active-Plant checks.
 - `consumable_by_agents`: non-null boolean fixed to `true`.
 
 `(plant_id, source_type, source_id, event_type)` is unique. An identical retry
@@ -112,14 +116,25 @@ point; no distributed worker, broker, or outbox is required.
 An FT-008 safe-information publisher writes its `agent_bus_events` row and
 matching `agent_message` UI row in one transaction after validating the
 immutable MessageEnvelope, matching `SafetyClassificationResultV1`, current
-ActorContext authorization, and current active Plant. Either both rows commit
-or neither does. The Bus row stores candidate text only inside the typed quoted
+ActorContext authorization, current active Plant, and derived
+`ClassificationConsumerRouteV1=ordinary_dispatch`. Either both rows commit or
+neither does. The Bus row stores candidate text only inside the typed quoted
 payload; the UI row stores the same text only inside the literal display
 payload.
 
-`blocked_uncertain` may create only one generic `block_notice` UI row and must
-not store candidate text. `safe_task_request` and `physical_action` create no
-FT-008 rows and remain owned by FT-012 and FT-011 respectively.
+Under `ordinary_dispatch`, `blocked_uncertain` may create only one generic
+`block_notice` UI row and must not store candidate text.
+`safe_task_request` and `physical_action` create no FT-008 rows and remain
+owned by FT-012 and FT-011 respectively.
+
+Canonical `origin_agent_id=companion` derives
+`companion_governance_hold` and is rejected by every ordinary FT-008/FT-011/
+FT-012 consumer. Its safe-information/task classifications may be read only by
+the guarded proposal writer; held physical/blocked/mismatch/failure has no
+downstream writer. No Bus/UI/Safety/Task row is queued for retry, restore, or
+reconciliation. Dedicated Companion UI summaries are written later only from
+authoritative governance rows under the separate projection rules below and
+never copy raw candidate/proposal/rationale/provider text.
 
 ## Safety status projection storage
 
@@ -155,7 +170,10 @@ governance copy is allowed.
   `(plant_id,source_type,source_id,event_type)` key.
 - `ui_feed_events` accepts `source_type=companion_governance`,
   `display_kind=companion_governance`, and one strict attention, proposal, or
-  decision payload from the UI Feed contract. Both agent flags remain false.
+  decision payload from the UI Feed contract. `visible_to_roles` is exactly
+  `boss|engineer|consultant`; protected reads still apply current Plant
+  authorization, and Consultant visibility grants no command authority. Both
+  agent flags remain false.
 - Bus/UI rows are derived projections. They cannot approve/reject/supersede a
   proposal, create a DecisionRecord, advance its workflow effect, or replace
   authoritative FT-013 records.
@@ -164,10 +182,30 @@ governance copy is allowed.
   Existing FT-008 rows and variants remain valid and unchanged.
 - Projection writes recheck current authorization and active Plant at their
   write boundary. Archive blocks new rows; restore causes no replay.
-
-Exact DecisionRecord creation/projection atomicity and UI transition
-idempotency belong to the FT-013 data specification because they depend on its
-record/version and workflow-effect model.
+- Companion projection identity is exact: attention uses
+  `ui_event_id=attention_id`; each proposal uses
+  `ui_event_id=proposal_id` and updates that one presentation row in place as
+  its authoritative state becomes `approved|rejected|superseded`; each
+  DecisionRecord uses `ui_event_id=decision_record_id`.
+- Decision Bus publication uses `event_id=decision_record_id`,
+  `source_type=domain_record`, `source_id=decision_record_id`,
+  `event_type=domain_event_ref`, and null `actor_ref`/`authorization_scope`.
+  Human attribution remains inside the referenced authoritative
+  DecisionRecord and is not copied into the agent-consumable fact.
+- On authorized active-Plant context read, that Bus reference resolves the
+  DecisionRecord plus its approved version-2 proposal into exactly the
+  non-persisted `ApprovedGovernanceSummaryV1` owned by the Companion Governance
+  data spec. The builder never persists that DTO or substitutes
+  `CompanionConclusionV1`, UI payloads, mutable focus/attention, or Task state.
+- The authoritative FT-013 write and every required Companion Bus/UI
+  projection commit in the same PostgreSQL transaction. An identical
+  projection retry succeeds without changing the original timestamp; any
+  canonical mismatch is `content_conflict` and aborts the whole owning
+  transaction.
+- The attention UI row is the immutable literal notification created for that
+  attention cycle; current proposal/status are read from governance detail,
+  not copied into this payload. Derived CompanionConclusion is resolved by the
+  governance read model and is never persisted in Bus or UI.
 
 ## Verification
 
@@ -176,14 +214,19 @@ record/version and workflow-effect model.
 - PostgreSQL integration tests prove introduction 8-or-0 atomicity, duplicate
   identity, content conflict, restart reconciliation, and archive race denial.
 - Publication tests prove Bus/UI atomicity, current authorization, strict
-  classification routing, typed quotation, literal display data, and zero
-  writes on denial.
+  classification/consumer routing, typed quotation, literal display data, zero
+  writes on denial, zero ordinary effect for every held Companion branch, no
+  replay after retry/restore/reconciliation, and unchanged non-Companion
+  behavior.
 - Safety projection tests prove exact payload/status constraints,
   decision/UI atomicity, idempotent duplicate versus conflict, candidate-text
   absence, current active-Plant guard, and unchanged existing FT-008 rows.
 - Static and integration checks prove UI rows are never loaded by agent context
   builders and Bus rows are never used as mutable Plant authority.
 - Companion integration checks prove existing FT-008 variants remain valid,
-  only a valid DecisionRecord reference can enter Bus, all Companion UI rows
-  remain non-consumable, and no projection becomes governance or Safety
-  authority.
+  only a valid approved DecisionRecord reference can enter Bus, all Companion
+  UI rows remain non-consumable, backend domain records alone permit null
+  authorization scope, exact projection identities are retry-safe, conflicts
+  roll back the owning transaction, exact `ApprovedGovernanceSummaryV1`
+  reconstruction/omission rules hold, and no projection becomes governance or
+  Safety authority.

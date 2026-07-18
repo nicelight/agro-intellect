@@ -14,7 +14,7 @@ source_of_truth:
 
 ## Value
 
-Allow product agents to help with actual scoped Plant data while preventing raw model output, UI presentation, unauthorized context, or unapproved governance content from becoming agent facts.
+Allow product agents to help with actual scoped Plant data while preventing raw model output, UI presentation, or unauthorized context from becoming agent facts and keeping authorized governance input explicitly typed and non-authoritative.
 
 ## Features
 
@@ -26,7 +26,7 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 ## Success Metrics
 
 - First demo agent behavior is real model-backed over actual scoped Plant data.
-- UI Feed and unapproved proposals are never consumed as agent working context.
+- UI Feed is never consumed as agent working context; governance content enters only through an owning strict agent-specific provider contract.
 - Vision outputs remain observations/hypotheses unless human review or follow-up evidence promotes state.
 - Advisor output asks for missing/stale critical data instead of inventing evidence.
 
@@ -40,7 +40,7 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 ## Constraints / Invariants
 
 - Single-competence product-agent boundaries are mandatory.
-- Raw reasoning, provider history, UI Feed, spoiler notes, raw chat, and unapproved Companion proposals never enter agent working context.
+- Raw reasoning, provider history, UI Feed, spoiler notes, and raw chat never enter agent working context. Typed governance input does not gain fact or authority semantics.
 - Agent hypotheses cannot become confirmed Plant state without human review or follow-up evidence.
 
 ## Feature-Local Design Pressure

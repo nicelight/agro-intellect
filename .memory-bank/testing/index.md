@@ -1,7 +1,7 @@
 ---
 description: Router for active testing strategy and subject verification specifications.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/testing/strategy.md
@@ -46,6 +46,9 @@ source_of_truth:
 - [Task And Follow-Up Verification](task-follow-up.md): Approval/task/outcome
   transactions, HTTP, concurrency/archive guards, and real Task and Follow-Up
   Agent evidence.
+- [Companion Governance Verification](companion-governance.md): IssueStack,
+  proposal/attention lifecycle, atomic DecisionRecord effects, projections,
+  HTTP, explicit runtime trigger, and real Companion evidence.
 
 ## Archive
 

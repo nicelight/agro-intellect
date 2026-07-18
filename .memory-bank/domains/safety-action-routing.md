@@ -2,7 +2,7 @@
 description: PostgreSQL classification and Safety action-decision authority through pending human approval.
 status: active
 type: data_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-011-safety-gate-physical-action-routing.md
   - .memory-bank/contracts/safety-gate-runtime.md
@@ -81,6 +81,37 @@ result digest is an idempotent duplicate. Any mismatch returns
 `SAFETY_CLASSIFICATION_CONFLICT`, creates no write/projection/route, and leaves
 the first row unchanged. There is no update or delete service path in MVP.
 
+## Classification consumer routing
+
+Classification persistence is evidence-only and commits no downstream effect.
+The strict internal `ClassificationConsumerRouteV1` is derived after the write
+from the validated envelope `agent_id` plus this row's matching
+`origin_agent_id`:
+
+- `ordinary_dispatch` for matching non-Companion origins;
+- `companion_governance_hold` for matching canonical `companion` origin.
+
+The route is not stored and adds no migration/column because `origin_agent_id`
+already makes the decision safely re-derivable. It is server-owned and cannot
+be supplied by API, provider, model output, envelope candidate text, or a
+caller-selected classification field. An identity mismatch has no consumer
+route or effect.
+
+Ordinary dispatch preserves existing FT-008 safe-information, FT-012 safe-task,
+FT-011 physical-action, and generic blocked-notice behavior under each owning
+current guard. The Companion hold permits only matching
+`safe_information/discussion_only|none` or exact-kind
+`safe_task_request/check|measurement|follow_up` to enter the guarded
+`persist_companion_proposal` command. It produces zero ordinary Bus/UI/Task/
+Safety-decision effect. Held physical/blocked/mismatch/failure produces no
+governance row either.
+
+There is no classification replay/outbox/reconciliation worker. Duplicate
+classification reads return evidence only; restore, restart, or reconciliation
+cannot dispatch a held or previously denied effect. A later approved
+DecisionRecord is a separate authority that may create an ordinary Task or
+compact DecisionRecord Bus fact through their owning commands.
+
 ## `safety_action_decisions`
 
 Exactly one immutable decision may exist for a persisted `physical_action`
@@ -118,7 +149,10 @@ The evaluator processes a persisted physical-action classification in this
 exact order inside one current-state decision transaction:
 
 1. Reload the classification, Farm/Plant, session/account/membership/grant,
-   and require current `normal_read` authority plus `Plant.status=active`.
+   require current `normal_read` authority plus `Plant.status=active`, and
+   require derived `ClassificationConsumerRouteV1=ordinary_dispatch`.
+   Companion-governance-held classification is ineligible for every Safety
+   action decision.
 2. If `action_kind` is one of
    `pump_command|light_command|dosing_command|pruning|transplanting|
    root_trimming|other_physical_action`, persist
@@ -223,3 +257,9 @@ independent pH/EC 2-hour boundaries, missing/stale/future evidence, exact-bounda
 expiry, atomic decision/UI writes, duplicate/conflict concurrency, archive and
 grant races, no restore replay, exact non-imperative payloads, and zero
 approval/task/actuation effect.
+
+Consumer-route compatibility tests prove no new persisted discriminant is
+needed, matching Companion origin always derives the hold, held
+safe-information/task/physical/blocked/mismatch/failure writes no ordinary
+downstream row, duplicate/restore/reconciliation performs no replay, and
+non-Companion dispatch remains unchanged.

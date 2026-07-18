@@ -4,6 +4,110 @@ status: active
 ---
 # Changelog
 
+## 2026-07-18 — Governance provider-input policy update
+
+- Removed the blanket requirement that models must not receive unapproved
+  governance content. Registered agent-specific requests now own their exact
+  typed allowlists, and allowed governance content remains untrusted and
+  non-authoritative.
+- Kept the current Companion `existing_issue` request field set, including the
+  exact persisted open-Issue `summary_text`.
+- Kept generic provider input, persistence, permissions, approval pipelines,
+  Bus/general agent context, Safety, DecisionRecord, Task, and Plant-state
+  authority unchanged; added positive/negative outbound-spy obligations.
+- Restored the global backbone and FT-013 `spec_design_status` to `complete`,
+  reconciled IMPL/protocol/RTM/feature routing and TASK-043 without changing
+  task ids, tiers, waves, dependencies, or `planned` statuses. The next step is
+  `/review-tasks-plan FT-013`; no implementation or real-model acceptance is
+  claimed.
+
+## 2026-07-18 — FT-013 deterministic post-review repair
+
+- Closed the shared `governance_decision` transaction-phase ambiguity: the
+  one ordinary-task seam accepts only the proposal locked pending/version 1 at
+  decision start and flushed approved/version 2 for the same DecisionRecord in
+  the caller UoW, plus its identical committed retry.
+- Added valid focused/unfocused open conclusion cases and deterministic
+  keep-open focus transfer, exact derived-only `ApprovedGovernanceSummaryV1`,
+  and the complete reachable nested Task-to-Companion error translation.
+- Added the missing direct Task command contract to TASK-042 and reconciled
+  TASK-041/042/043, IMPL, behavior/testing, RTM note, and protocol context
+  without changing IDs, waves, tiers, dependencies, or planned statuses.
+- Left the unapproved open-Issue `summary_text` provider-input policy undecided.
+  Global backbone and FT-013 design are truthfully `blocked` until the owner
+  chooses the narrow Companion-only exception or removal; no implementation or
+  real-model acceptance is claimed.
+
+## 2026-07-18 — FT-013 feature-local SDD and task repair
+
+- Closed exact Companion HTTP view/ref/nullability/order schemas and a total
+  runtime/classifier/domain-to-HTTP error mapping while preserving the already
+  repaired cursor and committed-duplicate behavior.
+- Defined deterministic Companion evidence selection: latest check-in by
+  `(recorded_at,check_in_id)` descending and exactly one manual-measurement row
+  by `(measured_at,measurement_id)` descending, without merging pH/EC from
+  different rows.
+- Made same-run races single-effect and distinct run ids independent commands
+  that serialize and may supersede/refocus in governance write order. Unified
+  FT-013 refs, source arrays, detail ordering, and CompanionConclusion
+  nullability across data, HTTP, UI, runtime, and tests.
+- Added the explicit two-binding/two-call `companion` plus `safety_gate`
+  production smoke configuration and direct classifier/Plant Operations
+  verification inputs to TASK-043.
+- Serialized TASK-040 before TASK-042 because both may edit the Task Follow-Up
+  package; reconciled feature, protocol, IMPL plan, TASK-041/042/043, RTM note,
+  and backbone handoff. FT-013 design is now `complete` and awaits fresh
+  `/review-tasks-plan FT-013`; no implementation or real-model acceptance is
+  claimed.
+
+## 2026-07-18 — FT-013 shared SDD backbone repair
+
+- Reconciled the one canonical `create_ordinary_task` seam as the exact closed
+  `classified_message|governance_decision` source union, including source refs,
+  fingerprints, current guards, created/duplicate/conflict behavior, and
+  service-owned versus caller-owned UoW commit rules.
+- Made persisted Safety classification evidence-only and added the
+  server-derived `ordinary_dispatch|companion_governance_hold` consumer route
+  without a new persisted field. Companion classification now has explicit
+  negative Bus/UI/Safety/Task and replay obligations until a later approved
+  DecisionRecord.
+- Kept the global backbone `complete` but truthfully set FT-013 feature design
+  to `blocked` on audit R4 B3-B6. Routed exact HTTP/error, latest-evidence,
+  different-run concurrency, and ref/derived-read closure to
+  `/prd-to-tasks FT-013`; task cards, implementation plans, and code were not
+  edited by this repair.
+
+## 2026-07-18 — FT-013 fresh-context blocker reconciliation
+
+- Removed `backend/app/main.py` from TASK-041/TASK-042 and made TASK-043 the
+  only FT-013 production router-registration owner after TASK-040.
+- Added Safety Gate and Task Follow-Up exact-head regression ownership to both
+  FT-013 migration cards.
+- Unified IssueStack repository/HTTP pagination on
+  `(status_rank,created_at,issue_id)` and made committed run duplicates return
+  persisted refs with `runtime_outcome=null`, without provider/envelope replay
+  or a new receipt table.
+
+## [2026-07-18] FT-013 SDD closure and task queue
+- Completed FT-013 feature-local design for Plant-scoped IssueStack focus,
+  reusable HumanAttentionNeeded cycles, proposal supersede, human
+  DecisionRecords, derived CompanionConclusion, and retained archive reads.
+- Reused Boss/granted-Engineer `role_preset`, Plant grant, and `can_operate`
+  without a new permission or self-approval rule; Consultant remains denied.
+- Closed workflow effects to
+  `discussion_only|check|measurement|follow_up|none`; operative ordinary Tasks
+  commit atomically with DecisionRecord and required audit/projections, while
+  unknown/mismatched effects or failures roll the whole decision back.
+- Added canonical Companion data, protected HTTP, explicit runtime, and
+  verification specs; extended existing Task, Bus/UI, Timeline, provider, and
+  runbook contracts without Safety/action/Plant/device authority.
+- Added three behavior examples and, after an operator-approved controlled
+  rebuild, indexed three sequential T3 outcomes: TASK-041 behind TASK-039 for
+  IssueStack/proposal authority, TASK-042 behind TASK-041 for atomic
+  DecisionRecords and ordinary-task effects, and TASK-043 behind TASK-042 plus
+  TASK-040 for the only MVP model trigger and real Companion smoke. Planning
+  claims no implementation or real-model acceptance.
+
 ## [2026-07-18] FT-013 unambiguous gap closure
 - Kept the governance authorization seam on the existing `role_preset`, active
   Plant, and current `can_operate`/grant result without adding a governance

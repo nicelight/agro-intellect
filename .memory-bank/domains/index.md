@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical domain, persistence, migration, and internal data specifications.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/spec-backbone.md
@@ -24,6 +24,9 @@ source_of_truth:
   proposal persistence.
 - [Task, Approval, And Outcome Data](task-approval-outcomes.md): PostgreSQL
   authority, transactions, idempotency, automatic follow-up, and audit refs.
+- [Companion Governance Data](companion-governance.md): IssueStack,
+  HumanAttentionNeeded, proposals, DecisionRecords, atomic effects, and
+  projections.
 
 ## Subject data specs
 

@@ -2,7 +2,7 @@
 description: Verification contract for model-backed classification and physical-action Safety routing through pending approval.
 status: active
 type: testing_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-011-safety-gate-physical-action-routing.md
   - .memory-bank/contracts/safety-gate-runtime.md
@@ -47,6 +47,16 @@ follow-up assertion.
 - An identical retry avoids another provider call and is idempotent. A
   concurrent different input/result fingerprint leaves the first row unchanged
   and returns blocked/no-effect.
+- Persisted classification is evidence-only. Tests prove the exact server-owned
+  derived route union, no provider/caller route field, and no schema/migration
+  extension: matching `companion` origin derives
+  `companion_governance_hold`; other matching origins derive
+  `ordinary_dispatch`.
+- Companion safe information writes no FT-008 candidate Bus/UI row; Companion
+  safe task writes no FT-012 Task; held physical/blocked/mismatch/failure writes
+  no Safety/governance/ordinary downstream row. Retry, restart, restore, and
+  reconciliation do not replay held effects; non-Companion behavior remains
+  unchanged.
 
 ## Safety decision matrix
 

@@ -1,0 +1,216 @@
+{
+  "id": "TASK-042-T3-FT-013-W2",
+  "title": "Implement atomic Companion DecisionRecords and workflow effects",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-013",
+  "reqs": [
+    "REQ-003",
+    "REQ-004",
+    "REQ-010",
+    "REQ-013",
+    "REQ-016",
+    "REQ-017",
+    "REQ-018",
+    "REQ-022"
+  ],
+  "depends_on": [
+    "TASK-041-T3-FT-013-W1",
+    "TASK-040-T3-FT-012-W2"
+  ],
+  "touched_files": [
+    "backend/app/companion_governance/",
+    "backend/app/task_follow_up/",
+    "backend/app/agent_chat/contracts.py",
+    "backend/app/agent_chat/models.py",
+    "backend/app/agent_chat/publication.py",
+    "backend/app/access_admin/context_builders.py",
+    "backend/app/api/companion.py",
+    "backend/app/api/feed.py",
+    "backend/app/timeline/writer.py",
+    "backend/migrations/versions/*_ft013_companion_decision_effects.py",
+    "tests/backend/companion_governance/test_decision_effects.py",
+    "tests/backend/companion_governance/test_decision_projection_context.py",
+    "tests/backend/companion_governance/test_migration_models.py",
+    "tests/backend/api/test_ft013_companion_decision_routes.py",
+    "tests/backend/agent_chat/",
+    "tests/backend/task_follow_up/",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/photo_intake/test_ft005_migration_models.py",
+    "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/agent_chat/test_ft008_migration_models.py",
+    "tests/backend/safety_gate/test_migration_models.py",
+    "tests/backend/task_follow_up/test_migration_models.py",
+    "tests/backend/test_foundation_database_contract.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "companion_decision_effects",
+      "command": ".venv/bin/python -m pytest tests/backend/companion_governance/test_decision_effects.py tests/backend/companion_governance/test_decision_projection_context.py tests/backend/companion_governance/test_migration_models.py tests/backend/api/test_ft013_companion_decision_routes.py -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "decision_task_bus_regression",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/task_follow_up tests/backend/companion_governance -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "migration_head_compatibility",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/task_follow_up/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+      "required": true
+    },
+    {
+      "name": "full_deterministic_regression",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/domains/companion-governance.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/domains/task-approval-outcomes.md",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/tasks/plans/IMPL-FT-013.md"
+  ],
+  "evidence_required": [
+    "Boss, granted Engineer, Consultant deny, current grant, wrong-Farm, archive, restore, stale proposal/version, and no-existence-leak decision matrix evidence.",
+    "All five effects plus action/unknown/mismatched-classification rejection, identical/conflicting request, concurrent decision, and pending-v1 to flushed-approved-v2 same-UoW Task-source evidence.",
+    "Same-transaction DecisionRecord/ordinary Task/state/UI/Bus/Timeline success and injected Task/projection/audit/database rollback evidence, including every reachable nested TASK_* translation.",
+    "Resolved/close lifecycle, focused and unfocused open conclusions, exact ApprovedGovernanceSummaryV1 context, rejected no-Bus, UI identity, and Timeline cardinality/redaction evidence.",
+    "HTTP/OpenAPI/no-store evidence for the exact DecisionRecord/close/result/conclusion fields, refs, nullability, ordering, and complete reachable Task/runtime/domain error mapping, plus advanced Safety Gate, Task Follow-Up, and older exact-head regressions proving FT-008 strict variants and FT-012 ordinary-task/Safety boundaries remain valid."
+  ],
+  "purpose": "Complete the binding human-governance outcome over TASK-041 authority after TASK-040 has finished the shared Task Follow-Up package: authorized approve/reject and close commands, immutable DecisionRecords, exact atomic safe workflow effects, and guarded human/agent/audit projections without provider or physical-action authority.",
+  "success_outcome": "Boss or a currently granted Engineer can approve or reject only the current pending proposal, choose keep_open or resolved, and later close only a resolved issue; approval atomically records the exact discussion_only, check, measurement, follow_up, or none effect and creates one same-kind governance_decision ordinary Task only when operative, rejection records none and publishes no Bus fact, and every stale, invalid, unauthorized, archived, Task, projection, audit, or persistence failure leaves the proposal/attention/issue unchanged with no partial DecisionRecord or effect.",
+  "anti_goals": [
+    "Do not invoke a model, expose the explicit run command, compose providers, or perform credentialed UAT; TASK-043 owns that outcome.",
+    "Do not register the Companion router in backend/app/main.py; TASK-043 owns the single production registration after TASK-040, while this wave verifies decision/close routes through an isolated test app.",
+    "Do not redesign TASK-041 IssueStack/focus/attention/proposal identity or add another proposal persistence path.",
+    "Do not add a governance permission, reuse plant_approve_actions, forbid self-approval, add expiry/reopen/hard delete, or persist CompanionConclusion.",
+    "Do not create action Tasks, approve physical action, mutate Plant state, complete Tasks, record Outcomes, perform device work, or add frontend/PWA/scheduler/worker/outbox behavior."
+  ],
+  "runtime_context": {
+    "allowed_write_scope": [
+      "backend/app/companion_governance/",
+      "backend/app/task_follow_up/",
+      "backend/app/agent_chat/contracts.py",
+      "backend/app/agent_chat/models.py",
+      "backend/app/agent_chat/publication.py",
+      "backend/app/access_admin/context_builders.py",
+      "backend/app/api/companion.py",
+      "backend/app/api/feed.py",
+      "backend/app/timeline/writer.py",
+      "backend/migrations/versions/",
+      "tests/backend/companion_governance/test_decision_effects.py",
+      "tests/backend/companion_governance/test_decision_projection_context.py",
+      "tests/backend/companion_governance/test_migration_models.py",
+      "tests/backend/api/test_ft013_companion_decision_routes.py",
+      "tests/backend/agent_chat/",
+      "tests/backend/task_follow_up/",
+      "tests/backend/access_admin/test_ft002_schema_migration.py",
+      "tests/backend/photo_intake/test_ft005_migration_models.py",
+      "tests/backend/plant_operations/test_ft004_migration_models.py",
+      "tests/backend/agent_chat/test_ft008_migration_models.py",
+      "tests/backend/safety_gate/test_migration_models.py",
+      "tests/backend/task_follow_up/test_migration_models.py",
+      "tests/backend/test_foundation_database_contract.py",
+      ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
+      ".memory-bank/states/companion-governance.md",
+      ".memory-bank/domains/companion-governance.md",
+      ".memory-bank/contracts/companion-governance-http.md",
+      ".memory-bank/testing/companion-governance.md",
+      ".memory-bank/states/task-follow-up-lifecycle.md",
+      ".memory-bank/domains/task-approval-outcomes.md",
+      ".memory-bank/contracts/agent-chat-bus.md",
+      ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+      ".memory-bank/contracts/timeline-event.md",
+      ".memory-bank/tasks/TASK-042-T3-FT-013-W2.task.json",
+      ".protocols/TASK-042-T3-FT-013-W2/",
+      ".tasks/TASK-042-T3-FT-013-W2/"
+    ],
+    "forbidden_scope": [
+      "TASK-043 Companion request/result, provider composition, external egress, explicit run endpoint, or credentialed smoke.",
+      "A second IssueStack/proposal store, public proposal-create command, or changes to TASK-041 focus/attention/supersede identity except a narrowly proven compatibility repair.",
+      "New permission flags, plant_approve_actions governance semantics, self-approval restrictions, Farm-level governance, expiry, reopen, or hard delete.",
+      "Safety approval, action Task, Plant-state confirmation, Task completion, Outcome, target values, device commands, automated actuation, frontend/PWA, scheduler, worker, or outbox."
+    ],
+    "stop_conditions": [
+      "TASK-041 aggregate/proposal implementation differs materially from the linked lifecycle, record-version, or current-proposal contract.",
+      "The implemented TASK-039 ordinary-task service cannot accept governance_decision inside the caller's SQLAlchemy Session/UoW without widening Safety or action authority.",
+      "DecisionRecord, operative ordinary Task, proposal/attention/issue transition, required UI/Bus projections, and Timeline refs cannot be one PostgreSQL transaction.",
+      "Approved-only DecisionRecord context cannot be resolved from PostgreSQL without raw proposal/rationale/UI content or mutable replay authority.",
+      "Existing uncommitted work makes the decision-effect migration or shared Task/Agent Chat/API/writer edits unsafe to reconcile."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
+    ".memory-bank/epics/EP-005-companion-governance.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/behavior-specs/FT-013-BHV-002-decision-task-atomicity.behavior.json",
+    ".protocols/FT-013/decision-log.md",
+    ".memory-bank/tasks/plans/IMPL-FT-013.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/domains/companion-governance.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/domains/task-approval-outcomes.md",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Decision and close commands allow only Boss or currently granted Engineer with can_operate=true; Consultant and archived/unauthorized scope fail closed with no new permission or self-approval rule.",
+    "Only the current pending proposal at expected_version=1 and its active attention may decide, whether its open issue is focused or unfocused; keep_open focuses the target and atomically clears a different focus, resolved leaves another issue's focus unchanged, close is a separate resolved-to-closed command, and terminal records are immutable.",
+    "Effects are exactly discussion_only, check, measurement, follow_up, and none; approval copies the proposal effect, rejection forces none, and action/unknown/mismatch rejects the whole decision.",
+    "Operative DecisionRecord, the proposal locked pending-v1 then flushed approved-v2 for that same record, same-kind governance_decision ordinary Task, state transitions, required Timeline refs, decision/proposal UI, and approved-only Bus row commit together or all roll back; no intermediate commit or failed/no_effect DecisionRecord is retained.",
+    "Approved discussion_only/none may publish a compact DecisionRecord Bus fact without a Task; rejection creates human history only and no Bus fact; all agent context is the exact non-persisted ApprovedGovernanceSummaryV1 and safety_gate_authority remains not_granted.",
+    "The second FT-013 migration adds only decision-effect Task/Bus compatibility after the TASK-041 aggregate head and preserves every earlier row/variant.",
+    "Every exact-head assertion present after TASK-041, including Safety Gate and Task Follow-Up migration-model tests, advances to the decision-effect revision in this task.",
+    "The decision/close router is verified through an isolated FastAPI test app and remains unregistered in backend/app/main.py until TASK-043 performs the single production registration after TASK-040.",
+    "TASK-042 starts only after TASK-040 because both may edit backend/app/task_follow_up/; this explicit edge serializes the shared package even though their feature-local wave labels are both W2."
+  ],
+  "invariants": [
+    "PostgreSQL is DecisionRecord, issue transition, and Task authority; Timeline, UI Feed, Bus, MessageEnvelope, classification, and conclusion cannot independently create, repair, replay, or transition records.",
+    "DecisionRecord never grants Safety approval, action Task, Plant-state mutation, device effect, Task completion, or Outcome authority.",
+    "Agent Chat Bus resolves only exact ApprovedGovernanceSummaryV1 facts from committed approved DecisionRecords; UI projections and mutable CompanionConclusion/focus/attention are not Bus context. TASK-043 may separately assemble strict typed governance provider input.",
+    "Archive retains all governance rows and authorized reads but blocks decisions, close, workflow effects, and Bus publication; restore never replays denied work.",
+    "Identical decision/close retries return the first canonical result; stale versions, reused identities with different fingerprints, superseded/terminal proposals, and projection conflicts have no effect."
+  ],
+  "verification_targets": [
+    "Migration/model tests prove the decision-effect revision follows TASK-041, adds exact Task source/Bus constraints and nullable backend-domain scope, and advances Safety Gate, Task Follow-Up, and every older exact-head assertion without changing earlier rows.",
+    "PostgreSQL service/concurrency tests prove approve/reject, attention satisfaction, focused/unfocused open conclusion reads, keep_open focus transfer, resolved/close, identical duplicate versus conflict, current authority, and archive/grant/stale races.",
+    "Effect tests cover all five allowed values, action/unknown/mismatch rejection, one same-kind governance_decision Task from the flushed approved-v2/same-DecisionRecord graph without intermediate commit, committed duplicate, wrong proposal phase/link rejection, discussion_only/none no Task, rejection none/no Bus, and zero Safety/action/Plant/device authority.",
+    "Failure injection proves Task insert, Timeline append, UI/Bus projection, and database errors roll back DecisionRecord plus every state/effect mutation while non-authoritative appended audit noise cannot replay state.",
+    "Projection/context tests prove exact decision/proposal UI updates, approved-only DecisionRecord Bus identity, canonical companion_issue/companion_attention/companion_proposal/decision_record refs and source arrays, exact ApprovedGovernanceSummaryV1 reconstruction/omission, complete focused/unfocused conclusion latest/nullability matrix, null scope only for backend domain records, and zero raw proposal/rationale leakage.",
+    "Isolated-router HTTP/OpenAPI and focused FT-008/FT-012 regressions prove exact DecisionRecord/close/result/conclusion fields, refs, ordering, nullability and all six reachable TASK_* translations plus impossible-code fallback, no-store/no-leak, retained archive reads, and unchanged ordinary-task/Safety/context boundaries without touching production main.py."
+  ]
+}

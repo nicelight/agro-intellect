@@ -123,7 +123,7 @@ does not replace backend rules, and cannot authorize physical actions.
 - DecisionRecord MAY direct Plant-scoped discussion/workflow and safe task requests such as check, measurement, or follow-up tasks through backend rules.
 - DecisionRecord MUST NOT change Plant state by itself, create `action_task`, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
 - Approved governance summary MAY become agent-consumable only as compact typed facts derived from a valid DecisionRecord: decision, decision summary, allowed workflow effect, role/time attribution, source refs, Plant/issue/proposal refs, and explicit `safety_gate_authority=not_granted`.
-- Approved governance summary MUST NOT include raw proposal text, raw rationale, raw chat, UI markdown, or unapproved discussion content.
+- Approved governance summary MUST NOT include raw proposal text, raw rationale, raw chat, or UI markdown. Separately, an owning agent-specific provider contract MAY supply authorized typed unapproved governance context as non-authoritative input.
 - Dataset governance MUST keep candidates non-trainable by default and require evidence refs before any future trainability change.
 - Local storage prompt MUST appear when local dataset/photo storage exceeds 200 MB and MUST NOT imply upload or server availability.
 
@@ -216,8 +216,8 @@ from first demo.
 - Governance approval MUST NOT be treated as Safety Gate approval.
 - Superseded CompanionProposal records MUST NOT be approvable and MUST NOT become agent facts.
 - DecisionRecord MUST NOT be treated as Plant-state evidence or action approval by itself.
-- Raw CompanionProposal content, rationale, discussion history, and UI projection MUST NOT become agent-consumable even after approval.
-- Admin UI notices, UI markdown, UI cards, raw chat, unapproved Companion proposals, and spoiler notes MUST NOT become agent facts.
+- Sending governance content to a model does not approve it, turn it into a fact, or grant DecisionRecord, Plant-state, Task, Safety, or publication authority.
+- Admin UI notices, UI markdown, UI cards, raw chat, and spoiler notes MUST NOT become agent facts.
 - Local storage warnings MUST allow acknowledge/dismiss and MUST NOT imply upload/server availability.
 - LAN mode, if enabled, MUST add exposure controls and MUST NOT weaken local auth/authz.
 - Agent output MUST NOT promote hypotheses to confirmed Plant state without human review or follow-up evidence.
@@ -244,12 +244,12 @@ from first demo.
   or publish while archived; after restore they advance only through a new
   request that passes all current guards.
 - Photo upload produces a local file, catalog row, `sha256`, initial capture manifest, and audit/export refs.
-- UI Feed and unapproved proposal content are not consumed by agents.
+- UI Feed is not consumed by agents; authorized typed governance context may be supplied only through an owning agent-specific provider contract and remains non-authoritative.
 - Physical-action wording is blocked or routed until fresh data, Safety Gate pass, and authorized human approval exist.
 - Governance DecisionRecord remains separate from Safety Gate approval.
 - DecisionRecord can route Plant-scoped workflow or safe check/measurement/follow-up task requests, but cannot mutate Plant state or unlock physical actions.
 - Creating a new CompanionProposal for the same Plant issue supersedes the previous pending proposal; only the current proposal can be approved/rejected.
-- After valid DecisionRecord, agents can receive only compact approved governance summary facts and refs, not raw proposal text, rationale, UI markdown, or chat discussion.
+- After valid DecisionRecord, Agent Chat Bus consumers receive compact approved governance summary facts and refs. This approved Bus fact is separate from typed governance input supplied directly by an owning agent-specific provider contract.
 - Dataset items are non-trainable by default.
 - Local storage prompt appears at the 200 MB threshold without server/upload implication.
 
@@ -262,7 +262,7 @@ from first demo.
   agent publication, and Companion proposal records, including no transition
   while archived and no automatic resume after restore.
 - Safety tests later MUST cover stale data, missing approval authority, failed Safety Gate, governance-vs-safety approval separation, and action-task unlock semantics.
-- UI/context hygiene tests later MUST prove UI Feed, spoiler notes, raw chat, admin notices, and unapproved proposals do not enter agent working context.
+- UI/context hygiene tests later MUST prove UI Feed, spoiler notes, raw chat, and admin notices do not enter agent working context, while any agent-specific governance input matches its strict typed allowlist and remains non-authoritative.
 - Storage/export tests later MUST cover photo file/catalog/manifest/timeline refs and secret redaction.
 - Agent runtime tests later MUST distinguish real LLM/model-backed MVP flows from test-only mocks; mocks may be used only in tests, not as the MVP runtime/demo path.
 
@@ -278,7 +278,7 @@ from first demo.
 - Q: What is the MVP `IssueStack` scope? -> A: `IssueStack` is scoped to a Plant. Farm-level issues and separate Farm-level chat are deferred beyond MVP PRD.
 - Q: What may a `DecisionRecord` control in MVP? -> A: DecisionRecord may direct Plant-scoped discussion/workflow and safe task requests such as check, measurement, or follow-up tasks through backend rules. It must not change Plant state by itself, create `action_task`, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
 - Q: What is the high-level CompanionProposal supersede/expiry policy? -> A: No parallel proposals for the same Plant-scoped issue. When Companion creates a new proposal for the same issue, the previous pending proposal automatically becomes superseded and non-operative. No time-based expiry is required in PRD.
-- Q: What approved governance summary becomes agent-consumable? -> A: Only compact typed facts derived from a valid DecisionRecord: decision id, Plant id, issue id, proposal id/version, decision, decision summary, allowed workflow effect, decider role, decided_at, source refs, and explicit `safety_gate_authority=not_granted`. Raw proposal text, raw rationale, UI markdown, raw chat, and unapproved discussion content remain non-consumable.
+- Q: What approved governance summary becomes agent-consumable? -> A: The Bus fact remains compact typed data derived from a valid DecisionRecord: decision id, Plant id, issue id, proposal id/version, decision, decision summary, allowed workflow effect, decider role, decided_at, source refs, and explicit `safety_gate_authority=not_granted`. This Bus projection is distinct from authorized typed governance input supplied directly by an owning agent-specific provider contract.
 - Q: Is the first-demo boundary sufficient, and can any agent/model behavior be stubbed in MVP? -> A: MVP must use real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users. Fake, mock, hardcoded, or stubbed agent outputs are not acceptable as the MVP runtime/demo path. Sensor runtime remains out of MVP until real sensors exist.
 
 ### Session 2026-07-11
@@ -298,6 +298,17 @@ from first demo.
   the Plant chat/feed UI renders those events. Retry/restart is idempotent,
   archive pauses projection, restore revalidates current state, and delivery
   failure never rolls back Plant creation.
+
+### Session 2026-07-18
+
+- Q: May the current Companion model receive the selected open Issue summary
+  before approval? -> A: Yes, as one narrow exception. The authorized explicit
+  `existing_issue` request may include only the exact persisted
+  `summary_text`; a `new_issue` request includes none. The field remains
+  untrusted and non-authoritative and grants no fact, DecisionRecord,
+  Plant-state, Task, Safety, Bus/general agent-context, or publication
+  authority. The broader blanket prohibition remains until a later explicit
+  documentation/product-policy change.
 
 ## Unresolved Blockers
 

@@ -1,0 +1,19 @@
+{
+  "id": "FT-013-BHV-002",
+  "feature_id": "FT-013",
+  "title": "An approved operative proposal commits its DecisionRecord and ordinary Task atomically",
+  "given": {
+    "plant": "active",
+    "actor": "currently authorized Boss or granted Engineer with can_operate=true",
+    "proposal": "the current pending measurement proposal with matching safe_task_request classification"
+  },
+  "when": {
+    "command": "the actor approves version 1 and selects keep_open",
+    "fault_case": "ordinary Task persistence may fail"
+  },
+  "then": {
+    "success": "the locked pending proposal becomes approved version 2 for the same DecisionRecord, and one measurement Task consumes that flushed same-UoW source graph before all records, projections, and audit refs commit together",
+    "failure": "a Task failure rolls back the DecisionRecord and every same-transaction transition or projection",
+    "safety": "neither path grants Safety approval or creates an action Task"
+  }
+}

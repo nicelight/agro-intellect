@@ -60,7 +60,7 @@ Decomposition implication: Safety Gate, physical-action approval, task/action un
 2. Companion may raise `HumanAttentionNeeded`, create a `CompanionProposal`, and summarize discussion.
 3. A valid human decision creates a `DecisionRecord`.
 4. DecisionRecord may direct Plant-scoped workflow or safe task requests through backend rules.
-5. Agents may consume only compact approved governance summary facts and refs, never raw proposal text, rationale, raw chat, UI markdown, or unapproved discussion.
+5. Agent Chat Bus consumers receive compact approved governance summary facts and refs. Separately, an owning agent-specific provider contract may supply authorized typed unapproved governance context as non-authoritative input; raw chat and UI markdown remain excluded.
 
 Decomposition implication: Companion governance is a typed state/workflow slice and must not be merged with Safety Gate approval or raw chat/feed behavior.
 

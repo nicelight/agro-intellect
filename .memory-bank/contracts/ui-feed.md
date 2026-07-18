@@ -2,7 +2,7 @@
 description: Global UI Feed projection contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -112,25 +112,30 @@ project-owned summary; candidate text is forbidden.
 
 For `display_kind=companion_governance`, `display_payload` is exactly one of:
 
-  - `{payload_kind:"companion_attention",attention_ref:"human_attention_needed:uuid",issue_ref:"issue:uuid",summary_text:"compact literal text"}`;
-  - `{payload_kind:"companion_proposal",proposal_ref:"companion_proposal:uuid",issue_ref:"issue:uuid",proposal_state:"pending|approved|rejected|superseded",summary_text:"compact literal text"}`;
-  - `{payload_kind:"companion_decision",decision_record_ref:"decision_record:uuid",issue_ref:"issue:uuid",proposal_ref:"companion_proposal:uuid",decision_summary:"compact literal text",safety_gate_authority:"not_granted"}`.
+  - `{payload_kind:"companion_attention",attention_ref:"companion_attention:uuid",issue_ref:"companion_issue:uuid",summary_text:"compact literal text"}`;
+  - `{payload_kind:"companion_proposal",proposal_ref:"companion_proposal:uuid",issue_ref:"companion_issue:uuid",proposal_state:"pending|approved|rejected|superseded",summary_text:"compact literal text"}`;
+  - `{payload_kind:"companion_decision",decision_record_ref:"decision_record:uuid",issue_ref:"companion_issue:uuid",proposal_ref:"companion_proposal:uuid",decision_summary:"compact literal text",safety_gate_authority:"not_granted"}`.
 
 For these variants, `source_id` is the UUID contained in the primary record
 ref for the selected payload. Exact compact-text normalization and bounds are
 owned by the FT-013 canonical governance payload contract; raw proposal text,
 raw rationale, raw chat, and UI markup are never copied into these projections.
+Alias kinds such as `issue:` and `human_attention_needed:` are invalid; all
+Companion projections use the same FT-013 ref grammar as HTTP, provider input,
+Bus resolution, and PostgreSQL-derived views.
 
 `display_payload` must not be reused as agent input, runtime truth, timeline
 authority, task/action authority, URL/action input, or HTML/Markdown source.
 
 ## Rules
 
-- UI Feed may project candidate text only for `safe_information` with the
-  matching `SafetyClassificationResultV1` and current guard. Other classes use
-  an authoritative task/Safety record or a generic block notice; the notice
-  never copies candidate text. UI Feed may also project authorized domain,
-  timeline, admin, storage, and Companion records under their owning contracts.
+- UI Feed may project candidate text only for non-Companion
+  `safe_information` with the matching `SafetyClassificationResultV1`, derived
+  `ClassificationConsumerRouteV1=ordinary_dispatch`, and current guard. Other
+  ordinary-dispatch classes use an authoritative task/Safety record or a
+  generic block notice; the notice never copies candidate text. UI Feed may
+  also project authorized domain, timeline, admin, storage, and Companion
+  records under their owning contracts.
 - Candidate text on that authorized/classified route is rendered literally
   through escaped/text-node semantics (for example, framework text
   interpolation or `textContent`). UI Feed never sends it through an HTML or
@@ -144,8 +149,9 @@ authority, task/action authority, URL/action input, or HTML/Markdown source.
   same event; no introduction is copied to Agent Chat Bus. Introductions remain
   `visible_to_agents=false` and `consumable_by_agents=false`.
 - UI Feed must never publish directly to Agent Chat Bus.
-- UI Feed, UI markdown, cards, spoiler notes, raw chat, admin notices, and
-  unapproved Companion content must never enter agent working context.
+- UI Feed, UI markdown, cards, spoiler notes, raw chat, and admin notices must
+  never enter agent working context. An agent-specific provider assembler may
+  load typed governance content from PostgreSQL authority, never from UI Feed.
 - Candidate text displayed by UI Feed must not be copied into agent context,
   runtime instructions, command handlers, routing inputs, or authority fields.
 - UI Feed may show a Safety block or pending approval prompt, but it cannot
@@ -161,6 +167,14 @@ authority, task/action authority, URL/action input, or HTML/Markdown source.
   `companion_proposal` never publish to Bus. Only the separate guarded
   DecisionRecord reference defined by Agent Chat Bus may become
   agent-consumable.
+- Canonical Companion classification uses
+  `companion_governance_hold`. Its `safe_information` result creates no FT-008
+  `agent_message`, and its `safe_task_request` creates neither an FT-008 row nor
+  an FT-012 Task. Held `physical_action|blocked_uncertain|mismatch|failure`
+  creates no generic block, Safety-status, or candidate row. Only the later
+  governance command may write the compact dedicated attention/proposal/
+  decision summaries above; raw candidate/proposal/rationale/provider text is
+  never copied into UI Feed.
 - UI Feed must apply the same ActorContext and PlantAccessGrant visibility
   constraints as backend reads.
 - Secrets, tokens, auth headers, `.env` values, provider payloads, hidden
@@ -180,7 +194,9 @@ text-node/framework interpolation semantics.
   not proof of current visibility. The projection writer applies the canonical
   current authorization and active-Plant guard in the same write boundary.
 - If a source record is valid but unsafe for agents, UI Feed may still show a
-  redacted human notice with `consumable_by_agents=false`.
+  redacted human notice with `consumable_by_agents=false` only when its owning
+  contract permits that projection. A Companion governance hold permits no
+  ordinary candidate/block/Safety notice.
 - If a projection references archived Plant history, it must use an explicit
   retained-history authorization path.
 - A pending introduction is retained but not projected while its Plant is
@@ -193,6 +209,9 @@ text-node/framework interpolation semantics.
 - If a projection references physical-action wording, it must show the current
   Safety Gate/task state instead of cleared action wording unless the safety
   lifecycle permits that wording.
+- Classification retry, process restart, restore, or reconciliation cannot
+  replay a held Companion candidate into UI Feed. Ordinary non-Companion
+  classified publication and generic block behavior remain unchanged.
 - Safety status projection never copies physical-action candidate wording.
   Archive preserves an existing row for authorized retained history but blocks
   a new decision/projection; restore does not replay it.
@@ -219,3 +238,6 @@ Tests must prove:
 - all three Companion variants reject unknown fields, preserve literal text,
   keep both agent flags false, and cannot grant governance, task, Plant-state,
   or Safety authority.
+- held Companion safe-information/task/physical/blocked/mismatch/failure paths
+  write no ordinary candidate/block/Safety UI row, retry/restore does not
+  replay one, and non-Companion FT-008 behavior remains compatible.

@@ -2,7 +2,7 @@
 description: Global MessageEnvelope contract boundary for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-12
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -148,6 +148,12 @@ reference both immutable artifacts.
 - Downstream records reference `message_envelope:<message_id>` and require the
   matching `SafetyClassificationResultV1` keyed by that `message_id`; the
   envelope alone is insufficient publication authority.
+- A matching classification is persisted routing evidence, not automatic
+  dispatch authority. The server derives
+  `ClassificationConsumerRouteV1=ordinary_dispatch|companion_governance_hold`
+  from the matching envelope/persisted-classification origin agent. The route
+  is not a MessageEnvelope field and cannot be selected by candidate/provider
+  content.
 - Restore never reuses a prior blocked run or message candidate; a new
   invocation receives a new `run_id` and, if valid, a new `message_id`.
 
@@ -187,6 +193,12 @@ boundaries must preserve that lack of authority.
 - Every non-silent envelope must be classified by the project-owned Safety &
   Task Loop before Bus/UI/task publication. Model-selected labels cannot bypass
   that classifier.
+- Canonical `agent_id=companion` uses the derived
+  `companion_governance_hold` consumer route. Its matching safe-information or
+  safe-task classification can authorize only the guarded proposal-persistence
+  handoff; it cannot publish the candidate through FT-008, create an FT-012
+  Task, or enter FT-011 Safety routing before a later human-approved
+  DecisionRecord.
 - Pending envelope text cannot become agent context, cleared user-visible
   action wording, approval, or any task.
 - Candidate text cannot override the classifier schema/result matrix, current
@@ -197,15 +209,18 @@ boundaries must preserve that lack of authority.
 
 ## Bus And UI Projection
 
-- MessageEnvelope may be referenced by Agent Chat Bus/UI Feed only after a
-  matching successful project-owned classification result permits that route.
+- A non-Companion MessageEnvelope may be referenced by Agent Chat Bus/UI Feed
+  only after a matching successful project-owned classification result and
+  `ordinary_dispatch` permit that route. A Companion-governance-held envelope
+  is never an FT-008 Bus/UI candidate source.
 - A Plant-scoped classified handoff is publishable only after the owning writer
   applies the canonical current authorization and active-Plant guard in the
   same boundary as the write. Neither the envelope authorization snapshot nor
   the classification result is reusable authorization. Archive after
   classification denies publication; restore does not replay the handoff.
-- UI Feed may project only the route permitted by the classification result;
-  physical-action text remains governed by the Safety Action Lifecycle.
+- UI Feed may project only the route permitted by the classification result
+  plus server-derived consumer route; physical-action text remains governed by
+  the Safety Action Lifecycle.
 - When an authorized/classified route permits candidate text in UI Feed, the
   text is rendered literally through escaped/text-node semantics. It is never
   interpreted as HTML/Markdown, activated as a URL/action, or reused as agent
@@ -216,6 +231,12 @@ boundaries must preserve that lack of authority.
 - UI Feed projection does not become MessageEnvelope or agent context.
 - MessageEnvelope creation is only a narrow handoff. FT-008 repeats the current
   active-Plant/authorization check immediately before Bus or UI emission.
+- A held Companion envelope remains transient/non-consumable. Its raw candidate
+  does not enter Bus/UI/agent context, and classification retry, restart,
+  restore, or reconciliation cannot replay a suppressed FT-008/FT-011/FT-012
+  effect. Dedicated governance projection may later expose only its canonical
+  compact non-agent-consumable summary; only a valid approved DecisionRecord
+  can produce a Task or guarded compact Bus fact.
 
 ## Verification
 
@@ -239,3 +260,8 @@ Tests must prove:
   instruction-channel promotion, and no direct action or authority;
 - archived Plant blocks MessageEnvelope/Bus/UI operational publication even
   when model execution began before archive.
+- Companion negative compatibility proves safe information writes no FT-008
+  candidate Bus/UI row, safe task request creates no FT-012 Task, held
+  physical/blocked/mismatch/failure has no downstream row, retries/restores do
+  not replay held effects, and ordinary non-Companion publication remains
+  unchanged.

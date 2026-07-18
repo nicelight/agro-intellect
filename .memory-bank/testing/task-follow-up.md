@@ -2,7 +2,7 @@
 description: Verification contract for FT-012 approvals, tasks, follow-ups, outcomes, and the real Task and Follow-up Agent.
 status: active
 type: testing_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/task-follow-up-lifecycle.md
@@ -37,9 +37,12 @@ immutable pending Safety decision through human task completion and Outcome.
 
 ## Ordinary-task matrix
 
+- `create_ordinary_task` is one service with the exact closed
+  `classified_message|governance_decision` command union; no second Task writer
+  or repository shortcut exists.
 - Validated pending MessageEnvelope plus persisted matching
   `safe_task_request/check|measurement|follow_up` creates exactly one Task of
-  the same kind.
+  the same kind only under derived `ordinary_dispatch`.
 - Envelope/classification message, scope, task kind, and source refs must
   match; missing persistence, mismatch, conflict, physical action, blocked
   uncertainty, or safe information creates no Task.
@@ -50,6 +53,19 @@ immutable pending Safety decision through human task completion and Outcome.
   wrong Farm, disabled identity, or archived Plant fails closed.
 - Identical retry returns the same Task and `task_created` ref. Same message or
   request id with different fingerprint conflicts.
+- The classified-message branch derives exact message/classification/upstream
+  source refs and fingerprint, owns/commits its UoW, and rejects canonical
+  Companion origin because that classification is governance-held.
+- The governance-decision branch accepts only an immutable approved
+  DecisionRecord, its proposal that was locked pending version 1 at decision
+  start and is now flushed approved version 2 for the same record in the caller
+  UoW, satisfied attention, matching classification, exact ordinary kind/text,
+  DecisionRecord request identity/fingerprint, and that caller UoW. It derives
+  exact refs/fingerprint, flushes without commit, returns created/duplicate or
+  typed conflict, and rolls the complete governance transaction back on
+  Task/audit failure. Tests also cover committed duplicate plus rejection of
+  pending-at-entry, rejected, superseded, and differently linked approved
+  proposals.
 
 ## Approval and action matrix
 
@@ -116,8 +132,8 @@ immutable pending Safety decision through human task completion and Outcome.
 - Provider input contains only authorized PostgreSQL task/outcome/evidence
   records. UI Feed, Bus history, raw chat, Timeline replay,
   ActorContext/session/account/membership/role/grant, prompts, caller refs,
-  provider history, hidden reasoning, credentials, paths, and unapproved
-  governance content are absent.
+  provider history, hidden reasoning, credentials, paths, and fields outside
+  the registered Task Follow-Up request allowlist are absent.
 - Persisted Task text remains an explicit quoted untrusted-data field and
   cannot alter instructions, tools, schema, route, or authority.
 - Allowed proposal kinds are only `check|measurement|follow_up`; an existing
@@ -128,6 +144,9 @@ immutable pending Safety decision through human task completion and Outcome.
   Exactly matching persisted classification plus current ordinary-task guard
   is required for one Task. Class/kind mismatch or any physical/blocked branch
   creates none.
+- A Companion-origin safe-task classification is explicitly held: it cannot
+  enter the classified-message branch before an approved DecisionRecord, and
+  retry/restore/reconciliation cannot replay the suppressed Task effect.
 - Pre/post-model, classification-write, and task-write authorization/archive
   races fail closed with no restore replay.
 - Explicit provider/model binding, no default/fallback, redaction, and common

@@ -1,7 +1,7 @@
 ---
 description: Словарь терминов, сущностей и agreed vocabulary проекта.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -160,16 +160,25 @@ source_of_truth:
 ## Companion Governance
 
 - `IssueStack`: explicit structured state for findings, gaps, problems, open questions, and disagreements; not hidden LLM memory.
-- `current_issue`: one IssueStack item receiving Companion primary attention with a short rationale.
-- `CompanionConclusion`: Companion summary that an issue is resolved enough for discussion; not a binding system decision by itself.
-- `IssueClosedByCompanion`: event recording Companion closure of a discussion issue; does not authorize backend action.
+- `current_issue`: the nullable focused open IssueStack item identified by
+  `is_focused`; focus has no separate rationale field.
+- `CompanionConclusion`: derived typed `awaiting_human|decided|closed` read over
+  authoritative issue, attention/proposal, and latest DecisionRecord state;
+  open rows may be focused or unfocused, and the conclusion is neither
+  persisted nor a binding decision by itself.
+- `IssueClosedByCompanion`: retained product/audit label for
+  `companion_issue_closed`, emitted only after an authorized human close command
+  on a resolved Companion-managed issue; the Companion model cannot close it,
+  and the event authorizes no backend action.
 - `CompanionProposal`: typed human-visible proposal for process direction or decision; not operative until valid approval/rejection.
 - `DecisionRecord`: typed binding governance record created from a valid human decision on a CompanionProposal.
 - `HumanAttentionNeeded`: typed marker that Companion expects or requires human reaction before a governance path can proceed.
 - `governance approval`: human approval/rejection of a CompanionProposal that may create a DecisionRecord; never authorizes physical action.
 - `governance decision`: binding DecisionRecord for discussion, workflow, or domain direction within existing backend rules.
-- `approved governance summary`: agent-consumable summary derived from an approved DecisionRecord, not from raw proposal discussion.
-- `unapproved proposal`: CompanionProposal that remains human-visible only and must not enter agent working context as fact.
+- `ApprovedGovernanceSummaryV1`: exact non-persisted agent-consumable typed fact
+  derived from an approved DecisionRecord and its approved version-2 proposal;
+  it is not CompanionConclusion and contains no raw proposal discussion.
+- `unapproved proposal`: CompanionProposal that has no DecisionRecord, fact, Task, Safety, Plant-state, or publication authority. An owning agent-specific provider contract may use its authorized typed content as untrusted context.
 
 ## Event And Envelope Fields
 
