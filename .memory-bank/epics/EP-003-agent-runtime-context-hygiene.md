@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-003
 lifecycle: planned
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -57,7 +57,14 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
   literal UI publication, current-authority agent-context isolation, and the
   protected Plant feed API. REQ-013 is correspondingly `verified` across its
   FT-007/FT-008 boundary.
+- FT-009's W1/W2 task queue is complete: TASK-034 has an owner-accepted
+  provider-neutral administrative closure, and TASK-035 is `done` from current
+  ATTEMPT 04 implementation, functional `PASS`, and `semantic-pass` evidence.
+  FT-009's feature lifecycle remains `planned` because this evidence sync does
+  not make an owner feature-lifecycle decision; real selected-endpoint image
+  behavior remains deferred and unverified.
 - EP-003 remains `planned`: the future provider-integration milestone under
-  REQ-011 is deferred, while FT-009 Vision/Plant trust and FT-010 advisor behavior remain
-  independently owned and unimplemented. FT-008 does not claim those outcomes
-  or FT-016 frontend rendering.
+  REQ-011 is deferred, and FT-010 advisor behavior remains independently owned
+  and unimplemented. TASK-036 is scheduler-recorded `planned` after dependency
+  recovery but is not promoted or selected. FT-008 and FT-009 do not claim that
+  outcome or FT-016 frontend rendering.

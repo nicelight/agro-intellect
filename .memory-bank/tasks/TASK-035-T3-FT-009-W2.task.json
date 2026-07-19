@@ -1,7 +1,7 @@
 {
   "id": "TASK-035-T3-FT-009-W2",
   "title": "Persist and review Plant state trust with explicit conflicts",
-  "status": "in_progress",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-009",
   "reqs": [
@@ -15,19 +15,10 @@
     "TASK-034-T3-FT-009-W1"
   ],
   "touched_files": [
-    "backend/app/plant_state/",
-    "backend/app/agent_runtime/providers.py",
-    "backend/app/api/plant_state.py",
-    "backend/app/api/__init__.py",
-    "backend/app/main.py",
-    "backend/migrations/versions/ft009_plant_state.py",
-    "tests/backend/plant_state/",
-    "tests/backend/api/test_ft009_plant_state_routes.py",
-    "tests/backend/access_admin/test_ft002_schema_migration.py",
-    "tests/backend/photo_intake/test_ft005_migration_models.py",
-    "tests/backend/plant_operations/test_ft004_migration_models.py",
-    "tests/backend/test_foundation_database_contract.py",
-    ".memory-bank/tasks/TASK-035-T3-FT-009-W2.task.json"
+    "backend/app/plant_state/service.py",
+    "tests/backend/plant_state/test_service.py",
+    ".protocols/TASK-035-T3-FT-009-W2/",
+    ".tasks/TASK-035-T3-FT-009-W2/"
   ],
   "tier": "T3",
   "gates": [
@@ -60,11 +51,12 @@
   "verify": [
     "Migration/model inspection proves the exact plant_state_records shape, native UUID/restrictive FKs, record-kind and confirmation checks, confidence/version bounds, unique message id, required indexes, and guarded non-empty downgrade.",
     "One record is inserted only from a matching immutable envelope, strict feature candidate, canonical SafetyClassificationResultV1 with classification=safe_information and the same message_id, and fresh same-transaction active-Plant authorization; pending/unsafe/mismatched input writes nothing.",
+    "Vision persistence accepts exactly photo-only A-to-A or ordered Plant A/photo A provenance. The same transaction reloads current authorization, active Plant, and authoritative PhotoCatalogItem metadata, then rejects cross-Plant/Farm/photo, unknown-photo, malformed/ref-order, scope, message, or classification mismatch before insert/flush with the canonical error and zero rows; it never revalidates photo bytes/files.",
     "Initial trust mapping is exact: present/absent at confidence 0.50 or above becomes observed; lower-confidence or uncertain/not_assessable Vision finding becomes unknown regardless of pending envelope candidate_claim_type; Plant State trend becomes hypothesis; no agent-created record begins confirmed or gains Safety/task/action authority.",
     "The canonical plant_state agent reads only the latest authorized non-rejected PostgreSQL trust records, validates structural trend/conflict/unknown evidence, and returns only a pending assessment handoff before classified persistence.",
     "Opposing same-key present/absent evidence remains explicit conflicting state; newest/highest-confidence evidence never silently wins and unresolved conflict blocks confirmation.",
     "Boss and authorized Engineer can confirm/reject through optimistic expected_version; Consultant, wrong Farm, revoked access, disabled membership, stale version, and archived Plant fail before mutation.",
-    "List/review HTTP follows exact schemas, no-store, retained-history authorization, stable complete cursor pagination, wrong-Plant cursor rejection, no enumeration, and internal/provider/auth field exclusion.",
+    "List/review HTTP follows exact schemas, no-store, retained-history authorization, stable complete cursor pagination, and internal/provider/auth field exclusion; wrong-Plant, malformed, and noncanonical cursors all return 422 VALIDATION_FAILED, while authorization denies before cursor decoding to preserve no-enumeration behavior.",
     "A deterministic plant_state fake/spy invocation over persisted classified Plant records returns audited envelope_ready with a valid pending assessment for the seeded conflict/trend fixture; exact outbound allowlists, timeout/error/invalid output, post-I/O denial, redaction, unbound production, and model silence fail closed without provider or live-smoke evidence.",
     {
       "stage": "scheduler_dependency_block",
@@ -97,11 +89,307 @@
         ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-ADMIN-CLOSURE-final-report-docs-02.md",
         ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-PROVIDER-NEUTRAL-20260719-final-report-docs-01.md"
       ]
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "scheduler_worker",
+      "attempt": "02",
+      "verdict": "PASS",
+      "decided_at": "2026-07-19T15:40:54+05:00",
+      "basis": "Independent deterministic verification confirms the bounded wrong-Farm persistence defect is closed with canonical pre-flush denial and zero rows; focused, scoped regression, full deterministic, migration, lint, diff, model-silence, and audit-redaction checks pass.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-02.md",
+        ".protocols/TASK-035-T3-FT-009-W2/verification.md"
+      ],
+      "note": "Provider/model/base URL/credentials/egress/network/live smoke is deferred and not applicable to current code-phase closure. This evidence does not change lifecycle status or claim real-provider integration."
+    },
+    {
+      "stage": "adversarial_verification",
+      "mode": "scheduler_worker",
+      "attempt": "02",
+      "verdict": "semantic-fail",
+      "decided_at": "2026-07-19T15:51:17+05:00",
+      "basis": "Independent adversarial verification reproduced a HIGH cross-Plant Vision handoff rebinding that commits a Plant B trust row with explicit Plant A/photo provenance, plus a MEDIUM canonical cursor-error contract drift.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-02.md",
+        ".protocols/TASK-035-T3-FT-009-W2/red-verification.md"
+      ],
+      "note": "Provider/live checks remained deferred and were neither required nor claimed."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "attempt": "02",
+      "decision": "failed",
+      "decided_at": "2026-07-19T15:51:17+05:00",
+      "basis": "ATTEMPT 02 is the highest and final allowed attempt. Its functional verification passed, but the separately selected adversarial verification produced a current-attempt semantic-fail with a demonstrated HIGH product/source-integrity violation. The max_attempts_per_task limit of 2 is exhausted.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-IMPL-final-report-code-02.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-02.md"
+      ],
+      "operator_action": "Return the two findings through normal planning/review/readiness, authorize an explicit recovery/reset or replacement task, then resume scheduler execution. Autopilot must not create an ATTEMPT 03."
+    },
+    {
+      "stage": "planning_recovery_authorization",
+      "mode": "explicit_owner",
+      "decision": "authorize_post_halt_recovery",
+      "decided_at": "2026-07-19",
+      "task_id": "TASK-035-T3-FT-009-W2",
+      "current_status": "failed",
+      "next_attempt": "03",
+      "effective_attempt_limit": 3,
+      "recovery_attempts_authorized": 1,
+      "attempts_remaining_after_attempt_03": 0,
+      "scope": [
+        "HIGH-01: fail closed on cross-Plant/Farm/photo Vision provenance before insert/flush with zero writes",
+        "MEDIUM-01: return canonical 422 VALIDATION_FAILED for malformed, noncanonical, and wrong-Plant cursors"
+      ],
+      "prerequisites": [
+        "bounded FT-009 planning reconciliation",
+        "fresh /review-tasks-plan FT-009 APPROVE",
+        "explicit scheduler failed -> planned lifecycle recovery that preserves all prior evidence and does not start or consume ATTEMPT 03",
+        "applicable /mb-doctor --strict PASS over the recovered planned queue before planned -> ready, selection, or ATTEMPT 03 consumption"
+      ],
+      "recovery_sequence": [
+        "After durable owner authorization, bounded reconciliation, and fresh task-plan APPROVE, the scheduler may release only the failed lifecycle hold with failed -> planned.",
+        "The failed -> planned recovery is not an execution attempt, does not reset evidence, and leaves ATTEMPT 03 wholly unconsumed.",
+        "Strict doctor must pass after the recovery transition and before promotion to ready or selection of ATTEMPT 03."
+      ],
+      "excluded_tasks": [
+        "TASK-041-T3-FT-013-W1",
+        "TASK-042-T3-FT-013-W2",
+        "TASK-043-T3-FT-013-W3"
+      ],
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-02.md",
+        ".protocols/FT-009/decision-log.md",
+        ".protocols/AUTONOMOUS-RUN/status.md"
+      ],
+      "doctor_diagnostic": "The first pre-transition strict doctor returned exactly one TASK_QUEUE_DEADLOCK because TASK-035 still had the authorized failed lifecycle hold. This proves the old ordering was circular; it is not a doctor PASS or waiver. A fresh strict doctor PASS remains mandatory after failed -> planned and before promotion, selection, or ATTEMPT 03 consumption.",
+      "note": "ATTEMPT 01-02 history and the current failed lifecycle remain immutable at planning handoff. This task-scoped exception does not change the global attempt limit, recover lifecycle by itself, authorize a replacement task, or imply any attempt after 03."
+    },
+    {
+      "stage": "scheduler_recovery_hold_release",
+      "mode": "scheduler",
+      "decision": "planned",
+      "decided_at": "2026-07-19T16:46:15+05:00",
+      "previous_status": "failed",
+      "next_attempt": "03",
+      "attempt_consumed": false,
+      "basis": "Durable owner authorization, bounded FT-009 reconciliation, and the current fresh recovery-order task-plan APPROVE permit only an evidence-preserving non-attempt failed -> planned transition. ATTEMPT 01-02, prior semantic failure, closure, terminal evidence, and attempt accounting remain immutable.",
+      "evidence": [
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-TASK-035-RECOVERY-ORDER-20260719-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-RECOVERY-ORDER-20260719-final-report-docs-01.md",
+        ".protocols/AUTONOMOUS-RUN/status.md"
+      ],
+      "next_gate": "A fresh strict doctor must PASS before planned -> ready, selection, or ATTEMPT 03 consumption.",
+      "note": "TASK-036 remains blocked. TASK-041, TASK-042, and TASK-043 remain planned and excluded."
+    },
+    {
+      "stage": "scheduler_recovery_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "decided_at": "2026-07-19T16:46:15+05:00",
+      "previous_status": "planned",
+      "attempt_consumed": false,
+      "basis": "The required post-transition strict doctor passed with 0 errors and identified TASK-035 as the only planned ready candidate with all dependencies done.",
+      "evidence": [
+        ".protocols/AUTONOMOUS-RUN/status.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-RECOVERY-ORDER-20260719-final-report-docs-01.md"
+      ],
+      "next_gate": "Rerun strict doctor before selection; only then may scheduler record ready -> in_progress and consume ATTEMPT 03."
+    },
+    {
+      "stage": "scheduler_recovery_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "decided_at": "2026-07-19T16:47:19+05:00",
+      "previous_status": "ready",
+      "attempt": "03",
+      "effective_attempt_limit": 3,
+      "attempts_remaining_after_attempt_03": 0,
+      "basis": "The selection strict doctor passed with 0 errors after the planned -> ready promotion. Scheduler selects the sole ready task and consumes the exact owner-authorized recovery ATTEMPT 03.",
+      "evidence": [
+        ".protocols/AUTONOMOUS-RUN/status.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-RECOVERY-ORDER-20260719-final-report-docs-01.md"
+      ],
+      "note": "There is no ATTEMPT 04 or automatic replacement authority. TASK-036 remains blocked; TASK-041 through TASK-043 remain planned and excluded."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "scheduler_worker",
+      "attempt": "03",
+      "verdict": "PASS",
+      "decided_at": "2026-07-19T17:07:39+05:00",
+      "basis": "Fresh independent deterministic verification reproduces the prior dual-authority cross-Plant exploit as a canonical pre-flush zero-write denial, confirms authoritative same-transaction photo provenance and exact invalid-cursor behavior, and passes focused, scoped, full deterministic, lint, diff, and exclusion checks.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-035-T3-FT-009-W2/verification.md"
+      ],
+      "note": "Provider/model/base URL/credentials/egress/network/live smoke remains deferred and not applicable to current code-phase closure; no real-provider claim is made. This evidence does not change lifecycle or dependent state."
+    },
+    {
+      "stage": "semantic_verification",
+      "mode": "scheduler_worker",
+      "attempt": "03",
+      "verdict": "semantic-fail",
+      "decided_at": "2026-07-19T21:20:31+05:00",
+      "basis": "Independent local semantic QA reproduced a HIGH stale-state failure: with expire_on_commit=false, the locked PhotoCatalogItem query did not refresh an already-cached ORM identity, so persistence accepted stale Plant A metadata after the authoritative catalog row moved to Plant B and committed one wrongly attributed Plant-state row.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-035-T3-FT-009-W2/red-verification.md"
+      ],
+      "note": "The remaining bounded negative-path matrix passed. Provider/live checks remained deferred and were neither required nor claimed."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "attempt": "03",
+      "decision": "failed",
+      "decided_at": "2026-07-19T21:20:31+05:00",
+      "basis": "ATTEMPT 03 is the highest current attempt and the sole owner-authorized post-halt recovery attempt. Implementation and functional verification passed, but the separately selected semantic QA produced a current-attempt semantic-fail with a demonstrated HIGH authoritative-provenance defect. The effective task-scoped limit of 3 is exhausted and no ATTEMPT 04 is authorized.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-IMPL-final-report-code-03.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-03.md"
+      ],
+      "operator_action": "If another repair is desired, explicitly authorize a new task-scoped recovery or replacement through the normal reviewed readiness flow. The bounded code repair is to make the locked catalog read refresh already-loaded ORM state (or use an authoritative locked scalar projection) and add a retained-session PostgreSQL regression requiring candidate-invalid and zero rows."
+    },
+    {
+      "stage": "planning_recovery_authorization",
+      "mode": "explicit_owner",
+      "decision": "authorize_post_halt_recovery",
+      "decided_at": "2026-07-20",
+      "task_id": "TASK-035-T3-FT-009-W2",
+      "current_status": "failed",
+      "next_attempt": "04",
+      "effective_attempt_limit": 4,
+      "recovery_attempts_authorized": 1,
+      "attempts_remaining_after_attempt_04": 0,
+      "scope": [
+        "Refresh the authoritative locked PhotoCatalogItem read when the project Session already retains that ORM identity, or use an equivalent locked authoritative scalar projection.",
+        "Add a retained-session real-PostgreSQL regression proving a committed Plant A to Plant B catalog ownership change yields PLANT_STATE_CANDIDATE_INVALID, zero Plant-state rows, and no raw database error when Session A is reused."
+      ],
+      "prerequisites": [
+        "bounded FT-009 planning reconciliation",
+        "fresh /review-tasks-plan FT-009 APPROVE",
+        "explicit scheduler failed -> planned lifecycle recovery that preserves all prior evidence and does not start or consume ATTEMPT 04",
+        "applicable strict doctor PASS over the recovered planned queue before planned -> ready, selection, or ATTEMPT 04 consumption"
+      ],
+      "recovery_sequence": [
+        "After durable owner authorization, bounded reconciliation, and fresh task-plan APPROVE, the scheduler may release only the failed lifecycle hold with failed -> planned.",
+        "The failed -> planned recovery is not an execution attempt, does not reset evidence, and leaves ATTEMPT 04 wholly unconsumed.",
+        "Strict doctor must pass after the recovery transition and before promotion to ready or selection of ATTEMPT 04."
+      ],
+      "excluded_tasks": [
+        "TASK-041-T3-FT-013-W1",
+        "TASK-042-T3-FT-013-W2",
+        "TASK-043-T3-FT-013-W3"
+      ],
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-03.md",
+        ".protocols/FT-009/decision-log.md"
+      ],
+      "note": "ATTEMPT 01-03 reports, lifecycle decisions, closure, and terminal history remain immutable. This task-scoped exception does not change the global limit of 2, recover lifecycle by itself, authorize a replacement task, or imply ATTEMPT 05. TASK-036 remains blocked; TASK-041 through TASK-043 remain planned and excluded."
+    },
+    {
+      "stage": "scheduler_recovery_hold_release",
+      "mode": "scheduler",
+      "decision": "planned",
+      "decided_at": "2026-07-20T01:19:02+05:00",
+      "previous_status": "failed",
+      "next_attempt": "04",
+      "attempt_consumed": false,
+      "basis": "Durable owner authorization, bounded ATTEMPT 04 FT-009 reconciliation, and the current fresh task-plan APPROVE permit only an evidence-preserving non-attempt failed -> planned transition. ATTEMPT 01-03 reports, semantic findings, closures, terminal history, and attempt accounting remain immutable.",
+      "evidence": [
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-TASK-035-RECOVERY-ATTEMPT04-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-RECOVERY-ATTEMPT04-20260720-final-report-docs-01.md",
+        ".protocols/AUTONOMOUS-RUN/status.md"
+      ],
+      "next_gate": "A fresh strict doctor must PASS before planned -> ready, selection, or ATTEMPT 04 consumption.",
+      "note": "TASK-036 remains blocked. TASK-041, TASK-042, and TASK-043 remain planned and excluded."
+    },
+    {
+      "stage": "scheduler_recovery_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "decided_at": "2026-07-20T01:20:39+05:00",
+      "previous_status": "planned",
+      "attempt_consumed": false,
+      "basis": "The required post-transition strict doctor passed with 0 errors and identified TASK-035 as the only planned ready candidate with all dependencies done.",
+      "evidence": [
+        ".protocols/AUTONOMOUS-RUN/status.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-RECOVERY-ATTEMPT04-20260720-final-report-docs-01.md"
+      ],
+      "next_gate": "Rerun strict doctor before selection; only then may scheduler record ready -> in_progress and consume ATTEMPT 04."
+    },
+    {
+      "stage": "scheduler_recovery_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "decided_at": "2026-07-20T01:21:16+05:00",
+      "previous_status": "ready",
+      "attempt": "04",
+      "effective_attempt_limit": 4,
+      "attempts_remaining_after_attempt_04": 0,
+      "basis": "The selection strict doctor passed with 0 errors after planned -> ready. Scheduler selects the sole ready task and consumes the exact owner-authorized ATTEMPT 04.",
+      "evidence": [
+        ".protocols/AUTONOMOUS-RUN/status.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-RECOVERY-ATTEMPT04-20260720-final-report-docs-01.md"
+      ],
+      "note": "There is no ATTEMPT 05 or automatic replacement authority. TASK-036 remains blocked; TASK-041 through TASK-043 remain planned and excluded."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "scheduler_worker",
+      "attempt": "04",
+      "verdict": "PASS",
+      "decided_at": "2026-07-20T01:33:41+05:00",
+      "basis": "Fresh independent deterministic verification confirms the locked authoritative PhotoCatalogItem read refreshes a retained ORM identity under expire_on_commit=false. The real-PostgreSQL retained-session ownership move returns exact PLANT_STATE_CANDIDATE_INVALID with zero Plant-state rows and no raw database error; focused, scoped, full deterministic, lint, compile, diff, and exclusion checks pass.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-04.md",
+        ".protocols/TASK-035-T3-FT-009-W2/verification.md"
+      ],
+      "note": "Provider/model/base URL/credentials/egress/network/live smoke remains deferred and not applicable to current code-phase closure; no real-provider claim is made. This evidence does not change lifecycle or dependent state."
+    },
+    {
+      "stage": "semantic_verification",
+      "mode": "scheduler_worker",
+      "attempt": "04",
+      "verdict": "semantic-pass",
+      "decided_at": "2026-07-20T01:39:42+05:00",
+      "basis": "Fresh local semantic QA confirms the retained identity is refreshed from the authoritative locked PostgreSQL row before provenance comparison, duplicate lookup, insert, or flush; the bounded 11-case session/provenance/assessment/runtime/cursor matrix passes with no substantive finding or scope drift.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-04.md",
+        ".protocols/TASK-035-T3-FT-009-W2/red-verification.md"
+      ],
+      "note": "No human checkpoint was selected; under the current advisory T3 policy this is a reported confidence gap, not a correctness failure. No external system or live provider was used or claimed."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "attempt": "04",
+      "decision": "done",
+      "decided_at": "2026-07-20T01:39:42+05:00",
+      "basis": "Current ATTEMPT 04 implementation PASS, independent functional VERDICT PASS, and separate semantic-pass evidence agree that the bounded retained-session authoritative-catalog defect is closed with no current finding. Scheduler closes TASK-035 done using only current-attempt evidence.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-IMPL-final-report-code-04.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-04.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-04.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-04.md"
+      ],
+      "note": "Provider/live integration remains deferred and unverified. TASK-036 may return only to planned; promotion/selection is deliberately deferred for owner-requested context compaction."
     }
   ],
   "docs": [
     ".memory-bank/features/FT-009-vision-observation-plant-state-trust.md",
     ".memory-bank/domains/plant-state-observations.md",
+    ".memory-bank/domains/photo-artifacts.md",
     ".memory-bank/contracts/plant-state-runtime.md",
     ".memory-bank/contracts/plant-state-http.md",
     ".memory-bank/states/plant-state-trust.md",
@@ -111,10 +399,11 @@
   "evidence_required": [
     "migration model constraint and guarded downgrade inspection",
     "classified-only atomic persistence and idempotency conflict matrix",
+    "real-PostgreSQL same-Plant/Farm/photo catalog provenance matrix, including retained-session stale-identity refresh after a separately committed ownership change, with canonical zero-write failures and no raw database error",
     "confidence boundary trust mapping and no-agent-confirmation evidence",
     "Plant State typed context and structural trend conflict unknown tests",
     "human review authorization conflict version and archive retention tests",
-    "protected list review pagination no-store OpenAPI evidence",
+    "protected list review pagination no-store OpenAPI evidence with every invalid cursor mapped to 422 VALIDATION_FAILED and authorization-before-cursor no-enumeration",
     "provider-neutral plant_state fake/spy request, timeout/error/invalid-output, and redaction evidence",
     "focused and full deterministic test summaries",
     "node scripts/mb-lint.mjs output",
@@ -125,28 +414,20 @@
   "anti_goals": [
     "No change to Vision W1 input/provider semantics, Safety classifier policy, physical-action approval/action task, Bus/UI publication, frontend rendering, Companion, dataset, or sensor behavior.",
     "No event sourcing, graph database, separate review table, newest-wins conflict collapse, batch confirmation, delete/reset endpoint, background worker, or public model prompt endpoint.",
-    "No raw provider response, hidden reasoning, UI/chat, timeline replay, local path, credential, or mutable authorization snapshot in records or agent context."
+    "No raw provider response, hidden reasoning, UI/chat, timeline replay, local path, credential, or mutable authorization snapshot in records or agent context.",
+    "ATTEMPT 04 changes only the authoritative catalog read and its retained-session regression; it does not change API/cursor files, schemas, models, migrations, Vision or Photo Intake/provider/shared runtime code, public contracts, TASK-034, or any TASK-041/042/043 artifact."
   ],
   "runtime_context": {
     "allowed_write_scope": [
-      "backend/app/plant_state/",
-      "backend/app/agent_runtime/providers.py",
-      "backend/app/api/plant_state.py",
-      "backend/app/api/__init__.py",
-      "backend/app/main.py",
-      "backend/migrations/versions/ft009_plant_state.py",
-      "tests/backend/plant_state/",
-      "tests/backend/api/test_ft009_plant_state_routes.py",
-      "tests/backend/access_admin/test_ft002_schema_migration.py",
-      "tests/backend/photo_intake/test_ft005_migration_models.py",
-      "tests/backend/plant_operations/test_ft004_migration_models.py",
-      "tests/backend/test_foundation_database_contract.py",
+      "backend/app/plant_state/service.py",
+      "tests/backend/plant_state/test_service.py",
       ".protocols/TASK-035-T3-FT-009-W2/",
-      ".tasks/TASK-035-T3-FT-009-W2/",
-      ".memory-bank/tasks/TASK-035-T3-FT-009-W2.task.json"
+      ".tasks/TASK-035-T3-FT-009-W2/"
     ],
     "forbidden_scope": [
       "TASK-034 lifecycle/evidence or Vision request/media/provider contract changes",
+      "API/cursor files, schemas, models, migrations, Vision or Photo Intake/provider/shared runtime code, public contracts, or any source outside the exact ATTEMPT 04 allowed write scope; backend/app/database.py and backend/app/photo_intake/models.py are read-only",
+      "TASK-041, TASK-042, or TASK-043 planning, lifecycle, implementation, verification, protocol, or evidence",
       "Safety classifier/action approval/task, Bus/UI publication, frontend, Companion, dataset, sensor, or automated actuation implementation",
       "public prompt/model API, background worker/outbox/event sourcing/graph store, or provider history/raw response persistence",
       "secrets, auth/session material, local paths, photo bytes, raw chat/UI, timeline replay, provider payloads, prompts, or hidden reasoning"
@@ -165,7 +446,11 @@
     ".memory-bank/behavior-specs/FT-009-BHV-003-conflict-human-promotion.behavior.json",
     ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json",
     ".memory-bank/tasks/plans/IMPL-FT-009.md",
-    ".protocols/FT-009/decision-log.md"
+    ".protocols/FT-009/decision-log.md",
+    ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-02.md",
+    ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-02.md",
+    ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-03.md",
+    ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-03.md"
   ],
   "normative_inputs": [
     ".memory-bank/domains/plant-state-observations.md",
@@ -175,6 +460,7 @@
     ".memory-bank/contracts/agent-runtime-adapter.md",
     ".memory-bank/contracts/agent-model-provider-profiles.md",
     ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/domains/photo-artifacts.md",
     ".memory-bank/contracts/access/actor-context.md",
     ".memory-bank/states/plant-state-trust.md",
     ".memory-bank/states/safety-action-lifecycle.md",
@@ -184,11 +470,14 @@
   ],
   "constraints": [
     "Persist only matching handoffs whose canonical SafetyClassificationResultV1 has classification=safe_information and the same message_id, under a fresh active-Plant write guard; duplicate identical message ids are idempotent and conflicting duplicates write nothing.",
+    "For Vision speak, accept only [photo:<id>] or ordered [plant:<id>, photo:<id>]; require exactly one authoritative PhotoCatalogItem whose photo_id, farm_id, and plant_id match the envelope and current authorized Plant in the insert transaction. Its locked read must refresh an already-loaded ORM identity under expire_on_commit=False or use a locked authoritative scalar projection. Use backend/app/database.py and backend/app/photo_intake/models.py only as read-only dependencies and do not read/revalidate photo bytes or files.",
+    "Return PLANT_STATE_CANDIDATE_INVALID for provenance/ref/catalog mismatch, AUTH_PLANT_FORBIDDEN for current actor/envelope authorization mismatch, and 422 VALIDATION_FAILED for every malformed, noncanonical, or wrong-Plant cursor; denied persistence writes zero rows and exposes no raw IntegrityError.",
     "Implement exact record-kind field checks, trust mapping, structural assessment validation, conflict transitions, optimistic review versioning, and retained-history rules from the canonical data spec.",
     "Expose only the exact protected list/review HTTP shapes; clients cannot submit trust, evidence, agent, provider, confirmation, or Safety fields."
   ],
   "invariants": [
     "PostgreSQL is mutable Plant trust authority; photo files, MessageEnvelope, Timeline, Bus, UI, raw model output, and model confidence are not.",
+    "Envelope Plant/Farm, authorization scope, optional explicit Vision Plant ref, required photo ref, and authoritative PhotoCatalogItem ownership identify the same Plant/Farm before any Plant-state insert.",
     "Agent-created observations/assessments never start confirmed; conflict stays visible until explicit authorized resolution and promotion.",
     "Confirmation changes Plant trust only and never grants Safety approval, creates a task/action, publishes Bus/UI, or authorizes actuation.",
     "Archived Plants retain trust history but deny invocation, persistence, review, and state advance; restore never replays prior work."
@@ -199,6 +488,9 @@
     ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
     "node scripts/mb-lint.mjs",
     "git diff --check",
-    "Trace FT-009-BHV-002 and BHV-003 through classified-only creation, confidence boundary, explicit conflict, review authorization/versioning, and zero Safety/task/action effect."
+    "Trace FT-009-BHV-002 and BHV-003 through classified-only creation, confidence boundary, explicit conflict, review authorization/versioning, and zero Safety/task/action effect.",
+    "On real PostgreSQL, prove valid photo-only A-to-A, valid ordered Plant A/photo A, idempotent duplicate, and zero-write canonical denial for source Plant A-to-B, photo A-to-B even with dual authorization, target B/explicit B plus photo A, unknown photo, wrong Farm/scope, and message/classification mismatch; reject plant-only, two-photo, reversed, duplicate, and malformed refs at their strict boundary.",
+    "On real PostgreSQL with a retained Session A, preload and commit photo ownership at Plant A, move authoritative catalog ownership to Plant B in a separately committed Session B, then reuse Session A and prove Plant A persistence returns PLANT_STATE_CANDIDATE_INVALID with zero rows and no raw database error.",
+    "Prove wrong-Plant, malformed, and noncanonical cursor responses are exactly 422 VALIDATION_FAILED and that authorization denial occurs before cursor decoding without enumeration."
   ]
 }

@@ -15,6 +15,7 @@ from .api import (
     history_router,
     operations_router,
     photos_router,
+    plant_state_router,
     plants_router,
     session_router,
 )
@@ -63,6 +64,7 @@ def create_app(
     app.include_router(photos_router)
     app.include_router(history_router)
     app.include_router(feed_router)
+    app.include_router(plant_state_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

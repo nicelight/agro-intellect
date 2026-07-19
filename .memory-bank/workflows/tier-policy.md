@@ -81,7 +81,7 @@ skills route here instead of restating tier-specific closure rules.
 
 ## Retry and recovery
 
-- The active attempt limit comes from
+- The default active attempt limit comes from
   `.memory-bank/workflows/autonomy-policy.md`. `max_attempts_per_task: 2` means
   one initial attempt plus one bounded retry.
 - A retry is allowed only when it stays inside the same task outcome, tier,
@@ -97,6 +97,23 @@ skills route here instead of restating tier-specific closure rules.
   `HALT_FAILURE_BUDGET`. `/autopilot` does not create a replacement task.
   Follow-up/replacement work returns through the normal planning, review, and
   readiness flow.
+- After such a halt, an explicit owner MAY authorize a task-scoped recovery
+  exception without changing the global attempt limit. The durable task or
+  planning evidence MUST name the failed task, preserve every prior attempt and
+  terminal report, state the exact next attempt and effective per-task limit,
+  bound the accepted repair scope, and state the attempts remaining afterward.
+  This creates neither an implicit retry nor a replacement task: planning must
+  be reconciled and receive a fresh task-plan `APPROVE`. After those conditions
+  are recorded, the scheduler MAY perform a non-attempt `failed -> planned`
+  lifecycle recovery for the specifically authorized task. That transition
+  preserves all prior reports, terminal evidence, and attempt accounting; it
+  neither starts nor consumes the named recovery attempt.
+- The applicable strict doctor MUST then pass over the recovered `planned`
+  queue before `planned -> ready`, execution selection, or consumption of the
+  named recovery attempt. A pre-transition doctor failure caused solely by the
+  authorized task's `failed` lifecycle hold is a sequencing diagnostic, not a
+  structural waiver and not a substitute for the required post-transition
+  PASS. Any later retry requires another explicit owner decision.
 
 ## Feature-local wave boundary
 

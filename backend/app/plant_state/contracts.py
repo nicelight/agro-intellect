@@ -61,8 +61,12 @@ class PlantStateDefinitionV1:
     def __post_init__(self) -> None:
         if (
             self.agent_id != "plant_state"
-            or not _normalized_text(self.competence, 1, 2000)
-            or not _normalized_text(self.instructions, 1, 10_000)
+            or not isinstance(self.competence, str)
+            or self.competence != self.competence.strip()
+            or not 1 <= len(self.competence) <= 2000
+            or not isinstance(self.instructions, str)
+            or self.instructions != self.instructions.strip()
+            or not 1 <= len(self.instructions) <= 10_000
             or self.allowed_decisions != ("speak", "clarify", "silent")
             or self.output_schema_version != 1
         ):

@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-18
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -29,8 +29,8 @@ source_of_truth:
 
 - [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/prd-to-tasks FT-007` reconciliation and fresh review approval.
 - [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): verified durable introductions, guarded typed Bus/literal UI publication, current-authority agent-context isolation, and protected Plant feed API; FT-016 retains frontend rendering ownership.
-- [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): visual evidence and state promotion.
-- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): SDD design complete; one planned T3 advisor-runtime task follows FT-009 Plant-state readiness.
+- [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): W1/W2 task boundary complete with accepted deterministic Vision and Plant-state trust evidence; lifecycle remains planned pending an explicit owner feature decision, and live-provider image behavior remains deferred.
+- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): SDD design complete; its T3 advisor-runtime task is planned after scheduler-recorded FT-009 dependency recovery, with no promotion or selection by sync.
 
 ## EP-004 Safety Tasks And Follow-Up
 

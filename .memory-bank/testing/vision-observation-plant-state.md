@@ -2,11 +2,12 @@
 description: Verification contract for photo-byte integrity, provider-neutral Vision, and Plant state trust behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/contracts/vision-observation-runtime.md
   - .memory-bank/contracts/plant-state-runtime.md
   - .memory-bank/domains/plant-state-observations.md
+  - .memory-bank/domains/photo-artifacts.md
   - .memory-bank/contracts/plant-state-http.md
   - .memory-bank/testing/agent-runtime.md
 ---
@@ -32,6 +33,23 @@ source_of_truth:
   classified-only atomic insert requiring the canonical
   `classification=safe_information` plus matching `message_id`, idempotency,
   and content-conflict rollback.
+- Real-PostgreSQL Vision persistence proves valid photo-only Plant A to A and
+  valid ordered Plant A/photo A provenance, and rejects with zero rows:
+  explicit source Plant A rebound to destination B, photo A rebound to B even
+  when the actor is authorized for both, explicit target B plus photo A,
+  unknown photo, wrong Farm/scope, and message/classification mismatch.
+- Strict source-ref boundary tests reject plant-only, two-photo, reversed-order,
+  duplicated, and malformed refs. Provenance mismatch is
+  `PLANT_STATE_CANDIDATE_INVALID`; current authorization mismatch is
+  `AUTH_PLANT_FORBIDDEN`; neither exposes a raw `IntegrityError`.
+- An identical valid classified duplicate remains idempotent after catalog
+  validation.
+- A retained-session real-PostgreSQL regression preloads a Plant A photo in
+  Session A and commits, changes the authoritative catalog ownership to Plant B
+  in Session B and commits, then reuses Session A for Plant A persistence. The
+  locked catalog read MUST refresh or project current authoritative metadata;
+  persistence returns `PLANT_STATE_CANDIDATE_INVALID`, writes zero Plant-state
+  rows, and exposes no raw database error.
 - Trust mapping at `0`, `0.499`, `0.50`, and `1`; no agent-created confirmed
   record. Low-confidence/uncertain Vision findings are exactly `unknown`, while
   pending envelope claim type remains non-authoritative transport metadata.
@@ -44,8 +62,10 @@ source_of_truth:
 - Boss/Engineer human review, Consultant/unauthorized/archive denial, conflict
   and optimistic-version checks, retained-history reads, and no Safety/task
   authority.
-- Exact list/review HTTP, no-store, stable cursor, wrong-Plant rejection, safe
-  errors, and internal-field exclusion.
+- Exact list/review HTTP, no-store, stable cursor, wrong-Plant plus every
+  malformed/noncanonical cursor returning `422 VALIDATION_FAILED`, authorization
+  denial before cursor decoding/no enumeration, safe errors, and internal-field
+  exclusion.
 
 ## Current code-phase executor evidence
 

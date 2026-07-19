@@ -1,7 +1,7 @@
 {
   "id": "TASK-036-T3-FT-010-W1",
   "title": "Run Hydroponics Advisor with fail-closed missing-data policy",
-  "status": "planned",
+  "status": "in_progress",
   "wave": "W1",
   "feature": "FT-010",
   "reqs": [
@@ -57,7 +57,145 @@
     "Recommendation, hypothesis, clarification, or model silence is rejected while pH or EC is missing/stale. With both fresh, candidate refs include both authoritative measurement refs and model text remains opaque pending data with no direct authority.",
     "Post-I/O session/membership/grant/active-Plant and audit-failure semantics match Agent Runtime; archive/revoke blocks handoff and restore does not replay it.",
     "The provider-neutral seam has no selected provider/model/base URL; production is unbound and fail-closed, explicit test fakes/spies have no production fallback role, and all audit/evidence is redacted.",
-    "A deterministic outbound spy receives exactly one strict request over the missing/stale fixture and returns audited envelope_ready with the exact pending measurement task request; timeout, provider error, invalid output, post-I/O denial, unbound production, failed/unaudited result, or direct downstream effect fails acceptance."
+    "A deterministic outbound spy receives exactly one strict request over the missing/stale fixture and returns audited envelope_ready with the exact pending measurement task request; timeout, provider error, invalid output, post-I/O denial, unbound production, failed/unaudited result, or direct downstream effect fails acceptance.",
+    {
+      "stage": "scheduler_dependency_block",
+      "mode": "scheduler",
+      "decision": "blocked",
+      "decided_at": "2026-07-19T15:51:17+05:00",
+      "blocked_by": "TASK-035-T3-FT-009-W2",
+      "basis": "Direct dependency TASK-035 exhausted its two-attempt failure budget with a current ATTEMPT 02 semantic-fail and was set to failed. TASK-036 cannot be promoted or selected.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-02.md"
+      ],
+      "operator_action": "Resolve TASK-035 through the normal reviewed recovery/replacement flow before reconsidering TASK-036."
+    },
+    {
+      "stage": "scheduler_dependency_block_refresh",
+      "mode": "scheduler",
+      "decision": "blocked",
+      "decided_at": "2026-07-19T21:20:31+05:00",
+      "blocked_by": "TASK-035-T3-FT-009-W2",
+      "basis": "TASK-035 consumed its explicitly owner-authorized ATTEMPT 03 and closed failed after a current semantic-fail with a demonstrated HIGH stale authoritative-photo-provenance defect. TASK-036 remains blocked and cannot be promoted or selected.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-03.md"
+      ],
+      "operator_action": "Resolve TASK-035 through a newly authorized reviewed recovery/replacement flow before reconsidering TASK-036."
+    },
+    {
+      "stage": "scheduler_dependency_recovery",
+      "mode": "scheduler",
+      "decision": "planned",
+      "decided_at": "2026-07-20T01:39:42+05:00",
+      "recovered_dependency": "TASK-035-T3-FT-009-W2",
+      "basis": "TASK-035 closed done from current ATTEMPT 04 implementation, independent functional PASS, and separate semantic-pass evidence. The direct dependency block is no longer active, so TASK-036 returns to planned without promotion or selection.",
+      "evidence": [
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-04.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-04.md"
+      ],
+      "next_gate": "After context compaction, run the feature-boundary reconciliation/readiness checks and a fresh strict doctor before any planned -> ready promotion."
+    },
+    {
+      "stage": "scheduler_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "decided_at": "2026-07-20T01:53:03+05:00",
+      "basis": "The direct dependency TASK-035 is done; FT-009/W2 boundary reconciliation passed without blocking gaps; the current provider-neutral FT-010 task-plan review remains APPROVE because only lifecycle/evidence changed; fresh strict doctor passed with 0 errors. TASK-036 is promoted without starting ATTEMPT 01.",
+      "evidence": [
+        ".tasks/TASK-MB-MB-SYNC/TASK-MB-MB-SYNC-S-SYNC-FT-009-W2-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-010-PROVIDER-NEUTRAL-20260719-final-report-docs-01.md",
+        ".tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-04.md"
+      ],
+      "strict_doctor": "PASS: 0 errors, 16 advisory warnings, 2 info.",
+      "next_gate": "Run a fresh strict doctor over the ready queue before scheduler selection and ATTEMPT 01 consumption."
+    },
+    {
+      "stage": "scheduler_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "01",
+      "decided_at": "2026-07-20T01:53:26+05:00",
+      "basis": "TASK-036 was the sole ready task, all dependencies are done, the current FT-010 planning review is APPROVE, and the post-promotion strict doctor passed with 0 errors. Scheduler selected the task and consumed initial ATTEMPT 01.",
+      "strict_doctor": "PASS: 0 errors, 15 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic code phase; no provider/model/base URL/credentials/egress/network/live smoke is required or claimed.",
+      "next_gate": "Fresh-session /execute for TASK-036 ATTEMPT 01."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "scheduler",
+      "attempt": "01",
+      "verdict": "PASS",
+      "decided_at": "2026-07-20T02:23:39+05:00",
+      "basis": "Independent task-scoped verification passed the focused, scoped-regression, full deterministic, Memory Bank lint, diff, compile, scope, direct-effect, and provider-neutral anti-cheat checks without a substantive finding.",
+      "checks": [
+        "focused: 10 passed in 1.46s",
+        "scoped regression: 101 passed, 1 deselected in 11.01s",
+        "full deterministic: 389 passed, 2 deselected in 60.40s with 207 pre-existing deprecation warnings",
+        "mb-lint: PASS, 207 files",
+        "git diff --check and py_compile: PASS",
+        "scope/direct-effect/provider-neutral inspection: PASS"
+      ],
+      "evidence": [
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-01.md"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/credential/egress/network/live smoke was checked or claimed.",
+      "next_owner": "Scheduler/orchestrator for the separately selected fresh-session /red-verify and lifecycle decision."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "02",
+      "decided_at": "2026-07-20T02:35:04+05:00",
+      "basis": "ATTEMPT 01 is not closable because separate semantic QA demonstrated a MEDIUM direct canonical roster drift: the provider-bound Advisor competence differs from immutable CANONICAL_ROSTER_V1 metadata, while the current regression checks only agent_id. The defect is bounded to the same task outcome, tier, dependency set, accepted scope, and normative specs, with no unsafe or non-idempotent side effect. Strict doctor passed with 0 errors before retry selection.",
+      "evidence": [
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-VERIFY-final-report-docs-01.md"
+      ],
+      "repair_scope": [
+        "Align provider-bound Hydroponics Advisor competence metadata exactly with immutable CANONICAL_ROSTER_V1.",
+        "Add an exact regression proving canonical roster identity/competence composition; do not change specs or widen runtime authority."
+      ],
+      "attempts_remaining_after_selection": 0,
+      "strict_doctor": "PASS: 0 errors, 16 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "next_gate": "Fresh-session bounded /execute for TASK-036 ATTEMPT 02."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "scheduler",
+      "attempt": "02",
+      "verdict": "PASS",
+      "decided_at": "2026-07-20T02:49:56+05:00",
+      "basis": "Independent current-attempt verification closed the ATTEMPT 01 canonical-roster drift: the provider-bound Advisor definition composes immutable CANONICAL_ROSTER_V1 identity, competence, and schema version, exact regression plus deliberate divergence probes pass, and the full task-scoped deterministic outcome/gates have no substantive finding.",
+      "checks": [
+        "exact roster regression: 1 passed in 0.02s; deliberate identity/competence/schema divergence rejected",
+        "focused: 11 passed in 1.31s",
+        "scoped regression: 102 passed, 1 deselected in 9.99s",
+        "full deterministic: 390 passed, 2 deselected in 55.73s with 207 existing deprecation warnings",
+        "mb-lint: PASS, 207 files",
+        "git diff --check and compile(source): PASS",
+        "scope/direct-effect/provider-neutral anti-cheat inspection: PASS"
+      ],
+      "evidence": [
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-02.md"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was checked or claimed.",
+      "next_owner": "Scheduler/orchestrator for the separately selected fresh-session /red-verify and lifecycle decision."
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md",

@@ -101,7 +101,11 @@ def test_alembic_baseline_discovers_product_head_without_running_it_on_sqlite(
         assert "alembic_version" in tables
         assert {"accounts", "farms", "plants"}.isdisjoint(tables)
         assert current_revision is None
-        assert script.get_heads() == ["ft008_agent_chat_ui_feed"]
+        assert script.get_heads() == ["ft009_plant_state"]
+
+        ft009 = script.get_revision("ft009_plant_state")
+        assert ft009 is not None
+        assert ft009.down_revision == "ft008_agent_chat_ui_feed"
 
         ft008 = script.get_revision("ft008_agent_chat_ui_feed")
         assert ft008 is not None

@@ -3,12 +3,13 @@ description: Implementation plan for FT-009 provider-neutral vision observation 
 status: active
 type: implementation_plan
 feature_id: FT-009
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-009-vision-observation-plant-state-trust.md
   - .memory-bank/contracts/vision-observation-runtime.md
   - .memory-bank/contracts/plant-state-runtime.md
   - .memory-bank/domains/plant-state-observations.md
+  - .memory-bank/domains/photo-artifacts.md
   - .memory-bank/contracts/plant-state-http.md
   - .memory-bank/testing/vision-observation-plant-state.md
 ---
@@ -66,6 +67,105 @@ and only explicit human/evidence review can confirm Plant state.
   seams. Its deferred generic transport UAT does not satisfy FT-009.
 - Foundation is complete transitively through those baselines.
 
+## Current W2 Boundary State
+
+- The scheduler subsequently completed the authorized recovery sequence and
+  recorded `TASK-035-T3-FT-009-W2` `done` from current ATTEMPT 04 implementation
+  `PASS`, independent functional `VERDICT: PASS`, and separate
+  `SEMANTIC_VERDICT: semantic-pass` evidence.
+- The direct dependent `TASK-036-T3-FT-010-W1` is scheduler-recorded `planned`
+  through dependency recovery. It has not been promoted or selected.
+- FT-009 feature lifecycle and all RTM lifecycles remain unchanged by this
+  evidence sync. The recovery sections below are retained as append-only
+  planning history and do not describe the current task lifecycle.
+
+## TASK-035 owner-authorized recovery ATTEMPT 04
+
+On 2026-07-20 the owner authorized exactly one further post-halt defect-repair
+attempt for the existing `TASK-035-T3-FT-009-W2`; this is not new functionality
+or a replacement task. ATTEMPT 01–03, their reports, closure decisions, and
+terminal history remain immutable. For this task only, the exact next attempt
+is `04`, the effective limit is `4`, one recovery attempt is authorized, and
+`0` attempts remain after ATTEMPT 04. The global `max_attempts_per_task: 2`
+remains unchanged; no ATTEMPT 05 is implied.
+
+The accepted scope is only the ATTEMPT 03 stale identity-map defect. Under the
+project session configuration with `expire_on_commit=False`, the authoritative
+locked `PhotoCatalogItem` read in `persist_classified()` must refresh an
+already-loaded ORM identity (using the established local
+`populate_existing=True` pattern) or use a locked scalar projection. A
+retained-session real-PostgreSQL regression must preload a photo owned by Plant
+A in Session A and commit, move its authoritative catalog metadata to Plant B
+in Session B and commit, then prove that reused Session A persistence for Plant
+A returns `PLANT_STATE_CANDIDATE_INVALID`, writes zero Plant-state rows, and
+exposes no raw database error.
+
+Implementation writes are limited to `backend/app/plant_state/service.py`,
+`tests/backend/plant_state/test_service.py`, and TASK-035 protocol/numbered
+reports. `backend/app/database.py` and
+`backend/app/photo_intake/models.py` are read-only dependencies. API/cursor
+files, schemas, models, migrations, Vision/Photo Intake/provider/shared runtime
+code, and public contracts are forbidden. Preserve all already-passing
+photo-only/ordered refs, direct cross-Plant, authorization, idempotency,
+assessment, cursor/no-enumeration, provider-neutral, redaction, and no-authority
+behavior. Live-provider credentials, egress, network, and smoke evidence remain
+deferred and are neither required nor claimed.
+
+Planning leaves TASK-035 `failed`. After this bounded reconciliation and a
+fresh `/review-tasks-plan FT-009` `APPROVE`, the scheduler may record only the
+non-attempt, evidence-preserving `failed -> planned` transition. A fresh strict
+doctor PASS over that recovered queue is then required before promotion and
+selection; only `ready -> in_progress` consumes ATTEMPT 04.
+
+## Historical TASK-035 owner-authorized recovery ATTEMPT 03
+
+The owner approved one post-halt defect-repair attempt for the existing
+`TASK-035-T3-FT-009-W2`; this is not new functionality or a replacement task.
+ATTEMPT 01–02 and the `HALT_FAILURE_BUDGET` evidence remain immutable. For this
+task only, the next attempt is `03`, the effective limit is `3`, and `0`
+attempts remain after it. After bounded planning reconciliation and a fresh
+`/review-tasks-plan FT-009` `APPROVE`, the scheduler may perform only the
+non-attempt `failed -> planned` recovery. That transition preserves all prior
+evidence and attempt accounting and does not start or consume ATTEMPT 03. A
+fresh `/mb-doctor --strict` PASS over the recovered `planned` queue is then
+mandatory before `planned -> ready`, selection, or ATTEMPT 03 consumption.
+
+The first pre-transition strict-doctor run returned exactly one error,
+`TASK_QUEUE_DEADLOCK`, because TASK-035 still carried the authorized `failed`
+lifecycle hold. This is sequencing evidence for the order above, not a
+structural waiver and not a substitute for the required post-transition PASS.
+
+The recovery scope contains exactly two defects:
+
+1. At `persist_classified()`'s PostgreSQL persistence boundary, enforce the
+   canonical Vision source-ref grammar and authoritative `PhotoCatalogItem`
+   Farm/Plant ownership in the same transaction as current authorization,
+   active-Plant validation, and insert. Use catalog metadata only; do not read
+   photo bytes. Provenance mismatch returns `PLANT_STATE_CANDIDATE_INVALID`,
+   authorization mismatch returns `AUTH_PLANT_FORBIDDEN`, and every denial
+   writes zero rows without a raw `IntegrityError`.
+2. Map malformed, noncanonical, and wrong-Plant cursors on the existing list
+   route to canonical `422 VALIDATION_FAILED`; do not change the public schema
+   or introduce another error contract.
+
+Implementation writes are limited to
+`backend/app/plant_state/service.py`, `backend/app/api/plant_state.py`,
+`tests/backend/plant_state/`,
+`tests/backend/api/test_ft009_plant_state_routes.py`, and the task's protocol
+and numbered reports. `backend/app/photo_intake/models.py` is a read-only
+dependency. Vision/Photo Intake schemas, models, migrations, provider/runtime
+code, and every other public schema are out of scope.
+
+Required real-PostgreSQL regression evidence covers valid photo-only A to A;
+valid ordered Plant A/photo A; explicit source Plant A to destination B; photo
+A to B even with authority for both; target B plus explicit B and photo A;
+unknown photo; plant-only, two-photo, reversed, duplicate, or malformed refs at
+the applicable strict boundary; wrong Farm/scope; message/classification
+mismatch; and a valid idempotent duplicate. HTTP evidence covers wrong-Plant,
+malformed, and noncanonical cursors as `422 VALIDATION_FAILED`, plus
+authorization denial before cursor decode/no enumeration. No live provider,
+credential, egress, network, or Gemini evidence is required or claimed.
+
 ## Expected touched files
 
 - `backend/app/vision_observation/`
@@ -75,6 +175,10 @@ and only explicit human/evidence review can confirm Plant state.
 - `backend/migrations/versions/ft009_plant_state.py`
 - `tests/backend/vision_observation/`, `tests/backend/plant_state/`, focused
   API/migration regressions, and `tests/fixtures/vision/`.
+
+The current ATTEMPT 04 recovery overrides both that original feature-build list
+and the historical ATTEMPT 03 scope with the narrower write scope stated above;
+it does not reopen completed W1 or original W2 construction scope.
 
 ## Constitution Check
 
@@ -87,6 +191,9 @@ and only explicit human/evidence review can confirm Plant state.
   approval remain separate.
 - Blockers: none. Provider/model/base URL, credentials, egress, network, and
   live smoke are not current code-phase inputs or closure gates.
+- Recovery readiness: planning does not mutate the current `failed` lifecycle.
+  Scheduler recovery precedes the mandatory post-transition doctor; execution
+  remains blocked until that doctor passes and normal promotion occurs.
 
 ## Source Artifacts
 

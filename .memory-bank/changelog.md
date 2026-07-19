@@ -4,6 +4,27 @@ status: active
 ---
 # Changelog
 
+## 2026-07-20 — FT-009 W2 boundary evidence sync
+
+- Reconciled the scheduler-recorded completion of
+  `TASK-035-T3-FT-009-W2` from current ATTEMPT 04 implementation `PASS`,
+  independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+- Recorded the completed FT-009 W1/W2 deterministic code-phase boundary in the
+  feature, EP-003, RTM evidence note, implementation plan, and feature/epic
+  routers. The W1 administrative closure keeps its former live-provider blocker
+  as historical evidence; no pass was fabricated for that superseded gate.
+- Preserved all lifecycle values: FT-009 and EP-003 remain `planned`; REQ-003,
+  REQ-011, and REQ-012 remain `planned`; REQ-010 and REQ-013 retain their
+  existing `verified` owning outcomes. This sync made no task closure,
+  promotion, selection, unblock, or dependency decision.
+- Confirmed authoritative task consistency: TASK-035 is already `done`, and
+  TASK-036 is already `planned` with scheduler dependency-recovery evidence.
+  TASK-041, TASK-042, and TASK-043 were not changed.
+- Preserved the missing ATTEMPT 04 human-checkpoint marker as an advisory T3
+  warning and the provider/model/base URL/credentials/egress/network/live-smoke
+  surface as deferred and unverified.
+
 ## 2026-07-19 — Provider-neutral FT-009…FT-013 planning reconciliation
 
 - Applied the explicit owner supersession: no provider, model, or base URL is

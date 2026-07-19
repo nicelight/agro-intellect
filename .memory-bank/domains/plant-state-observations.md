@@ -2,12 +2,13 @@
 description: PostgreSQL Plant-state observation, assessment, conflict, and human-promotion data specification.
 status: active
 type: data_spec
-last_updated: 2026-07-16
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-009-vision-observation-plant-state-trust.md
   - .memory-bank/states/plant-state-trust.md
   - .memory-bank/contracts/vision-observation-runtime.md
   - .memory-bank/contracts/plant-state-runtime.md
+  - .memory-bank/domains/photo-artifacts.md
   - .memory-bank/domains/runtime-data-model.md
 ---
 # Plant State Observations
@@ -76,11 +77,25 @@ One record may be created only from:
    transaction as the insert.
 
 The envelope/candidate ids, agent id, Plant/Farm, source refs, summary, and
-confidence must agree. Duplicate identical `message_id` is idempotent;
-different content for the same id returns `PLANT_STATE_CONTENT_CONFLICT` and
-writes nothing. Pending/blocked/physical/uncertain classifications create no
-record. Model output, MessageEnvelope, Bus event, UI Feed, or timeline event by
-itself cannot create or mutate a record.
+confidence must agree. For a Vision `speak` handoff, source refs are exactly
+`[photo:<photo_id>]` or `[plant:<plant_id>, photo:<photo_id>]` in that order:
+there is exactly one photo ref, and the optional explicit Plant ref is first and
+equals the envelope Plant. The service loads the authoritative
+`PhotoCatalogItem` by `photo_id` and requires its `farm_id` and `plant_id` to
+equal the envelope Farm and Plant. Current authorization, active-Plant guard,
+catalog lookup, and insert share one transaction. This persistence check reads
+catalog metadata only; it does not reopen or revalidate photo bytes/files.
+
+An envelope/authorization-scope mismatch with current actor authority returns
+`AUTH_PLANT_FORBIDDEN`. Any malformed, missing, duplicated, reordered,
+unknown, or cross-Plant Vision provenance returns
+`PLANT_STATE_CANDIDATE_INVALID`. Both failures write zero Plant-state rows and
+must occur before insert/flush so a raw `IntegrityError` cannot escape.
+Duplicate identical `message_id` is idempotent; different content for the same
+id returns `PLANT_STATE_CONTENT_CONFLICT` and writes nothing.
+Pending/blocked/physical/uncertain classifications create no record. Model
+output, MessageEnvelope, Bus event, UI Feed, or timeline event by itself cannot
+create or mutate a record.
 
 Initial trust mapping is project-owned:
 
@@ -194,6 +209,7 @@ authorization material.
 ## Verification
 
 Tests MUST cover migration constraints, classified-only atomic creation,
+same-Plant/Farm catalog provenance and zero-write rejection on real PostgreSQL,
 idempotency/conflict, exact trust mapping at confidence `0`, `0.499`, `0.50`,
 and `1`, structural trend/conflict validation, no silent conflict collapse,
 human-only promotion, optimistic versioning, archive/restore retention,

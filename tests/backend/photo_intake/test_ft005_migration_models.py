@@ -81,8 +81,12 @@ def test_ft005_revision_is_ordered_head_and_contains_guarded_downgrade():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     product_head = script.get_revision("head")
     assert product_head is not None
-    assert product_head.revision == "ft008_agent_chat_ui_feed"
-    assert product_head.down_revision == "ft005_photo_intake"
+    assert product_head.revision == "ft009_plant_state"
+    assert product_head.down_revision == "ft008_agent_chat_ui_feed"
+
+    ft008 = script.get_revision("ft008_agent_chat_ui_feed")
+    assert ft008 is not None
+    assert ft008.down_revision == "ft005_photo_intake"
 
     revision = script.get_revision("ft005_photo_intake")
     assert revision is not None

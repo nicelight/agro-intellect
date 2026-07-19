@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -261,3 +261,29 @@ source_of_truth:
   and operator-surface ownership remains downstream with FT-015/FT-016.
 - Both FT-008 tasks are T3. Their per-task semantic evidence is the applicable
   semantic basis; no feature-level T2 red gate is claimed or invented.
+
+## Current FT-009 W2 Boundary Evidence Note
+
+- `TASK-034-T3-FT-009-W1` is recorded `done` through the scheduler's
+  evidence-preserving administrative closure under the owner-accepted
+  provider-neutral deterministic code-phase acceptance. Its historical
+  live-provider blocker remains preserved and does not become a fabricated
+  verification pass.
+- `TASK-035-T3-FT-009-W2` is recorded `done` using only current ATTEMPT 04
+  implementation `PASS`, independent functional `VERDICT: PASS`, and separate
+  `SEMANTIC_VERDICT: semantic-pass` evidence. The bounded PostgreSQL matrix
+  includes authoritative retained-session photo-ownership refresh, canonical
+  zero-write provenance failures, classified-only trust persistence, explicit
+  conflict/human review, strict cursor handling, and no downstream authority.
+- The W2 checkpoint marker and real provider/image result remain absent and are
+  preserved as advisory/deferred evidence gaps. No credential, egress, network,
+  or live-provider claim is made.
+- RTM lifecycles remain unchanged. REQ-003 and REQ-011 remain `planned` because
+  their complete cross-feature/future-provider outcomes are open; REQ-012
+  remains `planned` because its future selected-endpoint real-image verification
+  is explicitly deferred. REQ-010 and the FT-007/FT-008-owned REQ-013 remain
+  `verified` on their existing owning evidence; FT-009 contributes guarded
+  consumer evidence without re-owning or reopening those outcomes.
+- FT-009 and EP-003 lifecycle values remain `planned` pending explicit owner
+  feature/epic decisions. `TASK-036-T3-FT-010-W1` is already scheduler-recorded
+  `planned` after dependency recovery; this sync does not promote or select it.
