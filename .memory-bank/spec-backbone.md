@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 ---
 # SDD Spec Backbone
 
@@ -94,14 +94,15 @@ last_updated: 2026-07-19
 - Historical FT-007 note: TASK-030/TASK-031 remain done under the then-current
   owner deferral of a credentialed provider smoke. That history is not current
   acceptance authority and does not select a provider.
-- Current FT-009 planning outcome: feature-local provider-neutral Vision/
-  Plant State contracts now use deterministic fake/spy closure. TASK-034
-  remains `failed` and TASK-035 remains `blocked`; their historical scheduler
-  evidence is immutable. Run fresh `/review-tasks-plan FT-009`, then require an
-  explicit owner lifecycle decision before any recovery/selection.
-- Current FT-010 planning outcome: TASK-036 remains `planned` behind blocked
-  TASK-035 and uses deterministic provider-neutral closure. Run fresh
-  `/review-tasks-plan FT-010`; no execution is authorized here.
+- Current FT-009 boundary outcome: TASK-034 and TASK-035 are
+  scheduler-recorded `done`; historical failed/blocked attempts remain
+  immutable. FT-009 lifecycle remains `planned` pending an explicit owner
+  feature decision.
+- Current FT-010 boundary outcome: TASK-036 is scheduler-recorded `done` from
+  current ATTEMPT 02 deterministic implementation, functional PASS, and
+  semantic-pass evidence. FT-010 lifecycle remains `planned` pending an
+  explicit owner feature decision; TASK-037 remains `planned`, and this
+  reconciliation does not promote or select it.
 - Current FT-011 planning outcome: feature-local provider-neutral Safety
   classification, immutable PostgreSQL classification/action decisions,
   `approval_input=2h`, exact manual/unsupported action taxonomy, safe pending
@@ -146,9 +147,11 @@ last_updated: 2026-07-19
   requires deterministic schema, fake/spy, authorization/post-I/O, media,
   redaction, timeout/error, unbound-production, no-fallback, and no-authority
   evidence; it does not require provider selection, credentials, egress,
-  network, or live smoke. TASK-034 remains failed and TASK-035 blocked; all
-  other affected cards retain their prior planned status. Fresh reviews are
-  required for FT-009 through FT-012. FT-013 remains execution-excluded in this
-  run and requires fresh review before any future selection. Dataset Governance now has one lifecycle and one
+  network, or live smoke. TASK-034, TASK-035, and TASK-036 are
+  scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle values remain
+  `planned` pending explicit owner decisions. TASK-037 and later affected
+  cards retain their prior `planned` status; this backbone reconciliation does
+  not promote or select them. FT-013 remains execution-excluded in this run
+  and requires fresh review before any future selection. Dataset Governance now has one lifecycle and one
   derived trainability authority; FT-014 exact persistence and evidence policy
   remain feature-local.

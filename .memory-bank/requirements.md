@@ -113,7 +113,7 @@ source_of_truth:
 | REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | deterministic integration: strict provider-neutral schemas, fake/spy timeout/error paths, pre/post-I/O authorization, redaction, no production fake/fallback, and zero direct authority; future milestone: selected OpenAI-compatible endpoint | planned |
 | REQ-012 | EP-003 | FT-009 | integration: actual photo-byte integrity through outbound spy; unit: Plant trust-state promotion gates; future milestone: selected endpoint real-image run | planned |
 | REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification handoff, guarded typed Bus/literal UI publication, archived-Plant deny, restore revalidation, protected feed reads, and anti-cheat agent-context hygiene | verified |
-| REQ-014 | EP-003, EP-004 | FT-010, FT-011 | unit: missing/stale data policy; integration: Safety Gate handoff | planned |
+| REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 deterministic missing/stale-data policy and pending handoff; FT-011 Safety classification integration remains planned | planned |
 | REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
 | REQ-017 | EP-005 | FT-013 | unit: focus/attention/proposal lifecycle and derived conclusion; integration: retained non-operative governance records, DecisionRecord creation, and explicit real Companion proposal | planned |
@@ -285,5 +285,29 @@ source_of_truth:
   `verified` on their existing owning evidence; FT-009 contributes guarded
   consumer evidence without re-owning or reopening those outcomes.
 - FT-009 and EP-003 lifecycle values remain `planned` pending explicit owner
-  feature/epic decisions. `TASK-036-T3-FT-010-W1` is already scheduler-recorded
-  `planned` after dependency recovery; this sync does not promote or select it.
+  feature/epic decisions. At the FT-009 boundary,
+  `TASK-036-T3-FT-010-W1` was scheduler-recorded `planned` after dependency
+  recovery; its later completion is recorded in the FT-010 note below.
+
+## Current FT-010 W1 Boundary Evidence Note
+
+- `TASK-036-T3-FT-010-W1` is scheduler-recorded `done` using only current
+  ATTEMPT 02 implementation `PASS`, independent functional `VERDICT: PASS`,
+  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+  ATTEMPT 01 is retained as history and is not mixed into current closure.
+- Current deterministic evidence covers canonical Advisor roster composition,
+  strict provider-neutral request/result boundaries, authorized PostgreSQL
+  input assembly, independent closed-interval pH/EC freshness, exact
+  project-owned missing-data requests, pending-only handoff, post-I/O denial,
+  redaction, unbound-production failure, and zero direct downstream authority.
+- RTM lifecycles remain unchanged. REQ-014 remains `planned` because the FT-011
+  Safety classification integration is still open. REQ-003 and REQ-011 remain
+  `planned` for their broader cross-feature/future-milestone outcomes;
+  FT-010 contributes guarded consumer evidence without re-owning REQ-008 or
+  the FT-007/FT-008-owned verified REQ-013 outcome.
+- The absent human-checkpoint marker remains an accepted advisory T3 warning.
+  Provider/model/base URL/credential/egress/network/live-smoke evidence remains
+  deferred and unverified; no such result is claimed.
+- FT-010 and EP-003 lifecycle values remain `planned` pending explicit owner
+  feature/epic decisions. `TASK-037-T3-FT-011-W1` remains authoritative
+  `planned`; this sync does not promote, select, unblock, or block it.

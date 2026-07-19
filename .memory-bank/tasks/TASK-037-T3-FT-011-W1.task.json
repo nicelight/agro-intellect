@@ -1,7 +1,7 @@
 {
   "id": "TASK-037-T3-FT-011-W1",
   "title": "Implement provider-neutral Safety classification authority",
-  "status": "planned",
+  "status": "in_progress",
   "wave": "W1",
   "feature": "FT-011",
   "reqs": [
@@ -59,7 +59,108 @@
       "required": true
     }
   ],
-  "verify": [],
+  "verify": [
+    {
+      "stage": "scheduler_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "decided_at": "2026-07-20T03:09:20+05:00",
+      "basis": "Direct dependency TASK-036 is done from current ATTEMPT 02 evidence; FT-010/W1 boundary reconciliation passed without blocking gaps; the provider-neutral FT-011 task-plan review remains APPROVE because no TASK-037/038 card, FT-011 spec, dependency, tier, scope, implementation plan, or unresolved planning assumption changed; fresh strict doctor passed with 0 errors. Promotion does not start ATTEMPT 01.",
+      "evidence": [
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-CLOSURE-final-report-docs-02.md",
+        ".tasks/TASK-MB-MB-SYNC/TASK-MB-MB-SYNC-S-SYNC-FT-010-W1-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-011-PROVIDER-NEUTRAL-20260719-final-report-docs-01.md"
+      ],
+      "strict_doctor": "PASS: 0 errors, 17 advisory warnings, 2 info.",
+      "provider_acceptance": "Provider-neutral deterministic code phase; no provider/model/base URL/Gemini/credential/egress/network/live smoke is required or claimed.",
+      "next_gate": "Run a fresh strict doctor over the ready queue before scheduler selection and ATTEMPT 01 consumption."
+    },
+    {
+      "stage": "scheduler_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "01",
+      "decided_at": "2026-07-20T03:09:47+05:00",
+      "basis": "TASK-037 was the sole ready task, its direct dependency is done, the current provider-neutral FT-011 task-plan review is APPROVE, and the post-promotion strict doctor passed with 0 errors. Scheduler selected the task and consumed initial ATTEMPT 01.",
+      "strict_doctor": "PASS: 0 errors, 16 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic code phase; no provider/model/base URL/Gemini/credential/egress/network/live smoke is required or claimed.",
+      "next_gate": "Fresh-session /execute for TASK-037 ATTEMPT 01."
+    },
+    {
+      "stage": "scheduler_scope_exception",
+      "mode": "scheduler",
+      "decision": "approved_bounded_test_alignment",
+      "attempt": "01",
+      "decided_at": "2026-07-20T03:15:03+05:00",
+      "basis": "Creating the explicitly required additive FT-011 migration head necessarily invalidates one adjacent FT-009 exact-head regression that was omitted from runtime_context.allowed_write_scope. The task verification target already requires every exact-head assertion to advance while preserving FT-009 ancestry and guarded-source checks. This is a mechanical one-file test alignment, not a new product/spec/API/state outcome or broader implementation scope.",
+      "authorized_path": "tests/backend/plant_state/test_migration_models.py",
+      "allowed_change": "Update only the expected current migration head to the new FT-011 revision and retain/add exact assertions that FT-009 remains the direct guarded ancestor.",
+      "forbidden_change": "No Plant State product behavior, schema, runtime, fixture, or non-migration test semantics may change.",
+      "planning_freshness": "The current FT-011 APPROVE remains applicable because the exact-head advancement is already an explicit TASK-037 verification target and no task outcome, tier, dependency, normative spec, implementation plan, or product scope changes.",
+      "next_gate": "Implementer may continue ATTEMPT 01 with this single authorized adjacent test path and must report it explicitly in scope evidence."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "01",
+      "verdict": "FAIL",
+      "decided_at": "2026-07-20T03:43:03+05:00",
+      "basis": "Standard focused, scoped, migration, full deterministic, lint, diff, compile, scope, schema, redaction, provider-neutral, first-write-wins, and no-downstream-effect checks passed. An independent real-PostgreSQL write-boundary interleave archived the Plant after the transactional current-scope read and immediately before classification persistence; the service still returned authoritative classification_persisted and committed one row for the archived Plant. This violates the current-state/archive-race invariant and required verification target.",
+      "finding": "HIGH: non-locking current-guard reads leave a guard-to-insert race that can create unauthorized durable classification authority after concurrent archive.",
+      "evidence": [
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-037-T3-FT-011-W1/verification.md"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic verification only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, checked, or claimed.",
+      "next_owner": "Scheduler/orchestrator applies tier-policy lifecycle/retry ownership; if a bounded retry is selected, route a fresh ATTEMPT 02 through /execute before re-verification."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "02",
+      "decided_at": "2026-07-20T03:44:51+05:00",
+      "basis": "ATTEMPT 01 is not closable because independent verification reproduced a HIGH archive race: non-locking current-scope reads allow Plant archive after the write guard and before insert, yet an authoritative classification row commits. The direct Safety and Plant lifecycle specs require current authorization and active-Plant state in the same transactional/locking boundary as the classification write. The repair is bounded to the same task outcome, tier, dependencies, accepted scope, and normative specs, with no unsafe or non-idempotent side effect. Strict doctor passed with 0 errors before retry selection.",
+      "evidence": [
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-IMPL-final-report-code-01.md"
+      ],
+      "repair_scope": [
+        "Close the guard-to-insert archive/revoke window by making the final current authorization and active-Plant check part of the same transactional/locking boundary as classification persistence.",
+        "Add a deterministic real-PostgreSQL interleaving regression reproducing archive or revoke after guard acquisition but before insert; it must prove zero unauthorized rows and no raw database error.",
+        "Preserve provider I/O outside database transactions, immutable first-write-wins semantics, provider-neutral behavior, and zero downstream effects."
+      ],
+      "attempts_remaining_after_selection": 0,
+      "strict_doctor": "PASS: 0 errors, 17 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "next_gate": "Fresh-session bounded /execute for TASK-037 ATTEMPT 02."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "02",
+      "verdict": "FAIL",
+      "decided_at": "2026-07-20T04:05:58+05:00",
+      "basis": "The ATTEMPT 01 guard-to-insert archive/revoke defect regression passed on the real local PostgreSQL production path, and all standard focused, scoped, migration, full deterministic, lint, diff, compile, scope, provider-neutral, redaction, first-write-wins, and no-downstream-effect checks passed. Independent lock-order verification nevertheless reproduced a production deadlock between Engineer classification and Boss grant revocation: the classifier held target Account/Membership before Plant, while revoke held Plant before target Membership. PostgreSQL deadlock count increased by one, aborted revocation with the stable persistence-failed Farm error, and allowed authoritative classification evidence to commit.",
+      "finding": "HIGH: Safety classification and FarmService grant-revoke acquire target Membership and Plant in opposite order, allowing a real PostgreSQL deadlock instead of deterministic serialization.",
+      "defect_regression": "PASS: exact archive and revoke commits after the second write guard but before final locks return stable redacted guard denial with zero classification and downstream rows.",
+      "evidence": [
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-VERIFY-final-report-docs-02.md",
+        ".protocols/TASK-037-T3-FT-011-W1/verification.md"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic verification only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, checked, or claimed.",
+      "next_owner": "Scheduler/orchestrator consumes the current ATTEMPT 02 FAIL and applies the explicit owner-selected tier-policy lifecycle/recovery decision; do not use the passing defect-regression subset as closure PASS."
+    }
+  ],
   "docs": [
     ".memory-bank/features/FT-011-safety-gate-physical-action-routing.md",
     ".memory-bank/contracts/safety-gate-runtime.md",

@@ -111,10 +111,11 @@ source_of_truth:
   This remains an advisory T3 confidence warning, not a scheduler-rejected
   correctness result. Provider/model/base URL/credentials/egress/network/live
   smoke remains deferred and unverified.
-- This sync records evidence only and leaves the feature `lifecycle: planned`
-  unchanged pending an explicit owner feature-lifecycle decision. The direct
-  dependent `TASK-036-T3-FT-010-W1` is already scheduler-recorded `planned`;
-  `/mb-sync` neither promotes nor selects it.
+- The FT-009 boundary sync recorded evidence only and left the feature
+  `lifecycle: planned` unchanged pending an explicit owner feature-lifecycle
+  decision. The scheduler subsequently completed direct dependent
+  `TASK-036-T3-FT-010-W1`; the current FT-010 boundary sync records that later
+  evidence without changing FT-009 lifecycle.
 
 Evidence:
 [W1 administrative closure](../../.tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-ADMIN-CLOSURE-final-report-docs-02.md),

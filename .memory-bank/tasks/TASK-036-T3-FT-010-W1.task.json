@@ -1,7 +1,7 @@
 {
   "id": "TASK-036-T3-FT-010-W1",
   "title": "Run Hydroponics Advisor with fail-closed missing-data policy",
-  "status": "in_progress",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-010",
   "reqs": [
@@ -195,6 +195,23 @@
       ],
       "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was checked or claimed.",
       "next_owner": "Scheduler/orchestrator for the separately selected fresh-session /red-verify and lifecycle decision."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "decision": "done",
+      "attempt": "02",
+      "decided_at": "2026-07-20T03:01:30+05:00",
+      "basis": "Current ATTEMPT 02 implementation PASS, independent functional PASS, and separate semantic-pass evidence close the ATTEMPT 01 canonical-roster drift without scope or authority expansion. Focused, scoped, full deterministic, Memory Bank lint, compile, diff, scope, provider-neutral, and semantic checks pass. No substantive product/spec defect remains.",
+      "evidence": [
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-02.md",
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-RED-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-CLOSURE-final-report-docs-02.md"
+      ],
+      "accepted_process_gap": "No HUMAN_CHECKPOINT marker was selected; this is advisory under the governing tier policy and does not outweigh current deterministic functional and semantic evidence.",
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was required, checked, or claimed.",
+      "next_gate": "Run FT-010/W1 boundary reconciliation and strict readiness before any TASK-037 promotion."
     }
   ],
   "docs": [

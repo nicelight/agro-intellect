@@ -40,13 +40,17 @@ def test_plant_state_model_has_exact_authority_shape():
     }
 
 
-def test_ft009_revision_is_head_and_guarded():
+def test_ft009_revision_is_direct_guarded_ancestor_of_current_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
-    revision = script.get_revision("head")
-    assert revision is not None
-    assert revision.revision == "ft009_plant_state"
-    assert revision.down_revision == "ft008_agent_chat_ui_feed"
-    source = Path(revision.path).read_text(encoding="utf-8")
+    head = script.get_revision("head")
+    assert head is not None
+    assert head.revision == "ft011_safety_classifications"
+    assert head.down_revision == "ft009_plant_state"
+
+    ft009 = script.get_revision("ft009_plant_state")
+    assert ft009 is not None
+    assert ft009.down_revision == "ft008_agent_chat_ui_feed"
+    source = Path(ft009.path).read_text(encoding="utf-8")
     assert "ON DELETE CASCADE" not in source.upper()
     assert "downgrade refused" in source
     assert "SELECT EXISTS (SELECT 1 FROM plant_state_records LIMIT 1)" in source

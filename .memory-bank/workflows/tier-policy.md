@@ -82,8 +82,8 @@ skills route here instead of restating tier-specific closure rules.
 ## Retry and recovery
 
 - The default active attempt limit comes from
-  `.memory-bank/workflows/autonomy-policy.md`. `max_attempts_per_task: 2` means
-  one initial attempt plus one bounded retry.
+  `.memory-bank/workflows/autonomy-policy.md`. `max_attempts_per_task: 5` means
+  one initial attempt plus four bounded retries.
 - A retry is allowed only when it stays inside the same task outcome, tier,
   dependencies, accepted scope, and normative specs, and does not repeat an
   unsafe or non-idempotent side effect.

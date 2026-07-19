@@ -3,7 +3,7 @@ description: Implementation plan for FT-010 Hydroponics Advisor missing-data pol
 status: active
 type: implementation_plan
 feature_id: FT-010
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md
   - .memory-bank/contracts/hydroponics-advisor-runtime.md
@@ -84,9 +84,10 @@ or gaining Safety/task/action authority.
 - Bounded autonomy: missing/stale data produces only a safe measurement request
   candidate; physical-action meaning remains blocked behind project-owned
   classification and human approval.
-- Blockers: TASK-035 remains blocked. Provider/model/base URL, credentials,
-  egress, network, and live smoke are not current code-phase inputs or closure
-  gates; production remains unbound and fail-closed until a later owner choice.
+- Blockers: none for the completed W1 deterministic boundary; TASK-035 is
+  scheduler-recorded `done`. Provider/model/base URL, credentials, egress,
+  network, and live smoke are not current code-phase inputs or closure gates;
+  production remains unbound and fail-closed until a later owner choice.
 
 ## Source Artifacts
 
@@ -146,3 +147,24 @@ measurement-task creation follow in FT-016 and FT-012.
 
 Real request/response verification is deferred to the shared future selected-
 endpoint milestone and is not claimed or required by this plan.
+
+## Current W1 Boundary State
+
+- `TASK-036-T3-FT-010-W1` is scheduler-recorded `done` from current ATTEMPT 02
+  implementation `PASS`, independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and closure evidence.
+- The bounded ATTEMPT 02 repair composes exact canonical Advisor identity,
+  competence, and schema metadata from immutable `CANONICAL_ROSTER_V1`; all
+  original authorization, freshness, pending-only, redaction, provider-neutral,
+  and zero-authority acceptance remains intact.
+- The absent human checkpoint is preserved as an accepted advisory warning.
+  No provider, model, credential, egress, network, or live result is claimed.
+- FT-010 lifecycle remains `planned` pending an explicit owner decision.
+  Dependent TASK-037 remains `planned`; boundary sync does not promote or
+  select it.
+
+Current evidence:
+[implementation](../../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-02.md),
+[functional verification](../../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-VERIFY-final-report-docs-02.md),
+[semantic verification](../../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-RED-VERIFY-final-report-docs-02.md),
+and [scheduler closure](../../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-CLOSURE-final-report-docs-02.md).

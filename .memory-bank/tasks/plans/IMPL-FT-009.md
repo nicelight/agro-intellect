@@ -73,8 +73,9 @@ and only explicit human/evidence review can confirm Plant state.
   recorded `TASK-035-T3-FT-009-W2` `done` from current ATTEMPT 04 implementation
   `PASS`, independent functional `VERDICT: PASS`, and separate
   `SEMANTIC_VERDICT: semantic-pass` evidence.
-- The direct dependent `TASK-036-T3-FT-010-W1` is scheduler-recorded `planned`
-  through dependency recovery. It has not been promoted or selected.
+- The direct dependent `TASK-036-T3-FT-010-W1` was scheduler-recorded `planned`
+  through dependency recovery at this boundary and was subsequently completed
+  under its own FT-010/W1 scheduler evidence. TASK-037 remains `planned`.
 - FT-009 feature lifecycle and all RTM lifecycles remain unchanged by this
   evidence sync. The recovery sections below are retained as append-only
   planning history and do not describe the current task lifecycle.

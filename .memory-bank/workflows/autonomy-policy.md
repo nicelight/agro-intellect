@@ -45,8 +45,8 @@ unsafe actions, missing authority, and destructive-operation ambiguity remain
 hard-stop categories.
 
 ## Failure budgets
-- max_attempts_per_task: 2
-- max_consecutive_failures: 3
+- max_attempts_per_task: 5
+- max_consecutive_failures: 5
 - max_open_blockers: 3
 
 Attempt, retry, closure, and recovery semantics are defined only in

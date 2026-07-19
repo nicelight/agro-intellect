@@ -4,6 +4,27 @@ status: active
 ---
 # Changelog
 
+## 2026-07-20 — FT-010 W1 boundary evidence sync
+
+- Reconciled the scheduler-recorded completion of
+  `TASK-036-T3-FT-010-W1` from current ATTEMPT 02 implementation `PASS`,
+  independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence; ATTEMPT 01
+  remains append-only history.
+- Recorded the completed deterministic FT-010 W1 boundary in the feature,
+  EP-003, RTM evidence note, implementation plan, spec-backbone handoff, and
+  feature/epic/testing routers, and reconciled direct FT-009 dependency notes
+  without changing a lifecycle or document status.
+- Preserved FT-010 and EP-003 as `planned`; REQ-003, REQ-011, and REQ-014 remain
+  `planned`, while existing REQ-008 and REQ-013 owning outcomes remain
+  unchanged. This sync made no closure, promotion, selection, unblock, or block
+  decision.
+- Confirmed TASK-037 remains authoritative `planned`. TASK-041, TASK-042, and
+  TASK-043 were not changed.
+- Preserved the absent human-checkpoint marker as an accepted advisory T3 gap
+  and provider/model/base URL/credentials/egress/network/live-smoke evidence as
+  deferred and unverified.
+
 ## 2026-07-20 — FT-009 W2 boundary evidence sync
 
 - Reconciled the scheduler-recorded completion of

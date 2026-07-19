@@ -66,8 +66,12 @@ def test_ft008_revision_is_ordered_head_and_guarded():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft009_plant_state"
-    assert head.down_revision == "ft008_agent_chat_ui_feed"
+    assert head.revision == "ft011_safety_classifications"
+    assert head.down_revision == "ft009_plant_state"
+
+    ft009 = script.get_revision("ft009_plant_state")
+    assert ft009 is not None
+    assert ft009.down_revision == "ft008_agent_chat_ui_feed"
 
     revision = script.get_revision("ft008_agent_chat_ui_feed")
     assert revision is not None

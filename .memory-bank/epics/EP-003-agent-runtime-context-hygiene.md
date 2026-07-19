@@ -63,8 +63,14 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
   FT-009's feature lifecycle remains `planned` because this evidence sync does
   not make an owner feature-lifecycle decision; real selected-endpoint image
   behavior remains deferred and unverified.
-- EP-003 remains `planned`: the future provider-integration milestone under
-  REQ-011 is deferred, and FT-010 advisor behavior remains independently owned
-  and unimplemented. TASK-036 is scheduler-recorded `planned` after dependency
-  recovery but is not promoted or selected. FT-008 and FT-009 do not claim that
-  outcome or FT-016 frontend rendering.
+- FT-010's sole W1 task is scheduler-recorded `done` from current ATTEMPT 02
+  implementation `PASS`, independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and closure evidence. The deterministic
+  boundary preserves provider-neutral fail-closed operation, current
+  authorization, exact missing-data behavior, and zero downstream authority.
+- EP-003 and FT-010 remain `planned`: this evidence sync does not make an owner
+  feature/epic lifecycle decision, and the future provider-integration
+  milestone under REQ-011 remains deferred. Dependent TASK-037 remains
+  scheduler-owned `planned`; this sync does not promote or select it. FT-008,
+  FT-009, and FT-010 do not claim FT-011 Safety classification or FT-016
+  frontend rendering.
