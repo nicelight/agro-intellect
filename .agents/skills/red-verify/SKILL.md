@@ -32,57 +32,17 @@ status: active
 </objective>
 
 <when-to-use>
-## Status Transition Modes
+## Lifecycle ownership
 
-Status transitions have two modes.
-
-Scheduler mode:
-- `/autopilot` and `/autonomous` own task status transitions.
-- Scheduler decides closure/failure/blocking eligibility.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
-- `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
-- `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
-- T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, and the verdict must be recorded in the feature doc itself.
-- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
-
-Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
-- Manual closure is allowed only when an explicit closure owner exists.
-- `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
-- `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
-- If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
-- `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done`; if semantic-pass is absent, leave closure pending or blocked, not done. Full `/mb-sync` runs at the wave boundary.
-- `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
-- No persisted `mode` field is used.
-
-Required by tier and mode:
-- In scheduler mode, `T2` tasks do not require per-task `/red-verify` before
-  scheduler marks the task `done`; the feature still requires feature-level
-  `/red-verify --feature FT-<ID>` and a recorded feature-doc semantic verdict
-  before feature completion.
-- In scheduler mode, `T3` tasks require per-task `/red-verify` before scheduler
-  marks the task `done`.
-- In manual mode, per-task `/red-verify` is optional for `T2` task closure but
-  required for `T3` task closure; feature-level `/red-verify --feature FT-<ID>`
-  plus a recorded feature-doc semantic verdict is required before T2 feature
-  completion.
-- `T0` and `T1` usually do not need `/red-verify` unless their real scope grew
-  beyond the recorded tier; in that case route the original task through the
-  tier-escalation handoff and `/prd-to-tasks FT-<ID>` before retrying.
-
-Status ownership:
-- `/red-verify` owns semantic evidence and `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
-- In scheduler mode (`/autopilot` / `/autonomous`), `/red-verify` must not independently close the task, write `status: done`, write `status: failed`, block dependents, or promote dependents. It returns the semantic verdict and recommended next status to the scheduler.
-- In standalone/manual mode, `/red-verify` may change `done -> blocked`, `done -> failed`, or create/recommend a bug/follow-up task when semantic issues are found only under explicit closure ownership.
+- Canonical closure, attempt, retry, recovery, and evidence-selection semantics
+  live only in `.memory-bank/workflows/tier-policy.md`.
+- Use this skill when the active owner selected adversarial semantic review from
+  that policy's recommended profile or explicitly requested it.
+- `/red-verify` owns only semantic evidence and
+  `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
+- In scheduler mode it never writes lifecycle or dependent state. In manual mode
+  only an explicit lifecycle owner may apply `tier-policy.md`.
+- `FT-000` is not a product feature-review target.
 
 Особенно полезно, если:
 - менялись `contracts/*`, `states/*`, миграции, схемы, data behavior
@@ -106,18 +66,13 @@ Status ownership:
 Ожидается `$ARGUMENTS`:
 - `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` for per-task semantic verification
 - `--feature FT-<ID>` for T2 feature-completion semantic verification
+- per-task scheduler runs also provide the current `ATTEMPT=NN`
 
 Do not use `--feature FT-000`; foundation is closed through normal `FT-000`
 task dependencies and the final foundation gate task.
 
-Modes:
-- Per-task mode is required for `T3` task closure.
-- Per-task mode is optional/manual for `T2` task closure.
-- Feature mode is required before a `T2` feature is treated as complete, after
-  all tasks for that feature are implemented.
-- `T0` and `T1` usually do not need `/red-verify` unless their real scope grew
-  beyond the recorded tier; in that case route the original task through the
-  tier-escalation handoff and `/prd-to-tasks FT-<ID>` before retrying.
+Modes are task-scoped or feature-scoped. Their use is selected by the active
+owner through `tier-policy.md`; this skill does not define closure prerequisites.
 
 1) Не anchor слишком рано на full spec surface
 Сначала прочитай в таком порядке:
@@ -185,11 +140,11 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 - operational behavior (retries, observability, migrations, failure modes)
 - future maintenance cost
 
-Для `T3` обязательно добавь отдельную проверку:
+For a selected `T3` profile, add a separate check of:
 - critical/security concerns
 - deploy/runtime/production failure modes
 - irreversible/data-loss, compliance, payments, or secrets exposure concerns when relevant
-- exact marker `HUMAN_CHECKPOINT: done` is present before autonomous closure
+- selected checkpoint presence or gap, without inferring closure
 
 4) Заполни `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/red-verification.md`
 Используй шаблон проекта, если он есть.
@@ -224,10 +179,16 @@ credible semantic verdict, use the existing report plus this block:
 
 5) Сохрани короткий артефакт
 Per-task mode:
-- `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`
+- `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/<TASK_ID>-S-RED-VERIFY-final-report-docs-NN.md`
+- include the exact line `ATTEMPT: NN`, reuse the implementation attempt number,
+  and never overwrite an older report
+- when a checkpoint was selected and accepted for this attempt, include its
+  exact marker in this current report; otherwise record the gap
 
 Feature mode:
-- `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`
+- `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-NN.md`
+- here `NN` is the zero-padded immutable review-run number; increment it instead
+  of overwriting a prior feature review
 - update the matching `.memory-bank/features/FT-<ID>-*.md` with a durable
   `## Semantic Verification` section containing an exact standalone line:
   `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`, plus a link
@@ -236,37 +197,23 @@ Feature mode:
 6) Вердикт
 - `semantic-pass`:
   - substantive concerns не обнаружены
-  - per-task mode: T3 scheduler closure-eligible for normal `done` when `/verify` also has `PASS`
-  - per-task mode: T2 result is optional evidence and does not make normal T2 task closure stricter
-  - feature mode: T2 feature completion is eligible when all feature tasks are implemented, required task-level gates are satisfied, and the feature doc records `SEMANTIC_VERDICT: semantic-pass`
-  - manual T3 closure is eligible when `/verify` also has `PASS`; voluntary `T0` / `T1` / `T2` per-task red-verify does not make their normal verify-based closure stricter
-  - recommend `/mb-sync` and closure by the scheduler or explicit standalone owner
+  - return current semantic evidence to the scheduler or explicit owner
 
 - `semantic-concern`:
   - есть серьёзные сомнения или hidden assumptions, но не доказан прямой semantic break
-  - scheduler mode: not closure-eligible for normal `done`
-  - manual mode: do not trust the existing `done` state without human review / follow-up
-  - до продолжения wave требуется явное решение by scheduler/explicit standalone owner: block task/dependents, reopen from `done`, or leave task `in_progress` pending human review
-  - если human review принимает concern, зафиксируй owner/reason, обнови work/evidence as needed и повтори `/red-verify`; scheduler normal `done` разрешён только после `semantic-pass`
-  - если выбран follow-up, recommend or create it only according to the active workflow ownership
-  - recommend not promoting dependents until the task receives `semantic-pass`
+  - return the concern, uncertainty, and recommended owner action; lifecycle
+    treatment belongs to `tier-policy.md`
 
 - `semantic-fail`:
   - решение по существу неверно, вредно или слишком рискованно
-  - заведи or recommend bug doc в `.memory-bank/bugs/BUG-<short>.md` according to active workflow ownership
-  - recommend follow-up task as JSON task record
-  - scheduler mode: recommend current task `status: failed`
-  - manual mode: may change `done -> failed` or create a bug/follow-up task according to the explicit local workflow and closure ownership
-  - recommend downstream dependents remain unpromoted/blocked by scheduler
+  - return concrete evidence and recommend owner escalation; do not create task
+    records or dependent transitions inside this skill
 
 7) Место в normal loop
 Рекомендуемый порядок:
 - `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
 - `/verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
-- `/red-verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` for `T3` task closure; optional for `T2` task closure
-- `/red-verify --feature FT-<ID>` after all `T2` feature tasks are implemented,
-  before treating the feature as complete; record the verdict in the feature
-  doc itself under `## Semantic Verification`
+- a separate `/red-verify` session when selected by `tier-policy.md`
 - `/mb-sync`
 
 </process>

@@ -124,9 +124,9 @@ verifies these packages.
 | FT-004 | Daily check-in needs local runtime DB/session path. | Provide DB readiness and transaction-test baseline only. | Feature owns check-in schema and API. | planned |
 | FT-005 | Photo intake needs local artifact root conventions. | Provide settings for local data/artifact roots only. | Feature owns photo storage layout, catalog, manifests, and checksums. | planned |
 | FT-006 | Runtime state/timeline needs clear authority boundaries. | Provide PostgreSQL as runtime authority and timeline root placeholder. | Feature owns timeline event taxonomy and history projections. | planned |
-| FT-007 | Agent runtime needs package and settings boundaries. | Provide settings boundary and redaction baseline; feature tasks create agent-runtime modules. | Feature owns real model adapter/runtime decisions. | planned |
+| FT-007 | Agent runtime needs package and settings boundaries. | Provide settings boundary and redaction baseline; feature tasks create agent-runtime modules. | Feature owns provider-neutral adapter/runtime decisions; real endpoint selection is deferred. | planned |
 | FT-008 | Bus/UI split needs package boundaries, not implementation here. | Provide app layout and app factory extension point for future route registration only; global contracts remain authoritative. | Feature owns Bus/UI schema and context filtering. | planned |
-| FT-009 | Vision path needs artifact root and agent-runtime boundary. | Provide storage/settings boundary only. | Feature owns real vision integration. | planned |
+| FT-009 | Vision path needs artifact root and agent-runtime boundary. | Provide storage/settings boundary only. | Feature owns integrity-checked provider-neutral media handoff; real endpoint integration is deferred. | planned |
 | FT-010 | Advisor needs agent-runtime boundary and redaction defaults. | Provide settings/redaction boundary only. | Feature owns missing-data policy and Safety Gate handoff. | planned |
 | FT-011 | Safety Gate needs module boundary and fail-closed defaults. | Provide global safety rules only; scoped product tasks create safety modules. | Canonical safety specs define action taxonomy and approval routing. | planned |
 | FT-012 | Tasks/outcomes need DB/migration/session path. | Provide DB/UoW baseline only. | Feature owns task/approval/outcome states. | planned |
@@ -143,7 +143,7 @@ verifies these packages.
 | Single Farm and `tomato_001` seed implementation | FT-002 owns product seed semantics. Foundation only proves DB/migration capability. | `/prd-to-tasks FT-002`. |
 | Admin Account creation/audit tables | FT-003 owns direct local Account creation and admin audit semantics. | `/prd-to-tasks FT-003`. |
 | Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | Applicable feature-level subject specs. |
-| Agent/provider configuration | MVP runtime requires real model-backed flows, but provider secrets/config must not be invented in Foundation. | `/prd-to-tasks FT-007` or explicit provider decision. |
+| Agent/provider configuration | Current code phase requires no selected endpoint, credentials, or egress; production remains fail closed. | Future provider-integration milestone after explicit OpenAI-compatible endpoint selection. |
 | Svelte 5/SvelteKit frontend scaffold | Backend/local DB foundation is the immediate blocker; the Operator PWA scaffold belongs to FT-016. | `/prd-to-tasks FT-016`. |
 | Docker-based database path | User target is local Linux Mint. Docker may be optional later, not required by Foundation. | Explicit operator request or deployment spec update. |
 

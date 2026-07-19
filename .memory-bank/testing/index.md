@@ -12,6 +12,9 @@ source_of_truth:
 
 - [Testing Strategy](strategy.md): risk-based test levels, quality gates,
   anti-cheat rules, and cross-cutting verification areas.
+- [Memory Bank workflow regression](../../tests/memory-bank/mb-workflow.test.mjs):
+  structural lint, gate-schema alignment, latest-attempt evidence selection,
+  and `in_progress` recovery hints.
 
 ## Subject verification
 

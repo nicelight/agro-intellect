@@ -21,8 +21,8 @@ task-scoped normative basis and reproducible evidence.
 
 `/verify` is not an implementer, planner, scheduler, or
 adversarial semantic review. It records functional evidence and one verdict:
-`PASS`, `FAIL`, or `NEEDS-CLARIFICATION`. Use `/red-verify` where required by
-tier policy after functional verification succeeds.
+`PASS`, `FAIL`, or `NEEDS-CLARIFICATION`. Run `/red-verify` in a separate
+session when selected through tier policy.
 </objective>
 
 <process>
@@ -31,6 +31,7 @@ tier policy after functional verification succeeds.
 
 Expected `$ARGUMENTS`:
 - `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+- scheduler runs also provide the current `ATTEMPT=NN`
 
 Read first:
 - `.memory-bank/tasks/index.json` and the indexed task record
@@ -45,6 +46,9 @@ Read execution evidence by tier:
 - T2/T3: `.protocols/<TASK_ID>/context.md`, `plan.md`, `progress.md`,
   `handoff.md`, any existing `verification.md`, and the implementation report
   or evidence under `.tasks/<TASK_ID>/`
+
+When declared numbered reports exist, read only the highest current attempt as
+defined by `tier-policy.md`; do not combine an older PASS with newer evidence.
 
 Do not load unrelated feature-wide or global planning documents. Read
 `spec-backbone.md` and `spec-index.md` only to resolve canonical paths or a
@@ -129,12 +133,11 @@ verification targets.
 
 ## 3) Tier and scope guard
 
-- T0: standalone verification is normally unnecessary; compact evidence may be
-  enough when explicitly requested.
-- T1: standalone verification is optional for strictly local work.
-- T2/T3: functional `/verify` and full protocol evidence are required.
-- T3: functional PASS still requires per-task `/red-verify` and the human
-  checkpoint required by tier policy.
+- Use `task.tier` to choose the recommended protocol/evidence profile from
+  `tier-policy.md`.
+- Process rigor is advisory unless the explicit owner selected a concrete gate;
+  product/spec/safety/scope violations remain substantive failures.
+- This skill does not define tier-specific closure prerequisites.
 
 If verification evidence shows that actual implementation requires a higher
 tier or materially different task scope:
@@ -184,6 +187,11 @@ Write evidence to:
 - T0/T1 compact path: `.protocols/<TASK_ID>/run.md`
 - T2/T3 full path: `.protocols/<TASK_ID>/verification.md`
 - substantive artifacts: `.tasks/<TASK_ID>/`
+- functional report:
+  `.tasks/<TASK_ID>/<TASK_ID>-S-VERIFY-final-report-docs-NN.md`
+
+The report includes the exact line `ATTEMPT: NN`, uses the same attempt number
+as the implementation it verifies, and never overwrites an older report.
 
 Use exactly one verdict:
 - `VERDICT: PASS`: every task-scoped required check passed with credible evidence
@@ -201,21 +209,14 @@ tier, wave, acceptance criteria, or material task scope from `/verify`.
 
 ## 6) Lifecycle and handoff
 
-Scheduler mode:
-- never close/fail/block/promote tasks or dependents
-- return the verdict, evidence links, and recommended scheduler action
+- Canonical closure, attempt, retry, recovery, and current-evidence semantics
+  live only in `.memory-bank/workflows/tier-policy.md`.
+- In scheduler mode, never close/fail/block/promote tasks or dependents; return
+  the verdict, current-attempt evidence links, and recommendation.
+- In manual mode, only an explicit lifecycle owner may apply `tier-policy.md`.
 
-Manual mode:
-- T0/T1 PASS may set `status: done` only when the current top-level agent has
-  explicit closure ownership and completed evidence is in task `verify`
-- T2 PASS makes the task closure-eligible; the explicit owner writes the final
-  lifecycle decision
-- T3 PASS routes to per-task `/red-verify`; it is not closure-eligible yet
-
-On FAIL, report the defect and evidence. The scheduler or explicit owner decides
-`failed|blocked|retry`, creates any durable BUG/follow-up work, updates
-dependents, and records failure-budget impact. New task planning routes through
-`/prd-to-tasks`.
+On FAIL, report the defect and evidence. The scheduler or explicit owner applies
+`tier-policy.md`; any new task planning returns through `/prd-to-tasks`.
 
 On NEEDS-CLARIFICATION, name one repair route:
 - task scope/tier/feature-level canonical spec -> `/prd-to-tasks FT-<NNN>`

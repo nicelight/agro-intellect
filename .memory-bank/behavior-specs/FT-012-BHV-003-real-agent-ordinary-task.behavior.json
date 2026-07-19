@@ -1,10 +1,10 @@
 {
   "id": "FT-012-BHV-003",
   "feature_id": "FT-012",
-  "title": "Real Task and Follow-up Agent can create only a matched ordinary task",
+  "title": "Provider-neutral Task and Follow-up Agent can create only a matched ordinary task",
   "given": {
     "plant": "active and currently authorized",
-    "provider": "one explicit DeepSeek or Gemini task_follow_up binding",
+    "provider": "one explicit test-only task_follow_up fake/spy executor; production remains unbound and fail closed",
     "context": "strict PostgreSQL task, outcome, and evidence records only"
   },
   "when": {

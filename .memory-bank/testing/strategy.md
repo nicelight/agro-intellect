@@ -2,7 +2,7 @@
 description: Global risk-based testing strategy and cross-cutting verification rules for MVP v2.
 status: active
 type: testing_strategy
-last_updated: 2026-07-12
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/invariants.md
@@ -70,7 +70,9 @@ evidence belong to subject verification specs, code, and operational artifacts.
 - Administrative mutations produce durable audit evidence.
 - Photo intake preserves file, catalog, checksum, manifest, and timeline refs.
 - PostgreSQL/read-model authority remains separate from timeline audit/export.
-- Real model and vision adapters process actual scoped Plant data.
+- Provider-neutral model and vision adapters process actual scoped Plant data
+  through strict schemas; outbound spies prove the selected records/media and
+  timeout/error seams without claiming a real endpoint call.
 - Agent Chat Bus and UI Feed preserve consumability boundaries.
 - Authorized/classified candidate text renders literally in UI Feed and uses a
   typed quoted-data boundary in Agent Chat Bus; it is never promoted to an
@@ -90,7 +92,8 @@ evidence belong to subject verification specs, code, and operational artifacts.
   history, tasks, approvals, and follow-up.
 - Engineer creates a Plant, immediately selects it through the creator grant,
   and remains unable to archive/restore it or manage its grants.
-- Real agent output through validated classification and Bus/UI boundaries.
+- Deterministic agent candidate flow through validated classification and
+  Bus/UI boundaries; external endpoint behavior is a separate future milestone.
 - Missing or stale evidence produces clarification instead of invented facts.
 - Physical-action advice passes Safety Gate and authorized approval before a
   human-performed action task is created.
@@ -105,10 +108,13 @@ evidence belong to subject verification specs, code, and operational artifacts.
 
 ## Anti-Cheat Rules
 
-- Fake, mock, hardcoded, or stubbed product-agent outputs are test-only and do
-  not satisfy runtime/demo acceptance.
+- Fake/spy executors are test-only deterministic seams. They may satisfy the
+  current code-phase contract gates but never count as production output or a
+  real-provider integration result.
 - Test doubles remain visibly scoped to test fixtures and never become the
   runtime product-agent path.
+- Production composition without an explicitly selected endpoint fails closed;
+  it has no default, fallback, fake, canned, or hardcoded output.
 - UI Feed, UI markdown, spoiler notes, raw chat, admin notices, and raw model
   reasoning never enter agent-context fixtures. Agent-specific governance
   fixtures must match their strict typed allowlist and remain non-authoritative.

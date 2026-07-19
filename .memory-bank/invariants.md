@@ -1,7 +1,7 @@
 ---
 description: Глобальные инварианты и запреты проекта (MUST/NEVER).
 status: active
-last_updated: 2026-07-06
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -19,7 +19,11 @@ their canonical domain, contract, state, runbook, or other subject spec.
 - PostgreSQL/read model MUST remain the runtime authority for mutable operational state unless a later active architecture spec explicitly replaces that decision.
 - `timeline.jsonl` MUST remain append-only audit/export, not primary mutable state.
 - Photo catalog, file, manifest, upload-validation, and photo timeline details MUST be re-specified for MVP v2 before task decomposition.
-- MVP product-agent runtime/demo flows MUST use real LLM/model-backed agents or real model-backed adapters over actual scoped Plant data; fake, mock, hardcoded, or stubbed agent outputs do not satisfy MVP acceptance criteria.
+- Current code-phase product-agent work MUST prove strict provider-neutral
+  schemas, current authorization before and after model-I/O seams, redaction,
+  timeout/error handling, and zero direct authority through deterministic
+  fake/spy executors. Production MUST fail closed without a selected endpoint
+  and MUST NOT use fake, canned, hardcoded, or fallback output.
 - Agent-originated domain output MUST pass through project-owned runtime decision, `MessageEnvelope`, and Agent Chat Bus publication boundaries before it becomes agent-consumable.
 - UI Feed and `ui_spoiler_note` MUST stay presentation-only and unavailable as agent working context.
 - Governance `DecisionRecord` MUST stay separate from Safety Gate physical-action approval.
@@ -35,7 +39,8 @@ their canonical domain, contract, state, runbook, or other subject spec.
 - NEVER treat Agno invocation, workflow events, Team synthesis, memory, storage, or raw model reasoning as domain source of truth.
 - NEVER use Agno Team `coordinate` as a domain coordinator.
 - NEVER let raw Agno output, provider history, raw reasoning, UI Feed content, timeline replay, or presentation-only summaries bypass the project-owned adapter/publication boundary into Agent Chat Bus or agent working context.
-- NEVER use fake, mock, hardcoded, or stubbed product-agent outputs as the MVP runtime/demo path; test-only mocks are allowed only for automated tests.
+- NEVER use fake, mock, hardcoded, canned, or stubbed product-agent outputs as
+  a production path or fallback; fake/spy executors are allowed only in tests.
 - NEVER pass UI Feed, spoiler notes, or raw chain-of-thought to agents as working context.
 - NEVER promote agent-labeled hypotheses to confirmed plant state without human review or follow-up evidence.
 - NEVER set or imply `can_train_on=true` outside the dataset governance lifecycle.

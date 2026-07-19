@@ -1,8 +1,8 @@
 ---
-description: Authorized real-image input and model-output contract for Vision Observation Agent.
+description: Authorized real-photo bytes and provider-neutral model-output contract for Vision Observation Agent.
 status: active
 type: interface_contract
-last_updated: 2026-07-16
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-009-vision-observation-plant-state-trust.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -16,8 +16,8 @@ source_of_truth:
 
 This contract adds the FT-009 multimodal input path for the canonical
 `vision_observation` agent. It loads one already accepted local photo through
-current ActorContext authority, sends the exact photo bytes to one explicitly
-configured real vision-capable model, validates one structured visible finding,
+current ActorContext authority, sends the exact photo bytes to one provider-
+neutral executor call, validates one structured visible finding,
 and, for `runtime_decision=speak`, returns the existing pending
 `MessageEnvelope` handoff plus a strict state-candidate value. `clarify`
 returns only its pending clarification envelope; `silent` returns neither an
@@ -95,17 +95,18 @@ FT-009 runtime outcome. It creates no clarification envelope, state candidate,
 or follow-up task. A later FT-016 UI may render an upload/reselect prompt from
 the safe denial, while FT-012 owns any actual follow-up task.
 
-## Provider capability
+## Executor capability
 
-Version 1 supports real photo egress only through the existing `gemini`
-profile. Its deployment `model_id` remains explicit and must identify a model
-that accepts image input. `deepseek`, `chatgpt_oauth`, an unbound agent,
-disabled egress, missing credential/dependency, or an image-incompatible model
-returns `AGENT_RUNTIME_NOT_CONFIGURED` or `AGENT_PROVIDER_FAILED` according to
-the existing provider-call boundary; there is no fallback.
+Version 1 requires a provider-neutral executor seam that accepts the strict
+JSON request plus exactly one in-memory image value. Current deterministic
+tests inject an outbound spy and prove that its bytes, content type, source
+ref, and sha256 match the accepted catalog artifact. They do not claim image
+interpretation by a real endpoint.
 
-The executor sends the JSON request as text and the accepted bytes as one Agno
-image input. It MUST NOT send a local path or persist a provider file URI.
+Production remains unbound and returns `AGENT_RUNTIME_NOT_CONFIGURED` before
+network I/O until the future OpenAI-compatible endpoint is selected. It MUST
+NOT send a local path, persist a provider file URI, choose a default, or fall
+back to a fake/canned/alternate executor.
 
 ## Model result version 1
 
@@ -160,33 +161,26 @@ spec. `clarify|silent` returns no state candidate.
 The flow follows Agent Runtime ordering: resolve definition and current input,
 resolve exactly one binding, read/verify bytes, call outside DB transactions,
 validate result, reload current session/membership/Plant/grant authority,
-append one sanitized runtime event for every provider-I/O branch, and return a
+append one sanitized runtime event for every executor-I/O branch, and return a
 closed outcome. Archive/revoke after model I/O blocks the envelope/candidate;
 restore never replays it.
 
 Provider request/response bodies and photo bytes are never logged, stored in
 Timeline/UI/Bus/task evidence, or returned by errors. Safe evidence may contain
-only ids/refs, content type, size, sha256, safe `provider_profile:model_id`,
-outcome kind, and redacted stable error code.
+only ids/refs, content type, size, sha256, test-scoped executor ref, outcome
+kind, and redacted stable error code.
 
 ## Verification
 
-Tests MUST prove exact shapes and order, real catalog/file/hash loading,
-authorization and archive races, no caller/path injection, Gemini-only
-selection, one image attachment, no fallback/fake output, strict result
+Current code-phase tests MUST prove exact shapes and order, real catalog/file/
+hash loading, authorization and archive races, no caller/path injection, exact
+outbound media identity, timeout/error/invalid-result handling through
+fake/spy executors, no production fallback/fake output, strict result
 validation, pending-only handoff, no direct state effect, redaction, and full
-existing Agent Runtime regression.
+Agent Runtime regression.
 
-Product acceptance additionally requires one non-skipped credentialed run of
-the canonical `vision_observation` definition over a photo accepted through the
-production photo-intake path. The committed tomato fixture must produce an
-audited `runtime_decision=speak` / `envelope_ready` result with a valid pending
-envelope and `VisionStateCandidateV1`. A runtime-valid `clarify` envelope has no
-candidate, and `silent` has neither artifact; neither decision satisfies this
-fixture acceptance. Constructor spies or test executors do not satisfy that
-evidence.
-
-## External compatibility evidence
-
-- [Agno Gemini image input](https://docs.agno.com/examples/models/google/gemini/image-input)
-- [Google Gemini image understanding](https://ai.google.dev/gemini-api/docs/image-understanding)
+The committed tomato fixture is deterministic schema/flow evidence: the spy
+returns a strict `speak` result, producing one pending envelope and matching
+`VisionStateCandidateV1`; `clarify` and `silent` exercise their separate valid
+branches. A real image/response is deferred to the provider runbook milestone
+and is not required or claimed here.

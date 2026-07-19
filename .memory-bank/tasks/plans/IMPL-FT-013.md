@@ -1,7 +1,7 @@
 ---
-description: Implementation plan for FT-013 Companion IssueStack governance, atomic DecisionRecord effects, and explicit real Companion invocation.
+description: Implementation plan for FT-013 Companion IssueStack governance, atomic DecisionRecord effects, and explicit provider-neutral Companion invocation.
 status: active
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 ---
 # IMPL-FT-013 — Companion IssueStack Proposals And DecisionRecords
 
@@ -10,8 +10,8 @@ last_updated: 2026-07-18
 Implement one Plant-scoped Companion governance authority: explicit retained
 issues, reusable human-attention cycles, superseding proposals, authorized
 approve/reject DecisionRecords, atomic safe ordinary-task effects, derived
-conclusions, guarded Bus/UI/Timeline projections, and one explicit real
-`companion` model invocation over current PostgreSQL evidence.
+conclusions, guarded Bus/UI/Timeline projections, and one explicit provider-
+neutral `companion` invocation over current PostgreSQL evidence.
 
 ## Scope
 
@@ -36,8 +36,8 @@ conclusions, guarded Bus/UI/Timeline projections, and one explicit real
   measurement row without cross-row pH/EC synthesis;
 - strict `CompanionProviderRequestV1`/`CompanionModelResultV1`, one explicit
   trigger, MessageEnvelope/classification handoff, and proposal persistence;
-- deterministic, PostgreSQL, HTTP, context-hygiene, compatibility, anti-cheat,
-  and opt-in credentialed real-model evidence.
+- deterministic, PostgreSQL, HTTP, context-hygiene, compatibility, outbound-
+  spy, and anti-cheat evidence.
 
 ## Non-goals
 
@@ -119,7 +119,7 @@ conclusions, guarded Bus/UI/Timeline projections, and one explicit real
    Decision/close route tests use an isolated test app; this wave also does not
    edit production `main.py`.
 
-### 3. Explicit real Companion invocation
+### 3. Explicit provider-neutral Companion invocation
 
 1. Add competence-specific command, authorized PostgreSQL input assembler,
    provider request, strict model result, pending MessageEnvelope mapping,
@@ -137,11 +137,11 @@ conclusions, guarded Bus/UI/Timeline projections, and one explicit real
    protected explicit run POST as an invocation trigger. GET, feed refresh,
    domain events, Task completion, startup, and reconciliation remain
    side-effect free.
-4. Reuse explicit provider/model composition, external-egress opt-in, no
-   fallback, sanitized Agent Runtime audit, and the existing real project
-   classifier. Production and real-smoke composition require explicit
-   `companion` and `safety_gate` bindings; a successful proposal path makes
-   exactly one call to each. Task effects require exact persisted
+4. Reuse the strict provider-neutral executor seam, no fallback, sanitized
+   Agent Runtime audit, and the existing strict project classifier. Production
+   remains unbound and fail-closed until a future endpoint choice; deterministic
+   tests inject explicit Companion and Safety fakes/spies and prove exactly one
+   call to each on a successful proposal path. Task effects require exact persisted
    `safe_task_request` kind; non-task effects require `safe_information`;
    physical/blocked/mismatched output writes no governance row.
 5. Keep provider I/O outside transactions and repeat current session/grant/
@@ -150,8 +150,8 @@ conclusions, guarded Bus/UI/Timeline projections, and one explicit real
    early committed duplicate returns only persisted proposal/classification
    refs with `runtime_outcome=null`; it performs no provider call, envelope
    reconstruction, or persisted runtime-receipt lookup.
-6. Add deterministic schema/outbound/trigger/race/provider tests and the
-   explicit DeepSeek/Gemini real Companion smoke over actual PostgreSQL data.
+6. Add deterministic schema/outbound/trigger/race/provider tests covering
+   timeout/error, redaction, no fallback, and unbound production.
 
 ## Accepted provider-input policy
 
@@ -188,6 +188,9 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   production-registration owner and depends on TASK-040, so the executable DAG
   serializes both the earlier Task Follow-Up package frontier and the later
   shared `main.py`/provider composition surface.
+- Current reconciliation does not authorize TASK-041, TASK-042, or TASK-043
+  execution. All remain `planned` and execution-excluded until a fresh
+  `/review-tasks-plan FT-013` and explicit later owner selection.
 
 ## Expected touched files
 
@@ -228,7 +231,6 @@ Explicit-runtime slice:
 - `backend/app/api/companion.py`
 - `backend/app/main.py`
 - `tests/backend/companion_governance/test_runtime.py`
-- `tests/backend/companion_governance/test_real_companion_smoke.py`
 - `tests/backend/api/test_ft013_companion_run_route.py`
 - `tests/backend/api/test_ft013_companion_app_registration.py`
 - `tests/backend/agent_runtime/test_ft007_roster_providers.py`.
@@ -311,9 +313,10 @@ public-contract widening need.
   expose mutable conclusion/focus/attention or proposal/task text.
 - Archive retains rows and authorized reads but denies runs/transitions/
   publication/effects. Restore reopens no row and replays no denied work.
-- Real Companion execution uses one explicit `companion` binding and one
-  explicit `safety_gate` binding, typed egress, one explicit trigger, no
-  fallback, and no fake/silent-failure acceptance.
+- Companion execution uses strict provider-neutral `companion` and
+  `safety_gate` seams, typed requests, one explicit trigger, and no fallback.
+  Production remains unbound and fail-closed; test fakes/spies are explicit
+  and cannot become fake/silent production acceptance.
 - A committed run duplicate is a governance/classification-ref result with
   `runtime_outcome=null`; it never replays a MessageEnvelope or requires a
   persisted runtime receipt.
@@ -341,8 +344,8 @@ public-contract widening need.
 - exact Companion outbound allowlist, deterministic one-row evidence
   selection, result matrix, pending envelope, null-outcome duplicate branch,
   same-run versus distinct-run races, classification, current-guard races,
-  provider composition, single production router registration, and one
-  accepted two-binding/two-call real-model proposal smoke.
+  provider-neutral composition, single production router registration, and
+  deterministic two-spy/two-call proposal evidence.
 
 ## Quality gates and UAT
 
@@ -352,12 +355,13 @@ public-contract widening need.
   including dependency-created Safety Gate and Task Follow-Up assertions.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` for all three waves.
 - Run the full deterministic suite before handoff when the environment permits.
-- Credentialed Companion smoke is explicit opt-in through
-  `AGENT_REAL_COMPANION_SMOKE=1` and requires explicit production bindings for
-  both `companion` and `safety_gate`, external egress, PostgreSQL, and every
-  selected provider credential. Missing credentials do not falsify
-  deterministic code evidence, but FT-013 must not claim its REQ-011 portion
-  without an accepted non-skipped real run.
+- Current acceptance uses deterministic Companion and Safety fake/spy evidence,
+  including timeout, provider error, invalid output, post-I/O denial,
+  redaction, and unbound production. It does not require a provider, model,
+  base URL, credential, egress, network call, or non-skipped live smoke.
+- Real image/request/response, error, timeout, redaction, and cost verification
+  is deferred to the shared future selected-endpoint milestone and is not
+  current closure evidence.
 - Browser Companion cards remain FT-016; backend JSON/OpenAPI behavior is
   verified here.
 

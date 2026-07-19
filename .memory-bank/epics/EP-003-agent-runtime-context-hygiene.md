@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-003
 lifecycle: planned
-last_updated: 2026-07-13
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -25,7 +25,8 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 
 ## Success Metrics
 
-- First demo agent behavior is real model-backed over actual scoped Plant data.
+- Current code-phase agent behavior is provider-neutral and deterministically
+  verified over actual scoped Plant data; real endpoint behavior is deferred.
 - UI Feed is never consumed as agent working context; governance content enters only through an owning strict agent-specific provider contract.
 - Vision outputs remain observations/hypotheses unless human review or follow-up evidence promotes state.
 - Advisor output asks for missing/stale critical data instead of inventing evidence.
@@ -35,7 +36,8 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 - Agno/model execution is execution layer only, not source of truth.
 - Agent outputs pass through project-owned adapter/runtime decision and MessageEnvelope before publication.
 - Agent Chat Bus and UI Feed are separate boundaries.
-- Fake, mock, hardcoded, or stubbed product-agent outputs are not accepted as runtime/demo behavior.
+- Fake/spy executors are test-only; production has no fake/canned/fallback
+  behavior and fails closed without a selected endpoint.
 
 ## Constraints / Invariants
 
@@ -55,7 +57,7 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
   literal UI publication, current-authority agent-context isolation, and the
   protected Plant feed API. REQ-013 is correspondingly `verified` across its
   FT-007/FT-008 boundary.
-- EP-003 remains `planned`: FT-007 retains deferred live-provider UAT under
-  REQ-011, while FT-009 Vision/Plant trust and FT-010 advisor behavior remain
+- EP-003 remains `planned`: the future provider-integration milestone under
+  REQ-011 is deferred, while FT-009 Vision/Plant trust and FT-010 advisor behavior remain
   independently owned and unimplemented. FT-008 does not claim those outcomes
   or FT-016 frontend rendering.

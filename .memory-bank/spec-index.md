@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -50,7 +50,7 @@ source_of_truth:
 | evidence_contract | [.memory-bank/contracts/evidence-redaction.md](contracts/evidence-redaction.md) | active | Secret/evidence redaction | `/foundation-to-tasks` or `/spec-design` |
 | event_contract | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md) | active | Agent-consumable event boundary | `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md) | active | Authorized typed model invocation, runtime decision, failure, audit, and envelope handoff | `/prd-to-tasks` or `/spec-design` |
-| interface_contract | [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md) | active | Multi-provider binding, credentials, typed egress, and no-fallback composition | `/prd-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md) | active | Provider-neutral binding, typed egress, fail-closed production, and future OpenAI-compatible selection | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md) | active | Canonical agent roster and post-commit Plant introduction handoff | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/vision-observation-runtime.md](contracts/vision-observation-runtime.md) | active | Authorized real-photo Vision Observation input and pending model handoff | `/prd-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/plant-state-runtime.md](contracts/plant-state-runtime.md) | active | Authorized Plant State trend/conflict/unknown model assessment handoff | `/prd-to-tasks` or `/spec-design` |
@@ -89,16 +89,16 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/plant-operations.md](testing/plant-operations.md) | active | Check-in, manual measurement, and freshness verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/photo-intake.md](testing/photo-intake.md) | active | Photo artifact, manifest, catalog, upload, and timeline-ref verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/plant-history.md](testing/plant-history.md) | active | Plant card/history projection, retained-history, timeline-ref, and redaction verification | `/prd-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md) | active | Agent runtime, MessageEnvelope, real-model anti-cheat, audit, and archive-race verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md) | active | Agent runtime, MessageEnvelope, deterministic executor anti-cheat, audit, archive-race, and future integration milestone verification | `/prd-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md) | active | Bus/UI persistence, reconciliation, context hygiene, and Plant feed verification | `/prd-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/vision-observation-plant-state.md](testing/vision-observation-plant-state.md) | active | Real vision input, trust persistence, conflict, promotion, and API verification | `/prd-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/hydroponics-advisor.md](testing/hydroponics-advisor.md) | active | Advisor freshness, missing-data, real-model, authorization, and pending-handoff verification | `/prd-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/safety-gate.md](testing/safety-gate.md) | active | Model-backed classification, durable Safety routing, 2-hour evidence, projection, and concurrency verification | `/prd-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/task-follow-up.md](testing/task-follow-up.md) | active | Approval/task/outcome transactions, HTTP, archive/concurrency, and real Task and Follow-Up Agent verification | `/prd-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/companion-governance.md](testing/companion-governance.md) | active | Companion governance authority, atomic effects, projections, HTTP, runtime triggers, and real-model verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/vision-observation-plant-state.md](testing/vision-observation-plant-state.md) | active | Photo-byte integrity, provider-neutral vision, trust persistence, conflict, promotion, and API verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/hydroponics-advisor.md](testing/hydroponics-advisor.md) | active | Advisor freshness, missing-data, provider-neutral executor, authorization, and pending-handoff verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/safety-gate.md](testing/safety-gate.md) | active | Provider-neutral classification, durable Safety routing, 2-hour evidence, projection, and concurrency verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/task-follow-up.md](testing/task-follow-up.md) | active | Approval/task/outcome transactions, HTTP, archive/concurrency, and provider-neutral Task and Follow-Up verification | `/prd-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/companion-governance.md](testing/companion-governance.md) | active | Companion governance authority, atomic effects, projections, HTTP, runtime triggers, and provider-neutral verification | `/prd-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/prd-to-tasks` or `/spec-design` |
-| runbook | [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | active | Agent provider configuration and credentialed real-model smoke | `/prd-to-tasks` or `/spec-design` |
+| runbook | [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | active | Provider-neutral fail-closed operation and deferred selected-endpoint integration milestone | `/prd-to-tasks` or `/spec-design` |
 
 ## Planned Specs
 

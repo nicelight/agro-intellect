@@ -3,7 +3,7 @@ description: Product brief (C4 L1): что это, для кого, core value, 
 status: active
 type: product
 owner: product
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -37,9 +37,11 @@ The system is also an AI-first agentic development training ground: product agen
 3. User selects an authorized Plant, initially `tomato_001`.
 4. User runs a daily check-in, records observations, uploads photo evidence, and/or enters pH/EC measurements.
 5. Backend persists mutable operational state in the PostgreSQL/read model, local photo artifacts/catalog entries, and append-only timeline audit/export refs.
-6. Real model-backed product agents process only authorized Plant context and
-   pass through runtime decision, pending MessageEnvelope, project-owned
-   classification, and only then applicable Agent Chat Bus/UI boundaries.
+6. Provider-neutral product-agent adapters process only authorized Plant
+   context through strict schemas and pass through runtime decision, pending
+   MessageEnvelope, project-owned classification, and only then applicable
+   Agent Chat Bus/UI boundaries. Production fails closed until a future
+   OpenAI-compatible endpoint is explicitly selected.
 7. UI Feed presents human-facing messages, cards, prompts, tasks, approvals, history, and local storage status without becoming agent context.
 8. Safety Gate blocks or routes physical-action wording until fresh data, Safety Gate pass, authorized human approval, and task/action tracking exist.
 9. Companion may coordinate Plant-scoped discussion through IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord, without replacing backend rules or Safety Gate approval.
@@ -51,18 +53,19 @@ sink. FT-008 eventually writes one `UIFeedEvent` per introduction for every
 active Plant; the Plant chat/feed UI renders the same event and Agent Chat Bus
 does not consume it. Reconciliation recovers failure/restart, pauses while
 archived, and revalidates current state after restore. Delivery failure never
-rolls back Plant creation. Introductions identify competence; they are
-not model-generated analysis and do not satisfy real-model acceptance by
-themselves.
+rolls back Plant creation. Introductions identify competence; they are not
+model-generated analysis and do not satisfy provider-neutral runtime
+acceptance by themselves.
 
 ## Constraints
 - Tech stack direction: local modular monolith, Python/FastAPI/Pydantic backend,
   PostgreSQL/read model runtime authority, local filesystem for photos/artifacts,
   JSONL timeline export, Svelte 5/SvelteKit Web App/PWA frontend, and Agno as
-  agent execution layer only.
+  agent execution layer only; installing it does not prove external integration.
 - Local-first and private by default. Default exposure is loopback; LAN mode may exist only when explicitly enabled with authentication, authorization, token/session protection, and CORS/origin controls.
-- No production SaaS, hosted cloud sync as an MVP requirement, billing, enterprise identity, multi-Farm tenancy, microservices, broad farm management, full dataset registry, real fine-tuning, sensor runtime dependency, automated physical actuation, or fake/stubbed MVP runtime agent path.
+- No production SaaS, hosted cloud sync as an MVP requirement, billing, enterprise identity, multi-Farm tenancy, microservices, broad farm management, full dataset registry, real fine-tuning, sensor runtime dependency, automated physical actuation, or fake/stubbed production agent fallback.
 - `timeline.jsonl`, photo files, manifests, UI Feed, raw chat, raw model reasoning, and unapproved Companion proposals are never mutable runtime authority.
-- Authorized typed Plant context may be sent to explicitly configured external
-  model providers. Provider/model selection is per agent, credentials never
-  enter prompts/evidence, and no provider is selected as an implicit fallback.
+- Authorized typed Plant context may be sent only after a future explicit
+  OpenAI-compatible endpoint selection. Provider/model/base URL are currently
+  unset, credentials never enter prompts/evidence, and no endpoint or fake
+  result is selected as an implicit fallback.

@@ -1,17 +1,17 @@
 {
   "id": "FT-013-BHV-003",
   "feature_id": "FT-013",
-  "title": "Only an explicit protected command invokes the real Companion model and creates a current proposal",
+  "title": "Only an explicit protected command invokes the provider-neutral Companion path and creates a current proposal",
   "given": {
     "plant": "active, authorized, and populated through PostgreSQL with the committed evidence fixture",
-    "runtime": "canonical companion and safety_gate each have one explicit real provider/model binding"
+    "runtime": "canonical companion and safety_gate each use one explicit test-only fake/spy executor; production remains unbound and fail closed"
   },
   "when": {
     "command": "the authorized actor posts one explicit Companion run request",
     "non_triggers": "feed reads, refresh, domain events, Task completion, and startup also occur"
   },
   "then": {
-    "provider": "the explicit command makes exactly one real Companion provider call and one real Safety classifier call; non-triggers make zero calls",
+    "provider": "the explicit command makes exactly one Companion spy call and one Safety classifier spy call; non-triggers make zero calls",
     "governance": "one matching classification and one current proposal with active attention are persisted",
     "effects": "no DecisionRecord, ordinary or action Task, Plant mutation, or device effect is created"
   }

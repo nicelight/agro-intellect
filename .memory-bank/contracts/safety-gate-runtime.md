@@ -1,8 +1,8 @@
 ---
-description: Model-backed Safety Gate classification candidate and project-owned authoritative mapping contract.
+description: Provider-neutral Safety Gate classification candidate and project-owned authoritative mapping contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-011-safety-gate-physical-action-routing.md
   - .memory-bank/contracts/message-envelope.md
@@ -14,7 +14,7 @@ source_of_truth:
 
 ## Scope
 
-This contract defines one real model-backed semantic classification of a
+This contract defines one provider-neutral semantic classification of a
 validated pending `MessageEnvelopeV1`. The canonical `safety_gate` model
 returns only a strict candidate. Backend validation maps that candidate into
 the shared project-owned `SafetyClassificationResultV1`; only the validated
@@ -37,7 +37,7 @@ and durably persisted project result may select a downstream route.
   provider-neutral executor and redaction patterns reused without reusing its
   product-agent result schema.
 - [.memory-bank/contracts/agent-model-provider-profiles.md](agent-model-provider-profiles.md):
-  explicit provider/model binding, egress, credentials, and no fallback.
+  provider-neutral executor, fail-closed production, and future endpoint route.
 - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
   canonical `safety_gate` identity.
 - [.memory-bank/contracts/message-envelope.md](message-envelope.md): immutable
@@ -172,8 +172,9 @@ egress, and requires no classification-schema or migration change.
    external egress. Denial makes no provider call or durable classification.
 3. Return an existing identical classification idempotently without another
    provider call or downstream replay.
-4. Resolve exactly one explicit `safety_gate` provider/model binding and invoke
-   it outside every database transaction.
+4. Resolve the `safety_gate` executor and invoke it outside every database
+   transaction. Current production remains unbound; deterministic tests inject
+   a fake/spy executor explicitly.
 5. Validate the strict candidate and map it, including every fail-closed model
    branch, into the project-owned result.
 6. Re-resolve current session/account/membership/grant authority and active
@@ -199,18 +200,18 @@ Archive, session revocation, membership/grant change, or Farm/Plant mismatch at
 either current guard produces no classification/effect and no restore replay.
 A new current-state Agent Runtime invocation and `message_id` is required.
 
-## Provider and failure behavior
+## Executor and failure behavior
 
-An explicit DeepSeek or Gemini binding may serve the text-only classifier.
-`chatgpt_oauth` remains fail closed without its approved adapter. There is no
-default model, fake/canned runtime result, cross-provider fallback, or provider
-retry that changes the selected binding.
+The text-only classifier uses the shared provider-neutral executor. Current
+production remains unbound until future endpoint selection. There is no
+default model, fake/canned production result, fallback, or retry that changes
+the selected binding.
 
 Stable safe errors are:
 
 | Code | Condition | Effect |
 |---|---|---|
-| `SAFETY_CLASSIFIER_NOT_CONFIGURED` | binding, egress, dependency, credential, or approved OAuth adapter unavailable | persist blocked-uncertain only if the current write guard succeeds |
+| `SAFETY_CLASSIFIER_NOT_CONFIGURED` | no production endpoint is selected or future binding prerequisites are unavailable | persist blocked-uncertain only if the current write guard succeeds |
 | `SAFETY_CLASSIFIER_PROVIDER_FAILED` | selected provider call fails | persist blocked-uncertain only if the current write guard succeeds |
 | `SAFETY_CLASSIFIER_OUTPUT_INVALID` | strict candidate validation fails | persist blocked-uncertain only if the current write guard succeeds |
 | `SAFETY_CLASSIFICATION_CONFLICT` | same `message_id` has a different input/result fingerprint | no mutation and no downstream effect |
@@ -222,12 +223,14 @@ absolute paths are absent from errors, logs, and evidence.
 
 ## Verification
 
-Tests MUST prove exact request/candidate shapes, all matrix rows, unknown-field
+Current code-phase tests MUST prove exact request/candidate shapes, all matrix rows, unknown-field
 rejection, the ten-kind action union, manual-EC versus device-dosing semantics,
 upstream-label bypass resistance, prompt-like text isolation, every fail-closed
 provider branch, first-write-wins concurrency, identical idempotency, current
 authorization/archive races, redaction, no Timeline event, and no direct task,
-approval, Bus, UI, or actuation authority.
+approval, Bus, UI, or actuation authority. Fake/spy executor tests MUST cover
+success, timeout, provider failure, invalid output, not-configured production,
+post-I/O guard denial, and redaction without claiming a real classifier.
 
 Compatibility tests MUST also prove the derived consumer-route union is closed
 and server-owned; Companion `safe_information` cannot invoke FT-008 candidate
@@ -236,9 +239,7 @@ classified-message Task branch, held physical/blocked/mismatch/failure creates
 no downstream effect, retry/restore/reconciliation does not replay a held
 effect, and ordinary non-Companion routing is unchanged.
 
-One opt-in credentialed product-agent smoke MUST invoke exactly one explicit
-DeepSeek or Gemini `safety_gate` binding over a real validated pending envelope
-and return the expected strict model candidate plus durably persisted
-project-owned classification. Skip, xfail, fake/canned output, fallback,
-unconfigured/failed/invalid/persistence-failed result, or any direct action
-effect fails an explicitly requested smoke.
+A real classifier response is deferred to the single provider runbook
+milestone after endpoint selection. It is
+`deferred/manual/not_applicable_for_current_code_phase` and is neither a
+closure gate nor evidence claimed by this contract.

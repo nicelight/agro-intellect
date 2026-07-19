@@ -25,17 +25,12 @@
     {
       "name": "advisor-deterministic-tests",
       "command": ".venv/bin/python -m pytest tests/backend/hydroponics_advisor -m \"not real_model\" -q",
-      "required": false
-    },
-    {
-      "name": "advisor-product-agent-smoke",
-      "command": "AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q",
-      "required": false
+      "required": true
     },
     {
       "name": "advisor-runtime-regression",
       "command": ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/plant_state tests/backend/hydroponics_advisor -m \"not real_model\" -q",
-      "required": false
+      "required": true
     },
     {
       "name": "full-deterministic-suite",
@@ -60,9 +55,9 @@
     "pH and EC freshness are independent and use the exact closed interval; boundary-age values are fresh, older or missing values are explicit, and future-dated values are stale.",
     "Any non-empty missing/stale set accepts only the exact structured measurement request and deterministic project wording, maps to one pending non-consumable task_request MessageEnvelope, and creates no classification, task, Safety, Bus/UI, Plant-state, approval, or action effect.",
     "Recommendation, hypothesis, clarification, or model silence is rejected while pH or EC is missing/stale. With both fresh, candidate refs include both authoritative measurement refs and model text remains opaque pending data with no direct authority.",
-    "Post-model session/membership/grant/active-Plant and audit-failure semantics match Agent Runtime; archive/revoke blocks handoff and restore does not replay it.",
-    "DeepSeek/Gemini composition uses exactly one explicit binding with no default, fake, or cross-provider fallback; chatgpt_oauth remains fail closed and all evidence is redacted.",
-    "A non-skipped credentialed canonical-agent smoke invokes exactly one real provider over the missing/stale fixture and returns audited envelope_ready with the exact pending measurement task request; every skip, substitute, non-request model decision, blocked/failed/unaudited result, or direct downstream effect fails acceptance."
+    "Post-I/O session/membership/grant/active-Plant and audit-failure semantics match Agent Runtime; archive/revoke blocks handoff and restore does not replay it.",
+    "The provider-neutral seam has no selected provider/model/base URL; production is unbound and fail-closed, explicit test fakes/spies have no production fallback role, and all audit/evidence is redacted.",
+    "A deterministic outbound spy receives exactly one strict request over the missing/stale fixture and returns audited envelope_ready with the exact pending measurement task request; timeout, provider error, invalid output, post-I/O denial, unbound production, failed/unaudited result, or direct downstream effect fails acceptance."
   ],
   "docs": [
     ".memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md",
@@ -78,14 +73,14 @@
     "missing/stale measurement-request mapping and zero-direct-effect evidence",
     "fresh-evidence pending-only and physical-action bypass prevention evidence",
     "current authorization archive revoke and audit-failure race evidence",
-    "DeepSeek/Gemini explicit binding and no-fake no-fallback anti-cheat inspection",
-    "non-skipped canonical hydroponics_advisor real-provider missing-data smoke",
+    "provider-neutral unbound-production plus no-fake/no-fallback anti-cheat inspection",
+    "outbound-spy exact request plus timeout/error/invalid-output and redaction evidence",
     "focused and full deterministic test summaries",
     "node scripts/mb-lint.mjs output",
     "git diff --check output"
   ],
-  "purpose": "Add the canonical Hydroponics Advisor product-agent path that evaluates current authorized pH/EC and Plant-state evidence, requests unavailable critical measurements without invention, and preserves the project-owned pending Safety/task boundary.",
-  "success_outcome": "One explicitly bound real Hydroponics Advisor consumes only current authorized PostgreSQL evidence; missing or stale pH/EC yields exactly one audited pending measurement task request with project-owned wording, while fresh-evidence advice remains pending opaque candidate data and no invalid, unauthorized, archived, fake, fallback, failed, or unaudited branch can create a task, publish content, clear Safety, confirm Plant state, approve or execute an action.",
+  "purpose": "Add the canonical provider-neutral Hydroponics Advisor path that evaluates current authorized pH/EC and Plant-state evidence, requests unavailable critical measurements without invention, and preserves the project-owned pending Safety/task boundary.",
+  "success_outcome": "A strict provider-neutral Hydroponics Advisor seam consumes only current authorized PostgreSQL evidence; missing or stale pH/EC yields exactly one audited pending measurement task request with project-owned wording, while fresh-evidence advice remains pending opaque candidate data. Deterministic fake/spy evidence covers schemas, authorization plus post-I/O recheck, outbound allowlists, timeout/error/invalid output, redaction, unbound production, and no fallback/fake production without requiring a provider, model, base URL, credential, egress, network call, or live smoke; no branch gains downstream authority.",
   "anti_goals": [
     "No Safety classifier, Safety Gate decision, ordinary or action task persistence, approval/follow-up, Bus/UI publication, Plant-state mutation, frontend, or automated actuation implementation.",
     "No public prompt/model/advisor HTTP endpoint, background worker, outbox, table/migration, provider history, Agno memory/RAG/tools/Team, sensor ingestion, crop recipe, target range, nutrient schedule, or dosage formula.",
@@ -111,7 +106,7 @@
       "Correctness would require widening the generic Agent Runtime outcome/MessageEnvelope authority or changing canonical Plant Operations freshness.",
       "A missing/stale branch cannot be made deterministic without model-authored values, wording, task kind, or action semantics.",
       "Current authorization and active-Plant state cannot be rechecked after provider I/O before handoff.",
-      "A passing product-agent smoke would require skip, fake/canned executor, fallback, missing audit, or exposing provider/auth/prompt data."
+      "Deterministic acceptance would require production fake/canned output, fallback, missing audit, or exposing provider/auth/prompt data."
     ]
   },
   "source_artifacts": [
@@ -151,10 +146,9 @@
   "verification_targets": [
     ".venv/bin/python -m pytest tests/backend/hydroponics_advisor -m \"not real_model\" -q",
     ".venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/plant_state tests/backend/hydroponics_advisor -m \"not real_model\" -q",
-    "AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q",
     ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
     "node scripts/mb-lint.mjs",
     "git diff --check",
-    "The credentialed missing/stale fixture proves one real provider call, exact policy request, audited pending task_request envelope, and zero direct task/Safety/Bus/UI/state/action effect."
+    "The deterministic missing/stale fixture proves one outbound-spy call, exact policy request, audited pending task_request envelope, timeout/error/invalid-output fail-closed behavior, redaction, and zero direct task/Safety/Bus/UI/state/action effect."
   ]
 }

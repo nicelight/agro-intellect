@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-010
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/contracts/hydroponics-advisor-runtime.md
@@ -74,9 +74,12 @@ source_of_truth:
 
 - Feature-local status: complete. The canonical advisor runtime fixes the
   authorized input, independent 24-hour pH/EC freshness policy, strict result
-  matrix, project-owned measurement-request wording, real-provider acceptance,
-  and pending MessageEnvelope handoff.
+  matrix, project-owned measurement-request wording, provider-neutral
+  fake/spy verification, and pending MessageEnvelope handoff.
 - No new storage or public HTTP contract is required: FT-010 reads current
   PostgreSQL authority and returns the existing transient envelope outcome.
 - Safety classification, ordinary task persistence, action approval, and
   browser composition remain owned by FT-011, FT-012, and FT-016 respectively.
+- No provider, credential, egress, network, or live smoke is a current
+  code-phase closure condition; real response verification is deferred to the
+  selected-endpoint milestone.

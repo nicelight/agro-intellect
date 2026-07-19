@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -46,8 +46,20 @@ source_of_truth:
   pH/EC while retaining authorized Plant card/history access.
 - `REQ-009` Photo intake and local artifacts: photo intake MUST store local photo files, accepted catalog metadata, `sha256`, initial capture manifest, export-ready refs, and timeline audit refs.
 - `REQ-010` Runtime authority and timeline audit: PostgreSQL/read model MUST remain mutable operational state authority unless a later active architecture spec replaces it; `timeline.jsonl` remains append-only audit/export only.
-- `REQ-011` Real model-backed product agents: MVP runtime/demo product-agent outputs MUST come from real LLM/model-backed agents or real model-backed adapters over actual scoped Plant data; fake, mock, hardcoded, or stubbed outputs are test-only and do not satisfy MVP runtime/demo acceptance. Runtime MUST support explicit `chatgpt_oauth`, `deepseek`, and `gemini` provider profiles with deploy-time model ids, no hardcoded model default, and no silent cross-provider fallback. DeepSeek/Gemini use native bindings; `chatgpt_oauth` MUST fail closed without a project-approved broker and MUST NOT reuse ChatGPT browser or Codex credentials.
-- `REQ-012` Vision observation and Plant state trust: Vision Observation MUST process actual uploaded photo data through a real vision-capable model or real vision integration, and agent hypotheses MUST NOT become confirmed Plant state without human review or follow-up evidence.
+- `REQ-011` Provider-neutral product-agent runtime: the current code phase MUST
+  implement strict competence-specific request/result schemas, test-only
+  fake/spy executor seams, pre/post-I/O authorization, redaction, timeout/error
+  handling, no-fallback/no-fake production behavior, and no direct domain,
+  Safety, task, or actuation authority from model output. Production MUST fail
+  closed while no endpoint is selected. Real integration is deferred to one
+  future milestone after explicit selection of an OpenAI-compatible endpoint;
+  no provider, model, base URL, credential, egress, or live smoke is required
+  for current code-phase closure.
+- `REQ-012` Vision observation and Plant state trust: Vision Observation MUST
+  load actual uploaded photo bytes through a strict integrity-checked
+  provider-neutral media boundary, and agent hypotheses MUST NOT become
+  confirmed Plant state without human review or follow-up evidence. A future
+  selected endpoint must verify real image processing separately.
 - `REQ-013` Agent publication and context hygiene:
   - agent output MUST pass runtime decision, pending MessageEnvelope, project-owned classification, and the applicable guarded downstream boundary;
   - UI Feed, raw chat/UI content, and admin notices MUST NOT become agent working context;
@@ -81,7 +93,8 @@ source_of_truth:
 - Agno as source of truth, Agent Chat Bus replacement, or domain coordinator.
 - Complex RAG, mandatory expert panels, full dataset registry, real fine-tuning, or sensor runtime dependency before real sensors exist.
 - Hard delete for Plant removal in MVP.
-- Fake, mock, hardcoded, or stubbed product-agent flows as the MVP runtime/demo path.
+- Fake, mock, hardcoded, or stubbed product-agent outputs as a production
+  fallback; deterministic fake/spy executors are test-only.
 
 ## Traceability (RTM)
 | REQ | Epic | Feature | Test | Lifecycle |
@@ -97,8 +110,8 @@ source_of_truth:
 | REQ-008 | EP-002 | FT-004, FT-006 | verified: authorized daily check-in with observations/manual pH/EC plus Plant card/history access | verified |
 | REQ-009 | EP-002 | FT-005 | verified: photo file/catalog/sha256/manifest/timeline refs plus stable complete catalog continuation | verified |
 | REQ-010 | EP-002 | FT-006 | verified: PostgreSQL authority vs append-only timeline audit/export, retained history, and strict cursor behavior | verified |
-| REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | integration: real provider-backed runtime adapter plus every owning product-agent flow, including explicit Companion invocation; anti-cheat: no fake runtime path | planned |
-| REQ-012 | EP-003 | FT-009 | integration: real vision input; unit: Plant trust-state promotion gates | planned |
+| REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | deterministic integration: strict provider-neutral schemas, fake/spy timeout/error paths, pre/post-I/O authorization, redaction, no production fake/fallback, and zero direct authority; future milestone: selected OpenAI-compatible endpoint | planned |
+| REQ-012 | EP-003 | FT-009 | integration: actual photo-byte integrity through outbound spy; unit: Plant trust-state promotion gates; future milestone: selected endpoint real-image run | planned |
 | REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification handoff, guarded typed Bus/literal UI publication, archived-Plant deny, restore revalidation, protected feed reads, and anti-cheat agent-context hygiene | verified |
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | unit: missing/stale data policy; integration: Safety Gate handoff | planned |
 | REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
@@ -119,7 +132,7 @@ source_of_truth:
 - Deterministic feature-local repairs are complete: open/unfocused conclusion
   and focus behavior, exact derived `ApprovedGovernanceSummaryV1`, reachable
   nested Task error translation, HTTP/ref/read rules, evidence selection,
-  distinct-run serialization, and explicit Companion+Safety-classifier smoke
+  distinct-run serialization, and provider-neutral Companion+Safety-classifier
   composition are closed in registered subject specs.
 - The shared provider-policy decision is closed: the blanket prohibition on
   sending models unapproved governance content is removed. Registered
@@ -132,8 +145,7 @@ source_of_truth:
   FT-012 chain; TASK-042 now also depends directly on TASK-040 to serialize the
   shared Task Follow-Up package. Global and feature design are complete; run a
   fresh `/review-tasks-plan FT-013` before execution selection. No
-  implementation, credentialed real-model result, or RTM lifecycle promotion
-  is claimed.
+  implementation, real-provider result, or RTM lifecycle promotion is claimed.
 
 ## Current FT-001 Evidence Note
 
@@ -242,7 +254,7 @@ source_of_truth:
   UI/raw/provider/governance context exclusion, literal candidate data, and
   backend-authorized retained-history feed reads.
 - FT-008 and the FT-007/FT-008-owned REQ-013 outcome are synchronized as
-  `verified`. This does not satisfy FT-007's deferred live-provider UAT or
+  `verified`. This does not satisfy the deferred future provider-integration milestone or
   promote REQ-011, FT-009, FT-010, or EP-003.
 - REQ-020 remains `planned`: FT-008 verifies only its applicable local/privacy,
   no-secret, and context-exclusion boundary; complete local security, exposure,

@@ -1,8 +1,8 @@
 ---
-description: Verification contract for FT-013 IssueStack governance, atomic DecisionRecord effects, projections, and explicit real Companion invocation.
+description: Verification contract for FT-013 IssueStack governance, atomic DecisionRecord effects, projections, and explicit provider-neutral Companion invocation.
 status: active
 type: testing_spec
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md
   - .memory-bank/states/companion-governance.md
@@ -18,7 +18,7 @@ source_of_truth:
 ## Scope
 
 Defines deterministic, PostgreSQL, HTTP, concurrency, compatibility, runtime,
-and credentialed product-agent evidence for FT-013 from explicit Companion run
+and deterministic executor evidence for FT-013 from explicit Companion run
 through current proposal, human DecisionRecord, optional ordinary Task, and
 retained IssueStack conclusion.
 
@@ -174,9 +174,10 @@ retained IssueStack conclusion.
 - Only `POST /api/plants/{plant_id}/companion/runs` invokes `agent_id=companion`.
   GET/detail/feed refresh, domain events, Task completion, startup, and
   reconciliation produce zero calls.
-- Deterministic provider tests prove explicit DeepSeek/Gemini binding, no
-  default/fallback/fake/canned result, no silent relabel of failures, and no
-  governance write on classifier/runtime/guard failure.
+- Deterministic executor tests prove explicit fake/spy injection, unbound
+  fail-closed production, no default/fallback/fake/canned production result,
+  no silent relabel of failures, and no governance write on classifier/runtime/
+  guard failure.
 - Negative compatibility proves Companion `safe_information` writes no FT-008
   candidate Bus/UI row, Companion `safe_task_request` writes no FT-012 Task,
   held physical/blocked/mismatch/failure writes no governance or ordinary row,
@@ -190,29 +191,24 @@ retained IssueStack conclusion.
   without pretending the loser's outcome is the committed winner's outcome;
   different run ids follow the explicit serialized multi-effect rule above.
 
-## Credentialed real-model UAT
+## Current code-phase executor integration
 
-The explicit smoke uses the production new-issue route, canonical `companion`
-and `safety_gate` roster bindings, actual authorized PostgreSQL
-Plant/check-in/measurement fixture, production provider factories,
+The deterministic integration uses the production new-issue route, canonical
+`companion` and `safety_gate` test seams, actual authorized PostgreSQL
+Plant/check-in/measurement fixture, provider-neutral composition,
 `SafetyGateClassificationService`, classification repository, and governance
 repository:
 
-```bash
-AGENT_REAL_COMPANION_SMOKE=1 .venv/bin/python -m pytest tests/backend/companion_governance/test_real_companion_smoke.py -m real_model -q
-```
-
-It makes exactly one real Companion provider call and one real Safety Gate
-provider call, returns the committed strict non-silent proposal plus matching
+It makes exactly one Companion spy call and one Safety Gate spy call, returns
+the strict non-silent proposal plus matching
 strict classification, persists that classification and one current
 proposal/active-attention result, and creates no Safety decision,
-DecisionRecord, Task, action, Plant mutation, or device effect. Explicitly
-requested skip/xfail, fake/canned executor or classifier, fallback, silence,
-blocked/mismatched classification, either missing binding/call,
-unconfigured/provider/output/guard/audit/persistence failure, or missing
-persisted proposal fails UAT. Evidence stores only both safe model refs plus
-run/event and issue/proposal/attention/classification refs, never prompts, raw
-responses, proposal text, credentials, auth state, or hidden reasoning.
+DecisionRecord, Task, action, Plant mutation, or device effect. Separate test
+cases cover timeout, executor failure, invalid output, unbound production,
+guard/audit/persistence failure, mismatch, redaction, and no fallback. Evidence
+uses synthetic refs and never claims a real response, provider, model, network
+call, or credential. The future selected-endpoint milestone owns real
+Companion/classifier integration.
 
 ## Commands
 
@@ -222,11 +218,10 @@ responses, proposal text, credentials, auth state, or hidden reasoning.
 .venv/bin/python -m pytest tests/backend/safety_gate/test_classifier.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/safety_gate/test_migration_models.py -m "not real_model" -q
 .venv/bin/python -m pytest tests/backend/safety_gate/test_migration_models.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py -q
 .venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/task_follow_up tests/backend/companion_governance -m "not real_model" -q
-AGENT_REAL_COMPANION_SMOKE=1 .venv/bin/python -m pytest tests/backend/companion_governance/test_real_companion_smoke.py -m real_model -q
 .venv/bin/python -m pytest tests -m "not real_model" -q
 node scripts/mb-lint.mjs
 git diff --check
 ```
 
-The credentialed command is required for the feature's real-model acceptance;
-deterministic task closure must not claim it from mocks or a deferred run.
+Real-provider commands are intentionally undefined until the future endpoint
+selection milestone and are not current task closure evidence.

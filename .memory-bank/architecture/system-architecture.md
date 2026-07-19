@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -41,6 +41,10 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   prompt-looking sequences have no markup, instruction, command, or authority
   semantics at any boundary.
 - UI Feed, raw chat, raw model reasoning, and admin notices never become agent working context. Authorized typed governance content may enter only an owning agent-specific provider request and remains untrusted, non-authoritative input.
+- Current code-phase runtime is provider-neutral. Deterministic fake/spy
+  executors prove request/response schemas, media integrity, timeout/error
+  handling, redaction, and pre/post-I/O authorization; production fails closed
+  without a binding and has no fake/canned/fallback output.
 - Safety Gate and authorized human approval are required before physical-action wording can become a human-performed action task.
 - MVP data remains local/private by default with `local_only` sync status.
 - Operator frontend uses Svelte 5 with SvelteKit as the Web App/PWA framework;
@@ -221,7 +225,8 @@ Use a local modular monolith:
 - Runtime state: PostgreSQL/read model.
 - Local artifacts: filesystem photo originals/derived files and manifests.
 - Audit/export: append-only JSONL timeline.
-- Agent execution: Agno/model providers behind project-owned adapters.
+- Agent execution: provider-neutral project-owned adapters; Agno may be an
+  execution dependency, but installed SDK code is not external-integration evidence.
 
 The monolith is split by bounded modules inside one deployable system. Module boundaries are authority boundaries, not separate services.
 
@@ -282,7 +287,7 @@ flowchart LR
   State --> Bus[Agent Chat Bus]
   Files --> Bus
   Bus --> Adapter[Project-owned agent adapter]
-  Adapter --> Model[Agno / LLM / vision model]
+  Adapter --> Model[Provider-neutral executor seam]
   Model --> Adapter
   Adapter --> Envelope[MessageEnvelope]
   Envelope --> Classifier[Persisted project-owned classification evidence]
@@ -302,8 +307,13 @@ flowchart LR
 
 ## External Integrations
 
-- LLM provider and vision-capable model integrations are external execution dependencies behind adapters.
-- Agno is an execution SDK only.
+- No external model endpoint is selected or required for current code-phase
+  closure. Production composition fails closed while unbound.
+- A future milestone may bind one explicitly selected OpenAI-compatible
+  endpoint behind the same adapters after provider, model, base URL,
+  authentication, egress, and cost decisions are recorded.
+- Agno is an execution SDK only; its presence or version is not proof of a
+  successful external call.
 - No real sensors are required in MVP.
 - No hosted sync/server upload is required in MVP.
 
@@ -375,14 +385,17 @@ Shared state/data guardrails:
 Use risk-based testing:
 
 - Unit tests for permissions, state policies, safety gates, trainability, redaction, and context filters.
-- Integration tests for ActorContext propagation, photo artifacts, runtime authority vs timeline, real model adapter boundaries, Bus/UI Feed separation, and Companion DecisionRecord semantics.
+- Integration tests for ActorContext propagation, photo artifacts, runtime
+  authority vs timeline, provider-neutral executor boundaries, Bus/UI Feed
+  separation, and Companion DecisionRecord semantics.
 - E2E tests for Boss setup, Engineer daily workflow, Safety Gate approval, follow-up, Companion governance, unauthorized access, archive/restore, and storage prompt.
 - Cross-feature archive tests prove open tasks, approvals, proposals, and agent
   publications remain retained but non-operative until restore and fresh
   revalidation.
-- Anti-cheat tests prove runtime/demo agents are not fake/stubbed, candidate
-  text is never promoted into instruction channels, and UI Feed/raw chat never
-  enter agent context.
+- Anti-cheat tests prove production composition has no fake/stubbed/canned
+  fallback, fake/spy executors remain test-only, candidate text is never
+  promoted into instruction channels, and UI Feed/raw chat never enter agent
+  context.
 
 The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 
@@ -400,7 +413,8 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 - Governance approval could be confused with Safety Gate approval.
 - Raw agent/model output could bypass project-owned adapters.
 - UI Feed or governance content outside a registered typed provider allowlist could leak into agent context.
-- Real model-backed agent requirement adds integration risk.
+- Future endpoint selection adds integration, privacy, timeout, and cost risk;
+  that risk is deferred to the provider-integration milestone.
 - Accounts/Farm/Admin scope could expand into broad farm management.
 - A stale UI or worker could advance an already-open Plant workflow after
   archive unless every state-changing service checks current Plant status at
@@ -415,5 +429,7 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
   candidate-output rejection policy in this contract.
 - FT-008/FT-011/FT-012 concrete storage, API, classifier, task, and UI design
   remains feature-owned.
-- FT-007 execution requires a DeepSeek/Gemini model id, credential, egress
-  opt-in, reconciled task cards, and fresh task-plan approval.
+- Provider/model/base URL selection is intentionally open. The future
+  integration milestone must select one OpenAI-compatible endpoint and verify
+  real image, response, error, timeout, redaction, and cost behavior; current
+  code-phase closure does not depend on that milestone.

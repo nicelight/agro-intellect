@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-009
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-07-16
+last_updated: 2026-07-19
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/contracts/vision-observation-runtime.md
@@ -36,8 +36,11 @@ source_of_truth:
 
 ## Acceptance Criteria
 
-- Vision Observation uses a real vision-capable model or real vision integration.
-- Mock/fake adapter cannot satisfy MVP runtime/demo acceptance.
+- Vision Observation sends actual integrity-checked accepted photo bytes only
+  through the strict provider-neutral media boundary.
+- Current code-phase acceptance uses an explicit outbound spy; production is
+  unbound and fails closed without fake/canned/fallback output. No real image
+  interpretation is claimed.
 - Vision output observes and may hypothesize but does not diagnose as confirmed state or recommend physical actions directly.
 - Confirmed Plant state requires human review, measurement, or follow-up evidence.
 
@@ -53,7 +56,8 @@ source_of_truth:
 
 ## Verification Targets
 
-- Integration: real photo input reaches real vision/model-backed path.
+- Integration: actual photo bytes/ref/content type/hash reach exactly one
+  outbound-spy call and all failure branches remain effect-free.
 - Integration: missing/unavailable photo data returns the exact fail-closed
   denial with no provider call, runtime audit, envelope, or state candidate.
 - Unit: trust status and promotion gate rules after spec defines states.
@@ -67,7 +71,7 @@ source_of_truth:
 
 ## Normative Backbone Links
 
-- [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): real model/vision integration and Plant state authority boundaries.
+- [.memory-bank/architecture/system-architecture.md](../architecture/system-architecture.md): provider-neutral Vision and Plant state authority boundaries.
 - [.memory-bank/domains/runtime-data-model.md](../domains/runtime-data-model.md): Plant state authority and evidence refs.
 - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md): authorized local photo artifact input refs.
 - [.memory-bank/contracts/message-envelope.md](../contracts/message-envelope.md): observation/hypothesis output boundary.
@@ -76,7 +80,14 @@ source_of_truth:
 ## Feature-Local Design Pressure
 
 - Exact vision input refs, observation schema, trust statuses, promotion gates,
-  contradiction handling, real vision/provider configuration, and tests.
+  contradiction handling, provider-neutral media execution, and tests.
+
+## Provider integration status
+
+- Current code phase: deterministic and closure-eligible without provider,
+  credentials, egress, network, or live smoke.
+- Future real image/response: centralized in the deferred selected-endpoint
+  milestone in `.memory-bank/runbooks/agent-runtime-providers.md`.
 
 ## Feature-Local Not Applicable
 

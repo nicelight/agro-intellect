@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 ---
 # PRD
 
@@ -53,7 +53,8 @@ does not replace backend rules, and cannot authorize physical actions.
 - Agno as source of truth, Agent Chat Bus replacement, or domain coordinator.
 - Complex RAG, mandatory expert panels, full dataset registry, real fine-tuning, or sensor runtime dependency before real sensors exist.
 - Hard delete for Plant removal in MVP.
-- Fake, mock, or stub product-agent flows as the MVP runtime/demo path.
+- Fake, mock, or stub product-agent outputs as a production fallback or
+  user-visible substitute. Deterministic fake/spy executors remain test-only.
 
 ## Users / Actors
 
@@ -93,14 +94,16 @@ does not replace backend rules, and cannot authorize physical actions.
 - Daily Plant operations MUST support check-in, observations, photo upload, manual pH/EC, Plant card/history, cautious agent-assisted outputs, tasks, approvals, and follow-up outcomes.
 - Photo intake MUST store local photo files, accepted catalog metadata, `sha256`, initial capture manifest, export-ready refs, and timeline audit refs.
 - Product agents MUST operate with single-competence boundaries and permission-aware context.
-- MVP product agents MUST run as real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users.
-- MVP MUST NOT satisfy agent acceptance criteria with fake, mock, hardcoded, or stubbed agent outputs.
-- Agent Runtime MUST support explicit provider profiles for `chatgpt_oauth`,
-  `deepseek`, and `gemini`; concrete model identifiers are deploy-time
-  configuration with no hardcoded default or silent cross-provider fallback.
-  DeepSeek and Gemini use native bindings; `chatgpt_oauth` remains fail-closed
-  behind an approved external credential broker and MUST NOT reuse ChatGPT
-  browser or Codex credentials.
+- The current code phase MUST implement provider-neutral, strict product-agent
+  request/result boundaries over actual scoped Plant data. Closure is based on
+  deterministic schema, authorization, media-integrity, failure, redaction,
+  timeout, and no-authority evidence through explicit fake/spy executor seams.
+- Production composition MUST fail closed when no endpoint is selected and
+  MUST NOT use fake, mock, hardcoded, canned, or fallback output.
+- Real external-provider integration is deferred until an owner selects an
+  OpenAI-compatible endpoint and explicitly defines its provider, model, base
+  URL, authentication, egress, and cost constraints. No provider, model, or
+  base URL is selected by this PRD.
 - Authorized typed Plant context MAY leave the local runtime for the explicitly
   selected provider. Credentials, auth material, raw UI/chat, provider history,
   and hidden reasoning remain forbidden outbound context.
@@ -112,7 +115,10 @@ does not replace backend rules, and cannot authorize physical actions.
   renders that same event and Agent Chat Bus MUST NOT consume it. Failure MUST
   NOT roll back or falsely fail Plant creation. Projection stops while archived
   and resumes only after current-state reconciliation.
-- Vision Observation Agent MUST process actual uploaded photo data through a real vision-capable model or real vision model integration; it MUST NOT be replaced by a mock/fake adapter in MVP.
+- Vision Observation Agent MUST load and integrity-check actual uploaded photo
+  bytes through its strict provider-neutral media boundary. Current code-phase
+  acceptance uses an outbound spy for byte identity; a real image-capable
+  endpoint run belongs to the deferred integration milestone.
 - Agent-originated product output MUST pass project-owned runtime decision,
   pending MessageEnvelope, project-owned classification, and only then the
   applicable Agent Chat Bus/UI Feed/task/Safety boundary.
@@ -173,15 +179,18 @@ First working flow:
 5. User records observations, uploads a photo, and/or enters pH/EC measurements.
 6. Backend stores photo file, catalog row, initial capture manifest, runtime state, and timeline audit.
 7. Validated agent-consumable events are published through the Agent Chat Bus.
-8. Real LLM/model-backed product agents process actual scoped Plant data and produce concise, permission-aware outputs or remain silent.
+8. Provider-neutral product-agent adapters process actual scoped Plant data
+   through strict schemas; deterministic code-phase flows use test-only
+   fake/spy executors, while unconfigured production composition fails closed.
 9. UI Feed shows human-facing messages, cards, prompts, tasks, approvals, and local storage status without becoming agent context.
 10. Safety Gate blocks or routes physical-action wording.
 11. Boss or an Engineer with `plant_approve_actions` may approve a physical-action proposal only after fresh data and Safety Gate pass.
 12. Approved physical action creates only a human-performed `action_task`, never automated execution.
 13. Task and follow-up outcomes preserve evidence and audit trail.
 
-First demo MUST include Boss and at least one Engineer path, real LLM/model-backed
-product agents, real uploaded photo/measurement/observation data, Plant State trust
+First code-phase demo MUST include Boss and at least one Engineer path,
+provider-neutral product-agent boundaries, real uploaded
+photo/measurement/observation data, Plant State trust
 statuses, Hydroponics Advisor missing-data behavior, Task & Follow-up Agent behavior,
 Safety Gate behavior, and visible Companion HumanAttentionNeeded plus proposal/decision
 path. Consultant remains in MVP v2 product scope, but Consultant UI/path may be deferred
@@ -192,11 +201,11 @@ from first demo.
 - Backend: Python, FastAPI, Pydantic/schema validation, PostgreSQL/read model, local filesystem for photos/artifacts, JSONL timeline export.
 - Frontend: Svelte 5/SvelteKit Web App/PWA with role-aware UI, Plant selector,
   chat/feed surface, task/approval cards, and minimal Boss Admin Surface.
-- AI runtime: Agno SDK as execution layer only, real LLM-backed product agents, real vision-capable model or real vision model integration for photos, and project-owned domain adapters.
-- Model provider profiles: DeepSeek and Gemini native adapters plus a
-  fail-closed `chatgpt_oauth` profile behind a future project-approved
-  credential adapter; model ids are selected later through deployment
-  configuration.
+- AI runtime: project-owned provider-neutral adapters and strict schemas; Agno
+  may remain an execution dependency but is not integration evidence.
+- Future model integration: one explicitly selected OpenAI-compatible endpoint
+  behind the existing adapter boundary. Provider, model, base URL,
+  authentication, egress, and cost policy are intentionally deferred.
 - Future/non-MVP options: InfluxDB, object storage, DuckDB, Capacitor wrapper, server sync/cloud deployment, full dataset registry, and real fine-tuning.
 
 ## Edge Cases / Failure Handling
@@ -232,7 +241,10 @@ from first demo.
   Engineer can then read, select, and operate the Plant but still cannot
   archive/restore it or manage access.
 - Boss and Engineer can complete the first authorized Plant workflow on `tomato_001`.
-- First demo agent behavior is produced by real LLM/model-backed agents over actual scoped Plant data, not fake, mock, hardcoded, or stubbed outputs.
+- Current code-phase agent behavior is proven through strict deterministic
+  fake/spy executor tests over actual scoped Plant data; production has no
+  fake/canned fallback and fails closed without a selected endpoint. Real
+  endpoint behavior is not claimed by this acceptance criterion.
 - Engineer sees only assigned Plants and cannot approve physical actions without `plant_approve_actions`.
 - Consultant, when present, is limited to authorized advisory/read/comment context.
 - Every Farm/Plant route and agent context builder can identify Account, Farm, role preset, Plant permission, and session provenance.
@@ -264,7 +276,10 @@ from first demo.
 - Safety tests later MUST cover stale data, missing approval authority, failed Safety Gate, governance-vs-safety approval separation, and action-task unlock semantics.
 - UI/context hygiene tests later MUST prove UI Feed, spoiler notes, raw chat, and admin notices do not enter agent working context, while any agent-specific governance input matches its strict typed allowlist and remains non-authoritative.
 - Storage/export tests later MUST cover photo file/catalog/manifest/timeline refs and secret redaction.
-- Agent runtime tests later MUST distinguish real LLM/model-backed MVP flows from test-only mocks; mocks may be used only in tests, not as the MVP runtime/demo path.
+- Agent runtime tests MUST keep fake/spy executors explicitly test-only and
+  prove that production composition has no fake/canned/fallback path. A future
+  integration milestone separately verifies a selected endpoint over real
+  image/response, error, timeout, redaction, and cost scenarios.
 
 ## Clarifications
 
@@ -279,16 +294,16 @@ from first demo.
 - Q: What may a `DecisionRecord` control in MVP? -> A: DecisionRecord may direct Plant-scoped discussion/workflow and safe task requests such as check, measurement, or follow-up tasks through backend rules. It must not change Plant state by itself, create `action_task`, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
 - Q: What is the high-level CompanionProposal supersede/expiry policy? -> A: No parallel proposals for the same Plant-scoped issue. When Companion creates a new proposal for the same issue, the previous pending proposal automatically becomes superseded and non-operative. No time-based expiry is required in PRD.
 - Q: What approved governance summary becomes agent-consumable? -> A: The Bus fact remains compact typed data derived from a valid DecisionRecord: decision id, Plant id, issue id, proposal id/version, decision, decision summary, allowed workflow effect, decider role, decided_at, source refs, and explicit `safety_gate_authority=not_granted`. This Bus projection is distinct from authorized typed governance input supplied directly by an owning agent-specific provider contract.
-- Q: Is the first-demo boundary sufficient, and can any agent/model behavior be stubbed in MVP? -> A: MVP must use real LLM-backed agents or real model-backed adapters over actual Plant data entered or uploaded by users. Fake, mock, hardcoded, or stubbed agent outputs are not acceptable as the MVP runtime/demo path. Sensor runtime remains out of MVP until real sensors exist.
+- Q: Is the first-demo boundary sufficient, and can any agent/model behavior be stubbed in MVP? -> A: Historical answer, superseded on 2026-07-19, required live LLM-backed acceptance. The active decision still forbids fake/mock/hardcoded/canned production output, but current code-phase closure uses explicit test fake/spy seams and unbound fail-closed production. Sensor runtime remains out of MVP until real sensors exist.
 
 ### Session 2026-07-11
 
-- Q: Which provider families must Agent Runtime support? -> A: Support
-  `chatgpt_oauth`, `deepseek`, and `gemini`. Concrete model ids will be chosen
-  later and must remain explicit deployment configuration. DeepSeek/Gemini use
-  native bindings; `chatgpt_oauth` cannot become operational until an approved
-  broker defines token lifecycle and endpoint semantics, and it must fail
-  closed rather than reuse ChatGPT/Codex credentials.
+- Q: Which provider families must Agent Runtime support? -> A: Historical
+  answer, superseded on 2026-07-19, listed `chatgpt_oauth`, `deepseek`, and
+  `gemini`. No provider family is currently required or targeted; Gemini is not
+  planned. The active boundary is provider-neutral, production is unbound and
+  fail-closed, and a future owner selection will define one OpenAI-compatible
+  endpoint without reusing ChatGPT/Codex credentials.
 - Q: May Plant context be sent to external providers? -> A: Yes, but only the
   typed authorized payload for the explicitly selected provider; credentials,
   raw UI/chat, provider history, and hidden reasoning remain excluded.
@@ -309,6 +324,20 @@ from first demo.
   Plant-state, Task, Safety, Bus/general agent-context, or publication
   authority. The broader blanket prohibition remains until a later explicit
   documentation/product-policy change.
+
+### Session 2026-07-19
+
+- Q: Does current code-phase closure require a provider, credentials, egress,
+  network access, or a non-skipped live smoke? -> A: No. Those inputs are not
+  blockers or closure evidence for the current code phase.
+- Q: Which provider is planned now? -> A: None. Gemini is not planned. Runtime
+  contracts stay provider-neutral and point toward a future explicitly
+  selected OpenAI-compatible endpoint without selecting provider, model, or
+  base URL now.
+- Q: Where is real integration accepted? -> A: One separate future integration
+  milestone in the Agent Runtime provider runbook/testing concern covers real
+  image, real response, errors, timeouts, redaction, and cost. Until that
+  milestone is run, no real-provider integration is claimed.
 
 ## Unresolved Blockers
 

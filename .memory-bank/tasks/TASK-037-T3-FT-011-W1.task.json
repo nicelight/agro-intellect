@@ -1,6 +1,6 @@
 {
   "id": "TASK-037-T3-FT-011-W1",
-  "title": "Implement model-backed Safety classification authority",
+  "title": "Implement provider-neutral Safety classification authority",
   "status": "planned",
   "wave": "W1",
   "feature": "FT-011",
@@ -24,7 +24,6 @@
     "backend/migrations/versions/*_ft011_safety_classifications.py",
     "tests/backend/safety_gate/test_classifier.py",
     "tests/backend/safety_gate/test_classification_persistence.py",
-    "tests/backend/safety_gate/test_real_safety_gate_smoke.py",
     "tests/backend/agent_runtime/",
     "tests/backend/access_admin/test_ft002_schema_migration.py",
     "tests/backend/photo_intake/test_ft005_migration_models.py",
@@ -50,11 +49,6 @@
       "required": true
     },
     {
-      "name": "credentialed_safety_gate_smoke",
-      "command": "AGENT_REAL_SAFETY_GATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/safety_gate/test_real_safety_gate_smoke.py -m real_model -q",
-      "required": false
-    },
-    {
       "name": "memory_bank_lint",
       "command": "node scripts/mb-lint.mjs",
       "required": true
@@ -78,10 +72,10 @@
     "Migration/model evidence for exact classification constraints, UUID relations, and absence of raw candidate storage.",
     "Concurrency evidence for identical duplicate and conflicting first-write-wins behavior.",
     "Outbound-spy evidence that the provider receives only SafetyGateProviderRequestV1 fields and no authorization/evidence data.",
-    "If credentialed UAT is run, safe model/classification refs proving one real non-fallback safety_gate call without secrets or raw output."
+    "Deterministic fake/spy evidence for exact outbound request, timeout/provider-error/invalid-output handling, redaction, post-I/O denial, unbound production, and no fallback/fake production."
   ],
-  "purpose": "Add the canonical real model-backed safety_gate path that semantically classifies validated pending MessageEnvelope data while keeping the backend-validated, immutable PostgreSQL result as the only downstream routing authority.",
-  "success_outcome": "One explicitly bound real safety_gate returns only the strict candidate union; backend validation persists exactly one authoritative SafetyClassificationResultV1 plus the nullable closed action kind, identical retries are idempotent, provider/invalid/uncertain branches become only blocked_uncertain for the later generic notice route, conflicting retries have no effect, current authorization/archive races write nothing, and no raw candidate, approval, task, Bus/UI publication, Timeline event, or actuation authority is created by this slice.",
+  "purpose": "Add the canonical provider-neutral safety_gate path that semantically classifies validated pending MessageEnvelope data while keeping the backend-validated, immutable PostgreSQL result as the only downstream routing authority.",
+  "success_outcome": "A strict provider-neutral safety_gate seam returns only the strict candidate union; backend validation persists exactly one authoritative SafetyClassificationResultV1 plus the nullable closed action kind. Deterministic fake/spy evidence covers strict schemas, authorization plus post-I/O recheck, timeout/error/invalid output, redaction, unbound production, and no fallback/fake production without provider/model/base URL/credential/egress/network/live-smoke requirements; retries and races stay fail-closed and no downstream authority is created.",
   "anti_goals": [
     "Do not implement pH/EC Safety evaluation, pending proposal projection, human approval, action tasks, follow-up, or outcomes in this task.",
     "Do not create a public Safety Gate endpoint, dedicated Timeline event, fallback provider, fake runtime path, or raw candidate/provider persistence.",
@@ -118,7 +112,7 @@
     ],
     "stop_conditions": [
       "The shared SafetyClassificationResultV1 matrix conflicts with the implementation baseline or would need widening.",
-      "A real classifier cannot be wired without sending authorization/evidence data outside the canonical request allowlist.",
+      "The provider-neutral classifier cannot be wired without sending authorization/evidence data outside the canonical request allowlist.",
       "The implementation would require raw candidate persistence, a public API, or FT-012-owned state.",
       "The current migration head or existing uncommitted work makes a safe additive classification migration ambiguous."
     ]
@@ -160,7 +154,7 @@
     "Model-selected labels and output never become Safety, publication, task, approval, or action authority.",
     "Not-configured, provider-failed, invalid-output, and uncertainty branches fail closed as blocked_uncertain only when the durable current guard succeeds.",
     "Archived or unauthorized Plant state creates no classification effect and restore never replays the handoff.",
-    "No fake, canned, hardcoded, fallback, or skipped result satisfies REQ-011 product-agent acceptance."
+    "Test fakes/spies are explicit seams only; no fake, canned, hardcoded, fallback, or failure-silence production result satisfies REQ-011 acceptance."
   ],
   "verification_targets": [
     "All strict request/candidate/shared-result matrix rows and unknown-field rejections pass in tests/backend/safety_gate/test_classifier.py.",
@@ -168,6 +162,6 @@
     "Concurrent identical and conflicting classification attempts prove first-write-wins immutability and no downstream effect on conflict.",
     "Pre/post-provider current authorization, grant revocation, and archive races make no unauthorized durable row or restore replay.",
     "Outbound request snapshots and safe evidence contain no Farm/Plant/auth/evidence fields, credentials, prompts, raw response, or hidden reasoning.",
-    "An explicitly requested real-model smoke makes exactly one selected DeepSeek/Gemini call and cannot pass by skip, fake output, fallback, or blocked/failed result."
+    "Deterministic fake/spy tests prove exact call count and outbound allowlist, timeout/provider-error/invalid-output fail-closed behavior, post-I/O denial, redaction, unbound production, and no fallback/fake production."
   ]
 }

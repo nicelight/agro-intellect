@@ -4,6 +4,53 @@ status: active
 ---
 # Changelog
 
+## 2026-07-19 — Provider-neutral FT-009…FT-013 planning reconciliation
+
+- Applied the explicit owner supersession: no provider, model, or base URL is
+  selected for the current code phase; Gemini is not planned. Provider
+  credentials, egress, network calls, and non-skipped live smoke are not
+  current feature/task closure inputs.
+- Reconciled PRD/requirements/product/invariants/architecture, shared Agent
+  Runtime provider/adapter contracts, six competence runtime contracts, five
+  feature/testing surfaces, behavior examples, implementation plans, protocol
+  plans/decision logs, and TASK-034/035/036/037/040/043 to deterministic
+  provider-neutral acceptance.
+- Current mandatory evidence now covers strict schemas, authorization plus
+  post-I/O rechecks, accepted-media integrity, exact outbound fake/spy calls,
+  timeout/error/invalid-output handling, redaction, unbound-production failure,
+  no fallback/fake production, and no model Safety/Task/actuation authority.
+- Added one deferred manual selected-OpenAI-compatible-endpoint milestone to
+  `runbooks/agent-runtime-providers.md` for real text/image responses, errors,
+  timeouts, redaction, authority, and cost. It is not a runnable task/feature
+  and is `not_applicable_for_current_code_phase`.
+- Preserved every task id, tier, wave, dependency, and lifecycle state.
+  TASK-034 remains `failed`, TASK-035 remains `blocked`, and their scheduler/
+  numbered closure evidence remains historical and immutable. TASK-041/042/043
+  remain `planned` and execution-excluded in this run.
+- Planning changes make prior task-plan approvals stale: next run fresh
+  `/review-tasks-plan` for FT-009, FT-010, FT-011, and FT-012. FT-013 also
+  requires fresh review before any later execution selection; no review,
+  execution, verification, or lifecycle transition is claimed here.
+
+## 2026-07-18 — Autopilot lifecycle contract simplification
+
+- Made `workflows/tier-policy.md` the sole owner of closure, attempts, retries,
+  recovery, and current-evidence semantics; execution/sync skills now route to
+  it instead of repeating tier-specific closure rules.
+- Defined immutable zero-padded `ATTEMPT: NN` reports, latest-attempt evidence
+  selection for every tier, explicit mismatch/conflict detection,
+  resume-before-selection for `in_progress`, bounded attempts, and feature-local
+  `(feature, wave)` boundaries without a new state artifact.
+- Kept `mb-lint` structural by removing protocol/verdict/evidence enforcement;
+  aligned task-schema gate objects with lint and kept T2/T3 process findings as
+  doctor warnings.
+- Removed unconditional final task-plan review. Review is repeated only after a
+  planning-surface change; status/evidence-only updates do not invalidate it.
+- Added `tests/memory-bank/mb-workflow.test.mjs` for structural lint, gate-schema
+  alignment, latest-attempt selection, and recovery hints. No generated-source,
+  `current.json`, state helper, review manifest, or automatic follow-up task was
+  introduced.
+
 ## 2026-07-18 — Governance provider-input policy update
 
 - Removed the blanket requirement that models must not receive unapproved

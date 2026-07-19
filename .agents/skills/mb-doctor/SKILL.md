@@ -42,16 +42,15 @@ If the repository exposes another documented wrapper for the same script, use th
   `.memory-bank/tasks/index.json` is an error because there is no executable task queue.
 - JSON mode: machine-readable report for schedulers and agents.
 
-Default mode may emit warnings for incomplete scheduler readiness evidence that should be fixed before unattended execution. These warnings do not invalidate KISS manual closure. Strict mode promotes those readiness gaps to errors where autonomous/autopilot progression would be unsafe.
+Default and strict modes may emit advisory process/evidence warnings. Strict
+mode promotes only structural readiness gaps to errors; it does not turn the
+recommended T2/T3 protocol or review profile into closure enforcement.
 
 After `/spec-init` PASS, `.memory-bank/spec-backbone.md` may correctly have `Pre-PRD Spec Status: ready_for_prd` while Global Backbone Status is still absent, `blocked`, or otherwise incomplete. In default mode, report this as "prepared for `/prd`; Global Backbone Status intentionally pending until `/spec-design`" rather than a fix-now problem. The machine-readable finding code may remain `SPEC_BACKBONE_NOT_READY`; the meaning is downstream task/autonomous readiness, not failure of `/spec-init`.
 
-Use `--strict` after `/foundation-to-tasks` before any `FT-000` execution,
-before `/autopilot` or the scheduler phase of `/autonomous`, before each
-task-selection pass, and after each `/mb-sync` before promoting dependents or
-declaring success. When the last task of a T2 product feature closes, the
-scheduler must run feature-level `/red-verify --feature FT-<ID>` and record
-semantic-pass before that wave-boundary sync/strict-doctor gate.
+Use `--strict` after `/foundation-to-tasks` before `FT-000` execution, before
+`/autopilot` or the scheduler phase of `/autonomous`, before task selection, and
+after boundary synchronization. Selected T2/T3 evidence gaps remain warnings.
 
 In manual greenfield, `/mb-doctor` is conditional readiness checking, not a
 default gate for simple `T0` / `T1` execution. Skip it by default for local
@@ -59,7 +58,9 @@ manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
 freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
 cases.
 
-Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonomous` own closure/failure/blocking decisions. T2 task closure requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required. T2 feature completion separately requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact `HUMAN_CHECKPOINT: done`. In manual mode, T0/T1 may close in `/execute` with compact evidence when explicit top-level owner fast-lane conditions are met, or through `/verify PASS` when independent verification is requested; T2 may close when full protocol plus applicable task/spec gates are satisfied, only with explicit closure ownership; T3 requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure. Full `/mb-sync` runs at the wave boundary.
+Canonical closure, attempt, retry, recovery, and current-evidence semantics live
+only in `.memory-bank/workflows/tier-policy.md`. `mb-doctor` reports readiness
+facts and warnings; it does not own lifecycle decisions.
 
 ## Required checks
 `mb-doctor` must check only readiness-critical conditions:
@@ -88,17 +89,20 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
   task depends on it directly or transitively.
 - Task dependencies reference known task IDs and do not create cycles or execution deadlock.
 - Task status, dependency, and tier policy allow safe scheduler decisions.
-- `in_progress` `T0` / `T1` tasks have a `.protocols/<TASK_ID>/` directory.
+- Every `in_progress` task emits `TASK_IN_PROGRESS_RESUME_REQUIRED` with the
+  highest declared attempt and observed stages so a scheduler resumes it before
+  promotion/selection.
+- Missing compact T0/T1 protocol/evidence is an advisory warning; recovery may
+  still use declared reports and owner state.
 - `T2` / `T3` `planned` / `ready` tasks do not require protocol files yet.
-- `T2` / `T3` `in_progress` tasks have full protocol files: `context.md`, `plan.md`, `progress.md`, `verification.md`, and `handoff.md`.
-- `T0` / `T1` `done` tasks have compact `.protocols/<TASK_ID>/run.md` evidence appropriate for their tier.
-- In `--strict`, `T2` `done` tasks have full protocol files and `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts; per-task red-verify evidence is not required.
-- In `--strict`, when every indexed task for a non-`FT-000` feature with at
-  least one `T2` task is `done`, the matching feature doc records an exact
-  standalone `SEMANTIC_VERDICT: semantic-pass` line from
-  `/red-verify --feature FT-<ID>`.
-- In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`, and the exact standalone marker line `HUMAN_CHECKPOINT: done`.
-- `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
+- Missing T2/T3 protocol, verification, semantic-review, and checkpoint
+  artifacts are advisory warnings in both modes.
+- T0/T1 compact protocol/evidence findings do not become strict errors.
+- When numbered task reports contain exact `ATTEMPT: NN` markers, every tier
+  inspects only the highest attempt. Legacy evidence is used only when no
+  declared numbered attempt exists. In strict mode, a suffix/marker
+  mismatch or conflicting PASS/FAIL VERIFY reports for one current attempt is a
+  readiness error because recovery cannot choose one safe interpretation.
 - In `--strict`, `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
 - For `complete`, every `## Backbone Area Matrix` row in `.memory-bank/spec-backbone.md` has status `authoritative` or `not_applicable`; missing, `blocked`, `needed_before_tasks`, `unknown`, `planned`, `candidate`, or any other status is not product autonomous-ready.
 - In `--strict`, a foundation-only task queue whose indexed records are all `feature: "FT-000"` may pass with product contract rows still `needed_before_tasks`. This exception exists only for the foundation/task-queue gate before product `/prd-to-tasks`; product task queues must resolve those rows first.
@@ -153,20 +157,7 @@ Errors block autonomous/autopilot progression:
 - `FOUNDATION_GATE_DEP_MISSING`
 - `TASK_READY_DEP_NOT_DONE`
 - `TASK_QUEUE_DEADLOCK` in `--strict`
-- `TASK_IN_PROGRESS_WITHOUT_PROTOCOL` in `--strict`
-- `TASK_FULL_PROTOCOL_MISSING` in `--strict`
-- `TASK_COMPACT_ONLY_PROTOCOL` in `--strict`
-- `TASK_COMPACT_RUN_MISSING` for `T1` in default mode and for `T0` / `T1` in `--strict`
-- `TASK_COMPACT_RUN_UNREADABLE`
-- `TASK_COMPACT_VERDICT_MISSING` in `--strict`
-- `TASK_COMPACT_EVIDENCE_MISSING` in `--strict`
-- `TASK_DONE_EVIDENCE_MISSING` in `--strict`
-- `TASK_FAILED_EVIDENCE_MISSING` in `--strict`
-- `TASK_RED_VERIFY_EVIDENCE_MISSING` in `--strict`
-- `TASK_RED_VERIFY_VERDICT_MISSING` in `--strict`
-- `FEATURE_RED_VERIFY_VERDICT_MISSING` in `--strict`
-- `TASK_T3_CHECKPOINT_MISSING` in `--strict`
-- `FAILED_BUG_OR_FOLLOWUP_MISSING` in `--strict`
+- `TASK_ATTEMPT_EVIDENCE_INVALID` in `--strict`
 - `TASK_FAILED_DEPENDENTS_NOT_BLOCKED`
 - `TASK_FEATURE_LINK_MISSING` in `--strict`
 - `TASK_REQUIREMENT_LINK_MISSING` in `--strict`
@@ -182,7 +173,7 @@ Errors block autonomous/autopilot progression:
 
 Structural lint details such as invalid legacy `risk`, dependency cycles, and schema-level task field violations are surfaced through `MB_LINT_FAILED` with captured `mb-lint` output.
 
-Warnings identify non-blocking quality risks in default mode:
+Warnings identify non-blocking quality risks in default and strict modes:
 
 - `MB_LINT_SCRIPT_MISSING`
 - `FEATURE_CLARIFICATION_METADATA_MISSING` when feature frontmatter is missing or present clarification metadata is invalid
@@ -193,14 +184,19 @@ Warnings identify non-blocking quality risks in default mode:
 - `FOUNDATION_GATE_TASK_INVALID`
 - `FOUNDATION_GATE_DEP_MISSING`
 - `TASK_IN_PROGRESS_WITHOUT_PROTOCOL`
+- `TASK_IN_PROGRESS_RESUME_REQUIRED`
+- `TASK_ATTEMPT_EVIDENCE_INVALID` in default mode
 - `TASK_FULL_PROTOCOL_MISSING`
 - `TASK_COMPACT_ONLY_PROTOCOL`
-- `TASK_COMPACT_RUN_MISSING` for `T0`
+- `TASK_COMPACT_RUN_MISSING`
+- `TASK_COMPACT_RUN_UNREADABLE`
+- `TASK_COMPACT_VERDICT_MISSING`
 - `TASK_COMPACT_EVIDENCE_MISSING`
 - `TASK_DONE_EVIDENCE_MISSING`
 - `TASK_FAILED_EVIDENCE_MISSING`
 - `TASK_RED_VERIFY_EVIDENCE_MISSING`
 - `TASK_RED_VERIFY_VERDICT_MISSING`
+- `FEATURE_RED_VERIFY_VERDICT_MISSING`
 - `TASK_T3_CHECKPOINT_MISSING`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING`
 - `TASK_FEATURE_LINK_MISSING`

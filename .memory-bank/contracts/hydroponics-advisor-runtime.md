@@ -2,7 +2,7 @@
 description: Authorized Hydroponics Advisor input, missing-data policy, structured result, and pending handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -43,7 +43,7 @@ measurement request for exactly that project-computed set.
 - [.memory-bank/contracts/agent-runtime-adapter.md](agent-runtime-adapter.md):
   shared provider-neutral outcome, post-model guard, audit, and envelope rules.
 - [.memory-bank/contracts/agent-model-provider-profiles.md](agent-model-provider-profiles.md):
-  explicit provider/model binding, egress, credentials, and no fallback.
+  provider-neutral executor, fail-closed production, and future endpoint route.
 - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
   canonical `hydroponics_advisor` identity.
 - [.memory-bank/contracts/message-envelope.md](message-envelope.md): pending
@@ -232,11 +232,11 @@ task, approval, Plant-state mutation, or action.
   dosing, solution, pump, light, pH/EC correction, pruning, transplanting, or
   root-trimming execution.
 
-## Provider, authorization, and failure behavior
+## Executor, authorization, and failure behavior
 
-The existing explicit `deepseek` or `gemini` profile may serve the text-only
-advisor. `chatgpt_oauth` remains fail closed without its approved adapter.
-There is no default or fallback.
+The text-only advisor uses the shared provider-neutral executor seam.
+Production remains unbound until future endpoint selection and has no default,
+fake/canned result, alternate-endpoint retry, or fallback.
 
 Provider I/O occurs outside database transactions. Before the request is
 assembled and again after model I/O, the service requires current same-Farm
@@ -253,17 +253,13 @@ or runtime table.
 
 ## Verification
 
-Tests MUST prove exact request/result shapes, record order and bounds,
+Current code-phase tests MUST prove exact request/result shapes, record order and bounds,
 independent pH/EC freshness boundaries, future-dated staleness, deterministic
 missing-data request mapping, rejection of advice/silence while critical data
 is unavailable, fresh-evidence ref requirements, pending-only Safety/task
-separation, current authorization/archive races, explicit provider/no-fallback
-composition, redaction, and one non-skipped canonical-product-agent real-model
-smoke over authorized PostgreSQL evidence.
-
-The credentialed missing-data fixture must invoke exactly one explicitly bound
-DeepSeek or Gemini model and return audited `envelope_ready` with the exact
-pending `task_request` envelope for its computed missing/stale set. Clarify,
-silence, recommendation, hypothesis, fake/canned output, fallback, skip,
-blocked/failed/unaudited outcome, or direct task/Safety effect does not satisfy
-that fixture.
+separation, current authorization/archive races, fake/spy success, timeout,
+provider-error and malformed-output paths, no production fallback, and
+redaction. The missing-data fixture uses a test-only executor to return the
+strict policy result and exact pending `task_request`; this is deterministic
+flow evidence, not a real-provider claim. Real response/error/timeout evidence
+is deferred to the provider runbook milestone.

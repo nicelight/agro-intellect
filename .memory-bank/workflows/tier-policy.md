@@ -43,12 +43,67 @@ closure gates.
   closure.
 - `/execute`, `/verify`, `/red-verify`, and `/mb-sync` SHOULD report evidence
   and recommendations without silently expanding scope.
+- The scheduler or explicit owner selects sufficient current evidence, records
+  any accepted process gaps when practical, and writes the lifecycle decision.
 - A `semantic-concern`, failed check, missing checkpoint, incomplete protocol,
-  or stale verification SHOULD be considered by the owner, but does not
-  automatically prevent T2/T3 closure or dependent promotion.
+  or stale verification SHOULD be considered explicitly. Tier alone does not
+  turn that process gap into a hard blocker, while a demonstrated product/spec,
+  safety, authorization, scope, or source-of-truth violation remains blocking.
 - Task/spec contradictions and unsafe or unauthorized actions remain reasons
   to stop because they are correctness/scope problems, not optional process
   ceremony.
+
+## Closure, attempts, and evidence
+
+This section is the canonical closure/retry contract. Other workflows and
+skills route here instead of restating tier-specific closure rules.
+
+- Runtime reports use
+  `.tasks/<TASK_ID>/<TASK_ID>-S-<STAGE>-final-report-<code|docs>-NN.md`.
+- `NN` is a zero-padded two-digit execution-attempt number. The initial attempt
+  is `01`; every bounded rerun of `/execute` increments it. `/execute`, `/verify`, and
+  `/red-verify` reports for one attempt use the same `NN` and are never
+  overwritten. New numbered reports include the exact line `ATTEMPT: NN`;
+  validators use that marker to distinguish this convention from legacy report
+  numbering.
+- When numbered reports exist, the highest attempt is current. Closure and
+  failure decisions use only reports from that attempt; an older PASS, FAIL,
+  semantic verdict, or checkpoint cannot override the current attempt.
+- Legacy task/protocol evidence without numbered reports remains readable as a
+  compatibility fallback. Do not combine it with a newer numbered attempt to
+  manufacture closure evidence.
+- Functional `/verify` and adversarial `/red-verify` are separate stages. When
+  both are selected for T3 confidence, run them in separate fresh sessions.
+- The scheduler or explicit owner writes the final `done|failed|blocked`
+  decision and concrete current-attempt evidence links to the indexed task
+  record. Child skills report evidence and recommendations; they do not
+  silently take scheduler ownership.
+
+## Retry and recovery
+
+- The active attempt limit comes from
+  `.memory-bank/workflows/autonomy-policy.md`. `max_attempts_per_task: 2` means
+  one initial attempt plus one bounded retry.
+- A retry is allowed only when it stays inside the same task outcome, tier,
+  dependencies, accepted scope, and normative specs, and does not repeat an
+  unsafe or non-idempotent side effect.
+- On scheduler start/resume, an existing `in_progress` task is handled before
+  promotion or ready-task selection. The highest numbered attempt determines
+  the next missing stage: resume `/execute`, `/verify`, or a separately selected
+  `/red-verify`. If artifacts conflict or the safe next stage is unclear, stop
+  and record the ambiguity instead of guessing.
+- When the attempt limit is exhausted, the scheduler writes `failed`, blocks
+  direct dependents, records current evidence, and stops with
+  `HALT_FAILURE_BUDGET`. `/autopilot` does not create a replacement task.
+  Follow-up/replacement work returns through the normal planning, review, and
+  readiness flow.
+
+## Feature-local wave boundary
+
+- `wave` is local to one feature. A boundary is the pair `(feature, wave)`, not
+  a global group of every task whose `wave` string happens to match.
+- Boundary synchronization remains advisory and follows the owner-selected
+  confidence profile; this definition adds no new task field or batch ID.
 
 ## Recommended profiles
 

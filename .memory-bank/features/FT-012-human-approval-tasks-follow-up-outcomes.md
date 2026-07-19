@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-012
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -82,7 +82,7 @@ spec_design_links:
 
 ## Feature-Local Design Pressure
 
-- Resolved by the linked Task/Approval/Outcome data, lifecycle, HTTP, real
+- Resolved by the linked Task/Approval/Outcome data, lifecycle, HTTP, provider-neutral
   `task_follow_up` runtime, Timeline, and verification subject specs.
 
 ## Behavior specs
@@ -100,5 +100,8 @@ spec_design_links:
   Task/Approval/Outcome states, exact FT-011 handoff and expiry reuse,
   transactional approval/action/follow-up/outcome uniqueness, persisted
   idempotency fingerprints, protected HTTP commands, Timeline refs, archive
-  races, and the real typed `task_follow_up` path. No scheduler, worker,
+  races, and the strict typed `task_follow_up` path. No scheduler, worker,
   outbox, device effect, or second proposal state machine is introduced.
+- Current code-phase closure uses test-only fake/spy Task Follow-Up and Safety
+  classifier executors; production has no fake fallback and fails closed while
+  unbound. Real endpoint calls are deferred to the shared future milestone.

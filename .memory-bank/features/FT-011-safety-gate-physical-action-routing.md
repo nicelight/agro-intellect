@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-011
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -109,9 +109,12 @@ spec_design_links:
   matrix, opaque untrusted candidate semantics, archived approval behavior, and
   restore revalidation are defined by `AD-008`, Plant lifecycle, and Safety
   Action Lifecycle.
-- Feature-local status: complete. The canonical design defines the real
-  model-backed candidate, backend-owned durable classification, exact supported
+- Feature-local status: complete. The canonical design defines the provider-
+  neutral strict candidate, backend-owned durable classification, exact supported
   and unsupported action kinds, independent `approval_input=2h` evidence,
   immutable decision/proposal rows, safe feed projection, replay/concurrency
   behavior, and executable verification. FT-011 stops at
   `pending_human_approval`; FT-012 owns every later human decision and task.
+- Current code-phase closure uses explicit fake/spy success, timeout, error,
+  invalid-output, redaction, and current-guard evidence. Production remains
+  unbound and fail closed; a real classifier response is future milestone UAT.

@@ -1,8 +1,8 @@
 ---
-description: Verification contract for FT-012 approvals, tasks, follow-ups, outcomes, and the real Task and Follow-up Agent.
+description: Verification contract for FT-012 approvals, tasks, follow-ups, outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
 type: testing_spec
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/task-follow-up-lifecycle.md
@@ -15,7 +15,7 @@ source_of_truth:
 ## Scope
 
 Defines deterministic, PostgreSQL, HTTP, concurrency, compatibility, and
-credentialed product-agent evidence for FT-012 from an ordinary task or
+deterministic executor evidence for FT-012 from an ordinary task or
 immutable pending Safety decision through human task completion and Outcome.
 
 ## Domain and migration matrix
@@ -149,30 +149,30 @@ immutable pending Safety decision through human task completion and Outcome.
   retry/restore/reconciliation cannot replay the suppressed Task effect.
 - Pre/post-model, classification-write, and task-write authorization/archive
   races fail closed with no restore replay.
-- Explicit provider/model binding, no default/fallback, redaction, and common
-  Agent Runtime audit semantics remain compatible.
+- Provider-neutral fake/spy injection, unbound fail-closed production, no
+  default/fallback/fake production result, redaction, and common Agent Runtime
+  audit semantics remain compatible.
 
-## Credentialed product-agent UAT
+## Current code-phase executor evidence
 
 Seed an authorized active Plant through production PostgreSQL paths with a
 completed Task and, for the chosen fixture, its real Outcome/evidence refs.
-Configure explicit canonical `task_follow_up` and `safety_gate` DeepSeek or
-Gemini bindings, enable egress, and require:
+Inject explicit canonical `task_follow_up` and `safety_gate` fake/spy executors
+through test-only seams and require:
 
-1. exactly one real `task_follow_up` provider call over
+1. exactly one `task_follow_up` spy call over
    `TaskFollowUpProviderRequestV1`;
 2. one schema-valid non-silent ordinary-task proposal;
-3. one real existing classifier call with the exact matching safe task kind;
+3. one classifier spy call with the exact matching safe task kind;
 4. one matching persisted ordinary Task plus safe runtime/classification/task
    audit refs; and
 5. zero action, Approval, completion, Outcome, Plant-state, Bus/UI command, or
    device effect.
 
-Skip, xfail, injected fake executor/classifier, canned output, fallback,
-missing call, model silence, unconfigured/provider-failed/output-invalid/
-guard-denied/audit-failed result, class/kind mismatch, duplicate unintended
-Task, or direct action effect fails an explicitly requested smoke. Without an
-accepted non-skipped run, FT-012 must not claim its portion of REQ-011.
+Separate fake/spy cases prove timeout, provider failure, output invalid,
+not-configured production, guard/audit failure, class/kind mismatch, no
+duplicate unintended Task, redaction, and no direct action effect. This is
+current deterministic REQ-011 evidence and does not claim real integration.
 
 ## Behavior traceability
 
@@ -180,7 +180,7 @@ accepted non-skipped run, FT-012 must not claim its portion of REQ-011.
   +48-hour follow-up -> evidence-aware Outcome, with no device effect.
 - `FT-012-BHV-002`: identical retry succeeds idempotently; stale/conflicting
   retry and archived transition have no effect; restore does not replay.
-- `FT-012-BHV-003`: real `task_follow_up` typed proposal plus matching
+- `FT-012-BHV-003`: strict `task_follow_up` typed proposal plus matching
   classification creates exactly one ordinary Task and never action.
 
 ## Commands
@@ -191,8 +191,6 @@ accepted non-skipped run, FT-012 must not claim its portion of REQ-011.
   `.venv/bin/python -m pytest tests/backend/access_admin tests/backend/plant_operations tests/backend/agent_chat tests/backend/safety_gate tests/backend/task_follow_up -m "not real_model" -q`
 - Deterministic competence runtime:
   `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/agent_runtime -m "not real_model" -q`
-- Credentialed product-agent smoke:
-  `AGENT_REAL_TASK_FOLLOW_UP_SMOKE=1 .venv/bin/python -m pytest tests/backend/task_follow_up/test_real_task_follow_up_smoke.py -m real_model -q`
 - Exact-head compatibility:
   `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/test_foundation_database_contract.py -q`
 - Full deterministic suite: `.venv/bin/python -m pytest tests -m "not real_model" -q`

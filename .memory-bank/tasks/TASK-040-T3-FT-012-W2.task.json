@@ -1,6 +1,6 @@
 {
   "id": "TASK-040-T3-FT-012-W2",
-  "title": "Run real Task and Follow-Up Agent through ordinary-task authority",
+  "title": "Run provider-neutral Task and Follow-Up Agent through ordinary-task authority",
   "status": "planned",
   "wave": "W2",
   "feature": "FT-012",
@@ -20,7 +20,6 @@
     "backend/app/agent_runtime/__init__.py",
     "backend/app/main.py",
     "tests/backend/task_follow_up/test_runtime.py",
-    "tests/backend/task_follow_up/test_real_task_follow_up_smoke.py",
     "tests/backend/agent_runtime/test_ft007_roster_providers.py"
   ],
   "tier": "T3",
@@ -34,11 +33,6 @@
       "name": "task_classifier_authority_regression",
       "command": ".venv/bin/python -m pytest tests/backend/task_follow_up tests/backend/agent_runtime tests/backend/agent_chat tests/backend/safety_gate -m \"not real_model\" -q",
       "required": true
-    },
-    {
-      "name": "credentialed_task_follow_up_smoke",
-      "command": "AGENT_REAL_TASK_FOLLOW_UP_SMOKE=1 .venv/bin/python -m pytest tests/backend/task_follow_up/test_real_task_follow_up_smoke.py -m real_model -q",
-      "required": false
     },
     {
       "name": "full_deterministic_regression",
@@ -70,17 +64,17 @@
     "Exact competence-specific request/result/orchestration schema and outbound snapshot results.",
     "Authorized PostgreSQL Task/Outcome/evidence record selection and typed quotation isolation evidence.",
     "Pending MessageEnvelope, matching classification, ordinary-task idempotency, and kind-mismatch no-effect evidence.",
-    "Pre/post-provider, classification-write, task-write, revoke, and archive race evidence.",
-    "No fallback/fake/canned output, no auth/UI/Bus/Timeline replay egress, and safe audit/redaction evidence.",
-    "If REQ-011 acceptance is claimed, one non-skipped explicitly bound DeepSeek/Gemini product-agent smoke with exactly one matched ordinary Task."
+    "Pre/post-I/O, classification-write, task-write, revoke, and archive race evidence.",
+    "No fallback/fake/canned production output, no auth/UI/Bus/Timeline replay egress, and safe audit/redaction evidence.",
+    "Deterministic timeout, provider error, invalid output, exact fake/spy call count, and unbound-production evidence."
   ],
-  "purpose": "Make the canonical task_follow_up roster member operational as a real model-backed, permission-aware competence whose only possible product effect is one matched ordinary Task through existing project classification and PostgreSQL authority.",
-  "success_outcome": "One explicitly bound real task_follow_up invocation over current authorized PostgreSQL Task/Outcome/evidence records can emit only a strict check, measurement, or follow_up proposal; a pending task_request envelope plus a durably persisted matching project classification and current ordinary-task guard creates exactly one same-kind Task, while silence, mismatch, conflict, failure, revoke/archive race, action wording, or forbidden output creates no Task or other state effect and never falls back to fake or another provider.",
+  "purpose": "Make the canonical task_follow_up roster member operational as a provider-neutral, permission-aware competence whose only possible product effect is one matched ordinary Task through existing project classification and PostgreSQL authority.",
+  "success_outcome": "One strict provider-neutral task_follow_up invocation over current authorized PostgreSQL Task/Outcome/evidence records can emit only a check, measurement, or follow_up proposal; a pending task_request envelope plus a durably persisted matching project classification and current ordinary-task guard creates exactly one same-kind Task. Deterministic fake/spy evidence covers schemas, authorization plus post-I/O recheck, timeout/error/invalid output, redaction, unbound production, and no fallback/fake production without provider/model/base URL/credential/egress/network/live-smoke requirements; every denial/failure branch has no Task or other state effect.",
   "anti_goals": [
     "Do not widen generic ProviderRequestV1, MessageEnvelope, Safety classification, or roster identity contracts.",
     "Do not let the model approve/reject, create action, complete Tasks, record Outcomes, mutate Plant state, invoke tools/devices, or bypass TASK-039 authority.",
     "Do not add a public agent endpoint, UI/Bus/Timeline replay context, agent memory, tools, RAG, fallback model, fake production output, or silent failure substitution.",
-    "Do not claim FT-012's REQ-011 acceptance from deterministic tests, a skipped smoke, transport-only evidence, or blocked/failed output."
+    "Do not claim FT-012 acceptance from transport-only, schema-only, fake-production, fallback, or blocked/failed output; require the complete deterministic authority and fake/spy evidence matrix."
   ],
   "runtime_context": {
     "allowed_write_scope": [
@@ -89,7 +83,6 @@
       "backend/app/agent_runtime/__init__.py",
       "backend/app/main.py",
       "tests/backend/task_follow_up/test_runtime.py",
-      "tests/backend/task_follow_up/test_real_task_follow_up_smoke.py",
       "tests/backend/agent_runtime/test_ft007_roster_providers.py",
       ".memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md",
       ".memory-bank/contracts/task-follow-up-runtime.md",
@@ -105,7 +98,7 @@
       "Generic ProviderRequestV1, MessageEnvelope, SafetyClassificationResultV1, or canonical roster identity widening.",
       "Frontend/PWA, public agent API, Agent Chat Bus task payload, UI Feed context, Timeline replay, raw chat, or governance fields outside the registered Task Follow-Up request allowlist.",
       "Approval/action/completion/Outcome/Plant-state/device authority, automated actuation, tools, RAG, memory, fallback, or fake production output.",
-      "ChatGPT/Codex credential stores, default provider/model selection, or cross-provider retry."
+      "Provider credential stores, default provider/model selection, or cross-provider retry."
     ],
     "stop_conditions": [
       "TASK-039 ordinary-task service cannot accept the matched envelope/classification handoff without widening its action or authorization boundary.",
@@ -146,22 +139,21 @@
     "Task text is an explicit typed untrusted quotation and never an instruction, prompt, tool, command, authorization, evidence fact, or route selector.",
     "The model result may speak only one allowed check, measurement, or follow_up proposal or produce strict model-declared silence; action and every mutation field are schema-invalid.",
     "A non-silent result creates only a pending task_request MessageEnvelope; the existing project classifier must persist the exact same safe_task_kind before TASK-039 may create a Task.",
-    "One explicit provider/model binding is used with egress opt-in and no fallback; provider I/O is outside transactions and every owning writer repeats current guards.",
-    "The credentialed product-agent smoke requires real task_follow_up and Safety classifier calls and exactly one ordinary Task; fake, fallback, silence, skip, blocked, failed, mismatch, or direct action effect is not acceptance."
+    "The strict provider-neutral seam has no selected provider/model/base URL; production remains unbound and fail-closed, test fakes/spies are explicit, I/O is outside transactions, and every owning writer repeats current guards.",
+    "Deterministic acceptance requires exact task_follow_up and Safety fake/spy calls plus exactly one ordinary Task; fallback, production fake, silence, blocked, failed, mismatch, or direct action effect is not acceptance."
   ],
   "invariants": [
     "Model output, its proposed kind, MessageEnvelope, and classification are candidate/routing data; only the current TASK-039 ordinary-task service writes mutable Task authority.",
     "The task_follow_up agent can never create action, approve or reject, complete a Task, record an Outcome, confirm Plant state, or produce a device effect.",
     "UI Feed, Bus history, Timeline replay, raw chat, ActorContext/session/grant payloads, caller refs, prompts, provider history, hidden reasoning, and credentials never enter provider input.",
     "Archived or unauthorized Plant state creates no model-backed Task effect and restore never replays the denied run.",
-    "No fake, canned, hardcoded, skipped, fallback, or failure-silence path satisfies product-agent acceptance."
+    "Test fakes/spies are explicit seams only; no fake, canned, hardcoded, fallback, or failure-silence production path satisfies acceptance."
   ],
   "verification_targets": [
     "Strict request/result tests prove exact record union/order, allowed kinds, unknown-field rejection, typed quotation isolation, source-ref subsets, pending-envelope mapping, and orchestration nullability.",
     "Outbound spies prove only authorized PostgreSQL Task/Outcome/evidence data crosses egress and every forbidden auth/UI/Bus/Timeline/prompt/provider field is absent.",
     "Integration tests prove exact proposed-kind/classification-kind matching, one ordinary Task on success, identical retry, mismatch/physical/block conflict no effect, and no action/approval/completion/Outcome/Plant/device authority.",
-    "Authorization tests prove current pre/post-model, classifier, task-write, session/grant revoke, wrong-Farm, and archive races fail closed with no restore replay.",
-    "Provider tests prove explicit DeepSeek/Gemini construction, no default/fallback/fake output, redacted logs/audit/evidence, and compatibility with the existing Agent Runtime outcome matrix.",
-    "An explicitly requested AGENT_REAL_TASK_FOLLOW_UP_SMOKE=1 run is non-skipped, invokes the selected task_follow_up and Safety bindings over real persisted context, and writes exactly one matched ordinary Task before FT-012 claims REQ-011 acceptance."
+    "Authorization tests prove current pre/post-I/O, classifier, task-write, session/grant revoke, wrong-Farm, and archive races fail closed with no restore replay.",
+    "Provider-neutral tests prove explicit test fake/spy construction, exact call counts and allowlists, timeout/provider-error/invalid-output handling, unbound-production failure, no default/fallback/fake production output, redacted logs/audit/evidence, and compatibility with the existing Agent Runtime outcome matrix."
   ]
 }

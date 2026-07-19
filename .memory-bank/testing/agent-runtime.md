@@ -1,8 +1,8 @@
 ---
-description: Verification contract for FT-007 agent runtime, MessageEnvelope, real-model anti-cheat, and archive-race behavior.
+description: Verification contract for provider-neutral Agent Runtime, MessageEnvelope, executor anti-cheat, and archive-race behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -24,7 +24,7 @@ source_of_truth:
 
 Defines executable verification for the FT-007 project-owned runtime adapter,
 runtime decisions, MessageEnvelope validation, canonical roster/bootstrap,
-multi-provider production binding, sanitized audit, and post-invocation
+provider-neutral fail-closed production binding, sanitized audit, and post-invocation
 archive/authorization guard.
 
 ## Out of scope
@@ -48,7 +48,7 @@ archive/authorization guard.
 | Outcome/event | Every `AgentRuntimeOutcomeV1` and Timeline matrix row; exact nullability/ref/provider/audit states; no-event branches; no failure becomes silence. |
 | Security/errors | Message scope and audit attribution expose only canonical safe fields; provider/parser failures expose stable codes without secrets or raw payloads. |
 | Roster/batch | Exact roster/order/metadata, UUIDv5 namespace and names, one eight-item batch, and the 8-or-0 sink result matrix. |
-| Provider profiles | Strict bindings, nonblank model ids, no caller override/default/fallback, approved egress, and safe model refs. |
+| Provider boundary | Unbound production fails before I/O; explicit test-only fake/spy injection; no caller override/default/fallback; safe synthetic refs and no real-integration claim. |
 
 ## Integration matrix
 
@@ -61,57 +61,32 @@ archive/authorization guard.
 | Audit/storage | One sanitized event for each provider-I/O branch; append failure blocks handoff; no agent-run/provider-history table and no timeline-as-runtime read. |
 | Plant compatibility | Bootstrap starts after the existing Plant/grant/audit commit, makes no provider call, and leaves `POST /api/plants` authorization, `201 PlantSummary`, no-store, and error behavior unchanged for every sink result. |
 | Batch sink | One call with eight deterministic items; identical duplicate succeeds; conflict rejects; rejected/failed accepts zero; introductions are non-consumable and not MessageEnvelope. No FT-008 storage/projection is implemented or claimed. |
-| Provider composition | DeepSeek/Gemini construct only the selected native adapter; no cross-provider fallback; unconfigured `chatgpt_oauth` fails before credential/network access and never reads Codex/browser credentials. |
+| Provider composition | No current endpoint is selected; production fails before network I/O, test fake/spy executors are explicit, and code never reads browser/Codex credential stores or retries a fallback. |
 
-## Deferred optional/manual real-model UAT
+## Deferred future selected-endpoint milestone
 
-This credentialed smoke is retained for later manual UAT and is non-blocking
-for TASK-031/code-phase closure. Its absence or lack of credentials/provider
-egress is not a deterministic-suite failure. BHV-001 and the live-provider
-portion of REQ-011 remain explicitly deferred/unverified until a later smoke
-passes; deterministic introduction, constructor, binding, or anti-cheat
-evidence cannot satisfy them.
+The single manual integration campaign in
+`.memory-bank/runbooks/agent-runtime-providers.md` is
+`deferred/manual/not_applicable_for_current_code_phase`. Credentials, egress,
+network access, endpoint selection, and a non-skipped live smoke are not
+current closure gates. Deterministic evidence MUST NOT claim a real image,
+response, provider, model, or network call.
 
-When explicitly invoked, the smoke remains strict and must:
-
-1. Use a production DeepSeek or Gemini `AgnoModelExecutor`; no injected test
-   executor or cross-provider substitute is allowed.
-2. Use the isolated test-only `runtime_contract_smoke` definition through the
-   explicit test seam with production assembler/provider composition. It is
-   absent from production definition resolution and proves transport only.
-3. Resolve an authorized active Plant and assemble actual persisted Plant
-   context through the production assembler.
-4. Invoke the configured real `provider_profile:model_id` model.
-5. Complete with exactly one accepted result: either
-   `outcome_kind=envelope_ready`, `status=envelope_ready`, with a valid pending
-   MessageEnvelope; or `outcome_kind=model_silent`, `status=silent`, with
-   `final_decision=silent` and
-   `reason_code=no_material_output|insufficient_evidence`. Both require the
-   configured safe `model_ref` and successful sanitized audit.
-6. Record the configured safe `provider_profile:model_id` and prove the test did not
-   skip or xfail.
-7. Keep credentials, raw provider response, prompt history, and hidden reasoning
-   out of stdout, logs, timeline, protocol, and task evidence.
-
-The smoke must fail, not skip or substitute a fake output, when explicit smoke
-mode is requested but model configuration, provider dependency, credential, or
-network access is unavailable.
-
-`context_denied`, `runtime_not_configured`, `provider_failed`,
-`output_invalid`, `publication_guard_denied`, `audit_failed`, an unaudited
-result, or runtime-created failure silence never count as a successful smoke.
+After an OpenAI-compatible endpoint is explicitly selected, that milestone
+must cover real text response, real image, provider errors, enforced timeouts,
+redaction, cost, and unchanged no-fallback/no-direct-authority behavior.
 
 ## Anti-cheat inspection
 
-- Production modules import/construct only the real Agno executor.
+- Production modules cannot select a fake/spy executor and fail closed while
+  no endpoint is selected.
 - Test executors live only in tests or clearly test-only helpers and are
   injected explicitly.
 - Missing configuration/provider errors have no hardcoded response, canned
   MessageEnvelope, heuristic answer, or automatic fake fallback.
-- Missing/unavailable model bindings have no default provider/model or
-  cross-provider retry.
-- Production code never reads Codex or ChatGPT browser credential stores and
-  never relabels API-key auth as `chatgpt_oauth`.
+- Missing/unavailable model bindings have no default endpoint/model or retry.
+- Production code never reads Codex, ChatGPT, browser, CLI, or IDE credential
+  stores.
 - Agno memory/session history, Team coordination, raw provider messages, and
   UI Feed are absent from model context and persistence.
 - Candidate text is never parsed or promoted into system/developer/instruction
@@ -119,10 +94,9 @@ result, or runtime-created failure silence never count as a successful smoke.
 
 ## Behavior traceability
 
-- `FT-007-BHV-001`: deferred/unverified manual UAT. A later credentialed real
-  provider transport must produce either an audited validated non-silent
-  envelope or audited strict model-declared silence, without accepting failure
-  silence or claiming downstream product-agent completion.
+- `FT-007-BHV-001`: historical real-provider behavior is superseded for current
+  closure by the provider-neutral deterministic contract. Any future real
+  transport claim belongs only to the selected-endpoint milestone.
 - `FT-007-BHV-002`: committed Plant -> exact post-commit roster introduction
   handoff without model I/O or agent-context visibility.
 - `FT-007-BHV-003`: archive during invocation ->
@@ -133,22 +107,19 @@ result, or runtime-created failure silence never count as a successful smoke.
 
 - Focused deterministic suite:
   `.venv/bin/python -m pytest tests/backend/agent_runtime -m "not real_model" -q`
-- Deferred optional/manual UAT after explicit `AGENT_REAL_SMOKE_PROFILE`/model
-  id, egress opt-in, installed provider dependency, and matching credential are
-  configured (not a TASK-031/code-phase closure command):
-  `AGENT_REAL_SMOKE=1 .venv/bin/python -m pytest tests/backend/agent_runtime/test_real_model_smoke.py -m real_model -q`
+- Future live integration command: intentionally undefined until provider,
+  model, base URL, authentication, egress, timeout, and cost decisions exist.
 - Related access/archive regression:
   `.venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_runtime -q`
 - Full regression: `.venv/bin/python -m pytest tests -q`
 - Memory Bank lint: `node scripts/mb-lint.mjs`
 - Diff check: `git diff --check`
 
-Concrete roster-member prompts, triggers, and product-flow real-model evidence
-remain with the RTM-listed owning features. The live-provider portion of
-REQ-011 is currently deferred/unverified. Before REQ-011 is claimed complete,
-at least one such downstream flow must repeat the production provider path over
-actual scoped Plant data; the FT-007 contract smoke alone is insufficient.
+Concrete roster-member prompts and triggers remain with the RTM-listed owning
+features. Their current code-phase evidence is deterministic and provider-
+neutral. The future real-integration claim is centralized in the provider
+runbook milestone.
 
-Provider setup, redaction-safe triage, and the explicit ChatGPT OAuth support
-boundary are defined in
+Provider-neutral operation, redaction-safe triage, and the future selected-
+endpoint milestone are defined in
 `.memory-bank/runbooks/agent-runtime-providers.md`.

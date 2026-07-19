@@ -2,7 +2,7 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -20,14 +20,14 @@ source_of_truth:
 
 ## Scope
 
-This contract defines the project-owned boundary around one real model-backed
+This contract defines the project-owned boundary around one provider-neutral
 product-agent invocation. The boundary accepts already authorized Plant
 context, calls an execution adapter, validates the candidate result, performs a
 fresh publication guard, and returns one strict `AgentRuntimeOutcomeV1`. A
 non-silent success carries a validated pre-safety `MessageEnvelope`; it is a
 handoff to the project-owned classifier, not Bus/UI publication authority.
 
-Agno and a configured model provider are execution dependencies only. They do
+An execution SDK and any future configured endpoint are dependencies only. They do
 not own runtime decisions, authorization, audit semantics, MessageEnvelope, or
 Plant state.
 
@@ -87,8 +87,9 @@ project-owned seams:
   into the typed provider payload; callers cannot submit candidate records.
 - `ModelExecutor`: narrow execution protocol returning provider output only to
   the project adapter.
-- `ProviderBindingResolver` and `AgnoModelExecutorFactory`: resolve exactly one
-  deployment binding and construct its production executor with no fallback.
+- `ProviderBindingResolver` and the production executor factory: resolve
+  exactly one future deployment binding and construct its executor with no
+  fallback. With no selected endpoint, resolution fails closed before I/O.
 - `RuntimeAuthorizationGuard`: reloads current session/account/membership,
   Plant, and grant authority after model execution and before an envelope may
   leave Agent Runtime.
@@ -96,10 +97,10 @@ project-owned seams:
 - `PlantAgentBootstrapService`: activates the static roster and builds
   deterministic post-commit introduction handoffs without model I/O.
 
-Test definitions, assemblers, and executors may be supplied only through
-explicit test dependency injection. Production composition MUST NOT select any
-of them when data, model configuration, credentials, imports, or provider calls
-fail.
+Test definitions, assemblers, and fake/spy executors may be supplied only
+through explicit test dependency injection. Production composition MUST NOT
+select any of them when data, binding, credentials, imports, timeout, or
+executor calls fail.
 
 ## Agent definition
 
@@ -122,11 +123,9 @@ triggers. A roster member without its owning-feature runtime policy and a
 deployment model binding is not invocable and fails closed rather than
 borrowing another agent's policy or binding.
 
-An isolated test-only `runtime_contract_smoke` may exercise the production
-provider executor and typed Plant-data path through the explicit test seam. It
-is absent from production definition resolution and cannot satisfy a canonical
-product-agent or REQ-011 competence criterion. Detailed acceptance remains
-distributed to each owning feature in the RTM.
+An isolated test-only `runtime_contract_smoke` may exercise the typed Plant-
+data path through an explicit fake/spy executor seam. It is absent from
+production definition resolution and cannot prove real-provider integration.
 
 ## Invocation input
 
@@ -208,7 +207,7 @@ Rules:
   present; latest non-null pH row next when present; latest non-null EC row last
   when present. If one measurement row is latest for both pH and EC it appears
   once in the pH position and is omitted from the EC position.
-- The real-model FT-007 smoke requires at least one assembled check-in or
+- Deterministic runtime integration uses at least one assembled check-in or
   measurement record; it cannot pass with a synthetic Plant-only payload.
 - `plant_id` must equal the service-side authorized scope; each record id must
   equal its source-ref identifier.
@@ -272,7 +271,7 @@ adapter copies only the validated object above.
    `reason_code=input_contract_violation`.
 2. Resolve exactly one deployment binding; unavailable composition returns
    `runtime_not_configured` with no provider/audit call.
-3. Invoke the configured real model outside every database transaction. A call
+3. Invoke the resolved executor outside every database transaction. A call
    failure becomes the pending `provider_failed` outcome.
 4. Parse `AgentModelResultV1`. Schema, decision/claim matrix, ref, type,
    normalization, or length failure becomes the pending `output_invalid`
@@ -316,8 +315,9 @@ unknown fields are rejected and none is conditionally omitted:
 - `status=envelope_ready|silent|blocked|failed`;
 - nullable `final_decision=speak|silent|clarify|escalate`;
 - `reason_code` and nullable stable `error_code`;
-- nullable `message_envelope`, `event_ref`, and safe
-  `model_ref=provider_profile:model_id`;
+- nullable `message_envelope`, `event_ref`, and safe non-secret `model_ref`.
+  The future endpoint-selection milestone defines its production format; tests
+  use an explicitly test-scoped ref and do not claim a real model;
 - `provider_call_status=not_attempted|completed|failed`;
 - `audit_status=not_attempted|appended|failed`.
 
@@ -334,7 +334,7 @@ unknown fields are rejected and none is conditionally omitted:
 
 `message_envelope` exists only for `envelope_ready`; `event_ref` exists only
 after a successful append. An `audit_failed` result may preserve whether the
-real provider call completed or failed but never exposes the discarded pending
+executor call completed or failed but never exposes the discarded pending
 outcome. Its `model_ref` is present because audit is attempted only after a
 configured provider call has started. No failure/denial branch may use
 `status=silent`, `final_decision=silent`, or a model-silence reason. Expected
@@ -347,7 +347,7 @@ boundary without inventing another outcome kind.
 | Code | Condition | Result |
 |---|---|---|
 | `AGENT_CONTEXT_DENIED` | Input scope is missing, inactive, mismatched, unauthorized, or contains a selected authoritative record that violates the strict V1 input bounds before invocation. | No provider call and no MessageEnvelope. No `agent_runtime_decided` event is created because model execution did not begin. |
-| `AGENT_RUNTIME_NOT_CONFIGURED` | Production model binding, egress opt-in, provider dependency/credential, competence policy, or approved OAuth broker is unavailable. | Safe failure; no fake/cross-provider fallback and no provider call. |
+| `AGENT_RUNTIME_NOT_CONFIGURED` | No production endpoint is selected or the future binding prerequisites are unavailable. | Safe failure; no fake/default/fallback and no executor call. |
 | `AGENT_PROVIDER_FAILED` | Timeout, rate limit, network, provider, or Agno execution failure. | Audited `provider_failed`; no final decision or MessageEnvelope. |
 | `AGENT_OUTPUT_INVALID` | Candidate output fails schema, decision/claim, refs, type, normalization, or length validation. Markup- or prompt-looking syntax alone is not invalid. | Audited `output_invalid`; no final decision or MessageEnvelope. |
 | `AGENT_PUBLICATION_BLOCKED` | Current session/Account/Membership/Plant/grant recheck fails after model execution. | Audited `publication_guard_denied`; no final decision, MessageEnvelope, or replay. |
@@ -365,18 +365,16 @@ audit/export evidence. FT-008 owns any downstream projection persistence.
 
 ## Production binding decision
 
-Provider profiles own model binding, egress, credentials, and fail-closed
-`chatgpt_oauth`; Roster Bootstrap owns post-commit introductions. Execution
-still needs an explicit DeepSeek/Gemini model id, matching credential, and
-egress opt-in.
+No endpoint is selected for the current code phase. Production resolution
+therefore fails closed without network I/O and never substitutes a test
+executor, canned result, default model, or fallback. The registered provider
+boundary owns the later OpenAI-compatible endpoint selection and one future
+integration milestone; it is not current closure evidence.
 
-For that smoke, successful real transport is proven by exactly one of two
-audited terminal results: `outcome_kind=envelope_ready` with a valid pending
-MessageEnvelope, or strict `outcome_kind=model_silent` with
-`reason_code=no_material_output|insufficient_evidence`.
-A runtime failure, invalid output, current-publication denial, pre-call denial,
-missing configuration, or audit failure cannot be reclassified as acceptable
-silence and always fails the smoke.
+Deterministic fake/spy tests may return schema-valid non-silent or silent
+values to exercise the full outcome matrix. Timeout, executor failure, invalid
+output, current-publication denial, pre-call denial, missing configuration, or
+audit failure cannot be reclassified as acceptable silence.
 
 ## Verification
 
@@ -385,7 +383,9 @@ The canonical [Agent Runtime testing spec](../testing/agent-runtime.md) covers:
 - ProviderRequest/input allowlists, order, observation bounds, and auth absence;
 - model/envelope/outcome/event matrices, acceptance of schema-valid opaque
   markup-/prompt-looking candidate text, current guard, and audit failure;
-- provider composition, no fallback, and the exact smoke rule above;
+- provider-neutral composition, explicit test injection, timeout/error
+  behavior, no production fake/fallback, and the deferred integration route;
 - post-commit batch handoff without FT-008 implementation claims.
 
-Downstream competence features retain their own REQ-011 acceptance.
+Downstream competence features retain their deterministic REQ-011 acceptance;
+the provider runbook owns the separate future real-integration milestone.

@@ -49,10 +49,10 @@ use `/mb-doctor --strict` before autonomous handoff
      `/prd-to-tasks FT-<NNN>` for controlled rebuild/split; rerun
      `/review-tasks-plan`, applicable `/mb-doctor`, and `/execute` with the
      replacement task ID
-13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
-the planning surface: task cards, specs, dependencies, tier, scope, or
-unresolved plan assumptions. Status/evidence-only closure does not
-trigger another task-plan review.
+13) Rerun `/review-tasks-plan FT-<NNN>` only when execution changed the
+planning surface: task cards, specs, dependencies, tier, scope, implementation
+plan, or unresolved plan assumptions. Status/evidence-only closure does not
+trigger another task-plan review, including at final queue closure.
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
@@ -67,9 +67,9 @@ when the last task of a T2 product feature closes, consider feature-level
 7) after a wave, rerun `/review-tasks-plan FT-<NNN>` only for product features
 whose task/spec/dependency/tier/scope planning surface changed; do not
 rerun it for status/evidence-only closure
-8) final success only if every task-linked product feature has latest
-`/review-tasks-plan FT-<NNN>` = `APPROVE`, `/mb-doctor --strict` passes, and no
-blocking tasks remain
+8) final success uses the existing current `APPROVE` coverage; do not run an
+unconditional final review. Rerun only reviews invalidated by a planning-surface
+change. `/mb-doctor --strict` should pass and no blocking tasks may remain.
 
 ## Autonomous executor only
 If JSON task records already exist and `/review-tasks-plan FT-<NNN>` already
@@ -82,7 +82,7 @@ wave-boundary `/mb-sync`; the owner/scheduler may waive these advisory checks.
 Codex (manual execution, tier-routed minimal context):
 ~~~bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only scoped changes. Record evidence. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md.'
+  'TASK_ID=TASK-123-T2-FT-001-W1. ATTEMPT=NN. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only scoped changes. Record evidence. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-NN.md.'
 
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
   'TASK_ID=TASK-123-T2-FT-001-W1. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Treat T2/T3 protocol, task gates, /verify, /red-verify, human checkpoint, strict doctor, and /mb-sync as advisory confidence tools. The owner may combine, skip, reorder, or waive them. Keep product/spec/safety/scope rules binding and record accepted evidence when practical.'
@@ -91,7 +91,7 @@ codex exec --ephemeral --full-auto -m gpt-5.2-high \
 Claude (manual execution, tier-routed minimal context):
 ~~~bash
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only scoped changes. Record evidence. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md.'
+  'TASK_ID=TASK-123-T2-FT-001-W1. ATTEMPT=NN. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only scoped changes. Record evidence. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-NN.md.'
 
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
   'TASK_ID=TASK-123-T2-FT-001-W1. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Treat T2/T3 protocol, task gates, /verify, /red-verify, human checkpoint, strict doctor, and /mb-sync as advisory confidence tools. The owner may combine, skip, reorder, or waive them. Keep product/spec/safety/scope rules binding and record accepted evidence when practical.'
@@ -104,3 +104,6 @@ claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
   authoritative closure/evidence immediately; full `/mb-sync` remains a wave
   boundary unless TASK-B requires reconciled durable state or the owner requests
   an early sync.
+
+`wave` is feature-local. A synchronization boundary is `(feature, wave)`, not
+all tasks across the queue with the same `W<N>` label.

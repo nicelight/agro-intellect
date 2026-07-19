@@ -1,8 +1,8 @@
 ---
-description: Verification contract for model-backed classification and physical-action Safety routing through pending approval.
+description: Verification contract for provider-neutral classification and physical-action Safety routing through pending approval.
 status: active
 type: testing_spec
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-011-safety-gate-physical-action-routing.md
   - .memory-bank/contracts/safety-gate-runtime.md
@@ -16,7 +16,7 @@ source_of_truth:
 ## Scope
 
 Defines deterministic, PostgreSQL integration, compatibility, concurrency, and
-credentialed product-agent evidence for FT-011. The terminal owned state is
+executor evidence for FT-011. The terminal owned state is
 `pending_human_approval`; FT-012 owns human decisions and every later task or
 follow-up assertion.
 
@@ -24,9 +24,8 @@ follow-up assertion.
 
 - Exact `SafetyGateClassificationCommandV1`, provider request, and model
   candidate shapes; unknown-field/type/enum/matrix rejection.
-- Canonical `safety_gate` identity and one explicit DeepSeek/Gemini binding;
-  no default, fallback, fake/canned runtime result, or operational
-  `chatgpt_oauth` without its approved adapter.
+- Canonical `safety_gate` identity, explicit fake/spy test injection, unbound
+  fail-closed production, and no default/fallback/fake/canned production result.
 - Provider egress contains only the five pending-message candidate fields and
   excludes Farm/Plant, ActorContext, session/account/membership/grant,
   authorization snapshot, source/evidence refs, UI/Bus/Timeline, credentials,
@@ -104,23 +103,23 @@ follow-up assertion.
 - `FT-011-BHV-003`: supported action with missing/stale approval input ->
   `needs_fresh_evidence`, never pending approval.
 
-## Credentialed product-agent UAT
+## Current code-phase executor evidence
 
 Seed one authorized active Plant and one validated pending envelope with an
-unambiguous manual solution-related action. Invoke the canonical production
-`safety_gate` definition with exactly one explicit DeepSeek or Gemini binding
-and require:
+unambiguous manual solution-related action. Invoke the canonical service with
+one explicitly injected fake/spy executor and require:
 
-1. exactly one real provider call over `SafetyGateProviderRequestV1`;
+1. exactly one spy call over `SafetyGateProviderRequestV1`;
 2. the expected strict physical-action candidate and action kind;
 3. one matching durably persisted project-owned classification;
 4. no direct Safety decision unless the owning service is explicitly invoked,
    and never an approval, task, Bus publication, Timeline event, or action.
 
-Skip, xfail, injected executor, canned output, fallback, missing provider call,
-unconfigured/provider-failed/output-invalid/guard-denied/persistence-failed
-result, or direct action effect fails an explicitly requested smoke. Evidence
-records only safe profile/model/result/record refs.
+Separate fake/spy cases prove timeout, executor failure, invalid output,
+not-configured production, post-I/O guard denial, persistence failure,
+redaction, and no direct action effect. Evidence records only synthetic safe
+refs and never claims a real provider/model response. Real classifier evidence
+belongs to the future selected-endpoint milestone.
 
 ## Commands
 
@@ -130,8 +129,6 @@ records only safe profile/model/result/record refs.
   `.venv/bin/python -m pytest tests/backend/safety_gate/test_action_routing.py tests/backend/safety_gate/test_migration_models.py tests/backend/agent_chat/test_ft008_guarded_publication.py tests/backend/api/test_ft008_feed_routes.py -m "not real_model" -q`
 - Aggregate deterministic regression:
   `.venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/agent_chat tests/backend/hydroponics_advisor tests/backend/safety_gate -m "not real_model" -q`
-- Credentialed classifier smoke:
-  `AGENT_REAL_SAFETY_GATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/safety_gate/test_real_safety_gate_smoke.py -m real_model -q`
 - Full deterministic suite: `.venv/bin/python -m pytest tests -m "not real_model" -q`
 - Memory Bank lint: `node scripts/mb-lint.mjs`
 - Diff check: `git diff --check`

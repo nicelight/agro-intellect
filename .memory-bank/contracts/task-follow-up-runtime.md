@@ -1,8 +1,8 @@
 ---
-description: Strict real-model Task and Follow-up Agent input, proposal, classification, and ordinary-task handoff contract.
+description: Strict provider-neutral Task and Follow-up Agent input, proposal, classification, and ordinary-task handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -14,7 +14,7 @@ source_of_truth:
 
 ## Scope
 
-Defines one real model-backed `task_follow_up` competence over current
+Defines one provider-neutral `task_follow_up` competence over current
 authorized PostgreSQL Task, Outcome, and evidence records. The model may
 propose one ordinary `check|measurement|follow_up` Task. Its typed proposal is
 still non-operative: it must become a pending MessageEnvelope, receive the
@@ -35,7 +35,7 @@ Task service before a row is written.
   shared provider binding, current post-model guard, audit, MessageEnvelope,
   and closed failure semantics.
 - [.memory-bank/contracts/agent-model-provider-profiles.md](agent-model-provider-profiles.md):
-  explicit binding, credentials, egress, and no fallback.
+  provider-neutral executor, fail-closed production, and future endpoint route.
 - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
   canonical `task_follow_up` identity.
 - [.memory-bank/contracts/message-envelope.md](message-envelope.md): pending
@@ -213,12 +213,12 @@ guard failure uses the classification-failure row rather than exposing an
 untrusted existing result. This result is an internal orchestration handoff,
 not a public API or mutable authority row.
 
-## Provider and failure behavior
+## Executor and failure behavior
 
-One explicit DeepSeek or Gemini binding may serve `task_follow_up`.
-`chatgpt_oauth` remains fail closed without its approved adapter. There is no
-default model, cross-provider fallback, fake/canned product result, silent
-substitution, or provider retry that changes the binding.
+`task_follow_up` uses the shared provider-neutral executor. Current production
+remains unbound until future endpoint selection. There is no default model,
+fallback, fake/canned production result, silent substitution, or retry that
+changes the binding.
 
 Provider I/O occurs outside database transactions. Current
 session/account/membership/grant and active Plant checks run before assembly,
@@ -233,19 +233,15 @@ authoritative; route mismatch adds no mutable failure record.
 
 ## Verification
 
-Tests must prove exact request/result/orchestration shapes, deterministic
+Current code-phase tests must prove exact request/result/orchestration shapes, deterministic
 record selection, typed quoted-data isolation, forbidden-source and auth-data
 absence, allowed-kind policy, no duplicate automatic follow-up, strict pending
 MessageEnvelope mapping, matched classification, ordinary-task idempotency,
-current authorization/archive races, explicit provider/no-fallback behavior,
-redaction, and zero action/approval/completion/outcome/device/Plant-state
-authority.
+current authorization/archive races, fake/spy success, timeout, provider-error,
+invalid-output and classification paths, no production fallback, redaction,
+and zero action/approval/completion/outcome/device/Plant-state authority. A
+strict fake/spy `task_follow_up` proposal plus strict fake/spy classifier result
+may create exactly one ordinary Task as deterministic code-phase evidence.
 
-One explicitly enabled credentialed smoke must use the canonical production
-`task_follow_up` definition and exactly one selected DeepSeek or Gemini model
-over real authorized PostgreSQL Task/Outcome evidence. It must produce a valid
-non-silent proposal, pass the existing explicitly bound Safety classifier,
-and persist exactly one matched ordinary Task. Skip, xfail, fake/canned output,
-fallback, model silence, unconfigured/blocked/failed/unaudited outcome,
-classification mismatch, or direct action effect fails that smoke and cannot
-satisfy FT-012's portion of REQ-011.
+Real response/classifier calls are deferred to the single provider runbook
+milestone after endpoint selection and are not current closure evidence.

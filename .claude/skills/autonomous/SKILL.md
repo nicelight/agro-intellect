@@ -38,7 +38,7 @@ status: active
 Если нужен **только JSON task queue executor**, а PRD → FT → TASK уже готовы, используй `/autopilot`.
 
 ## 1) Протокол автономного запуска
-Создай:
+Создай или пересобери для текущего run:
 - `.protocols/AUTONOMOUS-RUN/plan.md`
 - `.protocols/AUTONOMOUS-RUN/status.md`
 - `.protocols/AUTONOMOUS-RUN/decision-log.md`
@@ -51,6 +51,9 @@ status: active
 - queue state (`ready`, `in_progress`, `blocked`, `done`, `failed`)
 - failure budget
 - terminal state + reason
+
+`status.md` is a current-run snapshot. Do not append unrelated historical runs;
+task protocols, numbered reports, and Git retain history.
 
 ## 2) Preflight (не пропускай)
 Проверь:
@@ -225,32 +228,17 @@ Before task selection and after each wave-boundary `/mb-sync`, run `node scripts
 
 ### Status ownership
 
-Status transitions have two modes.
+- `/autonomous` owns scheduler lifecycle and dependent-state writes.
+- `/execute`, `/verify`, and `/red-verify` return evidence; `/mb-sync` reconciles
+  decisions already written by the scheduler.
+- Canonical closure, attempt, retry, recovery, and current-evidence semantics live
+  only in `.memory-bank/workflows/tier-policy.md`.
+- Do not restate or infer tier-specific closure rules here.
 
-Scheduler mode:
-- `/autonomous` is the scheduler for the end-to-end run.
-- `/autonomous` owns `planned -> ready`, `ready -> in_progress`, `in_progress -> done`, `in_progress -> failed`, dependent block/unblock decisions, terminal queue state, and final run status.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
-- `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record immediately after each task and before the next `/mb-sync` boundary.
-- `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
-- T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
-- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
-
-Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
-- Manual closure is allowed only when an explicit closure owner exists.
-- `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
-- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership.
-- T2 task closure may rely on `/verify PASS` when full protocol and applicable task/spec gates are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure, then run full `/mb-sync` at the wave boundary.
-- If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
-- `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
-- No persisted `mode` field is used.
+Before every promotion pass, resume any indexed `in_progress` task using the
+highest report with exact `ATTEMPT: NN`. Continue its next selected stage in a
+fresh session. If evidence is ambiguous, stop instead of selecting new work. If
+the current attempt failed, retry or halt only as defined by `tier-policy.md`.
 
 Перед каждым selection pass выполни promotion pass:
 - `planned -> ready`, если все `depends_on` уже `done` и нет blockers / blocking review rejects / unresolved semantic-concern
@@ -269,8 +257,8 @@ Manual mode:
 Правила очереди:
 - независимые задачи (нет deps и shared files) можно запускать параллельно
 - зависимые или shared-file задачи — только последовательно
-- follow-up task, созданная scheduler/owner после verify FAIL, должна попасть в
-  **следующую итерацию того же run**; `/verify` сам task records не создает
+- exhausted attempts follow the terminal behavior in `tier-policy.md` for the
+  current run; replacement planning may start only in a later separate run
 
 ## 8) Execution loop per TASK
 Для каждого выбранного `TASK-NNN-TN-FT-NNN-WN`:
@@ -279,37 +267,21 @@ Manual mode:
 2) require the latest `/mb-doctor --strict` pass before writing
    `ready -> in_progress`; an incomplete T2/T3 single-card handoff remains
    `ready` and stops with `HALT_QUALITY_GATES`
-3) scheduler writes `ready -> in_progress`
-4) `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
-5) `/verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` by `task.tier` from the JSON record:
-   - `T0` / `T1`: compact protocol/evidence allowed according to tier policy
-   - `T2` / `T3`: full protocol path is required
-   - `T3`: require the exact marker line `HUMAN_CHECKPOINT: done`; no silent autonomous closure
-6) run `/red-verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` only when required by tier:
-   - `T2`: not required for task closure; optional/manual per-task semantic review is allowed
-   - `T3`: required before task closure
-7) scheduler records the closure/failure/blocking decision, final task status, and evidence links in the authoritative indexed `.memory-bank/tasks/TASK-*.task.json`
-8) if this closure makes every task for a non-`FT-000` feature containing T2
-   work `done`, run `/red-verify --feature FT-<ID>` now and record exact
-   `SEMANTIC_VERDICT: semantic-pass` in the feature doc before the wave-boundary
-   `/mb-sync` and strict doctor. On `semantic-concern|semantic-fail`, record a
-   blocked/reopened/follow-up scheduler decision before continuing
-9) continue the current wave without a full `/mb-sync` after an ordinary task;
+3) scheduler writes `ready -> in_progress` and selects `ATTEMPT=NN` through
+   `tier-policy.md`
+4) run `/execute` in a fresh session; its report contains `ATTEMPT: NN`
+5) run `/verify` in a separate fresh session for the same `NN` when selected
+6) run `/red-verify` in another separate fresh session for the same `NN` when
+   selected
+7) scheduler evaluates only current-attempt evidence and records the lifecycle
+   decision and concrete evidence links in the indexed task record
+8) continue the current feature-local wave without a full `/mb-sync` after an ordinary task;
    run an early sync only when continuation of this wave depends on reconciled
    RTM/index/spec/contract/changelog state or the owner explicitly requests it
 
-Per-task command order is exactly: latest strict readiness gate while task is
-still `ready` → scheduler writes `ready -> in_progress` → `/execute` → `/verify` →
-`/red-verify` for T3 only, optional for T2 → scheduler writes final task decision/status/evidence
-to `.task.json` → conditional T2 feature-level `/red-verify` when the last
-feature task closes. Full `/mb-sync`, lint, strict doctor, and dependent
-promotion happen at the wave boundary, not after every ordinary task.
-
-Feature completion is a separate semantic gate: when all tasks for a `T2`
-feature become `done`, run `/red-verify --feature FT-<ID>` before the next
-strict doctor and require
-`SEMANTIC_VERDICT: semantic-pass` recorded in the matching
-`.memory-bank/features/FT-<ID>-*.md` before treating that feature as complete.
+Selected stage order is implementation → functional verification → adversarial
+verification, each in a separate fresh session and with one shared attempt
+number. Lifecycle interpretation remains exclusively in `tier-policy.md`.
 
 Fresh-session worker prompts for Codex/Claude must include: read
 `runtime_context` from the indexed task record; read direct task-linked canonical
@@ -317,21 +289,13 @@ specs for T2/T3; respect task `gates`, `verification_targets`,
 `evidence_required`, allowed and forbidden scope, and stop conditions; treat
 the task record and direct task-linked canonical specs as source of truth.
 
-Переходы состояния:
-- `ready -> in_progress`
-- `in_progress -> done` for `T0` / `T1` при compact evidence / functional `VERDICT: PASS`
-- `in_progress -> done` for `T2` after full protocol, applicable task/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required
-- `in_progress -> done` for `T3` only after `/verify` `VERDICT: PASS` evidence and per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass`
-- `in_progress -> failed` при `VERDICT: FAIL` или `SEMANTIC_VERDICT: semantic-fail`
-- `SEMANTIC_VERDICT: semantic-concern` is never normal `done`: set the task/dependents to `blocked` or require human review, and record owner/reason/follow-up evidence
-- after a required T3 per-task or T2 feature-level `semantic-concern`, do not close the task/feature or promote affected dependents until a subsequent `/red-verify` returns `SEMANTIC_VERDICT: semantic-pass`
-- downstream dependents → `blocked`, если upstream failed/blocking
-
-Все переходы записывай в соответствующий `.task.json`. Queue state в `.protocols/AUTONOMOUS-RUN/status.md` должен ссылаться на task record paths, а не дублировать authoritative state.
+Все разрешённые `tier-policy.md` переходы записывай в соответствующий
+`.task.json`. Queue state в `.protocols/AUTONOMOUS-RUN/status.md` должен
+ссылаться на task record paths, а не дублировать authoritative state.
 
 ## 9) Wave boundary
-После завершения каждой wave:
-- убедись, что все `semantic-concern` этой wave имеют явное решение (blocked status, human review required, or follow-up); без subsequent `semantic-pass` affected tasks are not closed
+После завершения каждой feature-local `(feature, wave)`:
+- убедись, что все selected-check concerns имеют явное owner decision
 - обнови `.protocols/AUTONOMOUS-RUN/status.md`
 - запусти `/mb-sync` один раз для already-written task/feature state текущей
   wave; если authoritative task record не содержит scheduler
@@ -360,7 +324,7 @@ RTM/index/spec/contract/changelog state или sync явно запросил ow
 
 ## 10) Failure budgets
 Зафиксируй и соблюдай:
-- `max_retries_per_task`
+- `max_attempts_per_task`
 - `max_consecutive_failures`
 - `max_open_blockers`
 - `max_files_changed_per_task`
@@ -385,10 +349,8 @@ RTM/index/spec/contract/changelog state или sync явно запросил ow
 Считай run завершённым только если:
 - в JSON task records не осталось `ready` / `in_progress`
 - все обязательные REQ/AC имеют `Lifecycle: verified`
-- every completed T2 feature doc contains a feature-level
-  `SEMANTIC_VERDICT: semantic-pass`
 - нет открытых blocking bugs / blockers
-- latest `/review-tasks-plan FT-<NNN>` = `APPROVE` for every task-linked
-  product feature
+- every task-linked product feature has current `/review-tasks-plan FT-<NNN>`
+  `APPROVE`; rerun only reviews invalidated by planning-surface changes
 - latest `node scripts/mb-lint.mjs` + `/mb-doctor --strict` pass without readiness errors
 </process>

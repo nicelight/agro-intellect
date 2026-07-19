@@ -2,7 +2,7 @@
 description: Authorized model input and structured assessment contract for Plant State Agent.
 status: active
 type: interface_contract
-last_updated: 2026-07-15
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-009-vision-observation-plant-state-trust.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -98,11 +98,11 @@ envelope. The strict `PlantStateAssessmentCandidateV1` carries the validated
 assessment fields plus run/message/Plant identity and remains non-authoritative
 until matching `safe_information` classification and guarded persistence.
 
-## Provider and failure behavior
+## Executor and failure behavior
 
-The existing explicit `deepseek` or `gemini` profile may serve this text-only
-definition. `chatgpt_oauth` remains fail closed without its approved adapter.
-There is no default or fallback. Provider I/O occurs outside DB transactions;
+The text-only definition uses the shared provider-neutral executor seam.
+Production remains unbound until future endpoint selection and has no default,
+fake/canned result, or fallback. Executor I/O occurs outside DB transactions;
 current session/membership/grant/active-Plant authority is reloaded afterward.
 Archive/revoke, invalid result, provider failure, or audit failure returns the
 matching shared closed outcome with no candidate/persistence and no replay.
@@ -113,11 +113,10 @@ Agent Runtime redaction contract.
 
 ## Verification
 
-Tests MUST prove exact closed request/result shapes, latest-four selection and
+Current code-phase tests MUST prove exact closed request/result shapes, latest-four selection and
 oldest-to-newest order, source/ref agreement, forbidden-source exclusion,
 structural assessment validation, pending-only mapping, current authorization
-race behavior, explicit provider/no-fallback composition, redaction, and one
-non-skipped canonical-product-agent real-provider smoke over persisted
-classified trust records. The seeded conflict/trend fixture must return audited
-`envelope_ready` with a valid pending assessment; runtime-valid silence does
-not satisfy that product-flow acceptance.
+race behavior, fake/spy success/timeout/error paths, no production fallback,
+and redaction. The seeded conflict/trend fixture uses a test-only executor to
+return a strict pending assessment; this proves deterministic flow only. A
+real response is deferred to the provider runbook milestone.

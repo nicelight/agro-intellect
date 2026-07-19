@@ -3,7 +3,7 @@ description: Implementation plan for FT-010 Hydroponics Advisor missing-data pol
 status: active
 type: implementation_plan
 feature_id: FT-010
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md
   - .memory-bank/contracts/hydroponics-advisor-runtime.md
@@ -23,11 +23,11 @@ or gaining Safety/task/action authority.
 - Add bounded `backend/app/hydroponics_advisor/` command, strict value objects,
   PostgreSQL assembler, policy validation, definition, service, and tests.
 - Reuse current ActorContext/active-Plant authorization, Plant Operations
-  measurement freshness, classified Plant-state records, explicit provider
-  bindings, post-model guard, sanitized audit, common closed outcome, and
+  measurement freshness, classified Plant-state records, the strict provider-
+  neutral executor seam, post-I/O guard, sanitized audit, common closed outcome, and
   pending MessageEnvelope.
-- Register the strict advisor request/result with production provider
-  composition and add deterministic plus credentialed product-agent evidence.
+- Register the strict advisor request/result with production composition that
+  fails closed while no endpoint is selected, plus deterministic fake/spy evidence.
 - Use project-owned concise wording for missing/stale pH/EC measurement
   requests; keep fresh-evidence model text opaque and pending.
 
@@ -50,10 +50,10 @@ or gaining Safety/task/action authority.
    order and compute independent analysis freshness from PostgreSQL.
 3. Enforce the missing-data matrix and project-owned measurement-request
    mapping before creating the common pending envelope.
-4. Reuse explicit DeepSeek/Gemini composition, post-model current guard, and
+4. Reuse the provider-neutral executor seam, post-I/O current guard, and
    sanitized Agent Runtime audit with no fallback or new storage.
-5. Add deterministic policy/authorization/privacy regressions and one
-   non-skipped credentialed missing-data product-agent smoke.
+5. Add deterministic policy, authorization, outbound-spy, timeout/error,
+   redaction, and no-fake-production regressions.
 
 ## Dependencies
 
@@ -84,9 +84,9 @@ or gaining Safety/task/action authority.
 - Bounded autonomy: missing/stale data produces only a safe measurement request
   candidate; physical-action meaning remains blocked behind project-owned
   classification and human approval.
-- Blockers: none in planning. TASK-035 completion and provider credentials/
-  model/egress are execution inputs; the real-model outcome cannot be claimed
-  until a non-skipped smoke passes.
+- Blockers: TASK-035 remains blocked. Provider/model/base URL, credentials,
+  egress, network, and live smoke are not current code-phase inputs or closure
+  gates; production remains unbound and fail-closed until a later owner choice.
 
 ## Source Artifacts
 
@@ -129,7 +129,6 @@ or gaining Safety/task/action authority.
 
 - `.venv/bin/python -m pytest tests/backend/hydroponics_advisor -m "not real_model" -q`
 - `.venv/bin/python -m pytest tests/backend/plant_operations tests/backend/agent_runtime tests/backend/plant_state tests/backend/hydroponics_advisor -m "not real_model" -q`
-- `AGENT_REAL_HYDROPONICS_SMOKE=1 .venv/bin/python -m pytest tests/backend/hydroponics_advisor/test_real_hydroponics_smoke.py -m real_model -q`
 - `.venv/bin/python -m pytest tests -m "not real_model" -q`
 - `node scripts/mb-lint.mjs`
 - `git diff --check`
@@ -137,9 +136,13 @@ or gaining Safety/task/action authority.
 ## UAT
 
 Seed one authorized active Plant with the specified missing/stale pH/EC mix,
-invoke the canonical advisor through one explicit DeepSeek or Gemini binding,
-and verify exactly one real call returns an audited pending `task_request`
+invoke the canonical advisor through a test-only fake/spy executor, and verify
+the exact outbound request plus one audited pending `task_request`
 MessageEnvelope with the project-computed measurement set and exact safe
-wording. Confirm zero task, Safety, Bus/UI, Plant-state, approval, or action
-effects. Browser composition and actual measurement-task creation follow in
-FT-016 and FT-012.
+wording. Exercise timeout, provider failure, invalid output, post-I/O denial,
+redaction, and unbound production. Confirm zero task, Safety, Bus/UI,
+Plant-state, approval, or action effects. Browser composition and actual
+measurement-task creation follow in FT-016 and FT-012.
+
+Real request/response verification is deferred to the shared future selected-
+endpoint milestone and is not claimed or required by this plan.

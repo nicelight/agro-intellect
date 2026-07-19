@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 ---
 # SDD Spec Backbone
 
@@ -13,7 +13,7 @@ last_updated: 2026-07-18
 ## Decomposition Inputs
 - User scenarios: [.memory-bank/user-scenarios.md](user-scenarios.md) captures Boss setup, Engineer Plant operations, Safety Gate/action task flow, and Companion governance scenarios.
 - Domain model: [.memory-bank/domains/core-domain.md](domains/core-domain.md) captures Account, Farm, FarmMembership, ActorContext, Plant, PlantAccessGrant, admin audit, photo/runtime/audit, agent, safety, governance, and dataset entities.
-- Constraints: [.memory-bank/prd.md](prd.md), [.memory-bank/invariants.md](invariants.md), and [.memory-bank/domains/core-domain.md](domains/core-domain.md) capture local-first, loopback default, one local Farm, PostgreSQL/read-model authority, UI Feed isolation, Safety Gate, real model-backed agent runtime, and no automated actuation.
+- Constraints: [.memory-bank/prd.md](prd.md), [.memory-bank/invariants.md](invariants.md), and [.memory-bank/domains/core-domain.md](domains/core-domain.md) capture local-first, loopback default, one local Farm, PostgreSQL/read-model authority, UI Feed isolation, Safety Gate, provider-neutral agent-runtime boundaries, and no automated actuation.
 - Non-goals: [.memory-bank/prd.md](prd.md) and [.memory-bank/user-scenarios.md](user-scenarios.md) capture no production SaaS, hosted/cloud sync as MVP requirement, billing, enterprise identity, multi-Farm tenancy, broad farm management, microservices, automated actuation, full dataset registry, or real fine-tuning.
 - Risks: PRD/Product Brief risks are decomposition-relevant: authz enforced only in UI, governance approval confused with Safety Gate approval, Companion proposals leaking into agent context, agent fake/stub runtime paths, scope growth from Accounts/Farm/Admin.
 - Boundary hints: [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) captures preliminary boundaries for ActorContext, admin, Plant operations, photo artifacts, timeline, Bus, MessageEnvelope, UI Feed, Safety Gate, Companion governance, and dataset governance.
@@ -28,8 +28,10 @@ last_updated: 2026-07-18
   untrusted normalized text, and syntax-looking content has no executable or
   authority semantics. Future Unicode presentation hardening, if needed, is a
   non-blocking UI concern rather than a candidate-output rejection policy.
-- DeepSeek/Gemini model id, credential, and egress opt-in are execution inputs;
-  FT-008/FT-011/FT-012/FT-013 concrete design remains feature-owned.
+- No provider, model, or base URL is selected for the current code phase.
+  Credentials, egress, network calls, and live smoke are not current closure
+  inputs. A later owner selection activates one shared manual integration
+  milestone in the provider runbook; it is not a runnable feature/task today.
 
 ## FT-013 Shared Repair Audit
 
@@ -37,7 +39,7 @@ last_updated: 2026-07-18
 |---|---|---|---|
 | Ordinary Task creation from classified output or approved governance decision | [Task And Approval HTTP](contracts/task-approval-http.md), [Task lifecycle](states/task-follow-up-lifecycle.md), [Task data](domains/task-approval-outcomes.md) | no | Extended the one `create_ordinary_task` seam with the exact closed source union, source refs, fingerprints, results, current guards, and branch-specific UoW ownership. |
 | Companion classification without premature ordinary dispatch | [Safety Action Lifecycle](states/safety-action-lifecycle.md), [Safety Gate Runtime](contracts/safety-gate-runtime.md), [MessageEnvelope](contracts/message-envelope.md), [Bus](contracts/agent-chat-bus.md), [UI Feed](contracts/ui-feed.md) | no | Added the server-derived `ordinary_dispatch|companion_governance_hold` consumer route without persisted schema expansion and closed its negative compatibility matrix. |
-| FT-013 HTTP views/errors, latest evidence selection, different-run concurrency, ref/read grammar | FT-013 registered feature-local contracts/data/testing | no | Closed by `/prd-to-tasks FT-013`: exact schemas/error mapping, one-row evidence selection, distinct-run serialization, canonical refs/derived reads, and classifier-smoke composition are authoritative. |
+| FT-013 HTTP views/errors, latest evidence selection, different-run concurrency, ref/read grammar | FT-013 registered feature-local contracts/data/testing | no | Closed by `/prd-to-tasks FT-013`: exact schemas/error mapping, one-row evidence selection, distinct-run serialization, canonical refs/derived reads, and deterministic classifier fake/spy composition are authoritative. |
 | FT-013 post-review Task/conclusion/context closure | [Task And Approval HTTP](contracts/task-approval-http.md), [Companion Governance Data](domains/companion-governance.md), [Companion Governance HTTP](contracts/companion-governance-http.md), [Agent Chat Bus](contracts/agent-chat-bus.md), [Provider Profiles](contracts/agent-model-provider-profiles.md) | no | Closed exact same-UoW approved proposal phase, open/unfocused conclusions, derived approved summary, reachable nested Task errors, and typed non-authoritative governance input. |
 
 ## Backbone Area Matrix
@@ -54,9 +56,9 @@ last_updated: 2026-07-18
 | storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/foundation.md](foundation.md) | PostgreSQL/read model, shared UUID identity, non-cascading authority relations, DB/session/Alembic substrate, local filesystem artifacts, JSONL audit/export separation, and local bootstrap/runtime-root baseline defined. |
 | api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md), [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md), [.memory-bank/contracts/task-approval-http.md](contracts/task-approval-http.md) | HTTP/API guardrails, FT-000 smoke, Plant/history boundaries, and the single canonical internal ordinary-task source union are defined. |
 | event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Pending opaque-text MessageEnvelope, evidence-only project classification, closed ordinary/Companion-hold consumer routing, literal UI rendering, typed Bus quotation, guarded downstream writes, Timeline matrix, and archive no-replay rules are defined. |
-| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Registered agent-specific requests own exact typed allowlists without a blanket governance approval-status ban; allowed governance input remains untrusted and non-authoritative. FT-013 includes selected open-Issue `summary_text`. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Registered agent-specific requests own exact typed allowlists and a provider-neutral executor seam. Production is unbound/fail-closed until a future owner selection; explicit test fakes/spies are not production fallback. Allowed governance input remains untrusted and non-authoritative. |
 | security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-008, the evidence/consumer split, Companion governance hold, and the strict classification matrix deny model-selected/content-selected authority, keep one ordinary-task seam, separate ordinary tasks from action_task, and require current guards at every downstream write. |
-| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Exact request/input/outcome/event/batch assertions, opaque candidate acceptance, literal UI/typed Bus separation, adversarial classification compatibility, and the two accepted audited smoke outcomes are defined. |
+| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Current closure uses strict schemas, authorization plus post-I/O rechecks, exact media/request spies, timeout/error/invalid-output branches, redaction, unbound-production failure, no fallback/fake production, and authority-negative assertions. Real image/request/response/error/timeout/redaction/cost checks are deferred to one future selected-endpoint milestone. |
 | deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md), [.memory-bank/foundation.md](foundation.md) | Local loopback first demo; Linux Mint local bootstrap/PostgreSQL path and runbook; optional protected LAN later; no SaaS/server sync. |
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md) | Key architecture risks recorded. |
 | open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md) | No unresolved global/shared blocker remains; the FT-013 provider-input policy is closed by the explicit owner decision recorded on 2026-07-18. |
@@ -64,7 +66,7 @@ last_updated: 2026-07-18
 ## Handoff To /prd
 - Ready: yes
 - Required reads: [.memory-bank/prd.md](prd.md), [.memory-bank/spec-index.md](spec-index.md), this file, [.memory-bank/user-scenarios.md](user-scenarios.md), [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md), [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md), [.memory-bank/invariants.md](invariants.md), and [.memory-bank/glossary.md](glossary.md).
-- Stop conditions: PRD scope changes; Pre-PRD Spec Status becomes stale/blocked; new ambiguity appears around actors, Farm/Plant boundaries, Safety Gate authority, Companion governance authority, or real agent-runtime/demo requirements.
+- Stop conditions: PRD scope changes; Pre-PRD Spec Status becomes stale/blocked; new ambiguity appears around actors, Farm/Plant boundaries, Safety Gate authority, Companion governance authority, or provider-neutral agent-runtime requirements.
 
 ## Handoff To /spec-design
 - Global Backbone Status: complete; the FT-013 typed governance-input decision,
@@ -80,8 +82,8 @@ last_updated: 2026-07-18
 - Downstream rule: product tasking must honor the Foundation gate recorded in the authoritative Foundation document.
 
 ## Handoff To /prd-to-tasks
-- Ready: yes; FT-013 reconciliation is complete. Run a fresh
-  `/review-tasks-plan FT-013` before execution selection.
+- Ready: yes for fresh task-plan review; this bounded reconciliation does not
+  authorize execution or any lifecycle transition.
 - Current FT-008 outcome: feature-local Bus/UI envelopes, PostgreSQL
   persistence/reconciliation, protected Plant feed HTTP, context hygiene, and
   verification are complete; TASK-032 and TASK-033 are `done` with independent
@@ -89,25 +91,28 @@ last_updated: 2026-07-18
 - Latest pre-execution `/review-tasks-plan FT-008` is `APPROVE`. The scheduler
   will delegate the final task-plan review separately; this sync does not run
   or pre-claim that review.
-- FT-007 note: TASK-030/TASK-031 are done under the explicit owner deferral of
-  credentialed real-provider smoke; that residual UAT remains unclaimed and
-  does not block FT-008 deterministic sink/context work.
-- Current FT-009 planning outcome: feature-local real-photo Vision Observation,
-  Plant State PostgreSQL authority, protected trust reads/review, conflicts,
-  promotion, and verification contracts are complete. TASK-034 and TASK-035
-  are indexed `planned`; product-agent real-model acceptance remains an
-  execution/UAT target and is not pre-claimed by planning.
-- Current FT-011 planning outcome: feature-local real model-backed Safety
+- Historical FT-007 note: TASK-030/TASK-031 remain done under the then-current
+  owner deferral of a credentialed provider smoke. That history is not current
+  acceptance authority and does not select a provider.
+- Current FT-009 planning outcome: feature-local provider-neutral Vision/
+  Plant State contracts now use deterministic fake/spy closure. TASK-034
+  remains `failed` and TASK-035 remains `blocked`; their historical scheduler
+  evidence is immutable. Run fresh `/review-tasks-plan FT-009`, then require an
+  explicit owner lifecycle decision before any recovery/selection.
+- Current FT-010 planning outcome: TASK-036 remains `planned` behind blocked
+  TASK-035 and uses deterministic provider-neutral closure. Run fresh
+  `/review-tasks-plan FT-010`; no execution is authorized here.
+- Current FT-011 planning outcome: feature-local provider-neutral Safety
   classification, immutable PostgreSQL classification/action decisions,
   `approval_input=2h`, exact manual/unsupported action taxonomy, safe pending
   UI projection, and verification contracts are complete. TASK-037 and
-  TASK-038 are indexed `planned`; FT-012 remains the owner of human decisions
-  and every later task/follow-up state.
+  TASK-038 remain `planned`; run fresh `/review-tasks-plan FT-011`. FT-012
+  remains the owner of human decisions and later task/follow-up state.
 - Current FT-012 planning outcome: feature-local Approval, Task, automatic
   +48-hour follow-up, Outcome, HTTP, Timeline, idempotency/concurrency, archive,
-  and real `task_follow_up` provider/classification contracts are complete.
-  TASK-039 and TASK-040 are indexed `planned`; no deterministic implementation
-  or real-model product-agent acceptance is pre-claimed by planning.
+  and provider-neutral `task_follow_up` contracts are complete. TASK-039 and
+  TASK-040 remain `planned`; run fresh `/review-tasks-plan FT-012`. No
+  implementation or live-provider acceptance is pre-claimed by planning.
 - Current FT-013 repair outcome: shared ordinary-task source union and
   classification-only Companion governance hold are authoritative, with no
   second Task service or persisted route-schema expansion. The subsequent
@@ -117,8 +122,9 @@ last_updated: 2026-07-18
   source, exact approved-summary, nested Task error translation, and direct
   TASK-042 Task-contract routing. The explicit owner decision permits only
   persisted open-Issue `summary_text` as typed non-authoritative Companion
-  `existing_issue` provider input. `/prd-to-tasks FT-013` reconciliation is
-  complete; next run `/review-tasks-plan FT-013`.
+  `existing_issue` input. TASK-041/TASK-042/TASK-043 remain `planned` and
+  explicitly excluded from execution in this run. A fresh
+  `/review-tasks-plan FT-013` is required before any later execution selection.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.
@@ -136,14 +142,13 @@ last_updated: 2026-07-18
   and typed governance-input owner decision are authoritative;
   no unresolved global/shared ambiguity remains. FT-008 feature-local
   design and both execution waves are complete and independently verified.
-  FT-009 feature-local
-  design is complete and its two T3 tasks await review/execution; no real-model
-  product-agent acceptance is claimed yet. FT-011 feature-local design is
-  complete and its two T3 tasks await review/execution; no Safety Gate
-  real-model acceptance is claimed yet. FT-012 feature-local design is
-  complete and its two T3 tasks await review/execution; no Task and Follow-Up
-  real-model acceptance is claimed yet. FT-013 has three reconciled planned T3
-  cards awaiting fresh task-plan review; no Companion real-model acceptance is
-  claimed. Dataset Governance now has one lifecycle and one
+  FT-009 through FT-013 runtime contracts are provider-neutral. Current closure
+  requires deterministic schema, fake/spy, authorization/post-I/O, media,
+  redaction, timeout/error, unbound-production, no-fallback, and no-authority
+  evidence; it does not require provider selection, credentials, egress,
+  network, or live smoke. TASK-034 remains failed and TASK-035 blocked; all
+  other affected cards retain their prior planned status. Fresh reviews are
+  required for FT-009 through FT-012. FT-013 remains execution-excluded in this
+  run and requires fresh review before any future selection. Dataset Governance now has one lifecycle and one
   derived trainability authority; FT-014 exact persistence and evidence policy
   remain feature-local.

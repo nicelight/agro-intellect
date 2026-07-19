@@ -1,13 +1,13 @@
 ---
-description: Implementation plan for FT-011 model-backed Safety classification and physical-action routing.
+description: Implementation plan for FT-011 provider-neutral Safety classification and physical-action routing.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 ---
 # IMPL-FT-011 — Safety Gate Physical-Action Routing
 
 ## Goal
 
-Implement the canonical `safety_gate` real-model classifier and the
+Implement the canonical `safety_gate` provider-neutral classifier and the
 project-owned, PostgreSQL-backed Safety route from a pending MessageEnvelope to
 safe publication/task handoff, fail-closed block, or an immutable physical
 action decision ending at `pending_human_approval`.
@@ -24,8 +24,8 @@ action decision ending at `pending_human_approval`.
   evaluation;
 - immutable Safety decision/proposal persistence and expiry;
 - additive, non-consumable `safety_status` UI Feed/read projection;
-- focused, integration, compatibility, concurrency, migration, and optional
-  credentialed real-model evidence.
+- focused, integration, compatibility, concurrency, migration, and deterministic
+  fake/spy evidence.
 
 ## Non-goals
 
@@ -39,23 +39,23 @@ action decision ending at `pending_human_approval`.
 
 ## Ordered implementation strategy
 
-### 1. Real model-backed authoritative classification
+### 1. Provider-neutral authoritative classification
 
 1. Add a cohesive `backend/app/safety_gate/` package with strict command,
    provider request/candidate, backend mapping, service, repository, and ORM
    seams.
 2. Reconcile the existing prototype `SafetyClassificationResultV1` with the
    canonical shared contract; do not duplicate or widen its route matrix.
-3. Extend the existing provider executor/factory only as needed to bind the
-   competence-specific Safety candidate schema. Keep explicit provider/model
-   selection and no fallback.
+3. Extend the existing executor/factory only as needed to bind the competence-
+   specific Safety candidate schema. Keep provider/model/base URL unselected,
+   production unbound and fail-closed, and test fake/spy injection explicit.
 4. Add the `safety_classifications` migration/model/repository with exact
    constraints, fingerprints, immutable duplicate/conflict semantics, current
    pre/post-provider guards, and no raw candidate column.
 5. Expose a persisted classification result/handoff that later routing can
    consume; provider/error/invalid/uncertain paths become durable
    `blocked_uncertain` only when the current write guard succeeds.
-6. Add deterministic and optional credentialed product-agent tests.
+6. Add deterministic fake/spy, timeout/error, redaction, and no-fallback tests.
 
 ### 2. Deterministic Safety action routing and projection
 
@@ -104,7 +104,6 @@ Classifier slice:
   `safety_classifications` Alembic revision;
 - `tests/backend/safety_gate/test_classifier.py`
 - `tests/backend/safety_gate/test_classification_persistence.py`
-- `tests/backend/safety_gate/test_real_safety_gate_smoke.py`
 - focused Agent Runtime/provider/publication regression tests when behavior is
   directly affected.
 
@@ -191,7 +190,7 @@ revision; W2 advances the same assertions to the action-decision/UI revision:
 ## Verification targets
 
 - exact strict classifier request/candidate/result and ten-kind action union;
-- real-provider no-fallback anti-cheat and redacted outbound allowlist;
+- provider-neutral outbound-spy no-fallback anti-cheat and redacted allowlist;
 - PostgreSQL matrix constraints, UUID/FK parity, fingerprints, immutable
   duplicate/conflict behavior, and migration head;
 - current authorization, Plant, grant, and archive races before and after
@@ -211,10 +210,13 @@ revision; W2 advances the same assertions to the action-decision/UI revision:
   wave's new product head.
 - Run `node scripts/mb-lint.mjs` and `git diff --check`.
 - Run the full deterministic suite before handoff when the environment permits.
-- Credentialed Safety Gate smoke is an explicit opt-in UAT using
-  `AGENT_REAL_SAFETY_GATE_SMOKE=1`; missing credentials do not make
-  deterministic implementation evidence false, but REQ-011 product-agent
-  acceptance must not be claimed without an accepted real run.
+- Current acceptance uses deterministic fake/spy evidence, including timeout,
+  provider error, invalid output, post-I/O denial, redaction, and unbound
+  production. It does not require a provider, model, base URL, credential,
+  egress, network call, or non-skipped live smoke.
+- Real request/response, error, timeout, redaction, and cost verification is
+  deferred to the shared future selected-endpoint milestone and is not current
+  closure evidence.
 - Browser-level rendering remains FT-016; backend feed union and inert JSON
   semantics are verified here.
 
@@ -227,7 +229,7 @@ revision; W2 advances the same assertions to the action-decision/UI revision:
   outbox, Timeline type, or device framework is introduced.
 - Principle VI/VII: model autonomy ends at a strict candidate; physical action
   remains behind fresh evidence, backend Safety, and later human approval.
-- Principle IX: unsafe unknowns and provider failures fail closed; no fake
-  runtime acceptance or undocumented fallback is permitted.
+- Principle IX: unsafe unknowns and provider failures fail closed; test-only
+  fakes/spies cannot become production fallback or undocumented acceptance.
 
 No Constitution blocker remains.

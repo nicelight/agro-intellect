@@ -1,7 +1,7 @@
 {
   "id": "TASK-034-T3-FT-009-W1",
   "title": "Run Vision Observation over an authorized accepted photo",
-  "status": "ready",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-009",
   "reqs": [
@@ -27,17 +27,12 @@
     {
       "name": "vision-deterministic-tests",
       "command": ".venv/bin/python -m pytest tests/backend/vision_observation -m \"not real_model\" -q",
-      "required": false
-    },
-    {
-      "name": "vision-product-agent-smoke",
-      "command": "AGENT_REAL_VISION_SMOKE=1 .venv/bin/python -m pytest tests/backend/vision_observation/test_real_vision_smoke.py -m real_model -q",
-      "required": false
+      "required": true
     },
     {
       "name": "photo-runtime-regression",
       "command": ".venv/bin/python -m pytest tests/backend/photo_intake tests/backend/agent_runtime tests/backend/vision_observation -m \"not real_model\" -q",
-      "required": false
+      "required": true
     },
     {
       "name": "full-deterministic-suite",
@@ -59,11 +54,53 @@
     "The canonical vision_observation definition permits only speak, clarify, or strict model silence and cannot diagnose, recommend physical action, or widen the roster/provider policy.",
     "The assembler resolves current ActorContext for the same active Plant, loads one accepted catalog row, contains its relative path under LOCAL_ARTIFACT_ROOT, and freshly verifies content type, size, and sha256 before provider I/O.",
     "The provider receives the exact ordered VisionProviderRequestV1 plus one in-memory image matching photo:<photo_id>; no local path, filename, ActorContext, auth material, UI/chat, timeline replay, or arbitrary metadata crosses egress.",
-    "Vision v1 accepts only an explicit Gemini binding and image-capable model id; DeepSeek, chatgpt_oauth, disabled egress, missing credential/dependency, provider failure, and incompatible model fail closed without fake or fallback output.",
+    "The provider-neutral Vision seam has no selected provider, model, or base URL; production is unbound and fail-closed, while explicit test fakes/spies prove typed success, timeout, provider failure, invalid output, and no fallback/fake production.",
     "Strict result validation preserves the canonical matrix: speak maps one supported visible finding to a pending non-consumable MessageEnvelope plus VisionStateCandidateV1; clarify maps to a pending clarification envelope without candidate; silent returns neither artifact. For speak, low-confidence/uncertain findings use a hypothesis envelope claim only as transport metadata and TASK-035 persists them exactly as unknown, with no direct DB/Bus/UI/task/Safety effect here.",
     "Missing or unavailable photo data returns context_denied/input_contract_violation before provider and runtime-audit I/O, with no clarification envelope, state candidate, or follow-up task; FT-016 may render an upload/reselect prompt and FT-012 owns any later follow-up task.",
-    "Post-model session/membership/grant/active-Plant guard and audit failure semantics match Agent Runtime; archive/revoke blocks handoff and restore does not replay it.",
-    "A non-skipped credentialed canonical-agent smoke uploads the committed tomato fixture through production photo intake, invokes exactly one real Gemini image call over the accepted bytes, and returns runtime_decision=speak with audited envelope_ready, one valid pending MessageEnvelope, and one matching VisionStateCandidateV1. Clarify remains envelope-only and silent returns neither artifact; neither satisfies this fixture. Evidence remains redacted and safe."
+    "Post-I/O session/membership/grant/active-Plant guard and audit failure semantics match Agent Runtime; archive/revoke blocks handoff and restore does not replay it.",
+    "A deterministic outbound spy receives exactly one request with the freshly verified committed tomato-fixture bytes and produces runtime_decision=speak with audited envelope_ready, one valid pending MessageEnvelope, and one matching VisionStateCandidateV1; clarify and silent remain non-accepting fixture branches. Timeout/error/invalid output, post-I/O denial, audit failure, and unbound production fail closed with redacted evidence.",
+    {
+      "stage": "scheduler_failure_budget",
+      "mode": "scheduler",
+      "attempt": "02",
+      "decision": "failed",
+      "terminal_state": "HALT_FAILURE_BUDGET",
+      "decided_at": "2026-07-18T18:50:23+05:00",
+      "evidence": [
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-IMPL-final-report-code-02.md",
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-VERIFY-final-report-code-02.md",
+        ".protocols/TASK-034-T3-FT-009-W1/verification.md"
+      ],
+      "basis": "ATTEMPT 02 resolved the only scope finding and independently passed all deterministic acceptance groups, but the explicit non-skipped real Gemini smoke remained blocked before provider I/O. No accepted tomato-fixture speak outcome exists, so the substantive TASK-034 success outcome and required real-provider evidence are not satisfied.",
+      "failure_budget": "2 execute attempts completed; bounded retry budget exhausted; 0 attempts remaining",
+      "red_verification": "not selected after current-attempt functional VERDICT: BLOCKED because adversarial review cannot manufacture the missing real-provider outcome",
+      "checkpoint": "advisory human checkpoint not obtained; it did not determine the failure decision",
+      "operator_action": "Provision the declared Agno dependency and explicit safe Gemini runtime inputs: external-egress opt-in, canonical vision_observation binding, and a Google credential. Then route recovery or replacement work through the normal FT-009 planning, task-plan review, and readiness flow before fresh execution/verification; do not reuse exhausted ATTEMPT 02 as closure evidence."
+    },
+    {
+      "stage": "planning_reconciliation",
+      "mode": "owner_supersession",
+      "decided_at": "2026-07-19",
+      "decision": "current_acceptance_revised",
+      "note": "The immutable 2026-07-18 scheduler failure evidence above remains historical and TASK-034 remains failed. Current normative code-phase acceptance is provider-neutral and deterministic and does not require provider/model/base URL selection, credentials, egress, network, or a live smoke. Any later recovery requires fresh FT-009 task-plan review and an explicit lifecycle decision."
+    },
+    {
+      "stage": "scheduler_administrative_closure",
+      "mode": "scheduler_owner_recovery",
+      "attempt": "02",
+      "decision": "done",
+      "closed_at": "2026-07-19T14:28:10+05:00",
+      "evidence": [
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-IMPL-final-report-code-02.md",
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-VERIFY-final-report-code-02.md",
+        ".tasks/TASK-MB-PROVIDER-NEUTRAL-ALIGNMENT/TASK-MB-PROVIDER-NEUTRAL-ALIGNMENT-S-REPAIR-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-009-PROVIDER-NEUTRAL-20260719-final-report-docs-01.md",
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-ADMIN-CLOSURE-final-report-docs-02.md"
+      ],
+      "basis": "The explicit owner revised current code-phase acceptance to provider-neutral deterministic evidence. ATTEMPT 02 independently passed all seven deterministic acceptance groups with zero reproduced deterministic product/spec defects, resolved the only scope finding, and passed focused, scoped-regression, full deterministic, lint, and diff checks. The prior overall BLOCKED verdict depended only on a superseded live-Gemini acceptance group.",
+      "accepted_residual_risk": "No real provider, network transport, or real image interpretation has been verified. The current Gemini-oriented executor is temporary technical debt and must be replaced or generalized only after an OpenAI-compatible provider is explicitly selected and the deferred integration milestone is planned and run.",
+      "process_notes": "No attempt budget was reset and no historical report was rewritten. Per-task red-verification and human checkpoint were waived as advisory because current deterministic evidence plus fresh FT-009 planning APPROVE were accepted as sufficient by the explicit owner."
+    }
   ],
   "docs": [
     ".memory-bank/features/FT-009-vision-observation-plant-state-trust.md",
@@ -75,15 +112,15 @@
   "evidence_required": [
     "exact vision request media result and envelope contract tests",
     "catalog path size sha256 and authorization integration evidence",
-    "Gemini-only composition and no-fake no-fallback anti-cheat inspection",
+    "provider-neutral unbound-production plus no-fake/no-fallback anti-cheat inspection",
     "archive revoke and audit-failure race evidence",
-    "non-skipped canonical vision_observation real-photo provider smoke",
+    "outbound-spy exact committed-photo media identity plus timeout/error/invalid-output evidence",
     "focused and full deterministic test summaries",
     "node scripts/mb-lint.mjs output",
     "git diff --check output"
   ],
-  "purpose": "Add the canonical Vision Observation product-agent path that sends one authorized accepted local photo to one explicitly configured real image-capable model while preserving project authorization, privacy, audit, and pending-only authority boundaries.",
-  "success_outcome": "Actual bytes from an authorized accepted Plant photo reach exactly one explicitly bound real Gemini vision model, and the committed tomato fixture yields runtime_decision=speak with audited envelope_ready, one schema-valid pending MessageEnvelope, and one matching VisionStateCandidateV1. Clarify produces only its envelope and silent produces neither artifact, so both fail this fixture acceptance alongside every invalid, unauthorized, archived, unconfigured, fake, failed, fallback, or unaudited path; no branch gains Plant-state, Bus, UI, task, Safety, or confirmation effect.",
+  "purpose": "Add the canonical provider-neutral Vision Observation path that sends one authorized accepted local photo through a strict executor seam while preserving project authorization, privacy, audit, and pending-only authority boundaries.",
+  "success_outcome": "Actual bytes from an authorized accepted Plant photo reach exactly one explicit outbound spy, and the committed tomato fixture yields runtime_decision=speak with audited envelope_ready, one schema-valid pending MessageEnvelope, and one matching VisionStateCandidateV1. Strict schemas, media integrity, authorization plus post-I/O recheck, timeout/error/invalid-output handling, redaction, unbound production, and no fallback/fake production are deterministic evidence; no provider, model, base URL, credential, egress, network call, or live smoke is required, and no branch gains Plant-state, Bus, UI, task, Safety, or confirmation effect.",
   "anti_goals": [
     "No Plant-state table, conflict/promotion service, public model endpoint, Bus/UI publication, classifier policy, Safety/task/action effect, frontend, Companion, or dataset work.",
     "No diagnosis taxonomy, physical-action recommendation, automatic background worker, provider file persistence/history, Agno memory/RAG/tools/Team, image rewrite, or path/URL egress.",
@@ -107,9 +144,9 @@
     ],
     "stop_conditions": [
       "Correctness would require changing accepted photo identity/layout or generic Agent Runtime outcome/MessageEnvelope authority.",
-      "The selected provider cannot receive actual image bytes through the existing declared Gemini/Agno stack without path/auth leakage or a new provider contract.",
+      "The strict provider-neutral executor seam cannot preserve exact media identity without path/auth leakage or a public-contract change.",
       "Current authorization and active-Plant state cannot be rechecked after provider I/O before handoff.",
-      "A passing product-agent smoke would require skip, fake executor, canned description, fallback, missing audit, or raw secret/provider/photo evidence."
+      "Deterministic acceptance would require a production fake/canned result, fallback, missing audit, or raw secret/provider/photo evidence."
     ]
   },
   "source_artifacts": [
@@ -132,7 +169,7 @@
   ],
   "constraints": [
     "Use exactly one internally assembled active-Plant plus accepted-photo request and one freshly verified in-memory media attachment; callers cannot submit context, refs, bytes, path, prompt, model, or schema.",
-    "Version-1 vision execution uses only the explicitly bound Gemini profile/model and the existing credential/egress boundary with no fallback.",
+    "Version-1 vision uses a strict provider-neutral executor seam: production remains unbound/fail-closed, tests inject explicit fakes/spies, and neither default provider selection nor fallback is allowed.",
     "Preserve the exact result matrix: speak returns pending MessageEnvelope plus non-authoritative VisionStateCandidateV1, clarify returns only its pending envelope, and silent returns neither; persist or publish nothing from this task."
   ],
   "invariants": [
@@ -143,10 +180,9 @@
   "verification_targets": [
     ".venv/bin/python -m pytest tests/backend/vision_observation -m \"not real_model\" -q",
     ".venv/bin/python -m pytest tests/backend/photo_intake tests/backend/agent_runtime tests/backend/vision_observation -m \"not real_model\" -q",
-    "AGENT_REAL_VISION_SMOKE=1 .venv/bin/python -m pytest tests/backend/vision_observation/test_real_vision_smoke.py -m real_model -q",
     ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
     "node scripts/mb-lint.mjs",
     "git diff --check",
-    "The credentialed committed-tomato-fixture smoke proves a real Gemini image call, runtime_decision=speak, one pending MessageEnvelope plus one matching VisionStateCandidateV1, and redacted evidence; clarify and silent fail fixture acceptance."
+    "The deterministic committed-tomato-fixture outbound spy proves exact bytes, runtime_decision=speak, one pending MessageEnvelope plus one matching VisionStateCandidateV1, and redacted evidence; clarify/silent, timeout/error/invalid output, post-I/O denial, and unbound production fail closed."
   ]
 }

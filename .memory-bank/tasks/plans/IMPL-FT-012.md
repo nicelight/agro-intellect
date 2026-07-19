@@ -1,7 +1,7 @@
 ---
-description: Implementation plan for FT-012 human approval, task/follow-up outcomes, and real Task and Follow-up Agent.
+description: Implementation plan for FT-012 human approval, task/follow-up outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 ---
 # IMPL-FT-012 — Human Approval Tasks And Follow-Up Outcomes
 
@@ -10,7 +10,7 @@ last_updated: 2026-07-17
 Implement the authoritative Safety and Task Loop after FT-011: matched
 ordinary task requests, current human approve/reject decisions, one
 human-performed action Task, completion, deterministic +48-hour follow-up,
-evidence-aware Outcome, and one real `task_follow_up` agent path that can create
+evidence-aware Outcome, and one provider-neutral `task_follow_up` path that can create
 only a matched ordinary Task.
 
 ## Scope
@@ -28,11 +28,11 @@ only a matched ordinary Task.
 - Outcome plus follow-up completion atomicity and evidence policy;
 - request-id/fingerprint idempotency, conflict, concurrency, and archive races;
 - registered Timeline audit refs and redacted summaries;
-- competence-specific real `task_follow_up` request/result, explicit provider
-  binding, pending MessageEnvelope, matching classification, and ordinary-task
+- competence-specific `task_follow_up` request/result, strict provider-neutral
+  executor seam, pending MessageEnvelope, matching classification, and ordinary-task
   handoff;
-- deterministic, PostgreSQL, HTTP, compatibility, anti-cheat, and opt-in
-  credentialed product-agent evidence.
+- deterministic, PostgreSQL, HTTP, compatibility, outbound-spy, and anti-cheat
+  evidence.
 
 ## Non-goals
 
@@ -83,7 +83,7 @@ only a matched ordinary Task.
    errors, no-store responses, OpenAPI assertions, and focused integration/
    concurrency/archive tests.
 
-### 2. Real Task and Follow-Up Agent through ordinary-task authority
+### 2. Provider-neutral Task and Follow-Up Agent through ordinary-task authority
 
 1. Add competence-specific strict command, input assembler, provider request,
    model result, envelope mapping, and orchestration under the existing
@@ -97,16 +97,16 @@ only a matched ordinary Task.
    follow-up when the triggering action already has its unique automatic
    follow-up. Reject every action/approval/completion/Outcome/Plant/device
    field.
-4. Reuse explicit provider/model binding, external-egress opt-in, no fallback,
-   post-model current authorization, sanitized common audit, and pending
+4. Reuse the provider-neutral executor seam, no fallback, post-I/O current
+   authorization, sanitized common audit, and pending
    MessageEnvelope semantics.
 5. Route one valid non-silent proposal through the actual Safety classifier.
    Require exact task-kind equality and then invoke the TASK-039 ordinary-task
    service. Every other class, mismatch, conflict, or current-guard denial has
    no Task effect and no restore replay.
 6. Add deterministic outbound-snapshot, schema/matrix, archive-race,
-   idempotency, and no-authority tests plus the explicit DeepSeek/Gemini
-   product-agent smoke.
+   idempotency, timeout/error, redaction, unbound-production, and no-authority
+   fake/spy tests.
 
 ## Dependencies and waves
 
@@ -116,7 +116,7 @@ only a matched ordinary Task.
   `TASK-038-T3-FT-011-W2`, because it consumes the implemented immutable
   pending Safety decision, classification tables, provider route, and current
   migration head.
-- `TASK-040-T3-FT-012-W2` depends on TASK-039 because the real competence must
+- `TASK-040-T3-FT-012-W2` depends on TASK-039 because the competence must
   use its authoritative ordinary-task persistence path and Task/Outcome input
   repositories.
 - Shared package/composition/provider files are therefore changed
@@ -142,7 +142,7 @@ Core lifecycle/API/persistence slice:
 - `tests/backend/api/test_ft012_task_follow_up_routes.py`
 - the existing exact-head regression files named below.
 
-Real-agent slice:
+Provider-neutral runtime slice:
 
 - `backend/app/task_follow_up/` for competence-specific contracts, assembler,
   service/orchestration, and production composition;
@@ -150,7 +150,6 @@ Real-agent slice:
 - `backend/app/agent_runtime/__init__.py`
 - `backend/app/main.py` only if composition wiring is needed;
 - `tests/backend/task_follow_up/test_runtime.py`
-- `tests/backend/task_follow_up/test_real_task_follow_up_smoke.py`
 - `tests/backend/agent_runtime/test_ft007_roster_providers.py` for the shared
   provider construction/outbound compatibility seam.
 
@@ -217,8 +216,9 @@ assertions as applicable:
   confirm Plant state.
 - Archive preserves all rows unchanged, blocks transitions, and restore never
   replays or refreshes them.
-- The real product-agent path has one explicit provider/model per agent, typed
-  external egress, no fallback, and no fake/silent failure acceptance.
+- The runtime path uses the strict provider-neutral executor seam; production
+  remains unbound and fail-closed, test fakes/spies are explicit, and no
+  fake/silent production result or fallback can satisfy acceptance.
 
 ## Verification targets
 
@@ -233,8 +233,8 @@ assertions as applicable:
 - protected HTTP/OpenAPI/no-store/no-leak/redaction behavior;
 - exact `TaskFollowUpProviderRequestV1` outbound allowlist, typed quotation,
   strict result, pending envelope, matching classification, and ordinary Task;
-- real DeepSeek/Gemini anti-cheat smoke plus deterministic FT-004/007/008/
-  010/011 compatibility and full regression.
+- deterministic outbound-spy no-fallback/no-fake-production anti-cheat plus
+  FT-004/007/008/010/011 compatibility and full regression.
 
 ## Quality gates and UAT
 
@@ -242,10 +242,13 @@ assertions as applicable:
 - Run the five exact-head compatibility tests after the FT-012 migration.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` for both waves.
 - Run the full deterministic suite before handoff when the environment permits.
-- Credentialed Task and Follow-Up smoke is explicit opt-in via
-  `AGENT_REAL_TASK_FOLLOW_UP_SMOKE=1`. Missing credentials do not make
-  deterministic code evidence false, but FT-012 must not claim its portion of
-  REQ-011 without an accepted non-skipped real run.
+- Current acceptance uses deterministic fake/spy evidence, including timeout,
+  provider error, invalid output, post-I/O denial, redaction, and unbound
+  production. It does not require a provider, model, base URL, credential,
+  egress, network call, or non-skipped live smoke.
+- Real request/response, error, timeout, redaction, and cost verification is
+  deferred to the shared future selected-endpoint milestone and is not current
+  closure evidence.
 - Browser task/approval cards remain FT-016; backend JSON/OpenAPI behavior is
   verified here.
 

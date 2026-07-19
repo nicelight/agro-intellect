@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -105,7 +105,7 @@ spec_design_links:
   distinct run ids; and one canonical ref/read ordering/nullability grammar.
 - TASK-040 and TASK-042 are explicitly serialized because both may write the
   Task Follow-Up package. TASK-043 directly composes the Safety classifier
-  runtime/storage/testing contracts and the two-binding real-smoke path.
+  runtime/storage/testing contracts and the two-executor provider-neutral path.
 
 ## Behavior specs
 
@@ -131,7 +131,7 @@ spec_design_links:
   allowed.
 - Feature-local deterministic design is closed for accepted authority,
   lifecycle, effect, atomicity, derived-conclusion, HTTP, evidence selection,
-  concurrency, ref/read, and real-classifier composition. Safety/action/Plant/
+  concurrency, ref/read, and provider-neutral classifier composition. Safety/action/Plant/
   device authority remains excluded; final feature status is complete.
 - The post-repair deterministic findings are also closed: open/unfocused issues
   have valid awaiting/decided conclusions and focus-transition semantics; the
@@ -143,3 +143,11 @@ spec_design_links:
   open-Issue `summary_text` from current authorized PostgreSQL scope as
   untrusted, non-authoritative context. The reconciled next step is
   `/review-tasks-plan FT-013`.
+- Provider-integration decision: current code-phase closure uses explicit
+  Companion and Safety fake/spy executors and does not require credentials,
+  egress, network, or live smoke. Production remains unbound and fail closed;
+  real response/classifier evidence belongs to the shared future milestone.
+- Execution note: TASK-041, TASK-042, and TASK-043 remain explicitly excluded
+  from execution in this reconciliation. Their ids, tiers, waves, dependencies,
+  and `planned` lifecycle are unchanged; fresh `/review-tasks-plan FT-013` is
+  required before any later owner selection.

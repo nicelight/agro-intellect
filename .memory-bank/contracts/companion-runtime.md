@@ -1,8 +1,8 @@
 ---
-description: Explicit real model-backed Companion request, result, orchestration, trigger, and proposal handoff contract.
+description: Explicit provider-neutral Companion request, result, orchestration, trigger, and proposal handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-18
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md
   - .memory-bank/states/companion-governance.md
@@ -19,7 +19,7 @@ source_of_truth:
 
 ## Scope
 
-Defines one explicit protected real-model invocation of canonical
+Defines one explicit protected provider-neutral invocation of canonical
 `agent_id=companion` over current authorized PostgreSQL Plant/issue evidence.
 A valid non-silent result becomes a pending MessageEnvelope, passes the existing
 project classifier, and only then may the governance service persist an issue,
@@ -277,15 +277,14 @@ call outcome is discarded rather than persisted or returned as the winner's
 outcome; sanitized runtime audit remains the evidence that provider I/O
 occurred.
 
-## Provider and trigger policy
+## Executor and trigger policy
 
 - Only the explicit protected HTTP command invokes this runtime.
-- Exactly one configured DeepSeek or Gemini binding may serve `companion`.
-  `chatgpt_oauth` remains fail closed without an approved adapter.
-- The production path also requires exactly one explicit DeepSeek or Gemini
-  binding for canonical `safety_gate`. A successful non-silent run invokes one
-  Companion call and one Safety classifier call; neither binding may borrow or
-  fall back to the other.
+- `companion` and `safety_gate` each use their own provider-neutral executor
+  seam. Current production remains unbound until future endpoint selection.
+- A deterministic non-silent run invokes one explicitly injected Companion
+  fake/spy executor and one explicitly injected Safety classifier fake/spy;
+  neither seam may borrow or fall back to the other.
 - There is no default, fallback, fake/canned product result, model retry that
   changes binding, scheduler, worker, startup invocation, event listener, or
   refresh side effect.
@@ -344,13 +343,13 @@ Timeline audit identities.
   Task, held physical/blocked/mismatch/failure creates no ordinary downstream
   row, retry/restore/reconciliation does not replay one, and the only accepted
   matching handoff is guarded proposal persistence.
-- Provider tests prove explicit DeepSeek/Gemini construction, no fallback/fake,
+- Executor tests prove explicit fake/spy injection, unbound production,
+  timeout/error/invalid-output paths, no fallback/fake production behavior,
   redaction, and compatibility with the existing Agent Runtime outcome matrix.
-- Credentialed UAT uses explicit canonical `companion` and `safety_gate`
-  bindings over a real authorized PostgreSQL Plant/check-in/measurement
-  new-issue fixture, makes exactly one call to each binding, and must persist
-  one matching classification plus one current proposal. Skip/xfail,
-  fake/canned output,
-  fallback, silence, blocked/mismatch, unconfigured/provider/output/guard/audit/
-  persistence failure, or direct DecisionRecord/Task/action effect fails the
-  explicitly requested smoke.
+- Deterministic integration uses authorized PostgreSQL Plant/check-in/
+  measurement data, calls each test seam exactly once, and persists one
+  matching classification plus one current proposal without granting direct
+  DecisionRecord/Task/action authority.
+- Real Companion and classifier responses are deferred to the single provider
+  runbook milestone after endpoint selection and are not current closure
+  evidence.

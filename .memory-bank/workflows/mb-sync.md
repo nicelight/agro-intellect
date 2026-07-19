@@ -17,7 +17,7 @@ blockers. This section governs any stricter legacy wording later in this file.
 - Один раз в конце текущей wave, после того как scheduler/explicit owner сразу
   записал closure/failure/blocking decision, final task status и evidence links
   каждой task в authoritative indexed `.memory-bank/tasks/TASK-*.task.json` и
-  завершил required `/verify` / `/red-verify` gates.
+  завершил выбранные `/verify` / `/red-verify` checks.
 - Раньше конца wave только если продолжение текущей wave реально зависит от
   согласованного RTM/index/spec/contract/changelog state или sync явно запросил
   owner. Early sync не заменяет итоговый wave-boundary sync.
@@ -48,35 +48,18 @@ blockers. This section governs any stricter legacy wording later in this file.
 - Перед handoff to another agent when they need fresh durable Memory Bank state.
 - При ощущении drift между кодом и документацией.
 
-## Status Transition Modes
+## Status ownership
 
-Status transitions have two modes.
-
-Scheduler mode:
-- `/autopilot` and `/autonomous` own task status transitions.
-- Scheduler decides closure/failure/blocking eligibility.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
-- `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record immediately after each task and before the next `/mb-sync` boundary.
-- `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
-- T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler closure should consider protocol, applicable task/spec gates, and functional evidence; per-task and feature-level `/red-verify` are optional confidence checks.
-- T2 feature completion may use `/red-verify --feature FT-<ID>` and a recorded semantic verdict when the owner considers semantic drift risk material.
-- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler closure should consider full protocol, applicable task/spec gates, functional evidence, per-task semantic review, and a human checkpoint; none is a universal process-only blocker.
-
-Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
-- Manual closure is allowed only when an explicit closure owner exists.
-- `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
-- If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual closure should use proportionate protocol and evidence; `/verify` and feature semantic review are optional owner-selected checks.
-- `T3` manual closure should consider `/verify`, `/red-verify`, and a human checkpoint. Semantic issues inform the owner but do not automatically dictate status.
-- `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
-- No persisted `mode` field is used.
+- Canonical closure, attempt, retry, recovery, and evidence-selection semantics
+  live only in [.memory-bank/workflows/tier-policy.md](tier-policy.md).
+- `/mb-sync` reconciles already-written task state. It does not decide closure,
+  failure, blocking, retry, or promotion and must not reconstruct a decision
+  from historical artifacts.
+- In scheduler mode `/autopilot` or `/autonomous` writes lifecycle decisions;
+  in manual mode an explicit standalone owner does so.
+- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate
+  in product feature-completion semantics.
+- `wave` is feature-local; this workflow runs at the `(feature, wave)` boundary.
 
 ## Чеклист
 

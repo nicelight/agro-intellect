@@ -15,14 +15,15 @@ source_of_truth:
 - [Foundation Smoke API](foundation-smoke-api.md): `/health` and `/ready`.
 - [Evidence Redaction](evidence-redaction.md): secret/evidence redaction.
 - [Agent Chat Bus](agent-chat-bus.md): agent-consumable event boundary.
-- [Agent Runtime Adapter](agent-runtime-adapter.md): real model invocation,
+- [Agent Runtime Adapter](agent-runtime-adapter.md): provider-neutral model invocation,
   typed input, runtime decision, failure, audit, and envelope handoff.
-- [Agent Model Provider Profiles](agent-model-provider-profiles.md): explicit
-  provider/model binding, credential isolation, typed egress, and no fallback.
+- [Agent Model Provider Profiles](agent-model-provider-profiles.md):
+  provider-neutral production binding boundary, typed egress, and fail-closed
+  future OpenAI-compatible integration route.
 - [Agent Roster And Plant Bootstrap](agent-roster-bootstrap.md): canonical
   identities and deterministic post-commit introduction handoff.
 - [Vision Observation Runtime](vision-observation-runtime.md): authorized
-  real-photo input, Gemini-only v1 execution, and pending observation handoff.
+  real-photo bytes, provider-neutral media execution, and pending observation handoff.
 - [Plant State Runtime](plant-state-runtime.md): authorized trust-record input
   and structured trend/conflict/unknown assessment handoff.
 - [Hydroponics Advisor Runtime](hydroponics-advisor-runtime.md): authorized
@@ -32,7 +33,7 @@ source_of_truth:
 - [Task And Follow-Up Agent Runtime](task-follow-up-runtime.md): strict
   authorized Task/Outcome/evidence input, typed ordinary-task proposal, and
   classified Task handoff.
-- [Companion Runtime](companion-runtime.md): explicit authorized real-model
+- [Companion Runtime](companion-runtime.md): explicit authorized provider-neutral
   input/result, closed trigger policy, classification, and proposal handoff.
 - [MessageEnvelope](message-envelope.md): validated pending pre-safety agent
   output.

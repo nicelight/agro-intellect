@@ -79,6 +79,7 @@
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
           "name",
           "command",
@@ -86,10 +87,14 @@
         ],
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "pattern": ".*\\S.*"
           },
           "command": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "pattern": ".*\\S.*"
           },
           "required": {
             "type": "boolean"

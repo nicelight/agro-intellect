@@ -20,8 +20,10 @@ status: active
 Non-blocking gaps must be written as explicit assumptions in `.protocols/AUTONOMOUS-RUN/decision-log.md`.
 
 ## Recommended gates
-- Prefer latest `/review-tasks-plan FT-<NNN>` evidence for task-linked product
-  features.
+- Prefer `/review-tasks-plan FT-<NNN>` immediately before the first runnable
+  task of that feature. A change to its task cards, specs, dependencies, tier,
+  scope, or implementation plan invalidates the review; status/evidence-only
+  updates do not.
 - Prefer `/mb-doctor --strict` before task selection, after synchronization,
   and before final success.
 - Use tier-appropriate evidence as a default profile:
@@ -43,9 +45,19 @@ unsafe actions, missing authority, and destructive-operation ambiguity remain
 hard-stop categories.
 
 ## Failure budgets
-- max_retries_per_task: 2
+- max_attempts_per_task: 2
 - max_consecutive_failures: 3
 - max_open_blockers: 3
+
+Attempt, retry, closure, and recovery semantics are defined only in
+`.memory-bank/workflows/tier-policy.md`.
+
+## Run status
+
+- `.protocols/AUTONOMOUS-RUN/status.md` is a snapshot of the current run, not an
+  append-only multi-run log.
+- Starting a new run replaces the previous snapshot. Historical evidence stays
+  in per-task protocols, numbered reports, and Git history.
 
 ## Terminal states
 - `SUCCESS`

@@ -1,8 +1,8 @@
 ---
-description: Verification contract for real vision input and Plant state trust behavior.
+description: Verification contract for photo-byte integrity, provider-neutral Vision, and Plant state trust behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-16
+last_updated: 2026-07-19
 source_of_truth:
   - .memory-bank/contracts/vision-observation-runtime.md
   - .memory-bank/contracts/plant-state-runtime.md
@@ -23,8 +23,9 @@ source_of_truth:
   clarification envelope, state candidate, or follow-up task.
 - Current ActorContext plus post-model session/membership/grant/Plant guard;
   archive/revoke races return blocked audit-only outcomes with no replay.
-- Gemini-only v1 vision composition, explicit model id/egress/credential,
-  no DeepSeek/OAuth/fake/cross-provider fallback, and redacted diagnostics.
+- Provider-neutral Vision composition, exact outbound-spy media identity,
+  unbound production, no fake/canned/default/fallback production path, and
+  redacted diagnostics.
 - Pending MessageEnvelope and candidate have no direct DB/Bus/UI/task/Safety
   effect.
 - PostgreSQL migration/check constraints, restrictive FKs, unique message id,
@@ -46,35 +47,26 @@ source_of_truth:
 - Exact list/review HTTP, no-store, stable cursor, wrong-Plant rejection, safe
   errors, and internal-field exclusion.
 
-## Credentialed product-agent UAT
+## Current code-phase executor evidence
 
-Two non-skipped product-agent smokes remain required before FT-009 may claim
-REQ-011/REQ-012 runtime acceptance:
+- Upload the committed tomato fixture through production photo intake; the
+  outbound spy must receive exactly the verified bytes/ref/content type/hash.
+- A strict fake result exercises `speak`, `clarify`, and `silent` mappings;
+  timeout, executor failure, invalid result, post-I/O denial, and audit failure
+  remain fail closed with no downstream effect.
+- Seed persisted classified trust records and use a strict fake/spy Plant State
+  result to prove pending assessment and structural conflict/trend validation.
+- Evidence must label every executor result synthetic/test-only and must not
+  claim a real image, response, provider, model, network call, or credential.
 
-1. `vision_observation`: upload the committed tomato fixture through the
-   production photo-intake path, invoke the canonical production definition
-   with its explicit Gemini binding, prove exactly one real image-capable call,
-   and require `runtime_decision=speak` with an audited valid pending envelope
-   and `VisionStateCandidateV1`. The photo ref and verified bytes must match the
-   accepted catalog artifact. `clarify` remains a valid envelope-only runtime
-   result and `silent` remains valid without either artifact, but neither
-   satisfies the committed tomato fixture behavior.
-2. `plant_state`: seed classified persisted Plant records, invoke the canonical
-   production definition through its explicit DeepSeek or Gemini binding, and
-   require an audited schema-valid pending assessment envelope/candidate for
-   the seeded conflict/trend fixture; model silence does not satisfy it.
-
-Skip, xfail, test executor, canned output, constructor-only evidence, missing
-provider call, fallback, unconfigured/blocked/failed/audit-failed result, or
-unvalidated raw response fails an explicitly requested smoke. Credentials,
-photo bytes, prompts, raw response, and hidden reasoning stay out of evidence.
+Real image/response verification is deferred to the selected-endpoint
+milestone in `.memory-bank/runbooks/agent-runtime-providers.md` and is
+`not_applicable_for_current_code_phase`.
 
 ## Commands
 
 - `.venv/bin/python -m pytest tests/backend/vision_observation -m "not real_model" -q`
 - `.venv/bin/python -m pytest tests/backend/plant_state tests/backend/api/test_ft009_plant_state_routes.py -m "not real_model" -q`
-- `AGENT_REAL_VISION_SMOKE=1 .venv/bin/python -m pytest tests/backend/vision_observation/test_real_vision_smoke.py -m real_model -q`
-- `AGENT_REAL_PLANT_STATE_SMOKE=1 .venv/bin/python -m pytest tests/backend/plant_state/test_real_plant_state_smoke.py -m real_model -q`
 - `.venv/bin/python -m pytest tests -m "not real_model" -q`
 - `node scripts/mb-lint.mjs`
 - `git diff --check`

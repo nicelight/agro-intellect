@@ -18,51 +18,27 @@ status: active
 
 <objective>
 Implement one scoped JSON task and produce protocol/evidence for the next owner.
-`/execute` is not a scheduler. In manual mode it may close only simple `T0` /
-`T1` tasks when explicit top-level closure ownership and all fast-lane
-conditions are satisfied; otherwise it produces handoff evidence for the next
-owner.
+`/execute` is not a scheduler. It produces implementation evidence; any manual
+lifecycle write is allowed only when the current agent is the explicit owner
+and `.memory-bank/workflows/tier-policy.md` permits it.
 </objective>
 
 <process>
 
-## Status Transition Modes
+## Lifecycle ownership
 
-Status transitions have two modes.
-
-Scheduler mode:
-- `/autopilot` and `/autonomous` own task status transitions.
-- Scheduler decides closure/failure/blocking eligibility.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
-- `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
-- `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
-- T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
-- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
-
-Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
-- Manual closure is allowed only when an explicit closure owner exists.
-- `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
-- When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
-- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
-- `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
-- If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
-- `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done`; if semantic-pass is absent, leave closure pending or blocked, not done. Full `/mb-sync` runs at the wave boundary.
-- `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
-- No persisted `mode` field is used.
+- Canonical closure, attempt, retry, recovery, and evidence-selection semantics
+  live only in `.memory-bank/workflows/tier-policy.md`.
+- In scheduler mode `/autopilot` or `/autonomous` writes lifecycle state.
+  `/execute` returns scoped implementation evidence only.
+- In manual mode an explicit standalone owner may apply `tier-policy.md`; this
+  skill does not define an independent fast lane or tier-specific closure rule.
+- `/mb-sync` reconciles already-written state and does not infer it.
 
 ## 0) Input
 Expected `$ARGUMENTS`:
 - `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+- scheduler runs also provide `ATTEMPT=NN`; initial attempt is `01`
 
 Required sources:
 - `.memory-bank/tasks/index.json`
@@ -210,8 +186,7 @@ For `T0` / `T1`, create or update compact protocol:
 - include tier, task record path, goal, non-goals, context used, fallback basis,
   plan, changes, local gates, evidence, and handoff notes
 - `VERDICT: PASS|FAIL|BLOCKED` is compact evidence. It may support final task
-  closure only in manual mode when the explicit top-level owner fast-lane
-  conditions are met; otherwise it is handoff evidence only.
+  decisions only through `tier-policy.md`; it is not an independent closure rule.
 
 For `T2` / `T3`, create or update full protocol:
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/context.md`
@@ -220,11 +195,8 @@ For `T2` / `T3`, create or update full protocol:
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/handoff.md`
 
-For `T3`, the exact closure marker line `HUMAN_CHECKPOINT: done` is required by
-the later closure owner.
-
-During `/execute`, record checkpoint presence or gaps in handoff notes. Do not close
-the task.
+During `/execute`, record selected checkpoint presence or gaps in handoff notes.
+Do not infer closure from the protocol shape.
 
 Use protocol templates when available. In `plan.md` or compact `run.md`, record:
 - task tier and authoritative task record path
@@ -294,10 +266,8 @@ Record for each gate:
 - evidence path or concise output summary
 - blocker if the gate could not run
 
-Gate results are evidence. `/execute` must not turn them into final task status.
-Exception: in manual mode, `T0` / `T1` may use these local gate results or an
-explicit no-runnable-check note as compact closure evidence when all fast-lane
-conditions are met.
+Gate results are evidence. `/execute` must not turn them into final task status
+unless it is also the explicit manual owner applying `tier-policy.md`.
 
 For `T0`, no runnable check is acceptable for typo, formatting, broken-link, or
 safe docs-only edits when the explicit closure owner inspected the diff. For
@@ -320,15 +290,13 @@ Return a concise handoff report containing:
 - tier escalation details and `/prd-to-tasks FT-<NNN>` route when a higher tier
   is required
 
-If manual `T0` / `T1` fast-lane closure was used, also report:
-- explicit closure owner basis
-- exact compact evidence written to task `verify`
-- whether any runnable check was run, or why none was meaningful
-- confirmation that no wider scope or T2/T3 trigger appeared
+Write the implementation report to
+`.tasks/<TASK_ID>/<TASK_ID>-S-IMPL-final-report-<code|docs>-NN.md`, include the
+exact line `ATTEMPT: NN`, and never overwrite an older attempt.
 
 ## 6) Do Not Own
-Except for manual `T0` / `T1` fast-lane closure under the conditions above,
-`/execute` does not:
+Unless the current agent is also the explicit manual lifecycle owner applying
+`tier-policy.md`, `/execute` does not:
 - run `/verify`
 - run `/red-verify`
 - run `/mb-sync`
