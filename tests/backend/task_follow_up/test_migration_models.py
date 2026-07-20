@@ -4,7 +4,12 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import DateTime, Uuid, inspect
 
 from backend.app import AppSettings
-from backend.app.task_follow_up import Approval, Outcome, Task
+from backend.app.task_follow_up import (
+    Approval,
+    OrdinaryTaskDispatchDisposition,
+    Outcome,
+    Task,
+)
 from backend.migrations import build_alembic_config
 
 
@@ -24,7 +29,7 @@ def test_ft012_is_exact_additive_head():
 
 
 def test_models_have_native_uuid_restrictive_authority_shape():
-    for model in (Approval, Task, Outcome):
+    for model in (OrdinaryTaskDispatchDisposition, Approval, Task, Outcome):
         table = model.__table__
         uuid_columns = [
             column for column in table.c
@@ -47,12 +52,27 @@ def test_models_have_native_uuid_restrictive_authority_shape():
     assert {constraint.name for constraint in Outcome.__table__.constraints if constraint.name} >= {
         "ck_outcomes_value", "uq_outcomes_follow_up_task", "uq_outcomes_request"
     }
+    assert {
+        constraint.name
+        for constraint in OrdinaryTaskDispatchDisposition.__table__.constraints
+        if constraint.name
+    } >= {
+        "pk_ordinary_task_dispatch_dispositions",
+        "uq_ordinary_task_dispatch_dispositions_run",
+        "ck_ordinary_task_dispatch_dispositions_input_sha256",
+        "ck_ordinary_task_dispatch_dispositions_terminal_matrix",
+    }
 
 
 def test_postgresql_migration_creates_exact_relations(ft012_database):
     inspector = inspect(ft012_database.engine())
-    assert {"approvals", "tasks", "outcomes"} <= set(inspector.get_table_names())
-    for model in (Approval, Task, Outcome):
+    assert {
+        "ordinary_task_dispatch_dispositions",
+        "approvals",
+        "tasks",
+        "outcomes",
+    } <= set(inspector.get_table_names())
+    for model in (OrdinaryTaskDispatchDisposition, Approval, Task, Outcome):
         table = model.__table__
         assert {item["name"] for item in inspector.get_columns(table.name)} == {
             column.name for column in table.c
@@ -61,3 +81,15 @@ def test_postgresql_migration_creates_exact_relations(ft012_database):
             item["options"]["ondelete"] == "RESTRICT"
             for item in inspector.get_foreign_keys(table.name)
         )
+    disposition_checks = {
+        item["name"]
+        for item in inspector.get_check_constraints(
+            "ordinary_task_dispatch_dispositions"
+        )
+    }
+    assert disposition_checks >= {
+        "ck_ordinary_task_dispatch_dispositions_input_sha256",
+        "ck_ordinary_task_dispatch_dispositions_outcome",
+        "ck_ordinary_task_dispatch_dispositions_denial_code",
+        "ck_ordinary_task_dispatch_dispositions_terminal_matrix",
+    }

@@ -20,6 +20,67 @@ JSONB = postgresql.JSONB(astext_type=sa.Text())
 
 def upgrade() -> None:
     op.create_table(
+        "ordinary_task_dispatch_dispositions",
+        sa.Column("classification_message_id", sa.Uuid(as_uuid=True), nullable=False),
+        sa.Column("run_id", sa.Uuid(as_uuid=True), nullable=False),
+        sa.Column("farm_id", sa.Uuid(as_uuid=True), nullable=False),
+        sa.Column("plant_id", sa.Uuid(as_uuid=True), nullable=False),
+        sa.Column("input_sha256", sa.String(length=64), nullable=False),
+        sa.Column("outcome", sa.String(length=16), nullable=False),
+        sa.Column("denial_code", sa.String(length=32), nullable=True),
+        sa.Column(
+            "recorded_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.CheckConstraint(
+            "input_sha256 ~ '^[0-9a-f]{64}$'",
+            name="ck_ordinary_task_dispatch_dispositions_input_sha256",
+        ),
+        sa.CheckConstraint(
+            "outcome IN ('consumed', 'denied')",
+            name="ck_ordinary_task_dispatch_dispositions_outcome",
+        ),
+        sa.CheckConstraint(
+            "denial_code IS NULL OR denial_code IN "
+            "('TASK_SCOPE_NOT_FOUND', 'TASK_COMMAND_FORBIDDEN', "
+            "'TASK_PLANT_NOT_ACTIVE')",
+            name="ck_ordinary_task_dispatch_dispositions_denial_code",
+        ),
+        sa.CheckConstraint(
+            "((outcome = 'consumed' AND denial_code IS NULL) OR "
+            "(outcome = 'denied' AND denial_code IS NOT NULL))",
+            name="ck_ordinary_task_dispatch_dispositions_terminal_matrix",
+        ),
+        sa.ForeignKeyConstraint(
+            ["classification_message_id"],
+            ["safety_classifications.message_id"],
+            name="fk_ordinary_task_dispatch_dispositions_classification",
+            ondelete="RESTRICT",
+        ),
+        sa.ForeignKeyConstraint(
+            ["farm_id"],
+            ["farms.farm_id"],
+            name="fk_ordinary_task_dispatch_dispositions_farm",
+            ondelete="RESTRICT",
+        ),
+        sa.ForeignKeyConstraint(
+            ["plant_id"],
+            ["plants.plant_id"],
+            name="fk_ordinary_task_dispatch_dispositions_plant",
+            ondelete="RESTRICT",
+        ),
+        sa.PrimaryKeyConstraint(
+            "classification_message_id",
+            name="pk_ordinary_task_dispatch_dispositions",
+        ),
+        sa.UniqueConstraint(
+            "run_id", name="uq_ordinary_task_dispatch_dispositions_run"
+        ),
+    )
+
+    op.create_table(
         "approvals",
         sa.Column("approval_id", sa.Uuid(as_uuid=True), nullable=False),
         sa.Column("safety_decision_id", sa.Uuid(as_uuid=True), nullable=False),
@@ -204,14 +265,16 @@ def downgrade() -> None:
         sa.text(
             "SELECT EXISTS (SELECT 1 FROM approvals LIMIT 1) OR "
             "EXISTS (SELECT 1 FROM tasks LIMIT 1) OR "
-            "EXISTS (SELECT 1 FROM outcomes LIMIT 1)"
+            "EXISTS (SELECT 1 FROM outcomes LIMIT 1) OR "
+            "EXISTS (SELECT 1 FROM ordinary_task_dispatch_dispositions LIMIT 1)"
         )
     ).scalar_one()
     if populated:
         raise RuntimeError(
-            "FT-012 downgrade refused because Approval, Task, or Outcome authority exists; "
+            "FT-012 downgrade refused because dispatch, Approval, Task, or Outcome authority exists; "
             "remove it only through an explicit reviewed recovery procedure."
         )
     op.drop_table("outcomes")
     op.drop_table("tasks")
     op.drop_table("approvals")
+    op.drop_table("ordinary_task_dispatch_dispositions")

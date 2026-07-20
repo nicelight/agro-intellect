@@ -21,7 +21,7 @@ from ..photo_intake.models import PhotoCatalogItem
 from ..plant_operations.models import DailyCheckIn, ManualMeasurement
 from ..plant_state.models import PlantStateRecord
 from ..safety_gate.models import SafetyActionDecision, SafetyClassification
-from .models import Approval, Outcome, Task
+from .models import Approval, OrdinaryTaskDispatchDisposition, Outcome, Task
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,6 +176,26 @@ class TaskFollowUpRepository:
             query = query.with_for_update()
         return self.session.scalar(query.execution_options(populate_existing=True))
 
+    def dispatch_disposition_for_message(
+        self, message_id: uuid.UUID, *, for_update: bool = False
+    ) -> OrdinaryTaskDispatchDisposition | None:
+        query = select(OrdinaryTaskDispatchDisposition).where(
+            OrdinaryTaskDispatchDisposition.classification_message_id == message_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
+    def dispatch_disposition_for_run(
+        self, run_id: uuid.UUID, *, for_update: bool = False
+    ) -> OrdinaryTaskDispatchDisposition | None:
+        query = select(OrdinaryTaskDispatchDisposition).where(
+            OrdinaryTaskDispatchDisposition.run_id == run_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
     def task_for_create_request(self, request_id: uuid.UUID) -> Task | None:
         return self.session.scalar(
             select(Task)
@@ -256,6 +276,20 @@ class TaskFollowUpRepository:
                 .with_for_update()
                 .execution_options(populate_existing=True)
             )
+        elif kind == "task":
+            row = self.session.scalar(
+                select(Task)
+                .where(Task.task_id == item_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+        elif kind == "outcome":
+            row = self.session.scalar(
+                select(Outcome)
+                .where(Outcome.outcome_id == item_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
         else:
             model = {
                 "daily_checkin": (DailyCheckIn, DailyCheckIn.check_in_id),
@@ -276,6 +310,34 @@ class TaskFollowUpRepository:
             row is not None
             and getattr(row, "farm_id", farm_id) == farm_id
             and getattr(row, "plant_id", None) == plant_id
+        )
+
+    def evidence_for_ref(self, ref: str) -> object | None:
+        """Resolve one closed Task Follow-Up evidence descriptor source."""
+
+        try:
+            kind, identifier = ref.split(":", maxsplit=1)
+            item_id = uuid.UUID(identifier)
+        except (ValueError, TypeError, AttributeError):
+            return None
+        model = {
+            "daily_checkin": (DailyCheckIn, DailyCheckIn.check_in_id),
+            "manual_measurement": (
+                ManualMeasurement,
+                ManualMeasurement.measurement_id,
+            ),
+            "plant_state_record": (
+                PlantStateRecord,
+                PlantStateRecord.state_record_id,
+            ),
+        }.get(kind)
+        if model is None:
+            return None
+        entity, key = model
+        return self.session.scalar(
+            select(entity)
+            .where(key == item_id)
+            .execution_options(populate_existing=True)
         )
 
     def list_tasks(

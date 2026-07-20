@@ -5,9 +5,11 @@ from dataclasses import replace
 from decimal import Decimal
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 
 import pytest
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from backend.app.agent_runtime.contracts import SafetyClassificationResultV1
 from backend.app.access_admin.farm_service import FarmService
@@ -21,15 +23,22 @@ from backend.app.task_follow_up import (
     CompleteTaskCommandV1,
     Outcome,
     OutcomeValue,
+    OrdinaryTaskDispatchDisposition,
     RecordOutcomeCommandV1,
     Task,
     TaskFollowUpError,
     TaskFollowUpErrorCode,
+    TaskFollowUpRepository,
     TaskFollowUpService,
     TaskKind,
 )
 from backend.app.task_follow_up.contracts import canonical_fingerprint
-from tests.backend.plant_operations.conftest import archive_plant, create_actor, grant_access
+from tests.backend.plant_operations.conftest import (
+    archive_plant,
+    create_active_plant,
+    create_actor,
+    grant_access,
+)
 from tests.backend.safety_gate.helpers import envelope_for
 
 
@@ -102,6 +111,55 @@ def _approval_command(actor, plant, decision_id, *, request_id=None, decision="a
     )
 
 
+def _ordinary_command(
+    database,
+    farm,
+    actor,
+    plant,
+    *,
+    envelope=None,
+    run_id=None,
+):
+    envelope = envelope or envelope_for(
+        actor,
+        plant,
+        candidate_output="Проверить состояние листьев.",
+        candidate_claim_type="task_request",
+    )
+    if run_id is not None:
+        envelope = replace(envelope, run_id=run_id)
+    classification = SafetyClassificationResultV1.from_untrusted({
+        "schema_version": 1,
+        "message_id": str(envelope.message_id),
+        "classifier_version": "safety_gate_v1",
+        "classification": "safe_task_request",
+        "safe_task_kind": "check",
+        "reason_code": "safe_check_request",
+    })
+    with database.session() as session, session.begin():
+        session.add(SafetyClassification(
+            message_id=envelope.message_id,
+            farm_id=farm.farm_id,
+            plant_id=plant.plant_id,
+            origin_agent_id=envelope.agent_id,
+            classifier_version="safety_gate_v1",
+            classification="safe_task_request",
+            safe_task_kind="check",
+            reason_code="safe_check_request",
+            physical_action_kind=None,
+            provider_status="completed",
+            model_ref="test:safety",
+            input_sha256=canonical_fingerprint(envelope.as_value()),
+            result_sha256="d" * 64,
+        ))
+    return ClassifiedMessageTaskCommandV1(
+        actor_context=actor,
+        message_envelope=envelope,
+        classification=classification,
+        task_kind=TaskKind.CHECK,
+    )
+
+
 def test_matched_ordinary_task_is_authoritative_literal_and_idempotent(
     ft012_database, ft012_seed, task_timeline,
 ):
@@ -153,6 +211,125 @@ def test_matched_ordinary_task_is_authoritative_literal_and_idempotent(
     assert conflict.value.code is TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
 
 
+def test_archived_ordinary_denial_is_terminal_and_both_new_identities_are_required(
+    ft012_database, ft012_seed, task_timeline,
+):
+    farm, boss, _membership, plant = ft012_seed
+    command = _ordinary_command(ft012_database, farm, boss, plant)
+    archive_plant(ft012_database, boss, plant_id=plant.plant_id)
+
+    with ft012_database.session() as session:
+        with pytest.raises(TaskFollowUpError) as first_denial:
+            TaskFollowUpService(
+                session, timeline_appender=task_timeline, clock=lambda: NOW
+            ).create_ordinary_task(command)
+    assert first_denial.value.code is TaskFollowUpErrorCode.TASK_PLANT_NOT_ACTIVE
+    with ft012_database.session() as session:
+        disposition = session.get(
+            OrdinaryTaskDispatchDisposition,
+            command.message_envelope.message_id,
+        )
+        assert disposition is not None
+        assert disposition.run_id == command.message_envelope.run_id
+        assert disposition.outcome == "denied"
+        assert disposition.denial_code == "TASK_PLANT_NOT_ACTIVE"
+        assert session.scalar(select(func.count(Task.task_id))) == 0
+
+    with ft012_database.session() as session:
+        FarmService(session).restore_plant(boss, plant_id=plant.plant_id)
+
+    class NoGuardReevaluationRepository(TaskFollowUpRepository):
+        def lock_current_scope(self, *_args, **_kwargs):
+            raise AssertionError("terminal denial must be read before guard evaluation")
+
+    with ft012_database.session() as session:
+        with pytest.raises(TaskFollowUpError) as stored_denial:
+            TaskFollowUpService(
+                session,
+                repository=NoGuardReevaluationRepository(session),
+                timeline_appender=task_timeline,
+                clock=lambda: NOW,
+            ).create_ordinary_task(command)
+    assert stored_denial.value.code is TaskFollowUpErrorCode.TASK_PLANT_NOT_ACTIVE
+
+    changed_run = replace(
+        command.message_envelope,
+        run_id=uuid.uuid4(),
+    )
+    with ft012_database.session() as session:
+        with pytest.raises(TaskFollowUpError) as same_message_conflict:
+            TaskFollowUpService(
+                session, timeline_appender=task_timeline, clock=lambda: NOW
+            ).create_ordinary_task(replace(command, message_envelope=changed_run))
+    assert same_message_conflict.value.code is TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+
+    same_run_new_message = _ordinary_command(
+        ft012_database,
+        farm,
+        boss,
+        plant,
+        run_id=command.message_envelope.run_id,
+    )
+    with ft012_database.session() as session:
+        with pytest.raises(TaskFollowUpError) as same_run_conflict:
+            TaskFollowUpService(
+                session, timeline_appender=task_timeline, clock=lambda: NOW
+            ).create_ordinary_task(same_run_new_message)
+    assert same_run_conflict.value.code is TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+
+    new_invocation = _ordinary_command(ft012_database, farm, boss, plant)
+    with ft012_database.session() as session:
+        created = TaskFollowUpService(
+            session, timeline_appender=task_timeline, clock=lambda: NOW
+        ).create_ordinary_task(new_invocation)
+    assert created.result == "created"
+    assert task_timeline.events[-1].event_type == "task_created"
+
+
+def test_disposition_rolls_back_with_audit_failure_then_concurrent_retry_consumes_once(
+    ft012_database, ft012_seed, task_timeline,
+):
+    farm, boss, _membership, plant = ft012_seed
+    command = _ordinary_command(ft012_database, farm, boss, plant)
+
+    def fail_audit(_event):
+        raise RuntimeError("synthetic timeline failure")
+
+    with ft012_database.session() as session:
+        with pytest.raises(TaskFollowUpError) as failed:
+            TaskFollowUpService(
+                session, timeline_appender=fail_audit, clock=lambda: NOW
+            ).create_ordinary_task(command)
+    assert failed.value.code is TaskFollowUpErrorCode.TASK_AUDIT_FAILED
+    with ft012_database.session() as session:
+        assert session.get(
+            OrdinaryTaskDispatchDisposition,
+            command.message_envelope.message_id,
+        ) is None
+        assert session.scalar(select(func.count(Task.task_id))) == 0
+
+    def consume():
+        with ft012_database.session() as session:
+            return TaskFollowUpService(
+                session, timeline_appender=task_timeline, clock=lambda: NOW
+            ).create_ordinary_task(command)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda _index: consume(), range(2)))
+    assert {result.result for result in results} == {"created", "duplicate"}
+    assert len({result.task.task_id for result in results}) == 1
+    with ft012_database.session() as session:
+        disposition = session.get(
+            OrdinaryTaskDispatchDisposition,
+            command.message_envelope.message_id,
+        )
+        assert disposition is not None
+        assert disposition.outcome == "consumed"
+        assert disposition.denial_code is None
+        assert session.scalar(select(func.count(Task.task_id))) == 1
+    assert [event.event_type for event in task_timeline.events] == ["task_created"]
+
+
 def test_approve_action_follow_up_and_outcome_are_atomic_and_exact(
     ft012_database, ft012_seed, task_timeline,
 ):
@@ -199,6 +376,37 @@ def test_approve_action_follow_up_and_outcome_are_atomic_and_exact(
     with ft012_database.session() as session:
         assert session.scalar(select(func.count(Task.task_id))) == 2
         assert session.scalar(select(func.count(Outcome.outcome_id))) == 1
+
+
+@pytest.mark.parametrize("decision", ["approved", "rejected"])
+def test_approval_timeline_payload_is_branch_exact(
+    ft012_database, ft012_seed, task_timeline, decision,
+):
+    farm, boss, _membership, plant = ft012_seed
+    decision_id, _ph, _ec = _pending_decision(
+        ft012_database,
+        farm,
+        boss,
+        plant,
+        expires_at=NOW + timedelta(hours=1),
+    )
+    with ft012_database.session() as session:
+        result = TaskFollowUpService(
+            session, timeline_appender=task_timeline, clock=lambda: NOW
+        ).decide_approval(
+            _approval_command(boss, plant, decision_id, decision=decision)
+        )
+    payload = task_timeline.events[0].payload_summary
+    assert payload == {
+        "decision": decision,
+        "action_kind": "ph_adjustment",
+        "record_version": 2,
+        **(
+            {"action_task_id": str(result.action_task.task_id)}
+            if decision == "approved"
+            else {}
+        ),
+    }
 
 
 def test_reject_expiry_engineer_consultant_and_audit_rollback(
@@ -328,3 +536,125 @@ def test_concurrent_identical_action_completion_creates_one_follow_up(
         assert session.scalar(
             select(func.count(Task.task_id)).where(Task.parent_action_task_id == action.task_id)
         ) == 1
+
+
+class _RequestCollisionRepository(TaskFollowUpRepository):
+    def __init__(self, session, barrier: Barrier) -> None:
+        super().__init__(session)
+        self._barrier = barrier
+
+    def task_for_completion_request(self, request_id):
+        owner = super().task_for_completion_request(request_id)
+        self._barrier.wait(timeout=15)
+        return owner
+
+
+def test_concurrent_cross_parent_request_collision_is_version_conflict(
+    ft012_database, ft012_seed, task_timeline,
+):
+    farm, boss_one, _membership, plant_one = ft012_seed
+    boss_two, _membership_two = create_actor(ft012_database, farm, "boss")
+    plant_two = create_active_plant(
+        ft012_database,
+        boss_two,
+        plant_key=f"ft012_collision_{uuid.uuid4().hex[:8]}",
+    )
+    commands = (
+        _ordinary_command(ft012_database, farm, boss_one, plant_one),
+        _ordinary_command(ft012_database, farm, boss_two, plant_two),
+    )
+    tasks = []
+    for command in commands:
+        with ft012_database.session() as session:
+            tasks.append(TaskFollowUpService(
+                session, timeline_appender=task_timeline, clock=lambda: NOW
+            ).create_ordinary_task(command).task)
+
+    request_id = uuid.uuid4()
+    barrier = Barrier(2)
+
+    def complete(actor, plant, task):
+        try:
+            with ft012_database.session() as session:
+                result = TaskFollowUpService(
+                    session,
+                    repository=_RequestCollisionRepository(session, barrier),
+                    timeline_appender=task_timeline,
+                    clock=lambda: NOW + timedelta(minutes=5),
+                ).complete_task(CompleteTaskCommandV1(
+                    actor_context=actor,
+                    plant_id=plant.plant_id,
+                    task_id=task.task_id,
+                    request_id=request_id,
+                ))
+            return result.result
+        except TaskFollowUpError as error:
+            return error.code.value
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = (
+            pool.submit(complete, boss_one, plant_one, tasks[0]),
+            pool.submit(complete, boss_two, plant_two, tasks[1]),
+        )
+        results = [future.result(timeout=30) for future in futures]
+    assert set(results) == {"created", "TASK_VERSION_CONFLICT"}
+    with ft012_database.session() as session:
+        rows = list(session.scalars(select(Task).where(
+            Task.task_id.in_([task.task_id for task in tasks])
+        )))
+        assert sorted(row.status for row in rows) == ["completed", "open"]
+        assert session.scalar(select(func.count(Task.task_id)).where(
+            Task.completion_request_id == request_id
+        )) == 1
+
+
+@pytest.mark.parametrize(
+    "constraint_name",
+    ["uq_tasks_completion_request", "uq_tasks_parent_action"],
+)
+def test_ownerless_or_unrelated_integrity_error_stays_persistence_failure(
+    ft012_database, ft012_seed, task_timeline, constraint_name,
+):
+    farm, boss, _membership, plant = ft012_seed
+    with ft012_database.session() as session:
+        task = TaskFollowUpService(
+            session, timeline_appender=task_timeline, clock=lambda: NOW
+        ).create_ordinary_task(
+            _ordinary_command(ft012_database, farm, boss, plant)
+        ).task
+
+    class Diagnostic:
+        def __init__(self, name):
+            self.constraint_name = name
+
+    class DriverError(Exception):
+        def __init__(self, name):
+            super().__init__("synthetic integrity failure")
+            self.diag = Diagnostic(name)
+
+    request_id = uuid.uuid4()
+    with ft012_database.session() as session:
+        def fail_flush(*_args, **_kwargs):
+            raise IntegrityError(
+                "synthetic integrity failure",
+                {},
+                DriverError(constraint_name),
+            )
+
+        session.flush = fail_flush
+        with pytest.raises(TaskFollowUpError) as failed:
+            TaskFollowUpService(
+                session, timeline_appender=task_timeline, clock=lambda: NOW
+            ).complete_task(CompleteTaskCommandV1(
+                actor_context=boss,
+                plant_id=plant.plant_id,
+                task_id=task.task_id,
+                request_id=request_id,
+            ))
+    assert failed.value.code is TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+    with ft012_database.session() as session:
+        stored = session.get(Task, task.task_id)
+        assert stored.status == "open"
+        assert session.scalar(select(func.count(Task.task_id)).where(
+            Task.completion_request_id == request_id
+        )) == 0

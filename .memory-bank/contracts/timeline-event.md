@@ -102,8 +102,10 @@ The FT-012 event payloads are strict correlation summaries:
   `source_ref_count`;
 - `task_completed`: `task_kind`, `completion_kind=ordinary|action|outcome`, and
   `source_ref_count`;
-- `approval_decided`: `decision=approved|rejected`, `action_kind`,
-  `record_version=2`, and nullable `action_task_id` present only for approval;
+- `approval_decided` has a branch-exact payload: both branches contain
+  `decision=approved|rejected`, `action_kind`, and `record_version=2`;
+  `approved` additionally requires non-null canonical UUID `action_task_id`,
+  while `rejected` MUST omit `action_task_id` entirely;
 - `follow_up_outcome_recorded`: `follow_up_task_id`,
   `outcome_value=improved|worsened|unchanged|no_data`, and
   `evidence_ref_count` from 0 through 4.
@@ -304,5 +306,6 @@ Tests must prove:
 - Agent Runtime audit tests prove exactly one safe event per invoked run, no
   content/provider/auth leakage, and no envelope handoff after append failure.
 - FT-012 tests prove the registered task/approval/outcome cardinality, strict
-  redacted summaries, persisted event refs, rollback on append failure, and no
-  Timeline-based replay or state repair.
+  redacted summaries, branch-exact `approval_decided` field sets, persisted
+  event refs, rollback on append failure, and no Timeline-based replay or state
+  repair.

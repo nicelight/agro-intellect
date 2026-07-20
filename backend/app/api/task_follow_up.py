@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Annotated, Literal
+import re
 import uuid
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -12,7 +13,7 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, WithJsonSche
 
 from ..access_admin.actor_context import ActorContext
 from ..access_admin.dependencies import require_actor_context
-from ..access_admin.errors import request_id_for
+from ..access_admin.errors import AuthErrorCode, auth_error_response, request_id_for
 from ..task_follow_up import (
     ApprovalDecisionCommandV1,
     ApprovalStatus,
@@ -32,6 +33,50 @@ router = APIRouter(prefix="/api", tags=["task-follow-up"])
 _CANONICAL_UUID_PATTERN = (
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 )
+_CANONICAL_UUID_BYTES = re.compile(_CANONICAL_UUID_PATTERN.encode("ascii"))
+_FT012_RAW_ROUTE_PATTERNS = (
+    re.compile(rb"^/api/plants/([^/]+)/tasks$"),
+    re.compile(rb"^/api/plants/([^/]+)/approvals$"),
+    re.compile(rb"^/api/plants/([^/]+)/safety-decisions/([^/]+)/approval$"),
+    re.compile(rb"^/api/plants/([^/]+)/tasks/([^/]+)/complete$"),
+    re.compile(rb"^/api/plants/([^/]+)/tasks/([^/]+)/outcome$"),
+)
+_FT012_DECODED_ROUTE_PATTERNS = tuple(
+    re.compile(pattern.pattern.decode("ascii"))
+    for pattern in _FT012_RAW_ROUTE_PATTERNS
+)
+
+
+class FT012RawPathCanonicalityMiddleware:
+    """Reject alternate raw spellings before routing or dependencies run."""
+
+    def __init__(self, app) -> None:
+        self.app = app
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope.get("type") == "http" and _raw_ft012_path_is_invalid(scope):
+            request = Request(scope, receive=receive)
+            response = auth_error_response(request, AuthErrorCode.VALIDATION_FAILED)
+            await response(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+
+def _raw_ft012_path_is_invalid(scope: dict[str, object]) -> bool:
+    raw_path = scope.get("raw_path")
+    if isinstance(raw_path, bytes):
+        for pattern in _FT012_RAW_ROUTE_PATTERNS:
+            match = pattern.fullmatch(raw_path)
+            if match is not None:
+                return any(
+                    _CANONICAL_UUID_BYTES.fullmatch(segment) is None
+                    for segment in match.groups()
+                )
+    decoded_path = scope.get("path")
+    return isinstance(decoded_path, str) and any(
+        pattern.fullmatch(decoded_path) is not None
+        for pattern in _FT012_DECODED_ROUTE_PATTERNS
+    )
 
 
 def _parse_canonical_path_uuid(value: object) -> uuid.UUID:
@@ -514,4 +559,4 @@ def _error_response(request: Request, code: TaskFollowUpErrorCode) -> JSONRespon
     )
 
 
-__all__ = ["router"]
+__all__ = ["FT012RawPathCanonicalityMiddleware", "router"]

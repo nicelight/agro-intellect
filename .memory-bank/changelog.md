@@ -4,6 +4,34 @@ status: active
 ---
 # Changelog
 
+## 2026-07-20 — FT-012 W1 boundary evidence sync
+
+- Reconciled the scheduler-recorded completion of
+  `TASK-039-T3-FT-012-W1` using only current ATTEMPT 03 implementation `PASS`,
+  independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence. ATTEMPT 01
+  and ATTEMPT 02 remain append-only failed history.
+- Recorded the implemented authoritative PostgreSQL Approval, ordinary/action
+  Task, automatic +48-hour follow-up, Outcome, and immutable classified-message
+  disposition boundary across FT-012, EP-004, RTM evidence, implementation and
+  testing docs, spec-backbone, changelog, and feature/epic/testing routers.
+- Recorded `ft012_task_approval_outcomes` as the current product migration head
+  directly after `ft011_safety_action_decisions`. Current accepted evidence
+  includes `22` focused, `210` current-guard/Safety, `47` exact-head
+  compatibility, and `489` full deterministic passes with `2` intentional
+  `real_model` deselections; independent semantic review passed `18/18` cases.
+- Recorded current ActorContext/Plant/evidence authority, durable denial across
+  restore, exact identity/idempotency/conflict behavior, transaction rollback,
+  protected raw-path HTTP, branch-exact Timeline summaries, and zero provider,
+  actuation, or Plant-state authority.
+- Preserved FT-012 and EP-004 lifecycle as `planned` pending W2 and explicit
+  owner decisions; applicable RTM lifecycles remain unchanged. TASK-040 remains
+  scheduler-owned `planned`; this sync makes no promotion, selection, unblock,
+  or block decision and does not touch TASK-041/TASK-042/TASK-043.
+- No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
+  was required, checked, or claimed. The missing human checkpoint remains a
+  scheduler-accepted advisory T3 process gap.
+
 ## 2026-07-20 — FT-011 W2 boundary evidence sync
 
 - Reconciled the scheduler-recorded completion of

@@ -47,9 +47,9 @@ source_of_truth:
 - [Safety Gate Verification](safety-gate.md): provider-neutral deterministic
   classification, immutable Safety decisions, 2-hour approval input, UI
   projection, migration-head compatibility, and concurrency/archive guards.
-- [Task And Follow-Up Verification](task-follow-up.md): Approval/task/outcome
-  transactions, HTTP, concurrency/archive guards, and real Task and Follow-Up
-  Agent evidence.
+- [Task And Follow-Up Verification](task-follow-up.md): W1 Approval/task/outcome
+  transactions, HTTP, concurrency/archive, migration-head, and semantic
+  evidence are complete; real Task and Follow-Up Agent evidence remains W2.
 - [Companion Governance Verification](companion-governance.md): IssueStack,
   proposal/attention lifecycle, atomic DecisionRecord effects, projections,
   HTTP, explicit runtime trigger, and real Companion evidence.

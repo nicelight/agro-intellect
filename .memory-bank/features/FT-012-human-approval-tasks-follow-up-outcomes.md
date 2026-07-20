@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-012
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -47,6 +47,16 @@ spec_design_links:
 - A `safe_task_request` classification may create only its ordinary
   check/measurement/follow-up task through backend rules; it bypasses neither
   task authorization nor evidence checks and can never create `action_task`.
+- A classified ordinary-message handoff is one-shot: its first current-guard
+  evaluation is durably consumed or denied in PostgreSQL. A denial caused by
+  current Plant/archive/authorization state cannot become operative after
+  restore with the same `run_id` or `message_id`; a new Agent Runtime
+  invocation with both new identities is required.
+- A post-model `task_follow_up` current-guard decision is also one-shot before
+  MessageEnvelope/classification: one immutable run/fingerprint disposition is
+  either terminally denied or hands off exactly one post-guard message. It
+  cannot conflict with the downstream classified-message disposition, and the
+  same run never allocates another message after restore or retry.
 - Follow-up outcome captures exactly
   `improved|worsened|unchanged|no_data`; non-`no_data` values require evidence
   refs.
@@ -62,6 +72,11 @@ spec_design_links:
 - Follow-up cannot mutate confirmed Plant state without required evidence/review rules.
 - Archive must not complete, cancel, execute, or advance an open task; restore
   must not resume it automatically.
+- Restore must not re-evaluate a terminally denied classified-message
+  disposition or turn its retained envelope/classification into a Task.
+- Restore must not turn a pre-classification runtime denial into an operative
+  run. A conflicting same-run command fails closed; reevaluation requires a
+  new command/run and then a new post-guard message.
 
 ## Verification Targets
 
@@ -69,6 +84,13 @@ spec_design_links:
 - Integration: approval creates action_task only through Safety Gate path.
 - Integration: open task/approval/follow-up state is unchanged by archive,
   blocked while archived, and revalidated after restore.
+- Integration: a classified ordinary message denied by a current guard remains
+  denied after restore for the same run/message identities, while a new
+  invocation with new identities may pass current guards.
+- Integration: post-model archive/revoke denial persists before envelope
+  creation; identical/conflicting/concurrent same-run calls, disposition
+  commit failure, runtime-versus-classified race, and new-identity eligibility
+  are deterministic PostgreSQL cases.
 - E2E: approved human-performed action creates follow-up and outcome evidence.
 
 ## Normative Backbone Links
@@ -91,6 +113,34 @@ spec_design_links:
 - `.memory-bank/behavior-specs/FT-012-BHV-002-retry-conflict-archive.behavior.json`
 - `.memory-bank/behavior-specs/FT-012-BHV-003-real-agent-ordinary-task.behavior.json`
 
+## Current W1 Boundary Evidence
+
+- `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` using only current
+  ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
+  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+  ATTEMPT 01 and ATTEMPT 02 remain preserved failed history.
+- The implemented W1 boundary owns the authoritative PostgreSQL Approval,
+  ordinary/action Task, automatic +48-hour follow-up, and Outcome loop; the
+  immutable `ordinary_task_dispatch_dispositions` table records each
+  classified ordinary handoff as terminal `consumed|denied`. Current
+  ActorContext/Plant/evidence guards, archive/no-replay, idempotency,
+  concurrency, rollback, strict HTTP/raw-path validation, branch-exact
+  Timeline refs, and zero device or Plant-state effects are independently
+  verified.
+- The accepted W1 product head is `ft012_task_approval_outcomes` directly
+  after `ft011_safety_action_decisions`. TASK-040 now plans the narrow additive
+  `ft012_runtime_dispositions` revision and all eight exact-head updates; the
+  implemented head does not advance until that task succeeds.
+- `TASK-040-T3-FT-012-W2` remains scheduler-owned `in_progress`. ATTEMPT 01
+  verification found the W1 evidence-resolver widening and restore-operative
+  denied run; ATTEMPT 02 stopped before product edits on the missing durable
+  pre-classification authority. This reconciliation selects no ATTEMPT 03 and
+  changes no lifecycle/status or attempt budget. FT-012 lifecycle remains
+  `planned` pending the open wave and explicit owner decision.
+- No provider/model/base URL/Gemini/credential/egress/network/live-smoke
+  result was required, checked, or claimed for W1. The absent human checkpoint
+  was accepted by the scheduler as an advisory T3 process gap.
+
 ## SDD Design Gate
 
 - Global/shared status: complete; `AD-008` and Safety Action Lifecycle define the exact
@@ -100,8 +150,11 @@ spec_design_links:
   Task/Approval/Outcome states, exact FT-011 handoff and expiry reuse,
   transactional approval/action/follow-up/outcome uniqueness, persisted
   idempotency fingerprints, protected HTTP commands, Timeline refs, archive
-  races, and the strict typed `task_follow_up` path. No scheduler, worker,
-  outbox, device effect, or second proposal state machine is introduced.
+  races, and the strict typed `task_follow_up` path. The runtime path now has a
+  narrow immutable pre-classification disposition plus the existing downstream
+  classified disposition, coordinated by one short run lock without model-I/O
+  transaction. No scheduler, worker, outbox, device effect, generic run ledger,
+  or second proposal state machine is introduced.
 - Current code-phase closure uses test-only fake/spy Task Follow-Up and Safety
   classifier executors; production has no fake fallback and fails closed while
   unbound. Real endpoint calls are deferred to the shared future milestone.

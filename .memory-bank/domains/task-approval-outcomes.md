@@ -2,7 +2,7 @@
 description: PostgreSQL authority for ordinary and action tasks, human approvals, automatic follow-ups, outcomes, and their audit refs.
 status: active
 type: data_spec
-last_updated: 2026-07-18
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/domains/safety-action-routing.md
@@ -14,9 +14,10 @@ source_of_truth:
 ## Scope
 
 Defines the exact PostgreSQL records, constraints, idempotency fingerprints,
-transaction boundaries, and Timeline reference ownership for FT-012. These
-rows are mutable operational authority; Timeline, UI Feed, MessageEnvelope,
-and model output are not.
+transaction boundaries, and Timeline reference ownership for FT-012. Task,
+Approval, and Outcome rows are mutable operational authority; runtime and
+classified dispatch dispositions are immutable one-shot authority. Timeline,
+UI Feed, MessageEnvelope, and model output are not.
 
 ## Out of scope
 
@@ -41,6 +42,128 @@ and model output are not.
 - Each mutation stores its request id and fingerprint on the authoritative row
   affected by that command. Reusing one request id with different canonical
   content is always a conflict.
+
+## `task_follow_up_runtime_dispositions`
+
+One narrow immutable row makes the provider-neutral `task_follow_up` runtime
+stage one-shot before Safety classification. It does not replace the existing
+classified-message disposition or persist a MessageEnvelope/provider payload:
+
+- `run_id`: UUID primary key and `TaskFollowUpCommandV1` identity;
+- `farm_id`, `plant_id`: restrictive UUID FKs equal to the command scope;
+- `command_sha256`: lowercase canonical command fingerprint;
+- `outcome`: `envelope_handed_off|publication_denied`;
+- nullable unique `message_id`: the one post-guard MessageEnvelope identity,
+  present only for `envelope_handed_off`; it has no FK because MessageEnvelope
+  remains transient;
+- nullable `input_sha256`: exact lowercase envelope input fingerprint, present
+  only with `message_id`;
+- nullable `denial_code`: exactly `AGENT_PUBLICATION_BLOCKED` for
+  `publication_denied` and otherwise null;
+- `model_ref`: the safe non-secret model reference from the audited runtime
+  result;
+- `runtime_event_ref`: strict JSON object for the sanitized
+  `agent_runtime_decided` audit append;
+- `recorded_at`: timezone-aware UTC server timestamp.
+
+Database checks enforce the two exact terminal matrices. There is no pending,
+retry, lease, update, delete, candidate text, provider body, MessageEnvelope
+payload, auth/permission snapshot, Timeline replay payload, or Task id. The
+safe model/event refs let an exact denied retry reproduce the strict denial;
+they do not make Timeline the authority. The row outcome and fingerprint are
+the runtime-stage authority.
+
+`command_sha256` is SHA-256 over compact sorted-key UTF-8 JSON containing
+exactly schema version, `run_id`, canonical `requested_at`, ActorContext
+`request_id|session_id|account_id|farm_id|membership_id`, `plant_id`,
+`trigger_kind`, and `trigger_task_id`. Mutable role/grant/session status,
+permission results, auth provenance, provider data, and model output are not
+fingerprint inputs and remain subject to current owning guards.
+
+The runtime and the `task_follow_up` classified-message Task branch serialize
+their terminal writes with one transaction-scoped PostgreSQL advisory key: the
+signed big-endian first eight bytes of
+`SHA-256("ft012-task-follow-up:" + run_id.bytes)`. A hash collision may only
+serialize unrelated runs; identity and conflict decisions still compare the
+full UUID and fingerprints. Each writer takes this lock in a short transaction,
+then re-reads both disposition tables before any insert. No transaction or
+advisory lock is held across Task model or Safety-classifier I/O.
+
+After model I/O, the runtime takes the run lock and owning current-scope row
+locks, repeats the current guard, appends the sanitized runtime audit, and
+commits exactly one runtime row. Guard denial commits
+`publication_denied`. Eligibility allocates one post-guard `message_id`,
+commits `envelope_handed_off`, releases the transaction, and only then calls
+the Safety classifier with the in-memory envelope. The row is never used to
+reconstruct or replay an envelope.
+
+An identical retry of a committed `publication_denied` fingerprint returns its
+stored safe denial without another provider/classifier/Task call. A different
+fingerprint for the same run conflicts. `envelope_handed_off` also forbids a
+second envelope or classifier path for that run; the downstream classified
+disposition owns any committed Task/denial, and an incomplete handoff fails
+closed. A fresh evaluation therefore requires a new command and `run_id`, then
+a new post-guard `message_id`.
+
+If audit append fails, the runtime row rolls back and the existing strict audit
+failure is returned. If runtime-row read/lock/flush/commit fails, a redacted
+competence-local persistence failure is returned and no classifier or Task
+writer is called. An audit append that precedes a failed commit may remain
+non-authoritative noise. Only a committed row is a terminal runtime denial or
+handoff.
+
+## `ordinary_task_dispatch_dispositions`
+
+One project-owned immutable row makes each classified-message ordinary-task
+handoff one-shot. It is operational PostgreSQL authority, not a Timeline, Bus,
+UI, MessageEnvelope, or classification projection:
+
+- `classification_message_id`: primary key and restrictive UUID FK to
+  `safety_classifications.message_id`;
+- `run_id`: globally unique UUID copied from the exact MessageEnvelope under
+  `uq_ordinary_task_dispatch_dispositions_run`;
+- `farm_id`, `plant_id`: restrictive UUID FKs equal to the classification and
+  envelope scope;
+- `input_sha256`: exact lowercase classification input fingerprint for the
+  validated envelope;
+- `outcome`: `consumed|denied`;
+- nullable `denial_code`:
+  `TASK_SCOPE_NOT_FOUND|TASK_COMMAND_FORBIDDEN|TASK_PLANT_NOT_ACTIVE`;
+- `recorded_at`: timezone-aware UTC server timestamp.
+
+Database checks enforce the exact terminal matrix: `consumed` has no
+`denial_code`; `denied` has exactly one closed current-guard denial code. There
+is no pending state, update path, delete path, retry counter, payload text,
+authorization snapshot, Timeline ref, or Bus/UI field. `tasks` remains the
+sole Task authority and its existing unique `classification_message_id`
+relates a consumed disposition to the Task without duplicating `task_id` in
+the disposition row.
+
+For a first exact handoff, the service validates the immutable persisted
+classification and envelope input fingerprint, acquires the established
+current ActorContext/Plant/grant guard locks, and re-reads the disposition
+before deciding. A guard denial inserts and commits `denied` in that same
+guard transaction, then returns the stored typed denial. An eligible handoff
+inserts `consumed` in the same transaction as the Task and its persisted
+Timeline ref. A matching terminal retry reads the disposition first. `denied`
+returns the stored denial without re-evaluating the guard. `consumed` remains
+terminal and may return the existing Task only after the current read/task
+authority guard passes; a failed guard leaks no Task and changes no row. Any
+mismatch or reuse of either unique identity conflicts without replacement. A
+disposition persistence failure creates no Task and cannot be treated as
+success. Restore never edits or deletes the row and cannot make `denied`
+operative; a new runtime invocation requires both a new `run_id` and a new
+`message_id`.
+
+For `origin_agent_id=task_follow_up` only, this classified-message branch first
+takes the same FT-012 run advisory lock and requires the immutable runtime row
+to be exactly `envelope_handed_off` with matching `run_id`, `message_id`,
+Farm/Plant scope, and envelope `input_sha256`. A stored
+`publication_denied`, missing/mismatched runtime row, or reused run cannot
+reach the Task insert. The runtime denial writer also checks this classified
+disposition under the same lock, so the two tables cannot commit contradictory
+terminal results for one run. Other agents retain the existing
+classified-message contract unchanged.
 
 ## `approvals`
 
@@ -139,7 +262,8 @@ rejected by this source branch. The service reloads every
 envelope source ref from the owning PostgreSQL repository and requires the same
 Farm/Plant scope; Timeline, UI, missing, unauthorized, or mismatched refs fail
 closed. The envelope text is stored literally as `display_text`; it cannot
-select `action` or execute anything.
+select `action` or execute anything. Creation additionally requires the exact
+terminal `consumed` disposition described above to commit in the same UoW.
 
 For a governance-decision ordinary Task, `decision_record_id` is the natural
 uniqueness key. Its source refs are exactly the DecisionRecord, owning
@@ -193,6 +317,15 @@ The evidence-ref records are reloaded through their owning PostgreSQL
 repositories and must match Farm/Plant scope. Timeline/UI/model text is not
 accepted as evidence authority.
 
+The existing W1 Outcome evidence resolver remains the closed
+`plant|daily_checkin|manual_measurement|photo_catalog_item|plant_state_record`
+union. `task:` and `outcome:` are not Outcome evidence and MUST remain rejected.
+W2 uses a separate competence-specific source-record resolver for its strict
+`task|outcome|daily_checkin|manual_measurement|plant_state_record` provider
+record/source-ref union. The W2 resolver is used only to assemble/revalidate
+Task Follow-Up runtime inputs and classified envelope refs; it is never called
+by `record_follow_up_outcome`.
+
 Outcome insertion and follow-up completion share one transaction and one
 timestamp. The follow-up Task is the natural uniqueness key. A uniqueness race
 is re-read and becomes identical retry only when the request id, fingerprint,
@@ -226,8 +359,12 @@ caller-controlled identity.
 
 The services use the existing transaction/UoW and Timeline append seam:
 
+- Task Follow-Up runtime terminal selection appends its sanitized audit and
+  commits one immutable runtime disposition in a short post-model transaction;
+  it releases that transaction before Safety-classifier I/O;
 - classified-message Task creation uses a service-owned UoW, appends
-  `task_created`, persists its ref, and commits before returning;
+  `task_created`, persists its ref, and commits it with the terminal consumed
+  disposition before returning;
 - governance-decision Task creation uses the caller-owned DecisionRecord UoW,
   appends `task_created`, persists its ref, flushes, and never commits or rolls
   back independently;
@@ -248,17 +385,54 @@ reads never use it to create, repair, complete, or replay a row.
 Approval materialization emits no Timeline event; the immutable FT-011
 decision is its source trace until a human decision occurs.
 
+A classified-message current-guard denial emits no Timeline event. Its
+terminal disposition is committed under the same guard locks before the
+service surfaces the typed denial. Timeline append success or noise can never
+create, deny, consume, or reopen a disposition.
+
+## PostgreSQL uniqueness-loss classification
+
+The globally unique command identities are backed by the named constraints
+`uq_approvals_decision_request`, `uq_tasks_create_request`,
+`uq_tasks_completion_request`, `uq_outcomes_request`, and
+`uq_ordinary_task_dispatch_dispositions_run`. Runtime-stage identity is the
+primary key `task_follow_up_runtime_dispositions.run_id`; its first-write and
+cross-table ordering use the run advisory lock above. When a flush or commit loses one
+of those specific uniqueness races, the service MUST roll back the failed UoW
+before any query, then re-read the committed owner in a clean transaction:
+
+- the same canonical parent, request fingerprint, and command content is an
+  identical duplicate and returns the first committed result;
+- a different parent or any different canonical content is
+  `TASK_VERSION_CONFLICT` with no replacement effect;
+- if the named owner is not visible after rollback, or the error is for any
+  other constraint/SQLAlchemy failure, the result remains
+  `TASK_PERSISTENCE_FAILED`.
+
+This mapping does not suppress or reinterpret unrelated database failures.
+Any Timeline append already written by the losing transaction remains
+non-authoritative noise under the existing contract.
+
 ## Migration
 
-One additive FT-012 Alembic revision creates `approvals`, `tasks`, and
-`outcomes` after the actual implemented FT-011 head. It adds exact enums/checks,
-restrictive UUID FKs, partial/natural unique indexes, request-id/fingerprint
-constraints, and no cascade delete. Execution must inspect the then-current
-head; planning does not hardcode the present FT-008 revision as `down_revision`.
+One additive FT-012 Alembic revision creates `approvals`, `tasks`, `outcomes`,
+and `ordinary_task_dispatch_dispositions` after the actual implemented FT-011
+head. It adds exact enums/checks, restrictive UUID FKs, partial/natural unique
+indexes, request-id/fingerprint constraints, and no cascade delete. Execution
+must inspect the then-current head; planning does not hardcode the present
+FT-008 revision as `down_revision`.
 
 Existing exact-head migration assertions advance to this revision in the same
 wave. Downgrade removes only FT-012 objects in reverse FK order and never
 rewrites FT-011 or earlier rows.
+
+TASK-040 adds one narrow revision `ft012_runtime_dispositions` directly after
+`ft012_task_approval_outcomes`. It creates only
+`task_follow_up_runtime_dispositions`; it does not alter the established W1
+tables, Safety classifications, MessageEnvelope, or Task/Outcome schemas. All
+eight repository exact-head consumers advance to this new revision in the same
+wave. Downgrade refuses while a runtime disposition exists and otherwise drops
+only this table.
 
 The later FT-013 migration adds only the `governance_decision` source value,
 nullable unique restrictive `decision_record_id`, and the extended exact source
@@ -272,7 +446,18 @@ no-cascade behavior, and head order. PostgreSQL integration tests prove
 read/write round trips, parent-row locking plus uniqueness races, approval/task
 and action/follow-up rollback, Outcome atomicity, exact fingerprints,
 Timeline failure behavior, archive/current-guard races, and absence of device,
-raw candidate, provider, auth, or Plant-state side effects.
+raw candidate, provider, auth, or Plant-state side effects. They also prove
+the exact disposition matrix, atomic consumed/denied writes, immutable retry,
+same-identity denial after restore, new-identity eligibility, and deterministic
+post-rollback request-owner classification.
+
+TASK-040 PostgreSQL tests additionally prove the runtime table's exact
+schema/matrix, command fingerprint, identical denied retry, same-run conflict,
+post-model archive/revoke durability, audit/commit failure rollback, concurrent
+first terminal write, no contradictory runtime/classified disposition, one
+post-guard message on eligible success, new-identity eligibility, and strict
+separation of the W1 Outcome evidence resolver from the competence source
+resolver.
 
 FT-013 integration additionally proves DecisionRecord/Task atomicity,
 identical-versus-conflicting DecisionRecord retries, exact classification-kind

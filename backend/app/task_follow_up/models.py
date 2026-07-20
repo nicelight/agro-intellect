@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    PrimaryKeyConstraint,
     String,
     Text,
     UniqueConstraint,
@@ -20,6 +21,61 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..access_admin.models import Base, JSON_DOCUMENT
+
+
+class OrdinaryTaskDispatchDisposition(Base):
+    __tablename__ = "ordinary_task_dispatch_dispositions"
+    __table_args__ = (
+        PrimaryKeyConstraint(
+            "classification_message_id",
+            name="pk_ordinary_task_dispatch_dispositions",
+        ),
+        UniqueConstraint(
+            "run_id", name="uq_ordinary_task_dispatch_dispositions_run"
+        ),
+        CheckConstraint(
+            "input_sha256 ~ '^[0-9a-f]{64}$'",
+            name="ck_ordinary_task_dispatch_dispositions_input_sha256",
+        ).ddl_if(dialect="postgresql"),
+        CheckConstraint(
+            "outcome IN ('consumed', 'denied')",
+            name="ck_ordinary_task_dispatch_dispositions_outcome",
+        ),
+        CheckConstraint(
+            "denial_code IS NULL OR denial_code IN "
+            "('TASK_SCOPE_NOT_FOUND', 'TASK_COMMAND_FORBIDDEN', "
+            "'TASK_PLANT_NOT_ACTIVE')",
+            name="ck_ordinary_task_dispatch_dispositions_denial_code",
+        ),
+        CheckConstraint(
+            "((outcome = 'consumed' AND denial_code IS NULL) OR "
+            "(outcome = 'denied' AND denial_code IS NOT NULL))",
+            name="ck_ordinary_task_dispatch_dispositions_terminal_matrix",
+        ),
+    )
+
+    classification_message_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("safety_classifications.message_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
+    farm_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("farms.farm_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    plant_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("plants.plant_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    input_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    denial_code: Mapped[str | None] = mapped_column(String(32))
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
 
 
 class Approval(Base):
@@ -325,4 +381,4 @@ class Outcome(Base):
     task_completed_event_ref: Mapped[dict[str, object]] = mapped_column(JSON_DOCUMENT, nullable=False)
 
 
-__all__ = ["Approval", "Outcome", "Task"]
+__all__ = ["Approval", "OrdinaryTaskDispatchDisposition", "Outcome", "Task"]

@@ -16,8 +16,28 @@ from .contracts import (
     TaskKind,
     TaskStatus,
 )
-from .models import Approval, Outcome, Task
+from .models import Approval, OrdinaryTaskDispatchDisposition, Outcome, Task
 from .repository import CurrentTaskScope, TaskFollowUpRepository
+from .runtime import (
+    AssembledTaskFollowUpInputV1,
+    DatabaseTaskFollowUpInputAssembler,
+    TaskFollowUpInputAssembler,
+    TaskFollowUpInputDenied,
+    TaskFollowUpModelExecutor,
+    TaskFollowUpRuntimeService,
+)
+from .runtime_contracts import (
+    ORDINARY_TASK_KINDS,
+    TASK_FOLLOW_UP_DEFINITION_V1,
+    TRIGGER_KINDS,
+    TaskFollowUpAgentDefinitionV1,
+    TaskFollowUpCommandV1,
+    TaskFollowUpInputRecordV1,
+    TaskFollowUpModelResultV1,
+    TaskFollowUpProviderRequestV1,
+    TaskFollowUpRunResultV1,
+    TaskFollowUpRuntimeValidationError,
+)
 from .service import TaskFollowUpService
 
 __all__ = [
@@ -25,19 +45,36 @@ __all__ = [
     "ApprovalDecisionCommandV1",
     "ApprovalDecisionResultV1",
     "ApprovalStatus",
+    "AssembledTaskFollowUpInputV1",
     "ClassifiedMessageTaskCommandV1",
     "CompleteTaskCommandV1",
     "CompleteTaskResultV1",
     "CurrentTaskScope",
+    "DatabaseTaskFollowUpInputAssembler",
+    "ORDINARY_TASK_KINDS",
     "OrdinaryTaskCreateResultV1",
+    "OrdinaryTaskDispatchDisposition",
     "Outcome",
     "OutcomeValue",
     "RecordOutcomeCommandV1",
     "RecordOutcomeResultV1",
     "Task",
+    "TASK_FOLLOW_UP_DEFINITION_V1",
+    "TRIGGER_KINDS",
+    "TaskFollowUpAgentDefinitionV1",
+    "TaskFollowUpCommandV1",
     "TaskFollowUpError",
     "TaskFollowUpErrorCode",
+    "TaskFollowUpInputAssembler",
+    "TaskFollowUpInputDenied",
+    "TaskFollowUpInputRecordV1",
+    "TaskFollowUpModelExecutor",
+    "TaskFollowUpModelResultV1",
+    "TaskFollowUpProviderRequestV1",
     "TaskFollowUpRepository",
+    "TaskFollowUpRunResultV1",
+    "TaskFollowUpRuntimeService",
+    "TaskFollowUpRuntimeValidationError",
     "TaskFollowUpService",
     "TaskKind",
     "TaskStatus",

@@ -30,7 +30,7 @@ from .contracts import (
     ordered_unique,
     timestamp_text,
 )
-from .models import Approval, Outcome, Task
+from .models import Approval, OrdinaryTaskDispatchDisposition, Outcome, Task
 from .repository import CurrentTaskScope, TaskFollowUpRepository
 
 
@@ -42,6 +42,10 @@ _ACTION_TEXT = {
 _FOLLOW_UP_TEXT = (
     "Зафиксировать результат одобренного ручного действия и приложить доступные доказательства."
 )
+_ORDINARY_REQUEST_CONSTRAINTS = {
+    "uq_ordinary_task_dispatch_dispositions_run",
+    "uq_tasks_create_request",
+}
 
 
 class TaskFollowUpService:
@@ -65,79 +69,125 @@ class TaskFollowUpService:
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_REQUEST_INVALID)
         envelope = command.message_envelope
         now = _utc(self._clock())
+        refs = ordered_unique(
+            (
+                f"message_envelope:{envelope.message_id}",
+                f"safety_classification:{envelope.message_id}",
+                *envelope.source_refs,
+            )
+        )
+        display_text = normalized_display_text(envelope.candidate_output)
+        input_sha256 = canonical_fingerprint(envelope.as_value())
+        fingerprint = canonical_fingerprint(
+            {
+                "schema_version": 1,
+                "source_branch": "classified_message",
+                "request_id": str(envelope.run_id),
+                "message_id": str(envelope.message_id),
+                "task_kind": command.task_kind.value,
+                "display_text": display_text,
+                "source_refs": list(refs),
+            }
+        )
+        denial_code: TaskFollowUpErrorCode | None = None
         try:
             with self._session.begin():
-                scope = self._require_scope(
-                    command.actor_context, envelope.plant_id, now=now, mutation=True
-                )
                 classification = self._repository.safety_classification(
                     envelope.message_id, for_update=True
                 )
-                self._validate_classified_source(command, classification, scope)
-                refs = ordered_unique(
-                    (
-                        f"message_envelope:{envelope.message_id}",
-                        f"safety_classification:{envelope.message_id}",
-                        *envelope.source_refs,
-                    )
-                )
-                for ref in envelope.source_refs:
-                    if not self._repository.lock_authoritative_ref(
-                        ref, farm_id=envelope.farm_id, plant_id=envelope.plant_id
-                    ):
-                        raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
-                display_text = normalized_display_text(envelope.candidate_output)
-                fingerprint = canonical_fingerprint(
-                    {
-                        "schema_version": 1,
-                        "source_branch": "classified_message",
-                        "request_id": str(envelope.run_id),
-                        "message_id": str(envelope.message_id),
-                        "task_kind": command.task_kind.value,
-                        "display_text": display_text,
-                        "source_refs": list(refs),
-                    }
-                )
-                existing = self._repository.task_for_classification(
+                self._validate_classified_source(command, classification)
+                assert classification is not None
+
+                message_disposition = self._repository.dispatch_disposition_for_message(
                     envelope.message_id, for_update=True
                 )
-                if existing is not None:
-                    if classification.input_sha256 != canonical_fingerprint(envelope.as_value()):
-                        raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
-                    self._require_identical_ordinary(
-                        existing, command, refs=refs, display_text=display_text,
+                run_disposition = self._repository.dispatch_disposition_for_run(
+                    envelope.run_id, for_update=True
+                )
+                if message_disposition is not None or run_disposition is not None:
+                    return self._resolve_dispatch_disposition(
+                        command,
+                        message_disposition=message_disposition,
+                        run_disposition=run_disposition,
+                        refs=refs,
+                        display_text=display_text,
+                        input_sha256=input_sha256,
                         fingerprint=fingerprint,
+                        now=now,
                     )
-                    return OrdinaryTaskCreateResultV1("duplicate", existing)
-                if self._repository.task_for_create_request(envelope.run_id) is not None:
-                    raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
-                if classification.input_sha256 != canonical_fingerprint(envelope.as_value()):
+
+                if classification.input_sha256 != input_sha256:
                     raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
-                task = Task(
-                    task_id=uuid.uuid4(),
+
+                scope = self._repository.lock_current_scope(
+                    command.actor_context, plant_id=envelope.plant_id, now=now
+                )
+                denial_code = self._scope_denial_code(scope)
+                disposition = OrdinaryTaskDispatchDisposition(
+                    classification_message_id=envelope.message_id,
+                    run_id=envelope.run_id,
                     farm_id=envelope.farm_id,
                     plant_id=envelope.plant_id,
-                    kind=command.task_kind.value,
-                    status="open",
-                    display_text=display_text,
-                    source_type="safe_task_request",
-                    source_refs=list(refs),
-                    classification_message_id=envelope.message_id,
-                    approval_id=None,
-                    parent_action_task_id=None,
-                    due_at=None,
-                    created_by_account_id=command.actor_context.account_id,
-                    created_by_membership_id=command.actor_context.membership_id,
-                    created_by_role_preset=scope.role_preset,
-                    created_by_agent_id=envelope.agent_id,
-                    created_at=now,
-                    create_request_id=envelope.run_id,
-                    create_request_fingerprint=fingerprint,
-                    created_event_ref={},
+                    input_sha256=input_sha256,
+                    outcome="denied" if denial_code is not None else "consumed",
+                    denial_code=denial_code.value if denial_code is not None else None,
+                    recorded_at=now,
                 )
-                task.created_event_ref = self._append_task_created(task, command.actor_context)
-                self._session.add(task)
+                self._session.add(disposition)
+
+                if denial_code is None:
+                    assert scope is not None
+                    if scope.farm_id != envelope.farm_id:
+                        raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
+                    for ref in envelope.source_refs:
+                        if not self._repository.lock_authoritative_ref(
+                            ref,
+                            farm_id=envelope.farm_id,
+                            plant_id=envelope.plant_id,
+                        ):
+                            raise TaskFollowUpError(
+                                TaskFollowUpErrorCode.TASK_SOURCE_INVALID
+                            )
+                    if (
+                        self._repository.task_for_classification(
+                            envelope.message_id, for_update=True
+                        )
+                        is not None
+                        or self._repository.task_for_create_request(envelope.run_id)
+                        is not None
+                    ):
+                        raise TaskFollowUpError(
+                            TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+                        )
+                    task = Task(
+                        task_id=uuid.uuid4(),
+                        farm_id=envelope.farm_id,
+                        plant_id=envelope.plant_id,
+                        kind=command.task_kind.value,
+                        status="open",
+                        display_text=display_text,
+                        source_type="safe_task_request",
+                        source_refs=list(refs),
+                        classification_message_id=envelope.message_id,
+                        approval_id=None,
+                        parent_action_task_id=None,
+                        due_at=None,
+                        created_by_account_id=command.actor_context.account_id,
+                        created_by_membership_id=command.actor_context.membership_id,
+                        created_by_role_preset=scope.role_preset,
+                        created_by_agent_id=envelope.agent_id,
+                        created_at=now,
+                        create_request_id=envelope.run_id,
+                        create_request_fingerprint=fingerprint,
+                        created_event_ref={},
+                    )
+                    task.created_event_ref = self._append_task_created(
+                        task, command.actor_context
+                    )
+                    self._session.add(task)
                 self._session.flush()
+            if denial_code is not None:
+                raise TaskFollowUpError(denial_code)
             return OrdinaryTaskCreateResultV1("created", task)
         except TaskFollowUpError:
             self._rollback()
@@ -145,9 +195,22 @@ class TaskFollowUpService:
         except TimelineAppendError:
             self._rollback()
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_AUDIT_FAILED) from None
-        except (IntegrityError, SQLAlchemyError):
+        except IntegrityError as error:
             self._rollback()
-            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED) from None
+            return self._recover_ordinary_request_loss(
+                command,
+                error=error,
+                refs=refs,
+                display_text=display_text,
+                input_sha256=input_sha256,
+                fingerprint=fingerprint,
+                now=now,
+            )
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
 
     def materialize_pending_approval(
         self, safety_decision_id: uuid.UUID
@@ -176,6 +239,15 @@ class TaskFollowUpService:
         if not isinstance(command, ApprovalDecisionCommandV1):
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_REQUEST_INVALID)
         now = _utc(self._clock())
+        fingerprint = canonical_fingerprint(
+            {
+                "schema_version": 1,
+                "request_id": str(command.request_id),
+                "safety_decision_id": str(command.safety_decision_id),
+                "expected_version": command.expected_version,
+                "decision": command.decision.value,
+            }
+        )
         try:
             with self._session.begin():
                 scope = self._require_scope(
@@ -192,15 +264,6 @@ class TaskFollowUpService:
                 approval = self._repository.approval_for_decision(
                     decision.decision_id, for_update=True
                 ) or approval
-                fingerprint = canonical_fingerprint(
-                    {
-                        "schema_version": 1,
-                        "request_id": str(command.request_id),
-                        "safety_decision_id": str(command.safety_decision_id),
-                        "expected_version": command.expected_version,
-                        "decision": command.decision.value,
-                    }
-                )
                 if approval.status != "pending":
                     if (
                         approval.status == command.decision.value
@@ -251,14 +314,28 @@ class TaskFollowUpService:
         except TimelineAppendError:
             self._rollback()
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_AUDIT_FAILED) from None
-        except (IntegrityError, SQLAlchemyError):
+        except IntegrityError as error:
             self._rollback()
-            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED) from None
+            return self._recover_approval_request_loss(
+                command, error=error, fingerprint=fingerprint
+            )
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
 
     def complete_task(self, command: CompleteTaskCommandV1) -> CompleteTaskResultV1:
         if not isinstance(command, CompleteTaskCommandV1):
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_REQUEST_INVALID)
         now = _utc(self._clock())
+        fingerprint = canonical_fingerprint(
+            {
+                "schema_version": 1,
+                "request_id": str(command.request_id),
+                "task_id": str(command.task_id),
+            }
+        )
         try:
             with self._session.begin():
                 scope = self._require_scope(
@@ -267,13 +344,6 @@ class TaskFollowUpService:
                 task = self._repository.task(command.task_id, for_update=True)
                 if task is None or task.plant_id != command.plant_id:
                     raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SCOPE_NOT_FOUND)
-                fingerprint = canonical_fingerprint(
-                    {
-                        "schema_version": 1,
-                        "request_id": str(command.request_id),
-                        "task_id": str(command.task_id),
-                    }
-                )
                 if task.status == "completed":
                     if (
                         task.completion_request_id == command.request_id
@@ -331,9 +401,16 @@ class TaskFollowUpService:
         except TimelineAppendError:
             self._rollback()
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_AUDIT_FAILED) from None
-        except (IntegrityError, SQLAlchemyError):
+        except IntegrityError as error:
             self._rollback()
-            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED) from None
+            return self._recover_completion_request_loss(
+                command, error=error, fingerprint=fingerprint
+            )
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
 
     def record_outcome(
         self, command: RecordOutcomeCommandV1
@@ -343,6 +420,15 @@ class TaskFollowUpService:
         if command.value is not OutcomeValue.NO_DATA and not command.evidence_refs:
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_EVIDENCE_REQUIRED)
         now = _utc(self._clock())
+        fingerprint = canonical_fingerprint(
+            {
+                "schema_version": 1,
+                "request_id": str(command.request_id),
+                "follow_up_task_id": str(command.follow_up_task_id),
+                "value": command.value.value,
+                "evidence_refs": list(command.evidence_refs),
+            }
+        )
         try:
             with self._session.begin():
                 scope = self._require_scope(
@@ -357,15 +443,6 @@ class TaskFollowUpService:
                     parent = self._repository.task(task.parent_action_task_id, for_update=True)
                     if parent is None or parent.kind != "action" or parent.status != "completed":
                         raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
-                fingerprint = canonical_fingerprint(
-                    {
-                        "schema_version": 1,
-                        "request_id": str(command.request_id),
-                        "follow_up_task_id": str(command.follow_up_task_id),
-                        "value": command.value.value,
-                        "evidence_refs": list(command.evidence_refs),
-                    }
-                )
                 existing = self._repository.outcome_for_follow_up(
                     task.task_id, for_update=True
                 )
@@ -420,9 +497,16 @@ class TaskFollowUpService:
         except TimelineAppendError:
             self._rollback()
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_AUDIT_FAILED) from None
-        except (IntegrityError, SQLAlchemyError):
+        except IntegrityError as error:
             self._rollback()
-            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED) from None
+            return self._recover_outcome_request_loss(
+                command, error=error, fingerprint=fingerprint
+            )
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
 
     def list_tasks(
         self, actor, *, plant_id: uuid.UUID, status: str | None,
@@ -464,7 +548,6 @@ class TaskFollowUpService:
         self,
         command: ClassifiedMessageTaskCommandV1,
         row: SafetyClassification | None,
-        scope: CurrentTaskScope,
     ) -> None:
         envelope = command.message_envelope
         classification = command.classification
@@ -480,9 +563,296 @@ class TaskFollowUpService:
             or classification.message_id != envelope.message_id
             or classification.classification != row.classification
             or classification.safe_task_kind != row.safe_task_kind
-            or scope.farm_id != envelope.farm_id
         ):
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
+
+    @staticmethod
+    def _scope_denial_code(
+        scope: CurrentTaskScope | None,
+    ) -> TaskFollowUpErrorCode | None:
+        if scope is None or not scope.can_read:
+            return TaskFollowUpErrorCode.TASK_SCOPE_NOT_FOUND
+        if scope.plant_status != "active":
+            return TaskFollowUpErrorCode.TASK_PLANT_NOT_ACTIVE
+        if not scope.can_mutate_tasks:
+            return TaskFollowUpErrorCode.TASK_COMMAND_FORBIDDEN
+        return None
+
+    def _resolve_dispatch_disposition(
+        self,
+        command: ClassifiedMessageTaskCommandV1,
+        *,
+        message_disposition: OrdinaryTaskDispatchDisposition | None,
+        run_disposition: OrdinaryTaskDispatchDisposition | None,
+        refs: tuple[str, ...],
+        display_text: str,
+        input_sha256: str,
+        fingerprint: str,
+        now: datetime,
+        repository: TaskFollowUpRepository | None = None,
+    ) -> OrdinaryTaskCreateResultV1:
+        repository = repository or self._repository
+        if (
+            message_disposition is not None
+            and run_disposition is not None
+            and message_disposition.classification_message_id
+            != run_disposition.classification_message_id
+        ):
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
+        disposition = message_disposition or run_disposition
+        assert disposition is not None
+        envelope = command.message_envelope
+        if (
+            disposition.classification_message_id != envelope.message_id
+            or disposition.run_id != envelope.run_id
+            or disposition.farm_id != envelope.farm_id
+            or disposition.plant_id != envelope.plant_id
+            or disposition.input_sha256 != input_sha256
+        ):
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
+
+        if disposition.outcome == "denied":
+            task = repository.task_for_classification(
+                envelope.message_id, for_update=True
+            )
+            if task is not None:
+                raise TaskFollowUpError(
+                    TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                )
+            try:
+                code = TaskFollowUpErrorCode(disposition.denial_code)
+            except ValueError:
+                raise TaskFollowUpError(
+                    TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                ) from None
+            if code not in {
+                TaskFollowUpErrorCode.TASK_SCOPE_NOT_FOUND,
+                TaskFollowUpErrorCode.TASK_COMMAND_FORBIDDEN,
+                TaskFollowUpErrorCode.TASK_PLANT_NOT_ACTIVE,
+            }:
+                raise TaskFollowUpError(
+                    TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                )
+            raise TaskFollowUpError(code)
+        if disposition.outcome != "consumed" or disposition.denial_code is not None:
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED)
+
+        scope = self._require_scope(
+            command.actor_context, envelope.plant_id, now=now, mutation=True
+        )
+        task = repository.task_for_classification(
+            envelope.message_id, for_update=True
+        )
+        if scope.farm_id != envelope.farm_id or task is None:
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED)
+        self._require_identical_ordinary(
+            task,
+            command,
+            refs=refs,
+            display_text=display_text,
+            fingerprint=fingerprint,
+        )
+        return OrdinaryTaskCreateResultV1("duplicate", task)
+
+    def _recover_ordinary_request_loss(
+        self,
+        command: ClassifiedMessageTaskCommandV1,
+        *,
+        error: IntegrityError,
+        refs: tuple[str, ...],
+        display_text: str,
+        input_sha256: str,
+        fingerprint: str,
+        now: datetime,
+    ) -> OrdinaryTaskCreateResultV1:
+        if _constraint_name(error) not in _ORDINARY_REQUEST_CONSTRAINTS:
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+        clean_repository = TaskFollowUpRepository(self._session)
+        try:
+            with self._session.begin():
+                classification = clean_repository.safety_classification(
+                    command.message_envelope.message_id, for_update=True
+                )
+                self._validate_classified_source(command, classification)
+                message_disposition = (
+                    clean_repository.dispatch_disposition_for_message(
+                        command.message_envelope.message_id, for_update=True
+                    )
+                )
+                run_disposition = clean_repository.dispatch_disposition_for_run(
+                    command.message_envelope.run_id, for_update=True
+                )
+                if message_disposition is None and run_disposition is None:
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                    )
+                return self._resolve_dispatch_disposition(
+                    command,
+                    message_disposition=message_disposition,
+                    run_disposition=run_disposition,
+                    refs=refs,
+                    display_text=display_text,
+                    input_sha256=input_sha256,
+                    fingerprint=fingerprint,
+                    now=now,
+                    repository=clean_repository,
+                )
+        except TaskFollowUpError:
+            self._rollback()
+            raise
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+
+    def _recover_approval_request_loss(
+        self,
+        command: ApprovalDecisionCommandV1,
+        *,
+        error: IntegrityError,
+        fingerprint: str,
+    ) -> ApprovalDecisionResultV1:
+        if _constraint_name(error) != "uq_approvals_decision_request":
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+        clean_repository = TaskFollowUpRepository(self._session)
+        try:
+            with self._session.begin():
+                owner = clean_repository.approval_for_request(command.request_id)
+                if owner is None:
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                    )
+                if (
+                    owner.safety_decision_id != command.safety_decision_id
+                    or owner.status != command.decision.value
+                    or owner.decision_request_fingerprint != fingerprint
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+                    )
+                action = clean_repository.task_for_approval(
+                    owner.approval_id, for_update=True
+                )
+                if (owner.status == "approved") != (action is not None):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                    )
+                return ApprovalDecisionResultV1("duplicate", owner, action)
+        except TaskFollowUpError:
+            self._rollback()
+            raise
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+
+    def _recover_completion_request_loss(
+        self,
+        command: CompleteTaskCommandV1,
+        *,
+        error: IntegrityError,
+        fingerprint: str,
+    ) -> CompleteTaskResultV1:
+        if _constraint_name(error) != "uq_tasks_completion_request":
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+        clean_repository = TaskFollowUpRepository(self._session)
+        try:
+            with self._session.begin():
+                owner = clean_repository.task_for_completion_request(
+                    command.request_id
+                )
+                if owner is None:
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                    )
+                if (
+                    owner.task_id != command.task_id
+                    or owner.status != "completed"
+                    or owner.completion_request_fingerprint != fingerprint
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+                    )
+                follow_up = clean_repository.follow_up_for_action(
+                    owner.task_id, for_update=True
+                )
+                return CompleteTaskResultV1("duplicate", owner, follow_up)
+        except TaskFollowUpError:
+            self._rollback()
+            raise
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+
+    def _recover_outcome_request_loss(
+        self,
+        command: RecordOutcomeCommandV1,
+        *,
+        error: IntegrityError,
+        fingerprint: str,
+    ) -> RecordOutcomeResultV1:
+        if _constraint_name(error) not in {
+            "uq_tasks_completion_request",
+            "uq_outcomes_request",
+        }:
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+        clean_repository = TaskFollowUpRepository(self._session)
+        try:
+            with self._session.begin():
+                task_owner = clean_repository.task_for_completion_request(
+                    command.request_id
+                )
+                outcome_owner = clean_repository.outcome_for_request(
+                    command.request_id
+                )
+                if task_owner is not None and (
+                    task_owner.task_id != command.follow_up_task_id
+                    or task_owner.completion_request_fingerprint != fingerprint
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+                    )
+                if outcome_owner is not None and (
+                    outcome_owner.follow_up_task_id != command.follow_up_task_id
+                    or outcome_owner.request_fingerprint != fingerprint
+                    or outcome_owner.value != command.value.value
+                    or outcome_owner.evidence_refs != list(command.evidence_refs)
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+                    )
+                if (
+                    task_owner is None
+                    or outcome_owner is None
+                    or task_owner.status != "completed"
+                    or outcome_owner.follow_up_task_id != task_owner.task_id
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                    )
+                return RecordOutcomeResultV1(
+                    "duplicate", task_owner, outcome_owner
+                )
+        except TaskFollowUpError:
+            self._rollback()
+            raise
+        except SQLAlchemyError:
+            self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
 
     def _materialize_locked(
         self, decision: SafetyActionDecision, *, require_active: bool
@@ -619,16 +989,23 @@ class TaskFollowUpService:
         ))
 
     def _append_approval_decided(self, approval, actor, *, action_task_id):
+        payload_summary = {
+            "decision": approval.status,
+            "action_kind": approval.action_kind,
+            "record_version": 2,
+        }
+        if approval.status == "approved":
+            if not isinstance(action_task_id, uuid.UUID):
+                raise TimelineAppendError
+            payload_summary["action_task_id"] = str(action_task_id)
+        elif action_task_id is not None:
+            raise TimelineAppendError
         return self._emit(TimelineEvent(
             farm_id=approval.farm_id, plant_id=approval.plant_id,
             actor_ref=_actor_ref(actor), event_type="approval_decided",
             source_type="approval", source_id=approval.approval_id,
             source_refs={"record_refs": list(approval.source_refs)},
-            payload_summary={
-                "decision": approval.status, "action_kind": approval.action_kind,
-                "record_version": 2,
-                "action_task_id": str(action_task_id) if action_task_id else None,
-            },
+            payload_summary=payload_summary,
         ))
 
     def _append_outcome(self, outcome, actor):
@@ -677,6 +1054,12 @@ def _utc(value: datetime | None) -> datetime:
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _constraint_name(error: IntegrityError) -> str | None:
+    diagnostic = getattr(getattr(error, "orig", None), "diag", None)
+    value = getattr(diagnostic, "constraint_name", None)
+    return value if isinstance(value, str) and value else None
 
 
 __all__ = ["TaskFollowUpService"]

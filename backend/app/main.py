@@ -19,7 +19,10 @@ from .api import (
     plants_router,
     session_router,
 )
-from .api.task_follow_up import router as task_follow_up_router
+from .api.task_follow_up import (
+    FT012RawPathCanonicalityMiddleware,
+    router as task_follow_up_router,
+)
 from .config import AppSettings
 from .database import DatabaseHandle, build_database
 from .agent_chat import PostgreSQLAgentIntroductionSink, reconcile_active_plants
@@ -52,6 +55,7 @@ def create_app(
         yield
 
     app = FastAPI(title=resolved_settings.app_name, lifespan=lifespan)
+    app.add_middleware(FT012RawPathCanonicalityMiddleware)
     app.state.settings = resolved_settings
     app.state.database = resolved_database
     app.state.readiness_check_database = readiness_check_database

@@ -2,7 +2,7 @@
 description: Protected HTTP reads and commands for human approvals, tasks, completion, and follow-up outcomes.
 status: active
 type: api_contract
-last_updated: 2026-07-18
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/api-guidelines.md
@@ -30,7 +30,8 @@ are not public HTTP endpoints.
 
 - Every route resolves current ActorContext before service logic and returns
   `Cache-Control: no-store`.
-- Path ids are lowercase canonical UUID strings. Unknown fields are rejected.
+- Path ids are literal lowercase canonical UUID strings in the raw request
+  path. Unknown fields are rejected.
 - Plant scope is loaded from PostgreSQL and compared with the current Farm and
   permission resolver; request bodies cannot supply Farm, Plant, actor,
   permission, evidence freshness, task kind, source text, timestamps, or audit
@@ -43,6 +44,27 @@ are not public HTTP endpoints.
   projection. The operational routes below never advance an archived record.
 - Responses contain safe ids/attribution only; no session/auth provenance,
   candidate/provider payload, raw exception, hidden reasoning, or credential.
+
+### Raw request-path canonicality
+
+Before decoded UUID binding or service/business logic, the application MUST
+validate the app-relative ASGI `raw_path` for the five FT-012 route shapes in
+this contract. Every UUID segment MUST be the literal ASCII lowercase
+hyphenated form
+`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`.
+Percent-encoding of any UUID character, including an unreserved lowercase hex
+digit or hyphen, is noncanonical even when standard ASGI decoding would
+produce the same UUID. Uppercase, compact, braced, malformed, non-ASCII, or an
+unavailable/unparseable raw target for one of these route shapes is likewise
+rejected.
+
+This is one narrow FT-012 raw-boundary validator; it does not rewrite the URL,
+decode and compare it later, or change other routers. A rejection returns the
+existing safe validation envelope with `422` and `Cache-Control: no-store`,
+does not echo the raw path or protected identifiers, and reaches no Task
+service or PostgreSQL business lookup. Generated OpenAPI retains `format=uuid`
+and the exact lowercase-canonical pattern for all eight FT-012 path-parameter
+occurrences.
 
 ## Read routes
 
@@ -147,11 +169,15 @@ The strict body `RecordOutcomeRequestV1` contains exactly:
 - `schema_version=1`;
 - `request_id`: UUIDv4 command identity;
 - `value`: `improved|worsened|unchanged|no_data`;
-- `evidence_refs`: zero through four ordered unique safe refs.
+- `evidence_refs`: zero through four ordered unique refs from the existing
+  closed W1 union
+  `plant|daily_checkin|manual_measurement|photo_catalog_item|plant_state_record`.
 
 `task_id` must identify an open `follow_up` in the path Plant. Non-`no_data`
 requires at least one evidence ref; `no_data` may use an empty array. The
-service reloads every ref from its owning PostgreSQL authority.
+service reloads every ref from its owning PostgreSQL authority. `task:` and
+`outcome:` remain invalid Outcome evidence; the competence-specific runtime
+source-record resolver MUST NOT widen this HTTP/service policy.
 
 Success returns `200 RecordOutcomeResultV1` containing exactly:
 
@@ -208,6 +234,21 @@ re-resolves current membership, same-Farm active Plant, and
 `can_create_domain_tasks=true` in the write transaction, inserts the Task,
 appends and stores the required `task_created` Timeline ref, and commits before
 returning success.
+
+The same UoW owns the project PostgreSQL
+`ordinary_task_dispatch_dispositions` one-shot authority. After exact
+classification/envelope validation, the service evaluates the current
+Plant/archive/authorization guard under its established locks and records the
+first terminal `consumed|denied` disposition for the unique
+`message_id`/`run_id` identities. `consumed` commits with the Task and Timeline
+ref. A guard denial commits its immutable denial before the stored typed error
+is returned. Exact terminal retries read the disposition first: denied stays
+denied after restore without guard re-evaluation; consumed may return the
+existing Task only after current read/task authority passes and never creates
+another Task. Reusing either identity with different content conflicts. A new
+eligible attempt must come from a new Agent Runtime invocation with both new
+identities. Timeline, Bus, UI Feed, envelope, and classification evidence
+cannot consume, deny, clear, or replay this disposition.
 
 ### `governance_decision`
 
@@ -285,6 +326,15 @@ missing, mismatched, ineligible, or unpersisted source authority is
 `TASK_SOURCE_INVALID`. Current authorization/archive denial remains
 `TASK_COMMAND_FORBIDDEN|TASK_PLANT_NOT_ACTIVE` without an existence leak.
 
+For named globally unique request-id constraints, a concurrent uniqueness
+loss is handled only after the failed UoW is rolled back. The service re-reads
+the committed request owner in a clean transaction: the same canonical
+parent/fingerprint/content is a duplicate; a different parent or content is
+`TASK_VERSION_CONFLICT`. A non-request uniqueness error, any unrelated
+database error, or a missing owner after rollback remains
+`TASK_PERSISTENCE_FAILED`; generic database failures are never relabeled as
+conflicts.
+
 Neither branch may create `action`, act as Safety Gate or human approval,
 mutate Plant state or devices, complete a Task, record an Outcome, publish raw
 candidate/proposal/rationale text to Bus/UI, or replay a denied effect after
@@ -326,8 +376,14 @@ Identical retry is a success result, not `409`.
 - API tests prove ActorContext-before-business-logic, no-store, no-existence
   leak, Boss/Engineer/Consultant matrix, inclusive expiry boundary, conflicts,
   archive freeze, response redaction, and identical retry behavior.
+- Raw-boundary tests prove literal lowercase canonical success and protected
+  `422/no-store` rejection before decoded UUID binding for uppercase, compact,
+  braced, and percent-encoded-equivalent spelling at all eight FT-012 path-id
+  occurrences, while OpenAPI keeps the exact pattern.
 - Integration tests prove HTTP results match the authoritative PostgreSQL rows
-  and Timeline refs and never perform device or Plant-state effects.
+  and Timeline refs and never perform device or Plant-state effects. Concurrent
+  cross-parent request-id reuse returns stable `409 TASK_VERSION_CONFLICT`;
+  unrelated database errors remain the safe persistence failure.
 
 ## Related specs
 

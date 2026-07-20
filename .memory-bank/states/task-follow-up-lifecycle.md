@@ -2,7 +2,7 @@
 description: Human approval, task completion, automatic follow-up, and outcome lifecycle for the Safety and Task Loop.
 status: active
 type: state_spec
-last_updated: 2026-07-18
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/safety-action-lifecycle.md
@@ -68,6 +68,55 @@ fingerprint defined by the command contract. An identical
 for that key or request id conflicts without replacing the first Task. This
 branch uses the service-owned Session/UoW and commits only after the Task plus
 its required Timeline ref are ready.
+
+The classified-message branch also has one immutable PostgreSQL
+`ordinary_task_dispatch_dispositions` row per classification message and a
+unique `run_id`. The first exact handoff becomes terminal in one of two ways:
+
+- `consumed`: the disposition, Task, and required `task_created` ref commit in
+  the same service-owned transaction;
+- `denied`: a current Plant/archive/authorization guard denial is evaluated
+  under the owning guard locks and the denial disposition commits in that same
+  transaction before the typed denial is returned.
+
+The service validates the persisted immutable classification and exact
+envelope input identity before recording either result. It re-reads a matching
+terminal disposition before any current-guard re-evaluation. An exact consumed
+retry may return the existing Task only after the current read/task authority
+guard passes; an exact denied retry returns the stored denial without a new
+guard evaluation or Task, including after restore. A different message
+using the same `run_id`, a different run using the same `message_id`, or any
+fingerprint/scope mismatch conflicts and cannot replace the first disposition.
+If the disposition cannot be persisted, the command fails closed with no Task.
+Timeline, Bus, UI Feed, MessageEnvelope, and classification rows are not this
+one-shot authority. A later eligible attempt requires a new Agent Runtime
+invocation with both a new `run_id` and a new `message_id`.
+
+Before that classified-message branch, `task_follow_up` alone owns one
+immutable runtime-stage `task_follow_up_runtime_dispositions` row keyed by the
+command `run_id` and exact command fingerprint. Its terminal value is either
+`publication_denied` before any MessageEnvelope/classification exists, or
+`envelope_handed_off` with the one post-guard message identity and envelope
+input fingerprint. It has no pending/update/replay state and never stores the
+envelope payload.
+
+The runtime commits this row only in a short post-model transaction under the
+same run-key advisory lock used by the downstream `task_follow_up` classified
+dispatch. The current guard and owning rows are rechecked/locked in that
+transaction; Task model and Safety-classifier I/O are outside it. A committed
+`publication_denied` identical retry returns the stored safe denial without
+model/classifier/Task work; a fingerprint mismatch conflicts. A committed
+`envelope_handed_off` can never allocate or replay another message for the same
+run. The downstream ordinary disposition remains the sole consumed/denied
+classified-message authority and the existing service remains the sole Task
+writer.
+
+The shared lock and cross-table re-read make contradictory terminal runtime
+denial and classified dispatch impossible even when same-run invocations race.
+If runtime audit or disposition commit fails, no classifier/Task path starts
+and no terminal runtime result is claimed; an earlier audit append is only
+noise. Reevaluation uses a new command/run and, after its fresh current guard,
+a new message identity.
 
 FT-013 adds one narrow `governance_decision` source route to this same service:
 
@@ -197,9 +246,21 @@ mutation.
 - Restore changes no dependent record and triggers no retry or resume. A new
   command must pass current ActorContext, state/version, expiry, evidence, and
   Safety guards.
+- A classified-message disposition remains terminal across archive/restore.
+  Restore never re-evaluates a denied `run_id`/`message_id`; only a new runtime
+  invocation with both new identities can reach a fresh guard evaluation.
+- A pre-classification `task_follow_up` runtime denial also remains terminal
+  across archive/restore. The same exact run returns its stored denial; a
+  conflicting reuse fails closed, and a handed-off run cannot mint another
+  message. Only a new command/run may reach a fresh post-model guard and then
+  allocate a new message.
 - Services lock the existing parent authority row before first-child inserts
   and rely on database uniqueness for concurrent first-write races. A lost
-  uniqueness race is re-read and classified as identical retry or conflict.
+  uniqueness race is rolled back, then re-read from a clean PostgreSQL
+  transaction and classified as identical retry or conflict. For globally
+  unique request ids, a different canonical parent or fingerprint is always
+  `TASK_VERSION_CONFLICT`; unrelated database failures remain
+  `TASK_PERSISTENCE_FAILED`.
 
 ## Stable domain failures
 
@@ -224,8 +285,11 @@ Tests must prove the complete approval-to-outcome path, exact closed states,
 inclusive expiry boundary, current authority/freshness revalidation,
 transaction rollback, natural uniqueness, identical-versus-conflicting
 retries, automatic +48-hour follow-up, evidence policy, no Plant-state
-promotion, no automated actuation, archive/restore freeze, and concurrent
-first-insert behavior.
+promotion, no automated actuation, archive/restore freeze, terminal runtime
+and classified-message denial across restore, run fingerprint
+identical/conflicting retries, runtime/classified concurrency exclusion, new
+command/run/message requirements, and concurrent first-insert/request-id
+collision behavior.
 
 FT-013 compatibility tests additionally prove the DecisionRecord source route
 uses the same ordinary-task guards and transaction, creates only one matching

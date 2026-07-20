@@ -117,6 +117,89 @@ def test_http_requires_lowercase_canonical_uuid_for_every_ft012_path_id(
             }
 
 
+def test_http_rejects_percent_encoded_uuid_bytes_before_dependency_or_binding(
+    ft012_database, ft012_seed,
+):
+    _farm, boss, _membership, plant = ft012_seed
+    dependency_calls = 0
+
+    def actor_dependency():
+        nonlocal dependency_calls
+        dependency_calls += 1
+        return boss
+
+    def encoded(value: uuid.UUID) -> str:
+        text = str(value)
+        return f"%{ord(text[0]):02X}{text[1:]}"
+
+    app = create_app(database=ft012_database)
+    app.dependency_overrides[require_actor_context] = actor_dependency
+    fixed = uuid.uuid4()
+    encoded_plant = encoded(plant.plant_id)
+    encoded_fixed = encoded(fixed)
+    complete_body = {"schema_version": 1, "request_id": str(uuid.uuid4())}
+    approval_body = {
+        **complete_body,
+        "expected_version": 1,
+        "decision": "rejected",
+    }
+    outcome_body = {
+        "schema_version": 1,
+        "request_id": str(uuid.uuid4()),
+        "value": "no_data",
+        "evidence_refs": [],
+    }
+    cases = (
+        ("get", f"/api/plants/{encoded_plant}/tasks", None),
+        ("get", f"/api/plants/{encoded_plant}/approvals", None),
+        (
+            "post",
+            f"/api/plants/{encoded_plant}/safety-decisions/{fixed}/approval",
+            approval_body,
+        ),
+        (
+            "post",
+            f"/api/plants/{plant.plant_id}/safety-decisions/{encoded_fixed}/approval",
+            approval_body,
+        ),
+        (
+            "post",
+            f"/api/plants/{encoded_plant}/tasks/{fixed}/complete",
+            complete_body,
+        ),
+        (
+            "post",
+            f"/api/plants/{plant.plant_id}/tasks/{encoded_fixed}/complete",
+            complete_body,
+        ),
+        (
+            "post",
+            f"/api/plants/{encoded_plant}/tasks/{fixed}/outcome",
+            outcome_body,
+        ),
+        (
+            "post",
+            f"/api/plants/{plant.plant_id}/tasks/{encoded_fixed}/outcome",
+            outcome_body,
+        ),
+    )
+
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        for method, path, body in cases:
+            response = getattr(client, method)(
+                path,
+                **({"json": body} if body is not None else {}),
+            )
+            assert response.status_code == 422
+            assert response.headers["cache-control"] == "no-store"
+            assert response.json()["error"] == {
+                "code": "VALIDATION_FAILED",
+                "message": "Request validation failed.",
+                "request_id": response.json()["error"]["request_id"],
+            }
+    assert dependency_calls == 0
+
+
 def test_http_complete_approval_action_followup_outcome_and_redaction(
     ft012_database, ft012_seed, tmp_path,
 ):

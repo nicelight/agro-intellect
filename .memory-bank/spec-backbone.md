@@ -118,11 +118,18 @@ last_updated: 2026-07-20
   lifecycle remains `planned` pending an explicit owner feature decision, and
   this reconciliation does not promote or select planned dependent TASK-039.
   FT-012 remains the owner of human decisions and later task/follow-up state.
-- Current FT-012 planning outcome: feature-local Approval, Task, automatic
-  +48-hour follow-up, Outcome, HTTP, Timeline, idempotency/concurrency, archive,
-  and provider-neutral `task_follow_up` contracts are complete. TASK-039 and
-  TASK-040 remain `planned`; run fresh `/review-tasks-plan FT-012`. No
-  implementation or live-provider acceptance is pre-claimed by planning.
+- Current FT-012 W1 boundary outcome: TASK-039 is scheduler-recorded `done`
+  from current ATTEMPT 03 implementation PASS, independent functional PASS,
+  and semantic-pass evidence; ATTEMPT 01/02 remain failed history. The
+  authoritative PostgreSQL Approval/Task/+48-hour follow-up/Outcome and
+  immutable classified-message disposition boundary, protected HTTP,
+  Timeline, idempotency/concurrency, archive/no-replay, rollback, and
+  no-authority rules are implemented and verified. The current product
+  migration head is `ft012_task_approval_outcomes` directly after
+  `ft011_safety_action_decisions`, with all eight exact-head consumers passing.
+  TASK-040 remains scheduler-owned `planned` for the provider-neutral
+  `task_follow_up` runtime; this reconciliation does not promote or select it
+  and claims no live-provider acceptance.
 - Current FT-013 repair outcome: shared ordinary-task source union and
   classification-only Companion governance hold are authoritative, with no
   second Task service or persisted route-schema expansion. The subsequent
@@ -156,13 +163,15 @@ last_updated: 2026-07-20
   requires deterministic schema, fake/spy, authorization/post-I/O, media,
   redaction, timeout/error, unbound-production, no-fallback, and no-authority
   evidence; it does not require provider selection, credentials, egress,
-  network, or live smoke. TASK-034, TASK-035, TASK-036, TASK-037, and TASK-038 are
-  scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle values remain
-  `planned` pending explicit owner decisions. FT-011 and EP-004 remain
-  `planned` pending explicit owner lifecycle decisions; planned TASK-039
-  remains a separate scheduler decision and this backbone reconciliation does
-  not promote or select it. Historical run-budget evidence does not amend
-  canonical workflow policy.
+  network, or live smoke. TASK-034, TASK-035, TASK-036, TASK-037, TASK-038, and
+  TASK-039 are scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle
+  values remain `planned` pending explicit owner decisions. FT-011, FT-012,
+  and EP-004 remain `planned` pending explicit owner lifecycle decisions;
+  planned TASK-040 remains a separate scheduler decision and this backbone
+  reconciliation does not promote or select it. The current product migration
+  head is `ft012_task_approval_outcomes` directly after
+  `ft011_safety_action_decisions`. Historical run-budget evidence does not
+  amend canonical workflow policy.
   FT-013 remains execution-excluded in this run
   and requires fresh review before any future selection. Dataset Governance now has one lifecycle and one
   derived trainability authority; FT-014 exact persistence and evidence policy

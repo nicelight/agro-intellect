@@ -4,16 +4,18 @@
   "title": "Retries are idempotent while conflicts and archived transitions fail closed",
   "given": {
     "records": "a pending approval or open task with persisted natural key and version",
-    "plant_states": "active for the first request, then archived for a later transition"
+    "plant_states": "active for the first request, then archived for a later transition",
+    "classified_message": "one ordinary classified message with stable run_id and message_id presented while the Plant is archived"
   },
   "when": {
-    "requests": "repeat an identical request, submit a stale or conflicting request, and attempt a transition while archived"
+    "requests": "repeat an identical request, submit a stale or conflicting request, attempt a transition while archived, restore, and resubmit the denied classified message"
   },
   "then": {
     "identical_retry": "returns the first committed result without duplication",
     "stale_or_conflicting_retry": "conflict with no mutation",
     "archived_attempt": "denied with records unchanged",
-    "restore_effect": "no automatic resume or replay"
+    "restore_effect": "no automatic resume or replay",
+    "denied_message_reuse": "the same run_id or message_id remains ineligible after restore",
+    "new_invocation": "only a new runtime invocation with new run_id and message_id may pass current guards"
   }
 }
-

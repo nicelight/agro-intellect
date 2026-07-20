@@ -156,17 +156,22 @@ def _task_loop_event_is_valid(event: TimelineEvent) -> bool:
             and payload["source_ref_count"] == len(refs)
         )
     if event.event_type == "approval_decided":
-        return (
-            set(payload) == {"decision", "action_kind", "record_version", "action_task_id"}
-            and payload["decision"] in {"approved", "rejected"}
-            and payload["action_kind"] in {"ph_adjustment", "ec_adjustment", "solution_change"}
-            and payload["record_version"] == 2
-            and (
-                _canonical_uuid_text(payload["action_task_id"])
-                if payload["decision"] == "approved"
-                else payload["action_task_id"] is None
-            )
+        common_valid = (
+            payload.get("decision") in {"approved", "rejected"}
+            and payload.get("action_kind")
+            in {"ph_adjustment", "ec_adjustment", "solution_change"}
+            and payload.get("record_version") == 2
         )
+        if not common_valid:
+            return False
+        if payload["decision"] == "approved":
+            return set(payload) == {
+                "decision",
+                "action_kind",
+                "record_version",
+                "action_task_id",
+            } and _canonical_uuid_text(payload["action_task_id"])
+        return set(payload) == {"decision", "action_kind", "record_version"}
     return (
         set(payload) == {"follow_up_task_id", "outcome_value", "evidence_ref_count"}
         and _canonical_uuid_text(payload["follow_up_task_id"])

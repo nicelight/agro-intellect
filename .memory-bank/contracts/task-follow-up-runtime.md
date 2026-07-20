@@ -2,7 +2,7 @@
 description: Strict provider-neutral Task and Follow-up Agent input, proposal, classification, and ordinary-task handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -66,6 +66,14 @@ task text, instructions, prompts, model/provider choice, output schema,
 classification, authorization snapshot, approval, completion, or device data.
 `manual_review` is an internal application invocation over an existing Task,
 not a new public endpoint.
+
+`run_id` is also the command identity. Before model execution the runtime
+computes `command_sha256` from compact sorted-key JSON containing exactly the
+command schema version, `run_id`, canonical `requested_at`, ActorContext
+`request_id|session_id|account_id|farm_id|membership_id`, `plant_id`,
+`trigger_kind`, and `trigger_task_id`. Current role, membership/grant status,
+permission results, auth provenance, provider data, and candidate output are
+not fingerprint inputs; their owning guards remain current authority.
 
 ## Provider request version 1
 
@@ -185,6 +193,56 @@ and ActorContext snapshot are never independently sufficient authority.
 `silent` creates no MessageEnvelope, classification, or Task. Provider,
 validation, guard, audit, or persistence failure cannot be relabeled silence.
 
+### Runtime-stage one-shot disposition
+
+After model output, the runtime owns one narrow immutable PostgreSQL
+`task_follow_up_runtime_dispositions` row for this competence. It is keyed by
+`run_id` and the exact `command_sha256`; it is neither a generic Agent Runtime
+ledger nor Task, Safety, Timeline, Bus, or UI authority. Its closed terminal
+runtime-stage outcome is:
+
+- `envelope_handed_off`: the post-model current guard passed, the one
+  post-guard `message_id` and exact envelope input fingerprint are stored, and
+  the in-memory envelope may proceed once to the canonical Safety classifier;
+- `publication_denied`: the post-model current guard denied with the sole safe
+  code `AGENT_PUBLICATION_BLOCKED`; no `message_id` or envelope fingerprint
+  exists.
+
+Both rows retain only safe `model_ref` and `agent_runtime_decided` event-ref
+metadata required to reproduce a strict stored denial. They never persist
+candidate text, provider request/response, MessageEnvelope payload, auth or
+permission snapshots, credentials, prompts, or raw errors. The disposition
+row, not its Timeline ref, is denial authority.
+
+The post-model terminal decision uses a short PostgreSQL transaction: acquire
+the FT-012 run-key transaction advisory lock, re-read any runtime or classified
+dispatch disposition, lock/re-evaluate current scope, append the sanitized
+runtime audit, insert the immutable runtime row, and commit. Model execution
+and the later Safety classifier call occur outside this transaction. An
+eligible envelope is allocated only after the locked current guard passes and
+is never reconstructed or replayed from the row.
+
+An exact retry of a stored `publication_denied` fingerprint returns the same
+safe terminal runtime denial without model, classifier, MessageEnvelope, or
+Task calls. Reusing `run_id` with a different fingerprint is a competence-local
+run conflict with no effect. An exact `envelope_handed_off` retry never creates
+or reuses another envelope: the matching downstream
+`ordinary_task_dispatch_dispositions` row owns classified-message duplicate or
+denial state, while an incomplete handoff fails closed and requires a new
+command/run. Runtime-disposition read/lock/commit failure is a redacted
+competence-local persistence failure; no classifier or Task writer is called,
+and any already appended Timeline event remains non-authoritative noise.
+
+For `origin_agent_id=task_follow_up`, the ordinary Task service takes the same
+short run-key lock and requires the exact immutable
+`envelope_handed_off/run_id/message_id/input_sha256/Farm/Plant` row before it
+may write its existing classified-message disposition. The runtime denial
+writer checks that classified disposition under the same lock. Therefore one
+run cannot commit both `publication_denied` and a classified `consumed|denied`
+result. Concurrent same-run invocations may complete provider I/O, but only the
+first matching terminal runtime write wins; later identical/conflicting calls
+perform no classifier or Task effect.
+
 ## Internal orchestration result
 
 `TaskFollowUpRunResultV1` is strict and contains exactly:
@@ -223,8 +281,9 @@ changes the binding.
 Provider I/O occurs outside database transactions. Current
 session/account/membership/grant and active Plant checks run before assembly,
 after model I/O, at classification persistence, and at Task insertion through
-their owning boundaries. Restore never replays a denied run; a new command and
-run/message id are required.
+their owning boundaries. Restore never replays a denied or already handed-off
+run. Reevaluation requires a new `TaskFollowUpCommandV1` with a new `run_id`;
+an eligible post-guard path then allocates a new `message_id`.
 
 Errors, logs, Timeline, and evidence exclude request/response bodies, candidate
 text, quoted task text, prompts, credentials, auth state, raw exceptions,
@@ -237,9 +296,12 @@ Current code-phase tests must prove exact request/result/orchestration shapes, d
 record selection, typed quoted-data isolation, forbidden-source and auth-data
 absence, allowed-kind policy, no duplicate automatic follow-up, strict pending
 MessageEnvelope mapping, matched classification, ordinary-task idempotency,
-current authorization/archive races, fake/spy success, timeout, provider-error,
-invalid-output and classification paths, no production fallback, redaction,
-and zero action/approval/completion/outcome/device/Plant-state authority. A
+runtime command fingerprints, identical/conflicting same-run behavior,
+post-model archive/revoke denial retention, concurrent same-run first-write,
+runtime/classified-disposition exclusion, disposition rollback, new-identity
+eligibility, current authorization/archive races, fake/spy success, timeout,
+provider-error, invalid-output and classification paths, no production
+fallback, redaction, and zero action/approval/completion/outcome/device/Plant-state authority. A
 strict fake/spy `task_follow_up` proposal plus strict fake/spy classifier result
 may create exactly one ordinary Task as deterministic code-phase evidence.
 

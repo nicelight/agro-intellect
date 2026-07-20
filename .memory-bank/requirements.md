@@ -336,9 +336,41 @@ source_of_truth:
   provider-milestone outcomes remain open.
   REQ-008 and the FT-007/FT-008-owned REQ-013 outcome remain `verified`; FT-011
   consumes those seams without reopening or re-owning them.
-- FT-011 and EP-004 lifecycle values remain `planned`; TASK-039 remains
-  authoritative `planned`. This sync makes no lifecycle, promotion, selection,
-  unblock, or block decision.
+- FT-011 and EP-004 lifecycle values remain `planned`. The later FT-012 note
+  records scheduler-owned TASK-039 completion; this earlier FT-011 boundary
+  did not promote or select it.
 - No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
   is claimed. The absent task checkpoint markers remain owner-accepted
   advisory process gaps and do not amend canonical policy.
+
+## Current FT-012 W1 Boundary Evidence Note
+
+- `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` using only current
+  ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
+  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+  ATTEMPT 01 and ATTEMPT 02 remain preserved failed history and are not mixed
+  into current closure.
+- Current provider-neutral PostgreSQL/HTTP evidence covers immutable
+  classified-message `consumed|denied` dispositions, current ActorContext,
+  Plant, grant, Safety-decision, version, expiry, and pH/EC guards; atomic
+  approval/action Task, action-completion/+48-hour follow-up, and
+  Outcome/follow-up completion; exact retries/conflicts, archive/no-replay,
+  rollback, redaction, branch-exact Timeline events, and zero device or
+  Plant-state authority.
+- The product migration head is `ft012_task_approval_outcomes` directly after
+  `ft011_safety_action_decisions`. All eight exact-head compatibility
+  consumers pass; current selected evidence also records `22` focused,
+  `210` current-guard/Safety, `47` migration-compatibility, and `489`
+  full-deterministic passes with `2` intentional `real_model` deselections.
+- RTM lifecycles remain unchanged. REQ-003, REQ-004, REQ-015, REQ-016,
+  REQ-018, and REQ-022 remain `planned` because their broader cross-feature,
+  provider-runtime, governance, Consultant, or deferred E2E outcomes remain
+  open. REQ-010 and the FT-007/FT-008-owned REQ-013 outcome remain `verified`;
+  FT-012 W1 consumes those authority/publication seams without re-owning them.
+- FT-012 and EP-004 lifecycle values remain `planned` pending the open W2 and
+  explicit owner feature/epic decisions. TASK-040 remains scheduler-owned
+  `planned`; this sync makes no promotion, selection, unblock, or block
+  decision and does not touch TASK-041/TASK-042/TASK-043.
+- No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
+  was required, checked, or claimed. The absent human checkpoint remains a
+  scheduler-accepted advisory T3 process gap.

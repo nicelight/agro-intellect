@@ -1,7 +1,7 @@
 {
   "id": "TASK-039-T3-FT-012-W1",
   "title": "Implement authoritative approval, task, and follow-up outcome loop",
-  "status": "in_progress",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-012",
   "reqs": [
@@ -23,7 +23,7 @@
     "backend/app/api/task_follow_up.py",
     "backend/app/main.py",
     "backend/app/timeline/writer.py",
-    "backend/migrations/versions/*_ft012_task_approval_outcomes.py",
+    "backend/migrations/versions/ft012_task_approval_outcomes.py",
     "tests/backend/task_follow_up/",
     "tests/backend/api/test_ft012_task_follow_up_routes.py",
     "tests/backend/access_admin/test_ft002_schema_migration.py",
@@ -278,6 +278,118 @@
       ],
       "provider_acceptance": "Authorized local deterministic QA only; no provider/model/base URL/Gemini/credential/egress/network/live smoke or external system was required, used, or claimed.",
       "next_owner": "Scheduler/orchestrator for bounded design/task reconciliation before any ATTEMPT 03 selection."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "03",
+      "decided_at": "2026-07-20T11:40:42+05:00",
+      "basis": "ATTEMPT 02 is not closable because separate semantic verification confirmed four distinct contract regressions despite functional PASS. Bounded /prd-to-tasks reconciliation selected an immutable PostgreSQL ordinary-dispatch disposition and exact raw-path, request-conflict, and Timeline-shape rules; a fresh FT-012 task-plan review APPROVED the complete single-card handoff with all four groups PASS and no blocker. The repair remains within TASK-039 identity, T3 tier, W1 wave, dependency, accepted product scope, and provider-neutral boundary. Fresh strict doctor passed with 0 errors.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-RED-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-ATTEMPT03-SEMANTIC-REPAIR-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-ATTEMPT03-SEMANTIC-REPAIR-20260720-final-report-docs-01.md"
+      ],
+      "repair_scope": [
+        "Implement immutable ordinary_task_dispatch_dispositions in the existing FT-012 migration/model/repository/service boundary: first current-guard denial commits a terminal denied disposition; eligible consumption commits consumed disposition plus Task and audit atomically; same denied identity stays denied after restore and a later eligible invocation requires both new run_id and message_id.",
+        "Validate every FT-012 UUID segment from raw ASGI request-path bytes before decoded UUID binding so percent-encoded and other nonliteral representations return protected 422/no-store while literal lowercase canonical paths remain valid.",
+        "After only the named request-id uniqueness loss, roll back and re-read owner in a clean transaction; same owner/content is duplicate, cross-parent/content is TASK_VERSION_CONFLICT, and unrelated or ownerless database errors remain TASK_PERSISTENCE_FAILED.",
+        "Make approval_decided Timeline data branch-exact: rejection omits action_task_id and approval requires its canonical non-null UUID.",
+        "Retain and rerun every ATTEMPT 01/02 authority, atomicity, concurrency, rollback, archive/no-replay, migration-eight-head, strict HTTP, full deterministic, lint, compile, diff, scope, redaction, no-provider, and no-actuation regression."
+      ],
+      "attempts_remaining_after_selection": 2,
+      "consecutive_failures_after_selection": 2,
+      "strict_doctor": "PASS: 0 errors, 19 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "bug_loop_guard": "If ATTEMPT 03 repeats any of the same four ATTEMPT 02 semantic regressions without materially new evidence, do not start another identical repair attempt.",
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke is required or claimed.",
+      "next_gate": "Fresh-session bounded /execute for TASK-039 ATTEMPT 03."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "03",
+      "verdict": "PASS",
+      "verified_at": "2026-07-20T12:15:03+05:00",
+      "basis": "Independent current-attempt PostgreSQL, synthetic-ASGI, concurrency, rollback, archive/restore, migration, strict HTTP/OpenAPI, Timeline, non-authority, full-regression, lint, compile, diff, and scope verification passed. All four ATTEMPT 02 semantic defects are repaired without task scope widening.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-039-T3-FT-012-W1/verification.md",
+        ".tasks/TASK-039-T3-FT-012-W1/verify_attempt03_contract_matrix.py"
+      ],
+      "gate_summary": {
+        "prior_defects": "PASS: all four ATTEMPT 02 semantic defects repaired",
+        "verifier_contract_matrix": "PASS: 10 tests; 32/32 alternate raw paths, 5 literal route shapes, 8/8 OpenAPI parameters, disposition archive/identity/rollback/concurrency, actual guarded publication, request collision mapping, and Timeline branches",
+        "core_postgresql_http": "PASS: 22 passed",
+        "current_guard_safety_regression": "PASS: 210 passed",
+        "migration_head_compatibility": "PASS: 47 passed",
+        "full_deterministic": "PASS: 489 passed, 2 deselected",
+        "memory_bank_lint": "PASS: 207 files",
+        "compile_diff_scope": "PASS: 11/11 product/test paths allowlisted; api/__init__.py clean; exclusions untouched"
+      },
+      "prior_defects": {
+        "RED_ARCHIVE_DENIAL_REUSE": "PASS: first denial persisted terminal disposition; exact identity remained denied after restore without guard reevaluation; both half-new identities conflict; both-new invocation is eligible; write/audit rollback and concurrent consume are atomic.",
+        "RED_RAW_PATH_CANONICALITY": "PASS: uppercase, compact, braced, and percent-encoded equivalent spelling at all eight UUID occurrences returned protected 422/no-store before auth dependency or Task service; literal lowercase and OpenAPI remain canonical.",
+        "RED_CONCURRENT_REQUEST_CONFLICT_MAPPING": "PASS: actual cross-parent collision returned created plus TASK_VERSION_CONFLICT; same owner/content retry is duplicate; ownerless named and unrelated database errors remain TASK_PERSISTENCE_FAILED.",
+        "RED_TIMELINE_DECISION_SHAPE": "PASS: rejected approval_decided omits action_task_id; approved requires the exact canonical non-null action Task UUID."
+      },
+      "findings": [],
+      "provider_acceptance": "Authorized local deterministic QA only; no provider/model/base URL/Gemini/credential/egress/network/live smoke or external system was required, used, or claimed.",
+      "next_owner": "Scheduler/orchestrator for the separately selected fresh ATTEMPT 03 red-verify and lifecycle decision; functional verification made no lifecycle transition."
+    },
+    {
+      "stage": "semantic_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "03",
+      "verdict": "semantic-pass",
+      "verified_at": "2026-07-20T12:35:35+05:00",
+      "basis": "A distinct fresh semantic reviewer independently validated disposition terminal semantics, guard-denial commit timing, identity/archive/restore races, current consumed-retry authority, raw-path spelling, request-id conflict mapping, Timeline branches, cross-Plant/evidence/version guards, non-authority boundaries, migration compatibility, and scope. All 18 semantic cases passed with no finding or blocker, and all four ATTEMPT 02 regressions were not reproduced.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-RED-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-039-T3-FT-012-W1/red-verification.md"
+      ],
+      "case_summary": {
+        "semantic_cases": "PASS: 18/18",
+        "reviewer_matrix": "PASS: 20 passed",
+        "core_postgresql": "PASS: 22 passed",
+        "migration_head": "PASS: 47 passed",
+        "full_deterministic": "PASS: 489 passed, 2 deselected",
+        "memory_bank_lint": "PASS: 207 files",
+        "task_scoped_compile_diff_scope": "PASS"
+      },
+      "findings": [],
+      "workspace_residual": "Global git diff --check reports unrelated pre-existing trailing whitespace at notes_agro-prj.md:70; the file is outside TASK-039, was not touched, and task-scoped diff check passes.",
+      "provider_acceptance": "Authorized local deterministic QA only; no provider/model/base URL/Gemini/credential/egress/network/live smoke or external system was required, used, or claimed.",
+      "next_owner": "Scheduler/orchestrator for the explicit current-attempt lifecycle decision and feature-wave reconciliation."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "decision": "done",
+      "attempt": "03",
+      "decided_at": "2026-07-20T12:35:35+05:00",
+      "basis": "Current ATTEMPT 03 implementation PASS, independent functional PASS, and separate semantic-pass evidence close every ATTEMPT 01 and ATTEMPT 02 finding. Immutable disposition one-shot authority, raw-path validation, deterministic request-conflict mapping, branch-exact Timeline data, complete PostgreSQL approval/task/follow-up/outcome behavior, current guards, concurrency, rollback, archive/no-replay, migration compatibility, regressions, scope, redaction, and no-provider/no-actuation boundaries all pass with no current product or spec defect.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-IMPL-final-report-code-03.md",
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-CLOSURE-final-report-docs-03.md"
+      ],
+      "history_selection": "ATTEMPT 01 and ATTEMPT 02 remain immutable failure history and are not combined with ATTEMPT 03 to manufacture closure.",
+      "accepted_process_gap": "No HUMAN_CHECKPOINT marker was selected; advisory under the governing tier policy.",
+      "workspace_residual": "Unrelated notes_agro-prj.md:70 trailing whitespace remains untouched; TASK-039 scoped diff check passes.",
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was required, checked, or claimed.",
+      "run_budget_after_closure": {
+        "max_attempts_per_task": 5,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 0
+      },
+      "next_gate": "Run feature-local FT-012/W1 boundary reconciliation and strict readiness before considering TASK-040. TASK-041, TASK-042, and TASK-043 remain excluded."
     }
   ],
   "docs": [
@@ -293,12 +405,14 @@
     "Focused PostgreSQL migration/model and domain-loop test results.",
     "Boss, Engineer, Consultant, current grant, expiry, pH/EC evidence, archive, and restore matrix evidence.",
     "Approval/action, action/follow-up, and Outcome/completion commit and rollback evidence.",
-    "Identical versus conflicting request fingerprint and concurrent natural-key evidence.",
-    "HTTP/OpenAPI/no-store/no-leak evidence and exact Timeline event cardinality with redaction.",
+    "Identical versus conflicting request fingerprint, concurrent natural-key, and named request-id uniqueness rollback/re-read evidence; cross-parent collisions are TASK_VERSION_CONFLICT and unrelated DB failures remain persistence failures.",
+    "PostgreSQL one-shot disposition migration/model/round-trip evidence plus atomic consumed/denied, disposition-write rollback, same-identity denial after restore, and new run/message eligibility evidence.",
+    "HTTP/OpenAPI/no-store/no-leak evidence including raw percent-encoded-equivalent UUID rejection before decoded binding at all eight path-id occurrences.",
+    "Exact Timeline event cardinality, redaction, rejected action_task_id omission, and approved non-null UUID evidence.",
     "Regression evidence that FT-004, FT-007, FT-008, FT-010, and FT-011 boundaries remain valid."
   ],
   "purpose": "Provide one authoritative PostgreSQL and HTTP loop for matched ordinary tasks, current human Safety decisions, human action tracking, deterministic follow-up, and evidence-aware outcomes without automated actuation.",
-  "success_outcome": "A matched safe_task_request creates exactly one ordinary check, measurement, or follow_up Task; an eligible current FT-011 pending decision can be approved or rejected exactly once, approval atomically creates one human action Task, action completion atomically creates one follow-up due 48 hours later, Outcome recording atomically completes that follow-up under the exact evidence policy, and every retry, conflict, expiry, audit failure, or archive race preserves PostgreSQL authority with no duplicate, Plant-state promotion, or device effect.",
+  "success_outcome": "A matched safe_task_request creates exactly one ordinary check, measurement, or follow_up Task; its first classified-message dispatch is atomically consumed or denied in PostgreSQL so a current-guard denial cannot become a Task after restore with the same run_id or message_id; an eligible current FT-011 pending decision can be approved or rejected exactly once, approval atomically creates one human action Task, action completion atomically creates one follow-up due 48 hours later, Outcome recording atomically completes that follow-up under the exact evidence policy, and every retry, conflict, expiry, audit failure, or archive race preserves PostgreSQL authority with no duplicate, Plant-state promotion, or device effect.",
   "anti_goals": [
     "Do not implement the real task_follow_up model runtime in this task; TASK-040 owns external model egress and typed proposal orchestration.",
     "Do not add a scheduler, worker, outbox, reminder executor, generic idempotency framework, pending-approval Task kind, cancelled/expired stored state, or second action proposal state machine.",
@@ -343,6 +457,7 @@
     "stop_conditions": [
       "The implemented TASK-038 handoff differs materially from the immutable pending-decision contract or its current migration head is ambiguous.",
       "Current ActorContext, Plant, Approval, Safety decision, or pH/EC evidence cannot be reloaded and locked in the owning write transaction without widening a public contract.",
+      "A classified-message current-guard denial and its immutable one-shot disposition cannot commit under the same PostgreSQL guard locks without moving authority into Timeline, Bus, or another module.",
       "Approval and action Task, action completion and follow-up, or Outcome and follow-up completion cannot be made one PostgreSQL transaction.",
       "The implementation would require raw candidate text as authority, automated actuation, a second proposal state machine, or Timeline replay as runtime state.",
       "Existing uncommitted work makes the additive FT-012 migration or shared publication/main/writer edits unsafe to reconcile."
@@ -355,6 +470,7 @@
     ".memory-bank/features/FT-011-safety-gate-physical-action-routing.md",
     ".memory-bank/behavior-specs/FT-012-BHV-001-approval-follow-up-outcome.behavior.json",
     ".memory-bank/behavior-specs/FT-012-BHV-002-retry-conflict-archive.behavior.json",
+    ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-RED-VERIFY-final-report-docs-02.md",
     ".protocols/FT-012/decision-log.md",
     ".memory-bank/tasks/plans/IMPL-FT-012.md"
   ],
@@ -381,21 +497,27 @@
     "Approve/reject reloads current ActorContext, active Plant, approval authority, immutable Safety decision, and selected pH/EC evidence; expected_version and request fingerprint must match.",
     "Approved transition and its unique human action Task commit together; action completion and its unique +48-hour follow-up commit together; Outcome and follow-up completion commit together.",
     "safe_task_request uses MessageEnvelope.run_id as its stable command request id and creates only the exact matching ordinary kind after persisted classification, current task authority, and same-Plant PostgreSQL reload of every source ref; it can never create action.",
+    "The classified-message branch records one immutable PostgreSQL ordinary_task_dispatch_dispositions row keyed by classification message with unique run id, exact scope/input fingerprint, and terminal consumed or current-guard-denied matrix; consumed commits with Task/audit, denied commits under the same guard locks before its typed error is surfaced, and either identity mismatch conflicts.",
+    "Every FT-012 UUID path segment is validated from the raw ASGI request path before decoded UUID binding; only literal lowercase canonical spelling is accepted and percent-encoded equivalents return the protected 422/no-store validation response.",
+    "Only a named request-id uniqueness loss is rolled back and re-read from a clean transaction for duplicate versus TASK_VERSION_CONFLICT mapping; unrelated or ownerless database failures remain TASK_PERSISTENCE_FAILED.",
+    "approval_decided omits action_task_id for rejected and requires a canonical non-null action Task UUID for approved.",
     "Timeline append failure rolls back the runtime mutation, while an already appended event after later DB failure remains non-authoritative noise and cannot replay state."
   ],
   "invariants": [
     "PostgreSQL is mutable Task, Approval, and Outcome authority; Timeline, UI Feed, Bus, MessageEnvelope, classification, and model output cannot independently transition records.",
+    "PostgreSQL ordinary-task dispatch dispositions are the sole one-shot consumed/denied authority for classified messages; restore cannot clear or re-evaluate the same run_id or message_id, and a later attempt requires both new identities.",
     "Human approval and Task completion record human-performed work only and never trigger automated actuation.",
     "Consultant never creates or completes domain Tasks and never approves physical action; Engineer approval always requires the current active grant flag.",
     "Non-no_data Outcomes require authorized evidence refs and never directly promote confirmed Plant state.",
-    "Archive preserves records unchanged and blocks every transition; restore does not replay, refresh, extend, or resume them."
+    "Archive preserves records unchanged and blocks every transition; restore does not replay, refresh, extend, resume, or make a denied classified message operative."
   ],
   "verification_targets": [
-    "Migration/model tests prove exact UUID/FK/enums/checks, restrictive deletes, natural uniqueness, request fingerprints, and the actual post-FT-011 head with all exact-head regression assertions advanced.",
-    "PostgreSQL read/write and concurrency tests prove identical duplicate versus conflict, parent-row lock behavior, and rollback for audit, task insert, follow-up insert, and Outcome insert failures.",
-    "Service tests prove matched ordinary kinds, same-Plant authoritative source-ref reload, Boss/Engineer/Consultant authority, immutable decision/version, pH/EC freshness, now==valid_until versus now>valid_until, and archive/grant races.",
-    "The full approved action flow produces one action Task, one follow-up due exactly 48 hours after completion, one evidence-valid Outcome, and exact Timeline event cardinality with no device or Plant-state effect.",
-    "HTTP/OpenAPI tests prove strict request/response unions, no-store, no-existence-leak, stable errors, redaction, idempotent retries, and no arbitrary task/action fields.",
+    "Migration/model tests prove exact UUID/FK/enums/checks, restrictive deletes, natural uniqueness, request fingerprints, immutable ordinary-task disposition matrix, and the actual post-FT-011 head with all eight exact-head regression assertions advanced.",
+    "PostgreSQL read/write and concurrency tests prove identical duplicate versus conflict, parent-row lock behavior, atomic consumed/denied dispositions, same-identity denial after restore, new run/message eligibility, and rollback for disposition, audit, task insert, follow-up insert, and Outcome insert failures.",
+    "Concurrent globally unique request-id tests prove rollback before clean owner re-read: same canonical owner/content is duplicate, cross-parent/content collision is TASK_VERSION_CONFLICT, and unrelated or ownerless DB errors remain TASK_PERSISTENCE_FAILED.",
+    "Service tests prove matched ordinary kinds, same-Plant authoritative source-ref reload, Boss/Engineer/Consultant authority, immutable decision/version, pH/EC freshness, now==valid_until versus now>valid_until, and archive/grant races without Timeline/Bus dispatch authority.",
+    "The full approved action flow produces one action Task, one follow-up due exactly 48 hours after completion, one evidence-valid Outcome, and exact Timeline event cardinality with no device or Plant-state effect; rejected approval_decided omits action_task_id and approved requires its UUID.",
+    "HTTP/OpenAPI tests prove strict request/response unions, no-store, no-existence-leak, stable errors, redaction, idempotent retries, no arbitrary task/action fields, and raw lowercase canonical UUID validation before decoded binding including percent-encoded-equivalent 422 at all eight path ids.",
     "Focused FT-004, FT-007, FT-008, FT-010, and FT-011 regression plus the full deterministic suite preserve existing authority and context boundaries."
   ]
 }

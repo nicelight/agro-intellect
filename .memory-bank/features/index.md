@@ -35,7 +35,7 @@ source_of_truth:
 ## EP-004 Safety Tasks And Follow-Up
 
 - [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): W1/W2 deterministic classification and Safety decision/projection task boundary complete through immutable `pending_human_approval`; lifecycle remains planned pending an explicit owner feature decision.
-- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): SDD design complete; two planned T3 tasks add authoritative approval/task/follow-up/outcome state and the provider-neutral classified `task_follow_up` path.
+- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): W1 authoritative PostgreSQL Approval/Task/follow-up/Outcome boundary is complete from current ATTEMPT 03 evidence; lifecycle remains planned while W2 provider-neutral `task_follow_up` runtime is open.
 
 ## EP-005 Companion Governance
 

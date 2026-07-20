@@ -1,7 +1,7 @@
 {
   "id": "TASK-040-T3-FT-012-W2",
   "title": "Run provider-neutral Task and Follow-Up Agent through ordinary-task authority",
-  "status": "planned",
+  "status": "in_progress",
   "wave": "W2",
   "feature": "FT-012",
   "reqs": [
@@ -19,8 +19,19 @@
     "backend/app/agent_runtime/providers.py",
     "backend/app/agent_runtime/__init__.py",
     "backend/app/main.py",
+    "backend/migrations/versions/ft012_runtime_dispositions.py",
     "tests/backend/task_follow_up/test_runtime.py",
-    "tests/backend/agent_runtime/test_ft007_roster_providers.py"
+    "tests/backend/task_follow_up/test_domain_loop.py",
+    "tests/backend/task_follow_up/test_migration_models.py",
+    "tests/backend/agent_runtime/test_ft007_roster_providers.py",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/photo_intake/test_ft005_migration_models.py",
+    "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/agent_chat/test_ft008_migration_models.py",
+    "tests/backend/plant_state/test_migration_models.py",
+    "tests/backend/safety_gate/test_migration_models.py",
+    "tests/backend/safety_gate/test_classification_persistence.py",
+    "tests/backend/test_foundation_database_contract.py"
   ],
   "tier": "T3",
   "gates": [
@@ -32,6 +43,16 @@
     {
       "name": "task_classifier_authority_regression",
       "command": ".venv/bin/python -m pytest tests/backend/task_follow_up tests/backend/agent_runtime tests/backend/agent_chat tests/backend/safety_gate -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "task_follow_up_runtime_postgresql_repair",
+      "command": ".venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/task_follow_up/test_domain_loop.py tests/backend/task_follow_up/test_migration_models.py -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "runtime_disposition_exact_head_compatibility",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q",
       "required": true
     },
     {
@@ -50,11 +71,127 @@
       "required": true
     }
   ],
-  "verify": [],
+  "verify": [
+    {
+      "stage": "scheduler_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "decided_at": "2026-07-20T13:46:57+05:00",
+      "basis": "Direct dependency TASK-039 is done from current ATTEMPT 03 evidence; FT-012/W1 boundary reconciliation passed; fresh post-W1 FT-012 W2 planning review is APPROVE with all four groups PASS and no blocker; fresh strict doctor passed with 0 errors. Promotion does not start ATTEMPT 01.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-CLOSURE-final-report-docs-03.md",
+        ".tasks/TASK-MB-MB-SYNC/TASK-MB-MB-SYNC-S-SYNC-FT-012-W1-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-W2-POST-W1-20260720-final-report-docs-01.md"
+      ],
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "max_consecutive_failures": 5
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke is deferred and is not required or claimed.",
+      "next_gate": "Run a fresh strict doctor over the ready queue before scheduler selection and ATTEMPT 01 consumption."
+    },
+    {
+      "stage": "scheduler_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "01",
+      "decided_at": "2026-07-20T13:47:32+05:00",
+      "basis": "TASK-040 was the sole ready task, direct dependency TASK-039 is done, the fresh post-W1 FT-012 W2 review is APPROVE, and the post-promotion strict doctor passed with 0 errors. Scheduler selected the task and consumed ATTEMPT 01.",
+      "strict_doctor": "PASS: 0 errors, 20 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 4,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 0
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke is deferred and is not required or claimed.",
+      "next_gate": "Fresh-session /execute for TASK-040 ATTEMPT 01."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "01",
+      "verdict": "FAIL",
+      "verified_at": "2026-07-20T14:28:57+05:00",
+      "basis": "Independent deterministic and PostgreSQL verification passed the standard runtime, scoped authority, full regression, lint, compile, and task-scoped diff gates, but reproduced two HIGH contract defects: the W2 shared authoritative-ref resolver widened existing W1 Outcome evidence acceptance, and a post-model guard-denied run could create a Task after restore when retried with the same run_id.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-01.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-040-T3-FT-012-W2/verify_attempt01_contract_matrix.py"
+      ],
+      "gate_summary": {
+        "runtime_agent": "PASS: 58 passed, 1 deselected",
+        "scoped_authority": "PASS: 173 passed, 1 deselected",
+        "full_deterministic": "PASS: 501 passed, 2 deselected",
+        "supplemental_postgresql": "FAIL: 2 failed, 2 passed",
+        "mb_lint_compile_scoped_diff": "PASS"
+      },
+      "red_verify": "SKIPPED: functional verification FAIL cannot support closure.",
+      "provider_acceptance": "Provider-neutral deterministic code phase; no provider/model/base URL/Gemini/credential/egress/network/live smoke was required, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for a bounded same-task retry decision; lifecycle remains in_progress."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "02",
+      "decided_at": "2026-07-20T14:30:02+05:00",
+      "basis": "ATTEMPT 01 is not closable because independent verification reproduced two HIGH contract defects. Both binding contracts are already explicit: W1 Outcome evidence semantics must remain closed, and a guard-denied runtime run must remain terminal across restore for the same run identity. The bounded repair remains within TASK-040 scope and existing PostgreSQL authority; fresh strict doctor passed with 0 errors.",
+      "bounded_repair": [
+        "Separate competence-specific task/outcome source-record revalidation from the shared W1 Outcome evidence resolver so task: and outcome: refs remain rejected as W1 Outcome evidence.",
+        "Persist terminal denial for the same runtime run identity using existing PostgreSQL disposition authority so restore cannot make the denied invocation operative; require a new command/run/message identity for reevaluation.",
+        "Add canonical regressions for both defects and retain every ATTEMPT 01 deterministic authority, race, redaction, no-provider, no-fallback, and no-actuation gate."
+      ],
+      "forbidden_workarounds": [
+        "Process-local replay cache.",
+        "Timeline or audit rows as runtime authority.",
+        "New provider binding, network call, fallback, fake production path, or widened W1 schema/HTTP/lifecycle/permission semantics."
+      ],
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 3,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 1
+      },
+      "bug_loop_guard": "If ATTEMPT 02 repeats either ATTEMPT 01 HIGH defect without materially new evidence, do not start another identical repair attempt; reconcile the design/task plan before a different approach.",
+      "next_gate": "Fresh-session bounded /execute for TASK-040 ATTEMPT 02."
+    },
+    {
+      "stage": "implementation_blocked",
+      "mode": "delegated_implementer",
+      "attempt": "02",
+      "result": "BLOCKED",
+      "reported_at": "2026-07-20T14:42:29+05:00",
+      "basis": "The resolver confinement has a safe local repair, but the same-run denial cannot be made durable with current authority: post-model guard denial occurs before MessageEnvelope/classification, while ordinary_task_dispatch_dispositions requires a non-null classification_message_id with restrictive Safety FK, exact envelope fingerprint, and a different closed denial-code union. ATTEMPT 02 stopped before product/test edits rather than introducing a process cache, Timeline authority, alternate classifier writer, stale envelope, or unreviewed schema/public-contract change.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-02.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-01.md"
+      ],
+      "product_test_changes": "NONE",
+      "verification": "NOT RUN: implementation stopped at the explicit design/scope condition; ATTEMPT 01 defects remain reproduced.",
+      "red_verify": "NOT RUN: blocked implementation cannot support semantic closure.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining": 3,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 2
+      },
+      "next_owner": "Scheduler/orchestrator for controlled /prd-to-tasks FT-012 reconciliation of pre-classification durable denial authority, then fresh review before any later attempt."
+    }
+  ],
   "docs": [
     ".memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md",
     ".memory-bank/contracts/task-follow-up-runtime.md",
     ".memory-bank/domains/task-approval-outcomes.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/contracts/task-approval-http.md",
     ".memory-bank/contracts/agent-model-provider-profiles.md",
     ".memory-bank/runbooks/agent-runtime-providers.md",
     ".memory-bank/testing/task-follow-up.md",
@@ -69,11 +206,12 @@
     "Deterministic timeout, provider error, invalid output, exact fake/spy call count, and unbound-production evidence."
   ],
   "purpose": "Make the canonical task_follow_up roster member operational as a provider-neutral, permission-aware competence whose only possible product effect is one matched ordinary Task through existing project classification and PostgreSQL authority.",
-  "success_outcome": "One strict provider-neutral task_follow_up invocation over current authorized PostgreSQL Task/Outcome/evidence records can emit only a check, measurement, or follow_up proposal; a pending task_request envelope plus a durably persisted matching project classification and current ordinary-task guard creates exactly one same-kind Task. Deterministic fake/spy evidence covers schemas, authorization plus post-I/O recheck, timeout/error/invalid output, redaction, unbound production, and no fallback/fake production without provider/model/base URL/credential/egress/network/live-smoke requirements; every denial/failure branch has no Task or other state effect.",
+  "success_outcome": "One strict provider-neutral task_follow_up invocation over current authorized PostgreSQL Task/Outcome/evidence records can emit only a check, measurement, or follow_up proposal; after model I/O it commits exactly one immutable run/fingerprint runtime disposition as publication_denied or envelope_handed_off with one post-guard message. A matching classification and current ordinary-task guard then create exactly one same-kind Task through the existing classified disposition and sole Task writer. Same-run retry/conflict/concurrency, restore, audit/commit failure, and runtime-versus-classified races create no replay or contradictory effect; new evaluation requires new command/run/message identities. W1 Outcome evidence remains closed while the competence uses a separate source resolver. Deterministic acceptance remains provider-neutral with no provider/model/base URL/credential/egress/network/live-smoke requirement or claim.",
   "anti_goals": [
     "Do not widen generic ProviderRequestV1, MessageEnvelope, Safety classification, or roster identity contracts.",
     "Do not let the model approve/reject, create action, complete Tasks, record Outcomes, mutate Plant state, invoke tools/devices, or bypass TASK-039 authority.",
     "Do not add a public agent endpoint, UI/Bus/Timeline replay context, agent memory, tools, RAG, fallback model, fake production output, or silent failure substitution.",
+    "Do not add a generic Agent Runtime ledger, persist/replay MessageEnvelope or candidate/provider payloads, or weaken the existing classified disposition schema to represent pre-classification denial.",
     "Do not claim FT-012 acceptance from transport-only, schema-only, fake-production, fallback, or blocked/failed output; require the complete deterministic authority and fake/spy evidence matrix."
   ],
   "runtime_context": {
@@ -82,8 +220,19 @@
       "backend/app/agent_runtime/providers.py",
       "backend/app/agent_runtime/__init__.py",
       "backend/app/main.py",
+      "backend/migrations/versions/ft012_runtime_dispositions.py",
       "tests/backend/task_follow_up/test_runtime.py",
+      "tests/backend/task_follow_up/test_domain_loop.py",
+      "tests/backend/task_follow_up/test_migration_models.py",
       "tests/backend/agent_runtime/test_ft007_roster_providers.py",
+      "tests/backend/access_admin/test_ft002_schema_migration.py",
+      "tests/backend/photo_intake/test_ft005_migration_models.py",
+      "tests/backend/plant_operations/test_ft004_migration_models.py",
+      "tests/backend/agent_chat/test_ft008_migration_models.py",
+      "tests/backend/plant_state/test_migration_models.py",
+      "tests/backend/safety_gate/test_migration_models.py",
+      "tests/backend/safety_gate/test_classification_persistence.py",
+      "tests/backend/test_foundation_database_contract.py",
       ".memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md",
       ".memory-bank/contracts/task-follow-up-runtime.md",
       ".memory-bank/contracts/agent-model-provider-profiles.md",
@@ -114,11 +263,14 @@
     ".memory-bank/requirements.md",
     ".memory-bank/behavior-specs/FT-012-BHV-003-real-agent-ordinary-task.behavior.json",
     ".protocols/FT-012/decision-log.md",
-    ".memory-bank/tasks/plans/IMPL-FT-012.md"
+    ".memory-bank/tasks/plans/IMPL-FT-012.md",
+    ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-RUNTIME-DENIAL-REPAIR-20260720-final-report-docs-01.md"
   ],
   "normative_inputs": [
     ".memory-bank/contracts/task-follow-up-runtime.md",
     ".memory-bank/domains/task-approval-outcomes.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/contracts/task-approval-http.md",
     ".memory-bank/testing/task-follow-up.md",
     ".memory-bank/contracts/agent-runtime-adapter.md",
     ".memory-bank/contracts/agent-model-provider-profiles.md",
@@ -140,6 +292,8 @@
     "The model result may speak only one allowed check, measurement, or follow_up proposal or produce strict model-declared silence; action and every mutation field are schema-invalid.",
     "A non-silent result creates only a pending task_request MessageEnvelope; the existing project classifier must persist the exact same safe_task_kind before TASK-039 may create a Task.",
     "The strict provider-neutral seam has no selected provider/model/base URL; production remains unbound and fail-closed, test fakes/spies are explicit, I/O is outside transactions, and every owning writer repeats current guards.",
+    "The task_follow_up runtime stage writes only the additive ft012_runtime_dispositions authority after model I/O under a short run-key advisory lock; the same lock and exact handed-off identity are required by the downstream classified Task writer, and no transaction/lock spans Task model or Safety-classifier I/O.",
+    "W1 record_follow_up_outcome keeps its closed evidence resolver and rejects task:/outcome: refs; W2 Task/Outcome source-record lookup is competence-specific and cannot be reused by the Outcome writer.",
     "Deterministic acceptance requires exact task_follow_up and Safety fake/spy calls plus exactly one ordinary Task; fallback, production fake, silence, blocked, failed, mismatch, or direct action effect is not acceptance."
   ],
   "invariants": [
@@ -147,6 +301,7 @@
     "The task_follow_up agent can never create action, approve or reject, complete a Task, record an Outcome, confirm Plant state, or produce a device effect.",
     "UI Feed, Bus history, Timeline replay, raw chat, ActorContext/session/grant payloads, caller refs, prompts, provider history, hidden reasoning, and credentials never enter provider input.",
     "Archived or unauthorized Plant state creates no model-backed Task effect and restore never replays the denied run.",
+    "One run/fingerprint has exactly one immutable runtime-stage disposition; publication_denied and the same run's classified consumed/denied state cannot coexist, and envelope_handed_off never mints or replays a second message.",
     "Test fakes/spies are explicit seams only; no fake, canned, hardcoded, fallback, or failure-silence production path satisfies acceptance."
   ],
   "verification_targets": [
@@ -154,6 +309,8 @@
     "Outbound spies prove only authorized PostgreSQL Task/Outcome/evidence data crosses egress and every forbidden auth/UI/Bus/Timeline/prompt/provider field is absent.",
     "Integration tests prove exact proposed-kind/classification-kind matching, one ordinary Task on success, identical retry, mismatch/physical/block conflict no effect, and no action/approval/completion/Outcome/Plant/device authority.",
     "Authorization tests prove current pre/post-I/O, classifier, task-write, session/grant revoke, wrong-Farm, and archive races fail closed with no restore replay.",
+    "PostgreSQL tests prove exact runtime-disposition schema/migration head, command fingerprint, identical denied retry, changed-input conflict, concurrent same-run first-write, post-model archive/revoke durability, audit/commit rollback, runtime/classified exclusion, one post-guard message, and new-identity eligibility.",
+    "Regression tests prove task:/outcome: are accepted only by the competence source resolver and remain rejected by W1 record_follow_up_outcome evidence validation.",
     "Provider-neutral tests prove explicit test fake/spy construction, exact call counts and allowlists, timeout/provider-error/invalid-output handling, unbound-production failure, no default/fallback/fake production output, redacted logs/audit/evidence, and compatibility with the existing Agent Runtime outcome matrix."
   ]
 }

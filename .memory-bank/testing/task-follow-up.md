@@ -26,14 +26,31 @@ immutable pending Safety decision through human task completion and Outcome.
 - Natural uniqueness for classification message, Safety decision, Approval,
   parent action, and follow-up Outcome plus persisted request ids and canonical
   fingerprints.
+- Exact immutable `ordinary_task_dispatch_dispositions` schema: restrictive
+  classification/Farm/Plant UUID FKs, primary-key
+  `classification_message_id`, named unique `run_id`, lowercase input
+  fingerprint, closed `consumed|denied` plus denial code matrix, no
+  mutable/pending/replay fields, and safe downgrade refusal when disposition
+  authority exists.
+- Exact immutable `task_follow_up_runtime_dispositions` schema: primary-key
+  `run_id`, restrictive Farm/Plant scope, command fingerprint, unique nullable
+  post-guard `message_id`, nullable envelope input hash, closed
+  `envelope_handed_off|publication_denied` matrix, sole
+  `AGENT_PUBLICATION_BLOCKED` denial, safe model/audit refs, no envelope/body/
+  auth snapshot, and populated-table downgrade refusal.
 - Parent-row locking plus unique-race re-read: concurrent identical first
   writes return one result; different content conflicts without replacement.
+  Named request-id uniqueness losses are rolled back before a clean owner
+  re-read; a cross-parent collision is `TASK_VERSION_CONFLICT`, while unrelated
+  database errors remain `TASK_PERSISTENCE_FAILED`.
 - PostgreSQL read/write smoke proves Task, Approval, Outcome, source refs,
   safe attribution, timestamps, and Timeline refs round-trip through the real
   repository/session path.
-- The FT-012 revision uses
-  `down_revision=ft011_safety_action_decisions`. All eight current exact-head
-  consumers advance to the FT-012 revision in the same migration wave:
+- The W1 FT-012 revision uses
+  `down_revision=ft011_safety_action_decisions`. TASK-040 adds
+  `ft012_runtime_dispositions` directly after
+  `ft012_task_approval_outcomes`; all eight current exact-head consumers
+  advance to the new runtime-disposition revision in the same W2 repair:
   `tests/backend/access_admin/test_ft002_schema_migration.py`,
   `tests/backend/photo_intake/test_ft005_migration_models.py`,
   `tests/backend/plant_operations/test_ft004_migration_models.py`,
@@ -61,6 +78,22 @@ immutable pending Safety decision through human task completion and Outcome.
   wrong Farm, disabled identity, or archived Plant fails closed.
 - Identical retry returns the same Task and `task_created` ref. Same message or
   request id with different fingerprint conflicts.
+- The first classified-message current-guard evaluation atomically commits one
+  terminal disposition: `consumed` with Task/audit success or `denied` for the
+  exact Plant/archive/authorization failure. The same denied `run_id` or
+  `message_id` remains denied after restore without guard re-evaluation; a
+  successful later attempt requires a new invocation with both new identities.
+- A consumed retry returns the existing Task only under current read/task
+  authority; archive/revoke denial leaks no Task and does not alter the
+  terminal disposition.
+- Disposition insert/commit failure is fail-closed with no Task. Concurrent
+  same-message and same-run/different-message probes prove first-write-wins,
+  immutable duplicate/conflict classification, and zero Timeline/Bus authority.
+- For `task_follow_up`, the runtime-stage and classified dispatch writers use
+  the same short transaction-scoped run advisory lock. PostgreSQL races prove
+  that one run cannot commit both `publication_denied` and classified
+  `consumed|denied`, and no lock/transaction spans Task model or Safety model
+  I/O.
 - The classified-message branch derives exact message/classification/upstream
   source refs and fingerprint, owns/commits its UoW, and rejects canonical
   Companion origin because that classification is governance-held.
@@ -93,6 +126,8 @@ immutable pending Safety decision through human task completion and Outcome.
   Safety approval.
 - Approve creates exactly one human `action` Task in the same transaction;
   reject creates none. Task/audit/persistence failure leaves Approval pending.
+- Approved `approval_decided` contains a required canonical UUID
+  `action_task_id`; rejected `approval_decided` omits that key entirely.
 - Identical terminal retry returns the first result. Wrong version, opposite
   decision, new terminal request, or reused request id/fingerprint conflict
   returns 409/no effect.
@@ -110,6 +145,10 @@ immutable pending Safety decision through human task completion and Outcome.
 - Generic completion rejects `follow_up`.
 - Recording `improved|worsened|unchanged` requires one through four valid
   same-Plant evidence refs; `no_data` accepts zero through four.
+- W1 Outcome validation retains only
+  `plant|daily_checkin|manual_measurement|photo_catalog_item|plant_state_record`;
+  `task:` and `outcome:` remain rejected. A separate competence-only resolver
+  may load Task/Outcome runtime records and is never used by Outcome writes.
 - Outcome creation and follow-up completion are atomic and unique. Event
   cardinality is one `task_completed` plus one
   `follow_up_outcome_recorded`; any append/DB failure cannot claim success.
@@ -124,6 +163,11 @@ immutable pending Safety decision through human task completion and Outcome.
 - Every route resolves ActorContext before service logic, returns no-store,
   preserves no-existence-leak denial, and excludes auth/provider/candidate
   internals.
+- A narrow raw ASGI path boundary validates all eight FT-012 UUID occurrences
+  before decoded UUID binding. Literal lowercase canonical bytes succeed;
+  uppercase, compact, braced, percent-encoded-equivalent, malformed, or
+  unavailable raw spellings return the safe `422/no-store` validation envelope
+  without service/DB calls, and OpenAPI retains the exact UUID pattern.
 - List filters/limits preserve strict ordering and authorized Plant scope.
 - Archive with pending Approval and open action/follow-up leaves all records
   unchanged and blocks every command. Restore performs no replay; each new
@@ -131,6 +175,9 @@ immutable pending Safety decision through human task completion and Outcome.
   checks.
 - Archive/grant/revoke races at the write boundary create no unauthorized
   Task, decision, completion, or Outcome.
+- A classified ordinary message denied by an archive/current-authority guard
+  retains its terminal PostgreSQL denial across restore. Resubmitting the old
+  identities creates no Task; a new run/message is evaluated normally.
 
 ## Task and Follow-up Agent matrix
 
@@ -157,6 +204,15 @@ immutable pending Safety decision through human task completion and Outcome.
   retry/restore/reconciliation cannot replay the suppressed Task effect.
 - Pre/post-model, classification-write, and task-write authorization/archive
   races fail closed with no restore replay.
+- The exact runtime command fingerprint is stable for an identical command and
+  conflicts for changed input under one `run_id`. A committed post-model
+  archive/revoke denial survives restore and returns without another model,
+  classifier, envelope, or Task call. An eligible run commits one post-guard
+  message handoff before classifier I/O; the same run cannot mint another
+  message, and only a new command/run may later allocate a new message.
+- Concurrent same-run invocations prove first terminal runtime write wins;
+  runtime audit/row commit failure proves rollback/no classifier/no Task, with
+  any earlier Timeline append treated only as non-authoritative noise.
 - Provider-neutral fake/spy injection, unbound fail-closed production, no
   default/fallback/fake production result, redaction, and common Agent Runtime
   audit semantics remain compatible.
@@ -187,9 +243,34 @@ current deterministic REQ-011 evidence and does not claim real integration.
 - `FT-012-BHV-001`: current approval -> one human action -> completion -> one
   +48-hour follow-up -> evidence-aware Outcome, with no device effect.
 - `FT-012-BHV-002`: identical retry succeeds idempotently; stale/conflicting
-  retry and archived transition have no effect; restore does not replay.
+  retry and archived transition have no effect; restore does not replay or
+  re-evaluate a denied classified message, and only new run/message identities
+  can reach a fresh guard.
 - `FT-012-BHV-003`: strict `task_follow_up` typed proposal plus matching
-  classification creates exactly one ordinary Task and never action.
+  classification creates exactly one ordinary Task and never action; its
+  runtime-stage denial/handoff identity is one-shot across retry and restore.
+
+## Current W1 accepted evidence
+
+- Scheduler closure selects only TASK-039 ATTEMPT 03: implementation `PASS`,
+  independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence. The two
+  older failed attempts remain history.
+- Core PostgreSQL/domain/migration/API: `22 passed`; current-guard and Safety
+  regression: `210 passed`; exact eight-consumer migration compatibility:
+  `47 passed`; full deterministic suite: `489 passed, 2 deselected`.
+- Independent repair matrix: `10 passed`, including all eight raw UUID
+  positions, disposition identity/archive/rollback/concurrency, actual guarded
+  publication, request collision mapping, and Timeline branches. Adversarial
+  review: `18/18` semantic cases and `20/20` executable matrix cases passed
+  with no current finding or blocker.
+- The verified product head is `ft012_task_approval_outcomes` directly after
+  `ft011_safety_action_decisions`. Scope evidence covers exactly `11/11`
+  allowlisted W1 product/test paths and excludes W2, frontend, provider/live,
+  actuation, Plant-state mutation, and TASK-041/TASK-042/TASK-043 work.
+- W2 deterministic Task and Follow-Up Agent evidence remains open under
+  TASK-040. No provider/model/base URL/Gemini/credential/egress/network or
+  live-smoke result is claimed by W1.
 
 ## Commands
 
@@ -201,6 +282,8 @@ current deterministic REQ-011 evidence and does not claim real integration.
   `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/agent_runtime -m "not real_model" -q`
 - Exact-head compatibility:
   `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q`
+- TASK-040 bounded repair matrix:
+  `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/task_follow_up/test_domain_loop.py tests/backend/task_follow_up/test_migration_models.py -m "not real_model" -q`
 - Full deterministic suite: `.venv/bin/python -m pytest tests -m "not real_model" -q`
 - Memory Bank lint: `node scripts/mb-lint.mjs`
 - Diff check: `git diff --check`

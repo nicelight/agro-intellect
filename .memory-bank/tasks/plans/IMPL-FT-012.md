@@ -23,14 +23,23 @@ only a matched ordinary Task.
 - approve/reject atomicity and one action Task per Approval;
 - ordinary `check|measurement|follow_up` Task creation only from a matched
   validated envelope/classification;
+- immutable PostgreSQL one-shot consumption/denial for each classified
+  ordinary `run_id`/`message_id`, including denial retention across restore;
 - Task list, Approval list, human decision, completion, and Outcome HTTP;
 - action completion plus exactly one +48-hour follow-up;
 - Outcome plus follow-up completion atomicity and evidence policy;
 - request-id/fingerprint idempotency, conflict, concurrency, and archive races;
+- raw request-path UUID canonicality before decoded binding and branch-exact
+  approval Timeline payloads;
 - registered Timeline audit refs and redacted summaries;
 - competence-specific `task_follow_up` request/result, strict provider-neutral
   executor seam, pending MessageEnvelope, matching classification, and ordinary-task
   handoff;
+- immutable pre-classification `task_follow_up` runtime disposition keyed by
+  exact run/command fingerprint, coordinated with the classified-message
+  disposition without a transaction across model I/O;
+- a competence-only Task/Outcome source-record resolver that does not widen
+  W1 Outcome evidence acceptance;
 - deterministic, PostgreSQL, HTTP, compatibility, outbound-spy, and anti-cheat
   evidence.
 
@@ -57,9 +66,10 @@ only a matched ordinary Task.
    domain commands/results, ORM models, repository locks, and transaction
    service. Reuse existing session/UoW, ActorContext permissions, current Plant
    resolution, redaction, and Timeline writer patterns.
-2. Add one post-FT-011 Alembic revision for `approvals`, `tasks`, and
-   `outcomes`, with exact closed matrices, restrictive UUID FKs, natural
-   uniqueness, request ids/fingerprints, and no-cascade retention. Its
+2. Add one post-FT-011 Alembic revision for `approvals`, `tasks`, `outcomes`,
+   and immutable `ordinary_task_dispatch_dispositions`, with exact closed
+   matrices, restrictive UUID FKs, natural uniqueness, request
+   ids/fingerprints, and no-cascade retention. Its
    `down_revision` is the implemented upstream head
    `ft011_safety_action_decisions`.
 3. Wire idempotent post-commit Approval materialization at the actual FT-011
@@ -67,8 +77,12 @@ only a matched ordinary Task.
    explicit approve/reject safely retries materialization.
 4. Replace the existing `safe_task_request -> no_effect` seam with the closed
    ordinary-task service. Validate the transient envelope plus persisted
-   matching classification, current authorization, and active Plant before
-   inserting only `check|measurement|follow_up`.
+   matching classification, then atomically record the first terminal
+   PostgreSQL `consumed|denied` disposition under current authorization/Plant
+   guard locks. A denial is immutable across restore for that `run_id` or
+   `message_id`; only a new invocation with both new identities may be
+   evaluated. Eligible consumption commits only
+   `check|measurement|follow_up` with its Task audit ref.
 5. Implement approve/reject with parent-row locking, current authority,
    immutable decision, exact source expiry, live pH/EC freshness, expected
    version, request fingerprint, and one-transaction approved action Task.
@@ -78,11 +92,18 @@ only a matched ordinary Task.
    follow-up completion. Keep Outcome evidence separate from Plant-state
    promotion.
 8. Register and append exact Task/Approval/Outcome Timeline events before the
-   matching PostgreSQL success. Preserve runtime authority when an appended
-   event becomes non-authoritative noise after a later commit failure.
+   matching PostgreSQL success. Rejected `approval_decided` omits
+   `action_task_id`; approved requires its canonical Task UUID. Preserve
+   runtime authority when an appended event becomes non-authoritative noise
+   after a later commit failure.
 9. Add protected list/mutation routes, strict Pydantic schemas, stable safe
-   errors, no-store responses, OpenAPI assertions, and focused integration/
-   concurrency/archive tests.
+   errors, no-store responses, and OpenAPI assertions. Enforce the lowercase
+   canonical UUID spelling from raw ASGI path bytes before decoded binding,
+   including percent-encoded-equivalent rejection.
+10. Map only named concurrent request-id uniqueness losses after rollback and
+    clean owner re-read to duplicate or `TASK_VERSION_CONFLICT`; unrelated DB
+    errors remain `TASK_PERSISTENCE_FAILED`. Add focused integration,
+    concurrency, raw-path, Timeline-branch, and archive/restore tests.
 
 ### 2. Provider-neutral Task and Follow-Up Agent through ordinary-task authority
 
@@ -105,9 +126,22 @@ only a matched ordinary Task.
    Require exact task-kind equality and then invoke the TASK-039 ordinary-task
    service. Every other class, mismatch, conflict, or current-guard denial has
    no Task effect and no restore replay.
-6. Add deterministic outbound-snapshot, schema/matrix, archive-race,
+6. Add the narrow `ft012_runtime_dispositions` migration after the accepted W1
+   head. After model output, commit exactly one immutable
+   `envelope_handed_off|publication_denied` row under a short run advisory lock;
+   reuse that same lock/row check at the classified Task writer. Allocate an
+   eligible message only after the locked current guard, release the
+   transaction before Safety classifier I/O, and never persist/replay the
+   envelope payload.
+7. Split W2 source revalidation from the existing W1 Outcome evidence
+   resolver. The competence resolver may load its strict Task/Outcome/evidence
+   record union; `record_follow_up_outcome` continues rejecting `task:` and
+   `outcome:` refs.
+8. Add deterministic outbound-snapshot, schema/matrix, archive-race,
    idempotency, timeout/error, redaction, unbound-production, and no-authority
-   fake/spy tests.
+   fake/spy tests plus PostgreSQL fingerprint, identical/conflicting retry,
+   concurrent run, runtime/classified exclusion, rollback, exact-head, and
+   new-identity cases.
 
 ## Dependencies and waves
 
@@ -123,6 +157,26 @@ only a matched ordinary Task.
 - Shared package/composition/provider files are therefore changed
   sequentially, not by parallel execution.
 
+## Current Wave State
+
+- W1 `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` from current
+  ATTEMPT 03 implementation `PASS`, independent functional `PASS`, separate
+  `semantic-pass`, and immutable closure evidence. ATTEMPT 01/02 remain failed
+  history and are not selected as current evidence.
+- W1 implemented the authoritative Approval, ordinary/action Task, automatic
+  +48-hour follow-up, Outcome, and immutable classified-message disposition
+  boundary. It also implements current authority/evidence/archive guards,
+  exact retry/conflict/concurrency/rollback behavior, protected raw-path HTTP,
+  branch-exact Timeline summaries, and no-actuation/no-Plant-state limits.
+- `ft012_task_approval_outcomes` is the current product migration head directly
+  after `ft011_safety_action_decisions`; the eight listed compatibility
+  consumers pass against this exact head.
+- W2 `TASK-040-T3-FT-012-W2` remains scheduler-owned `in_progress`. ATTEMPT 01
+  verification reproduced two HIGH defects; ATTEMPT 02 stopped before product
+  edits because pre-classification denial had no permissible durable owner.
+  This bounded reconciliation defines the repair but does not select/start
+  ATTEMPT 03, change lifecycle/status, or consume attempt budget.
+
 ## Expected touched files
 
 Core lifecycle/API/persistence slice:
@@ -136,7 +190,7 @@ Core lifecycle/API/persistence slice:
 - `backend/app/api/task_follow_up.py`
 - `backend/app/main.py`
 - `backend/app/timeline/writer.py`
-- `backend/migrations/versions/*_ft012_task_approval_outcomes.py`
+- `backend/migrations/versions/ft012_task_approval_outcomes.py`
 - `tests/backend/task_follow_up/conftest.py`
 - `tests/backend/task_follow_up/test_domain_loop.py`
 - `tests/backend/task_follow_up/test_migration_models.py`
@@ -150,7 +204,11 @@ Provider-neutral runtime slice:
 - `backend/app/agent_runtime/providers.py`
 - `backend/app/agent_runtime/__init__.py`
 - `backend/app/main.py` only if composition wiring is needed;
+- `backend/migrations/versions/ft012_runtime_dispositions.py`;
 - `tests/backend/task_follow_up/test_runtime.py`
+- `tests/backend/task_follow_up/test_domain_loop.py` for the W1 evidence-union
+  non-regression;
+- `tests/backend/task_follow_up/test_migration_models.py`;
 - `tests/backend/agent_runtime/test_ft007_roster_providers.py` for the shared
   provider construction/outbound compatibility seam.
 
@@ -160,8 +218,8 @@ Operations, Access/Admin, and the future Safety package are touched only if
 the implemented upstream seam proves a narrow compatibility edit necessary;
 execution must stop rather than silently widening their public contracts.
 
-Each migration-owning execution updates the repository's current exact-head
-assertions as applicable:
+TASK-040 advances the implemented W1 head to `ft012_runtime_dispositions` and
+updates every repository exact-head assertion below in the same execution:
 
 - `tests/backend/access_admin/test_ft002_schema_migration.py`
 - `tests/backend/photo_intake/test_ft005_migration_models.py`
@@ -208,6 +266,13 @@ assertions as applicable:
 
 - PostgreSQL rows are the sole mutable task/approval/outcome authority.
   Timeline/UI/Bus/model data cannot create, repair, replay, or transition them.
+- PostgreSQL terminal dispatch dispositions are the sole one-shot authority
+  for classified ordinary-message consumption/denial. Their message and run
+  identities cannot be cleared or re-evaluated after restore.
+- The immutable runtime disposition is the sole pre-classification one-shot
+  authority for `task_follow_up`. It stores no envelope/provider/auth payload,
+  and the shared short run lock prevents contradiction with the downstream
+  classified disposition without spanning Task model or Safety model I/O.
 - Human approval revalidates current ActorContext, active Plant, immutable
   Safety decision, exact expiry, and pH/EC evidence; fresh evidence alone is
   never approval.
@@ -220,6 +285,9 @@ assertions as applicable:
   confirm Plant state.
 - Archive preserves all rows unchanged, blocks transitions, and restore never
   replays or refreshes them.
+- A named request-id uniqueness race is rolled back before owner re-read;
+  cross-parent/content reuse is a version conflict, while unrelated DB errors
+  remain persistence failures.
 - The runtime path uses the strict provider-neutral executor seam; production
   remains unbound and fail-closed, test fakes/spies are explicit, and no
   fake/silent production result or fallback can satisfy acceptance.
@@ -230,11 +298,22 @@ assertions as applicable:
 - PostgreSQL round trip, transaction rollback, Timeline event cardinality,
   request fingerprint, identical/conflicting retry, and concurrent first
   writes;
+- terminal consumed/denied disposition matrix, same-identity archived denial
+  after restore, new run/message eligibility, and disposition write failure;
+- runtime command fingerprint, exact denied retry, conflicting and concurrent
+  same-run behavior, post-model archive/revoke durability, one post-guard
+  message, runtime/classified exclusion, persistence rollback, and new command/
+  run/message eligibility;
+- W1 Outcome evidence rejects `task:`/`outcome:` while the competence-only
+  source resolver accepts only its strict runtime record union;
 - Boss/Engineer/Consultant, grant, archive/restore, expiry boundary, and
   current pH/EC evidence matrix;
 - matched ordinary task, approve/reject, action completion +48 hours, Outcome
   evidence, and zero device/Plant-state effects;
-- protected HTTP/OpenAPI/no-store/no-leak/redaction behavior;
+- protected HTTP/OpenAPI/no-store/no-leak/redaction behavior, including raw
+  percent-encoded-equivalent UUID rejection before decoded binding;
+- concurrent cross-parent request-id conflict mapping, unrelated persistence
+  failure preservation, and exact approved/rejected Timeline decision shapes;
 - exact `TaskFollowUpProviderRequestV1` outbound allowlist, typed quotation,
   strict result, pending envelope, matching classification, and ordinary Task;
 - deterministic outbound-spy no-fallback/no-fake-production anti-cheat plus
@@ -243,8 +322,11 @@ assertions as applicable:
 ## Quality gates and UAT
 
 - Run the task-specific commands in `.memory-bank/testing/task-follow-up.md`.
-- Run the eight exact-head compatibility tests after the FT-012 migration:
+- Run the eight exact-head compatibility tests after the TASK-040 runtime
+  disposition migration:
   `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q`.
+- Run the bounded W2 repair matrix:
+  `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/task_follow_up/test_domain_loop.py tests/backend/task_follow_up/test_migration_models.py -m "not real_model" -q`.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` for both waves.
 - Run the full deterministic suite before handoff when the environment permits.
 - Current acceptance uses deterministic fake/spy evidence, including timeout,
