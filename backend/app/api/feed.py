@@ -7,7 +7,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from ..access_admin.actor_context import ActorContext
 from ..access_admin.dependencies import require_actor_context
@@ -26,11 +26,27 @@ class AgentMessagePayload(BaseModel):
     payload_kind: Literal["agent_message"]; agent_id: str; candidate_claim_type: Literal["observation", "hypothesis", "recommendation", "clarification", "team_signal"]; quoted_text: str
 class BlockNoticePayload(BaseModel):
     payload_kind: Literal["block_notice"]; notice_code: Literal["classification_uncertain"]; text: Literal["Сообщение заблокировано до уточнения безопасности."]
-DisplayPayload = Annotated[Union[AgentIntroductionPayload, AgentMessagePayload, BlockNoticePayload], "payload_kind"]
+class SafetyEvidenceItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    status: Literal["fresh", "stale", "missing"]; source_ref: str | None; measured_at: datetime | None
+class SafetyApprovalInputFreshness(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    purpose: Literal["approval_input"]; window_hours: Literal[2]; computed_at: datetime; ph: SafetyEvidenceItem; ec: SafetyEvidenceItem
+class SafetyStatusPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    payload_kind: Literal["safety_status"]
+    decision_ref: str; classification_ref: str
+    action_kind: Literal["ph_adjustment", "ec_adjustment", "solution_change", "pump_command", "light_command", "dosing_command", "pruning", "transplanting", "root_trimming", "other_physical_action"]
+    safety_status: Literal["safety_blocked", "needs_fresh_evidence", "pending_human_approval"]
+    reason_code: Literal["unsupported_action", "approval_authority_missing", "approval_input_missing_or_stale", "ready_for_human_approval"]
+    summary_text: str; evidence_refs: list[str]
+    approval_input_freshness: SafetyApprovalInputFreshness | None
+    expires_at: datetime | None
+DisplayPayload = Annotated[Union[AgentIntroductionPayload, AgentMessagePayload, BlockNoticePayload, SafetyStatusPayload], "payload_kind"]
 class UIFeedItemResponse(BaseModel):
     schema_version: Literal[1]; ui_event_id: uuid.UUID; created_at: datetime; farm_id: uuid.UUID; plant_id: uuid.UUID
     source_type: Literal["system", "agent_message", "safety"]; source_id: str; source_refs: list[str]
-    display_kind: Literal["agent_introduction", "agent_message", "block_notice"]; display_payload: DisplayPayload
+    display_kind: Literal["agent_introduction", "agent_message", "block_notice", "safety_status"]; display_payload: DisplayPayload
     visible_to_roles: list[Literal["boss", "engineer", "consultant"]]; visible_to_agents: Literal[False]; consumable_by_agents: Literal[False]
 class PlantFeedResponse(BaseModel): items: list[UIFeedItemResponse]; next_cursor: str | None
 

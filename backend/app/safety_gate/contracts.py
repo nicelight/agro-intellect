@@ -44,6 +44,21 @@ PHYSICAL_ACTION_KINDS = frozenset(
     }
 )
 PROVIDER_STATUSES = frozenset({"completed", "not_configured", "failed", "invalid"})
+SUPPORTED_PHYSICAL_ACTION_KINDS = frozenset(
+    {"ph_adjustment", "ec_adjustment", "solution_change"}
+)
+UNSUPPORTED_PHYSICAL_ACTION_KINDS = PHYSICAL_ACTION_KINDS - SUPPORTED_PHYSICAL_ACTION_KINDS
+SAFETY_STATUSES = frozenset(
+    {"safety_blocked", "needs_fresh_evidence", "pending_human_approval"}
+)
+SAFETY_REASON_CODES = frozenset(
+    {
+        "unsupported_action",
+        "approval_authority_missing",
+        "approval_input_missing_or_stale",
+        "ready_for_human_approval",
+    }
+)
 
 _SAFETY_ROSTER_ENTRY = next(
     item for item in CANONICAL_ROSTER_V1 if item.agent_id == "safety_gate"
@@ -61,6 +76,105 @@ class SafetyGateValidationError(ValueError):
 
     def __init__(self) -> None:
         super().__init__("Safety Gate contract validation failed.")
+
+
+@dataclass(frozen=True, slots=True)
+class SafetyActionDecisionCommandV1:
+    decision_id: uuid.UUID
+    actor_context: ActorContext
+    classification_message_id: uuid.UUID
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema_version != 1
+            or not _uuid4(self.decision_id)
+            or not isinstance(self.actor_context, ActorContext)
+            or not _uuid4(self.classification_message_id)
+        ):
+            raise SafetyGateValidationError()
+
+
+@dataclass(frozen=True, slots=True)
+class SafetyActionDecisionOutcomeV1:
+    decision_id: uuid.UUID | None
+    classification_message_id: uuid.UUID
+    outcome_kind: str
+    authoritative: bool
+    effect: str
+    action_kind: str | None
+    safety_status: str | None
+    reason_code: str | None
+    expires_at: datetime | None
+    error_code: str | None
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema_version != 1
+            or not _uuid4(self.classification_message_id)
+            or self.outcome_kind
+            not in {
+                "decision_persisted",
+                "decision_idempotent",
+                "decision_conflict",
+                "guard_denied",
+                "classification_ineligible",
+                "evidence_invalid",
+                "persistence_failed",
+            }
+            or self.effect
+            not in {"decision_and_projection_written", "evidence_duplicate", "no_effect"}
+        ):
+            raise SafetyGateValidationError()
+        if self.authoritative:
+            if (
+                not _uuid4(self.decision_id)
+                or self.outcome_kind not in {"decision_persisted", "decision_idempotent"}
+                or self.effect
+                not in {"decision_and_projection_written", "evidence_duplicate"}
+                or self.action_kind not in PHYSICAL_ACTION_KINDS
+                or self.safety_status not in SAFETY_STATUSES
+                or self.reason_code not in SAFETY_REASON_CODES
+                or self.error_code is not None
+            ):
+                raise SafetyGateValidationError()
+            if self.safety_status == "pending_human_approval":
+                if (
+                    self.reason_code != "ready_for_human_approval"
+                    or not _utc_datetime(self.expires_at)
+                ):
+                    raise SafetyGateValidationError()
+            elif self.expires_at is not None:
+                raise SafetyGateValidationError()
+        elif any(
+            value is not None
+            for value in (
+                self.decision_id,
+                self.action_kind,
+                self.safety_status,
+                self.reason_code,
+                self.expires_at,
+            )
+        ) or self.effect != "no_effect" or not isinstance(self.error_code, str):
+            raise SafetyGateValidationError()
+
+    def as_value(self) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "decision_id": str(self.decision_id) if self.decision_id else None,
+            "classification_message_id": str(self.classification_message_id),
+            "outcome_kind": self.outcome_kind,
+            "authoritative": self.authoritative,
+            "effect": self.effect,
+            "action_kind": self.action_kind,
+            "safety_status": self.safety_status,
+            "reason_code": self.reason_code,
+            "expires_at": self.expires_at.isoformat().replace("+00:00", "Z")
+            if self.expires_at
+            else None,
+            "error_code": self.error_code,
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -460,8 +574,14 @@ __all__ = [
     "CLASSIFIER_VERSION",
     "PHYSICAL_ACTION_KINDS",
     "PROVIDER_STATUSES",
+    "SAFETY_REASON_CODES",
+    "SAFETY_STATUSES",
     "SAFE_TASK_KINDS",
     "SAFETY_CLASSIFICATIONS",
+    "SUPPORTED_PHYSICAL_ACTION_KINDS",
+    "UNSUPPORTED_PHYSICAL_ACTION_KINDS",
+    "SafetyActionDecisionCommandV1",
+    "SafetyActionDecisionOutcomeV1",
     "SafetyClassificationOutcomeV1",
     "SafetyGateAgentDefinitionV1",
     "SafetyGateClassificationCommandV1",

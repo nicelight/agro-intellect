@@ -113,7 +113,7 @@ source_of_truth:
 | REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | deterministic integration: strict provider-neutral schemas, fake/spy timeout/error paths, pre/post-I/O authorization, redaction, no production fake/fallback, and zero direct authority; future milestone: selected OpenAI-compatible endpoint | planned |
 | REQ-012 | EP-003 | FT-009 | integration: actual photo-byte integrity through outbound spy; unit: Plant trust-state promotion gates; future milestone: selected endpoint real-image run | planned |
 | REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification handoff, guarded typed Bus/literal UI publication, archived-Plant deny, restore revalidation, protected feed reads, and anti-cheat agent-context hygiene | verified |
-| REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 deterministic missing/stale-data policy and pending handoff; FT-011 Safety classification integration remains planned | planned |
+| REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 missing/stale-data policy plus completed FT-011 deterministic classification and Safety routing through pending human approval; lifecycle awaits explicit owner reconciliation | planned |
 | REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
 | REQ-017 | EP-005 | FT-013 | unit: focus/attention/proposal lifecycle and derived conclusion; integration: retained non-operative governance records, DecisionRecord creation, and explicit real Companion proposal | planned |
@@ -300,8 +300,9 @@ source_of_truth:
   input assembly, independent closed-interval pH/EC freshness, exact
   project-owned missing-data requests, pending-only handoff, post-I/O denial,
   redaction, unbound-production failure, and zero direct downstream authority.
-- RTM lifecycles remain unchanged. REQ-014 remains `planned` because the FT-011
-  Safety classification integration is still open. REQ-003 and REQ-011 remain
+- RTM lifecycles remain unchanged. REQ-014 remains `planned` because FT-011 W2
+  Safety decision/projection remains open after W1 classification completion.
+  REQ-003 and REQ-011 remain
   `planned` for their broader cross-feature/future-milestone outcomes;
   FT-010 contributes guarded consumer evidence without re-owning REQ-008 or
   the FT-007/FT-008-owned verified REQ-013 outcome.
@@ -309,5 +310,35 @@ source_of_truth:
   Provider/model/base URL/credential/egress/network/live-smoke evidence remains
   deferred and unverified; no such result is claimed.
 - FT-010 and EP-003 lifecycle values remain `planned` pending explicit owner
-  feature/epic decisions. `TASK-037-T3-FT-011-W1` remains authoritative
-  `planned`; this sync does not promote, select, unblock, or block it.
+  feature/epic decisions. The later FT-011 note records the scheduler-owned
+  TASK-037 completion; this earlier FT-010 boundary did not promote or select
+  it.
+
+## Current FT-011 W1/W2 Boundary Evidence Note
+
+- `TASK-037-T3-FT-011-W1` is scheduler-recorded `done` using only current
+  ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
+  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+  ATTEMPT 01 and ATTEMPT 02 remain preserved failed history.
+- `TASK-038-T3-FT-011-W2` is scheduler-recorded `done` using only current
+  ATTEMPT 01 implementation `PASS`, independent functional `VERDICT: PASS`,
+  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+- Current provider-neutral PostgreSQL evidence covers strict backend-owned
+  classification, first-write-wins persistence, exact action/authority/
+  evidence routing, atomic immutable decision plus inert UI projection,
+  fail-closed archive/revoke races, restore without replay, redaction, and zero
+  downstream authority. The product migration head is
+  `ft011_safety_action_decisions` directly after
+  `ft011_safety_classifications` and `ft009_plant_state`.
+- RTM lifecycles remain unchanged. REQ-003, REQ-011, REQ-014, REQ-015, and
+  REQ-018 remain `planned` pending explicit owner RTM decisions and because
+  their broader cross-feature, human-approval/task, governance, or future
+  provider-milestone outcomes remain open.
+  REQ-008 and the FT-007/FT-008-owned REQ-013 outcome remain `verified`; FT-011
+  consumes those seams without reopening or re-owning them.
+- FT-011 and EP-004 lifecycle values remain `planned`; TASK-039 remains
+  authoritative `planned`. This sync makes no lifecycle, promotion, selection,
+  unblock, or block decision.
+- No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
+  is claimed. The absent task checkpoint markers remain owner-accepted
+  advisory process gaps and do not amend canonical policy.

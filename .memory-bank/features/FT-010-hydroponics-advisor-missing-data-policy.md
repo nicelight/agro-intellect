@@ -100,10 +100,10 @@ source_of_truth:
   accepted advisory T3 confidence gap. No provider, model, base URL,
   credential, egress, network call, or live smoke was required, checked, or
   claimed for this code-phase boundary.
-- This sync records evidence only and leaves `lifecycle: planned` unchanged
-  pending an explicit owner feature-lifecycle decision. The dependent
-  `TASK-037-T3-FT-011-W1` remains scheduler-owned `planned`; `/mb-sync` neither
-  promotes nor selects it.
+- This boundary recorded evidence only and left `lifecycle: planned` unchanged
+  pending an explicit owner feature-lifecycle decision. TASK-037 was still
+  scheduler-owned `planned` at that boundary and was subsequently completed
+  under its own FT-011/W1 ATTEMPT 03 scheduler evidence.
 
 Evidence:
 [implementation](../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-02.md),

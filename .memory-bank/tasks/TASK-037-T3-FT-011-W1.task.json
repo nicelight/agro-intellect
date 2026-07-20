@@ -1,7 +1,7 @@
 {
   "id": "TASK-037-T3-FT-011-W1",
   "title": "Implement provider-neutral Safety classification authority",
-  "status": "in_progress",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-011",
   "reqs": [
@@ -159,6 +159,83 @@
       ],
       "provider_acceptance": "Provider-neutral deterministic verification only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, checked, or claimed.",
       "next_owner": "Scheduler/orchestrator consumes the current ATTEMPT 02 FAIL and applies the explicit owner-selected tier-policy lifecycle/recovery decision; do not use the passing defect-regression subset as closure PASS."
+    },
+    {
+      "stage": "scheduler_budget_override",
+      "mode": "scheduler",
+      "decision": "active_run_budget_updated",
+      "decided_at": "2026-07-20T04:08:52+05:00",
+      "basis": "The owner explicitly updated the current run budgets and instructed the scheduler to continue when the next repair is a distinct evidence-backed defect fix rather than a repeated bug loop.",
+      "max_attempts_per_task": 5,
+      "max_consecutive_failures": 5,
+      "scope": "Current autopilot run only; canonical policy files are unchanged.",
+      "current_task_attempts_consumed": 2,
+      "current_consecutive_failures": 2
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "03",
+      "decided_at": "2026-07-20T04:08:52+05:00",
+      "basis": "ATTEMPT 02 is not closable because independent real-PostgreSQL verification reproduced a distinct HIGH lock-order deadlock: Safety classification locks target Membership before Plant, while production revoke_access locks Plant before target Membership. This is not a repeat of the ATTEMPT 01 non-locking guard-to-insert race, which current evidence closes. The ATTEMPT 03 repair remains within the same task outcome, tier, dependencies, accepted scope, and normative specs. Fresh strict doctor passed with 0 errors.",
+      "evidence": [
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-IMPL-final-report-code-02.md"
+      ],
+      "repair_scope": [
+        "Align Safety classification target-row lock order with the established production revoke/archive order so Plant is acquired before target Membership and Grant, while retaining necessary identity locks without an inversion.",
+        "Add a deterministic real-PostgreSQL partial-acquisition regression using production classification and revoke_access paths; prove no PostgreSQL deadlock, deterministic serialization, and stable outcomes.",
+        "Re-run the ATTEMPT 01 guard-to-insert regressions and preserve provider-I/O, first-write-wins, redaction, provider-neutral, no-authority, migration, and scope behavior."
+      ],
+      "attempts_remaining_after_selection": 2,
+      "consecutive_failures_after_selection": 2,
+      "strict_doctor": "PASS: 0 errors, 17 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "bug_loop_guard": "If ATTEMPT 03 repeats the same partial lock-order deadlock without materially new evidence, do not start another identical repair attempt.",
+      "next_gate": "Fresh-session bounded /execute for TASK-037 ATTEMPT 03."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "03",
+      "verdict": "PASS",
+      "decided_at": "2026-07-20T04:42:22+05:00",
+      "basis": "Independent local-PostgreSQL verification closed both prior defects: archive/revoke before final locks remain fail-closed, and the exact production classification/revoke partial interleave plus reverse Boss archive and after-all-lock paths serialize with zero deadlock delta. Actual exhausted NOWAIT contention stopped after three write attempts with a current guard on each attempt and one provider call; a non-55P03 PostgreSQL error was not retried. Focused, scoped, migration, full deterministic, lint, diff, compile, scope, first-write-wins, redaction, provider-neutral, and zero-downstream-effect checks passed.",
+      "deadlock_regression": "PASS: critical concurrency slice 6/6 plus ten repeated isolated PostgreSQL campaigns 60/60; no deadlock, hang, timeout, starvation symptom, raw database leak, extra provider call, or unauthorized row/effect.",
+      "evidence": [
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-037-T3-FT-011-W1/verification.md"
+      ],
+      "provider_acceptance": "Provider-neutral deterministic verification only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, checked, or claimed.",
+      "next_owner": "Scheduler/orchestrator runs the separately selected ATTEMPT 03 /red-verify and then applies the tier-policy lifecycle decision; /verify did not change status."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "decision": "done",
+      "attempt": "03",
+      "decided_at": "2026-07-20T04:52:16+05:00",
+      "basis": "Current ATTEMPT 03 implementation PASS, independent functional PASS, and separate semantic-pass evidence close both prior authorization/concurrency defects. Production partial/reverse/after-lock interleaves, repeated campaigns, bounded NOWAIT/non-retryable error behavior, first-write-wins, focused/scoped/migration/full deterministic gates, lint/diff/compile/scope/provider-neutral/redaction/no-authority checks all pass. No substantive product/spec defect remains.",
+      "evidence": [
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-IMPL-final-report-code-03.md",
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-CLOSURE-final-report-docs-03.md"
+      ],
+      "accepted_residual": "Three immediate NOWAIT attempts can produce a safe fail-closed liveness loss under sustained identity contention; no fairness/latency SLA is specified and no authority or data-integrity violation remains.",
+      "accepted_process_gap": "No HUMAN_CHECKPOINT marker was selected; advisory under the governing tier policy.",
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was required, checked, or claimed.",
+      "run_budget_after_closure": {
+        "max_attempts_per_task": 5,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 0
+      },
+      "next_gate": "Run FT-011/W1 boundary reconciliation and strict readiness before any TASK-038 promotion."
     }
   ],
   "docs": [

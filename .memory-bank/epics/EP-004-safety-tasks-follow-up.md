@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-004
 lifecycle: planned
-last_updated: 2026-07-11
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -53,3 +53,19 @@ Make physical-action advice safe and accountable by requiring freshness, Safety 
 - Exact action taxonomy and freshness windows.
 - Exact pending approval and action-task state model.
 - Exact replay/staleness prevention rules.
+
+## Current Boundary Evidence
+
+- FT-011 W1 provider-neutral classification and W2 deterministic Safety
+  decision/projection are scheduler-recorded complete from their current
+  implementation, independent functional, semantic, and closure evidence; the
+  two earlier W1 failed attempts remain immutable history.
+- The FT-011 task boundary now ends at one immutable
+  `pending_human_approval` decision and inert UI projection. Both FT-012 waves
+  remain planned and own every human decision, action Task, follow-up, and
+  Outcome transition.
+- FT-011 and EP-004 lifecycle values remain `planned` pending explicit owner
+  lifecycle decisions; this boundary sync makes no feature, epic, requirement,
+  task-promotion, or dependent-selection decision.
+- Current code-phase evidence selects no provider/model and claims no
+  credential, egress, network, or live-provider result.

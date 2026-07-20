@@ -75,7 +75,9 @@ and only explicit human/evidence review can confirm Plant state.
   `SEMANTIC_VERDICT: semantic-pass` evidence.
 - The direct dependent `TASK-036-T3-FT-010-W1` was scheduler-recorded `planned`
   through dependency recovery at this boundary and was subsequently completed
-  under its own FT-010/W1 scheduler evidence. TASK-037 remains `planned`.
+  under its own FT-010/W1 scheduler evidence. TASK-037 was `planned` at this
+  boundary and was subsequently completed under its own FT-011/W1 ATTEMPT 03
+  scheduler evidence.
 - FT-009 feature lifecycle and all RTM lifecycles remain unchanged by this
   evidence sync. The recovery sections below are retained as append-only
   planning history and do not describe the current task lifecycle.

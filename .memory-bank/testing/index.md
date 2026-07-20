@@ -44,9 +44,9 @@ source_of_truth:
 - [Hydroponics Advisor Verification](hydroponics-advisor.md): pH/EC freshness,
   missing-data policy, provider-neutral deterministic execution, and pending
   Safety/task handoff.
-- [Safety Gate Verification](safety-gate.md): real model-backed classification,
-  immutable Safety decisions, 2-hour approval input, UI projection, and
-  concurrency/archive guards.
+- [Safety Gate Verification](safety-gate.md): provider-neutral deterministic
+  classification, immutable Safety decisions, 2-hour approval input, UI
+  projection, migration-head compatibility, and concurrency/archive guards.
 - [Task And Follow-Up Verification](task-follow-up.md): Approval/task/outcome
   transactions, HTTP, concurrency/archive guards, and real Task and Follow-Up
   Agent evidence.

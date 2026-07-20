@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import re
 from types import MappingProxyType
 import uuid
@@ -162,6 +162,7 @@ def _ui_payload(value: object, kind: str) -> Mapping[str, object]:
         "agent_introduction": {"payload_kind", "agent_id", "display_name", "competence_summary", "introduction_text", "roster_version"},
         "agent_message": {"payload_kind", "agent_id", "candidate_claim_type", "quoted_text"},
         "block_notice": {"payload_kind", "notice_code", "text"},
+        "safety_status": {"payload_kind", "decision_ref", "classification_ref", "action_kind", "safety_status", "reason_code", "summary_text", "evidence_refs", "approval_input_freshness", "expires_at"},
     }
     f = _closed(value, shapes[kind])
     if f["payload_kind"] != kind: raise AgentChatContractError()
@@ -169,9 +170,107 @@ def _ui_payload(value: object, kind: str) -> Mapping[str, object]:
         if not isinstance(f["agent_id"], str) or _AGENT_RE.fullmatch(f["agent_id"]) is None or f["candidate_claim_type"] not in {"observation", "hypothesis", "recommendation", "clarification", "team_signal"} or not isinstance(f["quoted_text"], str) or not f["quoted_text"]: raise AgentChatContractError()
     elif kind == "block_notice":
         if f != {"payload_kind": "block_notice", "notice_code": "classification_uncertain", "text": "Сообщение заблокировано до уточнения безопасности."}: raise AgentChatContractError()
+    elif kind == "safety_status":
+        _safety_status_payload(f)
     else:
         if not isinstance(f["agent_id"], str) or _AGENT_RE.fullmatch(f["agent_id"]) is None or not isinstance(f["roster_version"], int) or isinstance(f["roster_version"], bool) or f["roster_version"] < 1 or any(not isinstance(f[k], str) or not f[k] for k in ("display_name", "competence_summary", "introduction_text")): raise AgentChatContractError()
     return MappingProxyType(f)
+
+
+def _safety_status_payload(fields: dict[str, object]) -> None:
+    action = fields["action_kind"]
+    status = fields["safety_status"]
+    reason = fields["reason_code"]
+    supported = {"ph_adjustment", "ec_adjustment", "solution_change"}
+    unsupported = {"pump_command", "light_command", "dosing_command", "pruning", "transplanting", "root_trimming", "other_physical_action"}
+    if action not in supported | unsupported:
+        raise AgentChatContractError()
+    decision_id = _typed_ref(fields["decision_ref"], "safety_decision")
+    _typed_ref(fields["classification_ref"], "safety_classification")
+    evidence = _measurement_refs(fields["evidence_refs"])
+    summaries = {
+        "unsupported_action": "Действие не поддерживается безопасным процессом MVP.",
+        "approval_authority_missing": "Действие заблокировано: у текущего пользователя нет права подтверждения.",
+        "approval_input_missing_or_stale": "Перед предложением действия нужны свежие измерения pH и EC.",
+        ("ready_for_human_approval", "ph_adjustment"): "Предложена ручная корректировка pH. Требуется решение уполномоченного пользователя.",
+        ("ready_for_human_approval", "ec_adjustment"): "Предложена ручная корректировка EC питательного раствора. Требуется решение уполномоченного пользователя.",
+        ("ready_for_human_approval", "solution_change"): "Предложена ручная замена питательного раствора. Требуется решение уполномоченного пользователя.",
+    }
+    expected_summary = summaries.get((reason, action), summaries.get(reason))
+    if fields["summary_text"] != expected_summary:
+        raise AgentChatContractError()
+    freshness = fields["approval_input_freshness"]
+    expires = fields["expires_at"]
+    if reason == "unsupported_action":
+        valid_route = action in unsupported and status == "safety_blocked"
+    elif reason == "approval_authority_missing":
+        valid_route = action in supported and status == "safety_blocked"
+    elif reason == "approval_input_missing_or_stale":
+        valid_route = action in supported and status == "needs_fresh_evidence"
+    elif reason == "ready_for_human_approval":
+        valid_route = action in supported and status == "pending_human_approval"
+    else:
+        valid_route = False
+    if not valid_route:
+        raise AgentChatContractError()
+    if reason in {"unsupported_action", "approval_authority_missing"}:
+        if freshness is not None or expires is not None or evidence:
+            raise AgentChatContractError()
+        return
+    snapshot = _closed(freshness, {"purpose", "window_hours", "computed_at", "ph", "ec"})
+    if snapshot["purpose"] != "approval_input" or snapshot["window_hours"] != 2:
+        raise AgentChatContractError()
+    computed_at = _time(snapshot["computed_at"])
+    statuses: list[str] = []
+    source_refs: list[str] = []
+    measured_times: list[datetime] = []
+    for name in ("ph", "ec"):
+        item = _closed(snapshot[name], {"status", "source_ref", "measured_at"})
+        item_status = item["status"]
+        if item_status not in {"fresh", "stale", "missing"}:
+            raise AgentChatContractError()
+        statuses.append(str(item_status))
+        if item_status == "missing":
+            if item["source_ref"] is not None or item["measured_at"] is not None:
+                raise AgentChatContractError()
+        else:
+            _typed_ref(item["source_ref"], "manual_measurement")
+            measured = _time(item["measured_at"])
+            source_refs.append(str(item["source_ref"]))
+            measured_times.append(measured)
+            is_fresh = computed_at - timedelta(hours=2) <= measured <= computed_at
+            if (item_status == "fresh") is not is_fresh:
+                raise AgentChatContractError()
+    if tuple(dict.fromkeys(source_refs)) != evidence:
+        raise AgentChatContractError()
+    if reason == "approval_input_missing_or_stale":
+        if statuses == ["fresh", "fresh"] or expires is not None:
+            raise AgentChatContractError()
+    else:
+        if statuses != ["fresh", "fresh"] or len(measured_times) != 2:
+            raise AgentChatContractError()
+        expected_expiry = min(item + timedelta(hours=2) for item in measured_times)
+        if _time(expires) != expected_expiry:
+            raise AgentChatContractError()
+    if not isinstance(decision_id, uuid.UUID):
+        raise AgentChatContractError()
+
+
+def _typed_ref(value: object, kind: str) -> uuid.UUID:
+    if not isinstance(value, str) or not value.startswith(f"{kind}:"):
+        raise AgentChatContractError()
+    return _uuid(value.split(":", 1)[1], version=4)
+
+
+def _measurement_refs(value: object) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise AgentChatContractError()
+    refs = tuple(value)
+    if len(refs) > 2 or len(set(refs)) != len(refs):
+        raise AgentChatContractError()
+    for ref in refs:
+        _typed_ref(ref, "manual_measurement")
+    return refs
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,7 +283,7 @@ class UIFeedEventV1:
     def from_untrusted(cls, value: object) -> "UIFeedEventV1":
         f = _closed(value, {"schema_version", "ui_event_id", "created_at", "farm_id", "plant_id", "source_type", "source_id", "source_refs", "display_kind", "display_payload", "visible_to_roles", "visible_to_agents", "consumable_by_agents"})
         kind = f["display_kind"]
-        if f["schema_version"] != 1 or kind not in {"agent_introduction", "agent_message", "block_notice"} or f["source_type"] not in {"system", "agent_message", "safety"} or f["visible_to_agents"] is not False or f["consumable_by_agents"] is not False: raise AgentChatContractError()
+        if f["schema_version"] != 1 or kind not in {"agent_introduction", "agent_message", "block_notice", "safety_status"} or f["source_type"] not in {"system", "agent_message", "safety"} or f["visible_to_agents"] is not False or f["consumable_by_agents"] is not False: raise AgentChatContractError()
         roles = tuple(f["visible_to_roles"]) if isinstance(f["visible_to_roles"], list) else ()
         if not roles or len(roles) != len(set(roles)) or not set(roles).issubset(_ROLES): raise AgentChatContractError()
         source_id = _uuid(f["source_id"])
@@ -195,6 +294,7 @@ class UIFeedEventV1:
             "agent_introduction": "system",
             "agent_message": "agent_message",
             "block_notice": "safety",
+            "safety_status": "safety",
         }[str(kind)]
         if source_type != expected_source:
             raise AgentChatContractError()
@@ -202,6 +302,19 @@ class UIFeedEventV1:
         if kind == "agent_introduction":
             if source_id != ui_event_id or f"agent_introduction:{source_id}" not in refs:
                 raise AgentChatContractError()
+        elif kind == "safety_status":
+            payload = _ui_payload(f["display_payload"], str(kind))
+            decision_ref = f"safety_decision:{source_id}"
+            classification_ref = str(payload["classification_ref"])
+            classification_id = classification_ref.split(":", 1)[1]
+            expected_refs = (
+                f"message_envelope:{classification_id}",
+                classification_ref,
+                *tuple(payload["evidence_refs"]),
+            )
+            if ui_event_id != source_id or payload["decision_ref"] != decision_ref or refs != expected_refs or roles != ("boss", "engineer"):
+                raise AgentChatContractError()
+            return cls(ui_event_id, _time(f["created_at"]), _uuid(f["farm_id"]), _uuid(f["plant_id"]), source_type, str(source_id), refs, str(kind), payload, roles)
         elif f"message_envelope:{source_id}" not in refs:
             raise AgentChatContractError()
         return cls(ui_event_id, _time(f["created_at"]), _uuid(f["farm_id"]), _uuid(f["plant_id"]), source_type, str(source_id), refs, str(kind), _ui_payload(f["display_payload"], str(kind)), roles)

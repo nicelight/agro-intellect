@@ -1,7 +1,7 @@
 {
   "id": "TASK-039-T3-FT-012-W1",
   "title": "Implement authoritative approval, task, and follow-up outcome loop",
-  "status": "planned",
+  "status": "in_progress",
   "wave": "W1",
   "feature": "FT-012",
   "reqs": [
@@ -30,6 +30,9 @@
     "tests/backend/photo_intake/test_ft005_migration_models.py",
     "tests/backend/plant_operations/test_ft004_migration_models.py",
     "tests/backend/agent_chat/test_ft008_migration_models.py",
+    "tests/backend/plant_state/test_migration_models.py",
+    "tests/backend/safety_gate/test_migration_models.py",
+    "tests/backend/safety_gate/test_classification_persistence.py",
     "tests/backend/test_foundation_database_contract.py"
   ],
   "tier": "T3",
@@ -46,7 +49,7 @@
     },
     {
       "name": "migration_head_compatibility",
-      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q",
       "required": true
     },
     {
@@ -65,7 +68,218 @@
       "required": true
     }
   ],
-  "verify": [],
+  "verify": [
+    {
+      "stage": "scheduler_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "decided_at": "2026-07-20T06:44:18+05:00",
+      "basis": "Direct dependency TASK-038 is done from current ATTEMPT 01 evidence; FT-011/W2 boundary reconciliation passed; the post-W2 FT-012 planning REJECT was repaired by bounded exact-head scope reconciliation; the fresh repaired FT-012 review is APPROVE with all four groups PASS; fresh strict doctor passed with 0 errors. Promotion does not start ATTEMPT 01.",
+      "evidence": [
+        ".tasks/TASK-038-T3-FT-011-W2/TASK-038-T3-FT-011-W2-S-CLOSURE-final-report-docs-01.md",
+        ".tasks/TASK-MB-MB-SYNC/TASK-MB-MB-SYNC-S-SYNC-FT-011-W2-final-report-docs-01.md",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-TASK-039-EXACT-HEAD-SCOPE-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-REPAIRED-20260720-final-report-docs-01.md"
+      ],
+      "strict_doctor": "PASS: 0 errors, 19 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "max_consecutive_failures": 5
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; no provider/model/base URL/Gemini/credential/egress/network/live smoke is required or claimed.",
+      "next_gate": "Run a fresh strict doctor over the ready queue before scheduler selection and ATTEMPT 01 consumption."
+    },
+    {
+      "stage": "scheduler_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "01",
+      "decided_at": "2026-07-20T06:44:44+05:00",
+      "basis": "TASK-039 was the sole ready task, its direct dependency is done, the current repaired FT-012 review is APPROVE, and the post-promotion strict doctor passed with 0 errors. Scheduler selected the task and consumed initial ATTEMPT 01.",
+      "strict_doctor": "PASS: 0 errors, 18 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 4,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 0
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; TASK-039 has no provider I/O and no provider/model/base URL/Gemini/credential/egress/network/live smoke is required or claimed.",
+      "next_gate": "Fresh-session /execute for TASK-039 ATTEMPT 01."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "01",
+      "verdict": "FAIL",
+      "verified_at": "2026-07-20T07:40:58+05:00",
+      "basis": "Independent PostgreSQL, HTTP, migration, regression, scope, redaction, and non-authority verification passed the substantive task loop but found one explicit allowed-write-scope violation and two strict HTTP contract mismatches.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-039-T3-FT-012-W1/verification.md"
+      ],
+      "gate_summary": {
+        "core_postgresql_http": "PASS: 12 passed",
+        "current_guard_safety_regression": "PASS: 203 passed",
+        "migration_head_compatibility": "PASS: 47 passed",
+        "full_deterministic": "PASS: 479 passed, 2 deselected",
+        "supplemental_matrix": "PASS: 44/44 positive checks",
+        "memory_bank_lint": "PASS: 207 files",
+        "compile_and_diff": "PASS",
+        "scope_and_strict_http": "FAIL: 3 findings"
+      },
+      "findings": [
+        {
+          "severity": "HIGH",
+          "code": "VERIFY_SCOPE_OUTSIDE_ALLOWED",
+          "evidence": "backend/app/api/__init__.py is claimed and changed but absent from touched_files and runtime_context.allowed_write_scope."
+        },
+        {
+          "severity": "MEDIUM",
+          "code": "VERIFY_HTTP_UUID_NOT_CANONICAL",
+          "evidence": "Authenticated GET with uppercase plant UUID returned 200 although the direct API contract requires lowercase canonical path ids."
+        },
+        {
+          "severity": "LOW",
+          "code": "VERIFY_HTTP_GRANT_FIELD_CONDITIONALITY",
+          "evidence": "Boss decided_by response includes grant_id:null although the direct API contract permits the field only for plant_access_grant."
+        }
+      ],
+      "provider_acceptance": "No provider/model/base URL/Gemini/credential/egress/network/live smoke was required, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for bounded scope/API repair routing and lifecycle decision; functional FAIL is not replaced by red-verify."
+    },
+    {
+      "stage": "scheduler_stage_decision",
+      "mode": "scheduler",
+      "decision": "skip_red_verify_for_failed_attempt",
+      "attempt": "01",
+      "decided_at": "2026-07-20T07:44:26+05:00",
+      "basis": "Independent functional verification is FAIL with three reproducible bounded findings. Semantic verification cannot manufacture a closable current attempt and is deferred to the next functionally successful attempt."
+    },
+    {
+      "stage": "scheduler_scope_exception",
+      "mode": "scheduler",
+      "decision": "approved_corrective_cleanup",
+      "attempt": "02",
+      "decided_at": "2026-07-20T07:44:26+05:00",
+      "basis": "ATTEMPT 01 added one router re-export in backend/app/api/__init__.py outside the indexed allowlist. The bounded repair restores compliance by removing only that task-owned addition and importing the router directly from the already-allowed module in backend/app/main.py. This shrinks the implementation to the reviewed task boundary and does not expand product/spec/API behavior.",
+      "authorized_path": "backend/app/api/__init__.py",
+      "allowed_change": "Remove only the TASK-039 task_follow_up_router import/export added by ATTEMPT 01; leave every pre-existing API export untouched.",
+      "forbidden_change": "No new export, router behavior, unrelated formatting, task-card scope widening, or other change in backend/app/api/__init__.py.",
+      "planning_freshness": "The repaired FT-012 APPROVE remains applicable because this cleanup restores the reviewed boundary and the two API repairs implement already-direct canonical HTTP requirements without changing task outcome, tier, dependency, plan, or public semantics."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "02",
+      "decided_at": "2026-07-20T07:44:26+05:00",
+      "basis": "ATTEMPT 01 is not closable because independent verification found one explicit allowed-write-scope violation, acceptance of uppercase noncanonical UUID path text, and unconditional Boss grant_id:null serialization. All substantive PostgreSQL authority, concurrency, rollback, migration, regression, redaction, and no-effect gates passed. The repair is bounded to corrective router cleanup plus two existing strict HTTP contract requirements and remains within the same task outcome, tier, dependency, and normative specs. Fresh strict doctor passed with 0 errors.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-IMPL-final-report-code-01.md"
+      ],
+      "repair_scope": [
+        "Remove only the ATTEMPT 01 task_follow_up_router re-export from backend/app/api/__init__.py and import it directly in allowed backend/app/main.py, leaving no current TASK-039 diff outside the indexed allowlist.",
+        "Reject uppercase and every noncanonical UUID path representation through one exact lowercase-canonical path type/dependency applied to every FT-012 path id, with positive canonical and negative noncanonical HTTP/OpenAPI regression evidence.",
+        "Make Approval decided_by grant_id conditionally absent for boss_role and present for plant_access_grant using a strict response shape, with Boss and Engineer response/OpenAPI regressions.",
+        "Re-run all ATTEMPT 01 substantive PostgreSQL, concurrency, rollback, migration, full deterministic, lint, compile, diff, scope, redaction, and forbidden-authority gates."
+      ],
+      "attempts_remaining_after_selection": 3,
+      "consecutive_failures_after_selection": 1,
+      "strict_doctor": "PASS: 0 errors, 19 advisory warnings, 2 info.",
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "bug_loop_guard": "If ATTEMPT 02 repeats the same scope or strict HTTP defect without materially new evidence, do not start another identical repair attempt.",
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke is required or claimed.",
+      "next_gate": "Fresh-session bounded /execute for TASK-039 ATTEMPT 02."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "02",
+      "verdict": "PASS",
+      "verified_at": "2026-07-20T08:14:00+05:00",
+      "basis": "Independent current-attempt PostgreSQL, HTTP/OpenAPI, concurrency, rollback, archive/restore, migration, full-regression, scope, redaction, and non-authority verification passed. All three ATTEMPT 01 defects are repaired without task scope widening.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-VERIFY-final-report-docs-02.md",
+        ".protocols/TASK-039-T3-FT-012-W1/verification.md",
+        ".tasks/TASK-039-T3-FT-012-W1/verify_attempt02_uuid_matrix.py",
+        ".tasks/TASK-039-T3-FT-012-W1/verify_attempt02_postgresql_matrix.py"
+      ],
+      "gate_summary": {
+        "prior_defects": "PASS: F1, F2, and F3 repaired",
+        "core_postgresql_http": "PASS: 14 passed",
+        "current_guard_safety_regression": "PASS: 203 passed",
+        "migration_head_compatibility": "PASS: 47 passed",
+        "full_deterministic": "PASS: 481 passed, 2 deselected",
+        "verifier_uuid_matrix": "PASS: 2 tests; 24/24 negative HTTP cases and 8/8 OpenAPI path parameters",
+        "verifier_postgresql_matrix": "PASS: 3 tests",
+        "memory_bank_lint": "PASS: 207 files",
+        "compile_diff_scope": "PASS: 23/23 task product/test paths allowed; api/__init__.py clean"
+      },
+      "prior_defects": {
+        "F1": "PASS: 23 current TASK-039 product/test paths are allowlisted; backend/app/api/__init__.py has no current diff; main uses only the direct router import/include.",
+        "F2": "PASS: every FT-012 path-id occurrence rejects uppercase, compact, and braced UUID spelling with protected stable 422/no-store; canonical lowercase works; OpenAPI exposes the exact pattern.",
+        "F3": "PASS: Boss omits grant_id; Engineer requires and returns a non-null current grant UUID in runtime and OpenAPI."
+      },
+      "findings": [],
+      "provider_acceptance": "No provider/model/base URL/Gemini/credential/egress/network/live smoke was required, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for the separately selected red-verify and lifecycle decision; functional verification made no lifecycle transition."
+    },
+    {
+      "stage": "semantic_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "02",
+      "verdict": "semantic-fail",
+      "verified_at": "2026-07-20T08:42:42+05:00",
+      "basis": "A distinct fresh semantic reviewer confirmed four local contract regressions despite functional PASS: archived-denied classified work can become operative after restore without a new runtime invocation, percent-encoded raw UUID spelling is accepted after standard path decoding, a concurrent cross-parent request-id collision maps to generic persistence failure instead of deterministic version conflict, and rejected Timeline decisions serialize an approved-only null field.",
+      "evidence": [
+        ".tasks/TASK-039-T3-FT-012-W1/TASK-039-T3-FT-012-W1-S-RED-VERIFY-final-report-docs-02.md",
+        ".protocols/TASK-039-T3-FT-012-W1/red-verification.md"
+      ],
+      "case_summary": {
+        "reviewed": 14,
+        "confirmed": 4,
+        "not_confirmed": 10,
+        "reviewer_matrix": "PASS: 5 passed",
+        "core_postgresql": "PASS: 17 passed",
+        "migration_head": "PASS: 47 passed",
+        "compile_lint_diff_scope": "PASS"
+      },
+      "findings": [
+        {
+          "severity": "HIGH",
+          "code": "RED_ARCHIVE_DENIAL_REUSE",
+          "evidence": "The same classified message_id/run_id rejected while the Plant was archived created an ordinary Task after restore without a new runtime invocation."
+        },
+        {
+          "severity": "MEDIUM",
+          "code": "RED_RAW_PATH_CANONICALITY",
+          "evidence": "Percent-encoded unreserved UUID spelling was decoded before lexical validation and reached ordinary routing instead of protected 422 validation."
+        },
+        {
+          "severity": "MEDIUM",
+          "code": "RED_CONCURRENT_REQUEST_CONFLICT_MAPPING",
+          "evidence": "Concurrent reuse of one request UUID for different Task parents produced created plus TASK_PERSISTENCE_FAILED instead of created plus TASK_VERSION_CONFLICT."
+        },
+        {
+          "severity": "LOW",
+          "code": "RED_TIMELINE_DECISION_SHAPE",
+          "evidence": "Rejected approval_decided serialized action_task_id:null although the field is approval-only."
+        }
+      ],
+      "provider_acceptance": "Authorized local deterministic QA only; no provider/model/base URL/Gemini/credential/egress/network/live smoke or external system was required, used, or claimed.",
+      "next_owner": "Scheduler/orchestrator for bounded design/task reconciliation before any ATTEMPT 03 selection."
+    }
+  ],
   "docs": [
     ".memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md",
     ".memory-bank/states/task-follow-up-lifecycle.md",
@@ -105,6 +319,9 @@
       "tests/backend/photo_intake/test_ft005_migration_models.py",
       "tests/backend/plant_operations/test_ft004_migration_models.py",
       "tests/backend/agent_chat/test_ft008_migration_models.py",
+      "tests/backend/plant_state/test_migration_models.py",
+      "tests/backend/safety_gate/test_migration_models.py",
+      "tests/backend/safety_gate/test_classification_persistence.py",
       "tests/backend/test_foundation_database_contract.py",
       ".memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md",
       ".memory-bank/states/task-follow-up-lifecycle.md",

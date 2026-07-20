@@ -4,22 +4,27 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 import threading
+import time
 import uuid
 
 import pytest
 from alembic.script import ScriptDirectory
-from sqlalchemy import DateTime, Uuid, func, inspect, select, text
+from sqlalchemy import DateTime, Uuid, event, func, inspect, select, text
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session as OrmSession
 
 from backend.app import AppSettings
 from backend.app.access_admin.farm_service import FarmService
-from backend.app.access_admin.models import Plant
+from backend.app.access_admin.models import Plant, PlantAccessGrant
 from backend.app.agent_runtime import DatabaseRuntimeAuthorizationGuard
 from backend.app.safety_gate import (
     SafetyClassification,
     SafetyGateClassificationService,
 )
-from backend.app.safety_gate.repository import SafetyClassificationRepository
+from backend.app.safety_gate.repository import (
+    CurrentGuardLockUnavailable,
+    SafetyClassificationRepository,
+)
 from backend.migrations import build_alembic_config
 from tests.backend.plant_operations.conftest import (
     archive_plant,
@@ -47,6 +52,36 @@ def _downstream_counts(database) -> tuple[int, int, int]:
             session.execute(text(f"SELECT count(*) FROM {table}")).scalar_one()
             for table in ("agent_bus_events", "ui_feed_events", "plant_state_records")
         )
+
+
+def _database_deadlocks(database) -> int:
+    with database.session() as session:
+        return int(
+            session.scalar(
+                text(
+                    "SELECT deadlocks FROM pg_stat_database "
+                    "WHERE datname = current_database()"
+                )
+            )
+            or 0
+        )
+
+
+def _wait_for_postgresql_lock(database, backend_pid: int, *, timeout: float = 10) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        with database.session() as session:
+            wait_event_type = session.scalar(
+                text(
+                    "SELECT wait_event_type FROM pg_stat_activity "
+                    "WHERE pid = :backend_pid"
+                ),
+                {"backend_pid": backend_pid},
+            )
+        if wait_event_type == "Lock":
+            return True
+        time.sleep(0.01)
+    return False
 
 
 def test_authoritative_physical_classification_round_trips_without_direct_effect(
@@ -444,10 +479,414 @@ def test_archive_after_write_guard_before_insert_is_denied_without_raw_error(
     assert _downstream_counts(ft011_database) == (0, 0, 0)
 
 
+class _RevokeAfterWriteGuard:
+    def __init__(self, session, database, boss, plant_id, membership_id):
+        self._delegate = DatabaseRuntimeAuthorizationGuard(session)
+        self._database = database
+        self._boss = boss
+        self._plant_id = plant_id
+        self._membership_id = membership_id
+        self.calls = 0
+
+    def current_scope(self, actor, *, plant_id):
+        scope = self._delegate.current_scope(actor, plant_id=plant_id)
+        self.calls += 1
+        if self.calls == 2 and scope is not None:
+            with self._database.session() as session:
+                result = FarmService(session).revoke_access(
+                    self._boss,
+                    plant_id=self._plant_id,
+                    membership_id=self._membership_id,
+                )
+            assert result.changed is True
+        return scope
+
+
+def test_revoke_after_write_guard_before_final_locks_is_guard_denied(
+    ft011_database,
+    ft011_seed,
+):
+    farm, boss, _membership, plant = ft011_seed
+    engineer, engineer_membership = create_actor(ft011_database, farm, "engineer")
+    grant = grant_access(
+        ft011_database,
+        boss,
+        plant_id=plant.plant_id,
+        membership_id=engineer_membership.membership_id,
+    )
+    envelope = envelope_for(engineer, plant, grant_id=grant.grant_id)
+    executor = RecordingExecutor(candidate())
+    with ft011_database.session() as session:
+        guard = _RevokeAfterWriteGuard(
+            session,
+            ft011_database,
+            boss,
+            plant.plant_id,
+            engineer_membership.membership_id,
+        )
+        outcome = SafetyGateClassificationService(
+            session,
+            model_executor=executor,
+            authorization_guard=guard,
+        ).classify(command_for(engineer, envelope))
+
+    assert guard.calls == 3
+    assert len(executor.requests) == 1
+    assert outcome.outcome_kind == "guard_denied"
+    assert outcome.authoritative is False
+    assert outcome.effect == "no_effect"
+    assert outcome.provider_call_status == "completed"
+    assert outcome.error_code == "SAFETY_CLASSIFICATION_GUARD_DENIED"
+    assert "database" not in str(outcome.as_value()).lower()
+    assert "sql" not in str(outcome.as_value()).lower()
+    assert _classification_count(ft011_database) == 0
+    assert _downstream_counts(ft011_database) == (0, 0, 0)
+
+
+def test_partial_guard_acquisition_serializes_with_production_revoke_without_deadlock(
+    ft011_database,
+    ft011_seed,
+):
+    farm, boss, _membership, plant = ft011_seed
+    engineer, engineer_membership = create_actor(ft011_database, farm, "engineer")
+    grant = grant_access(
+        ft011_database,
+        boss,
+        plant_id=plant.plant_id,
+        membership_id=engineer_membership.membership_id,
+    )
+    envelope = envelope_for(engineer, plant, grant_id=grant.grant_id)
+    executor = RecordingExecutor(candidate())
+    engine = ft011_database.engine()
+    classifier_before_plant = threading.Event()
+    allow_classifier_plant = threading.Event()
+    revoker_has_plant = threading.Event()
+    allow_revoker_membership = threading.Event()
+    classifier_pid: list[int] = []
+    deadlocks_before = _database_deadlocks(ft011_database)
+
+    def before_cursor_execute(
+        _connection,
+        _cursor,
+        statement,
+        _parameters,
+        _context,
+        _executemany,
+    ):
+        normalized = statement.lower()
+        if (
+            threading.current_thread().name.startswith("safety-classifier")
+            and "from plants" in normalized
+            and "for update" in normalized
+        ):
+            classifier_before_plant.set()
+            assert allow_classifier_plant.wait(10)
+
+    def after_cursor_execute(
+        _connection,
+        _cursor,
+        statement,
+        _parameters,
+        _context,
+        _executemany,
+    ):
+        normalized = statement.lower()
+        if (
+            threading.current_thread().name.startswith("safety-revoker")
+            and "from plants" in normalized
+            and "for update" in normalized
+        ):
+            revoker_has_plant.set()
+            assert allow_revoker_membership.wait(10)
+
+    def classify():
+        with engine.connect() as connection:
+            classifier_pid.append(
+                int(connection.scalar(text("SELECT pg_backend_pid()")))
+            )
+            connection.rollback()
+            with OrmSession(
+                bind=connection,
+                autoflush=False,
+                expire_on_commit=False,
+            ) as session:
+                return SafetyGateClassificationService(
+                    session,
+                    model_executor=executor,
+                ).classify(command_for(engineer, envelope))
+
+    def revoke():
+        with ft011_database.session() as session:
+            return FarmService(session).revoke_access(
+                boss,
+                plant_id=plant.plant_id,
+                membership_id=engineer_membership.membership_id,
+            )
+
+    event.listen(engine, "before_cursor_execute", before_cursor_execute)
+    event.listen(engine, "after_cursor_execute", after_cursor_execute)
+    try:
+        with (
+            ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="safety-classifier",
+            ) as classifier_pool,
+            ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="safety-revoker",
+            ) as revoker_pool,
+        ):
+            classifier_future = classifier_pool.submit(classify)
+            assert classifier_before_plant.wait(10)
+            revoker_future = revoker_pool.submit(revoke)
+            assert revoker_has_plant.wait(10)
+            allow_classifier_plant.set()
+            assert classifier_pid
+            assert _wait_for_postgresql_lock(ft011_database, classifier_pid[0])
+            allow_revoker_membership.set()
+            revoke_result = revoker_future.result(timeout=10)
+            outcome = classifier_future.result(timeout=10)
+    finally:
+        allow_classifier_plant.set()
+        allow_revoker_membership.set()
+        event.remove(engine, "before_cursor_execute", before_cursor_execute)
+        event.remove(engine, "after_cursor_execute", after_cursor_execute)
+
+    assert _database_deadlocks(ft011_database) == deadlocks_before
+    assert revoke_result.changed is True
+    assert outcome.outcome_kind == "guard_denied"
+    assert outcome.authoritative is False
+    assert outcome.effect == "no_effect"
+    assert outcome.provider_call_status == "completed"
+    assert outcome.error_code == "SAFETY_CLASSIFICATION_GUARD_DENIED"
+    safe_outcome = str(outcome.as_value()).lower()
+    assert all(
+        raw_term not in safe_outcome
+        for raw_term in ("database", "sql", "deadlock", "psycopg")
+    )
+    with ft011_database.session() as session:
+        assert session.get(PlantAccessGrant, grant.grant_id).status == "revoked"
+    assert len(executor.requests) == 1
+    assert _classification_count(ft011_database) == 0
+    assert _downstream_counts(ft011_database) == (0, 0, 0)
+
+
+def test_later_identity_lock_contention_restarts_without_archive_inversion(
+    ft011_database,
+    ft011_seed,
+):
+    _farm, boss, _membership, plant = ft011_seed
+    envelope = envelope_for(boss, plant)
+    executor = RecordingExecutor(candidate())
+    engine = ft011_database.engine()
+    classifier_before_account = threading.Event()
+    allow_classifier_account = threading.Event()
+    archiver_pid_ready = threading.Event()
+    archiver_pid: list[int] = []
+    deadlocks_before = _database_deadlocks(ft011_database)
+
+    def before_cursor_execute(
+        _connection,
+        _cursor,
+        statement,
+        _parameters,
+        _context,
+        _executemany,
+    ):
+        normalized = statement.lower()
+        if (
+            threading.current_thread().name.startswith("safety-classifier")
+            and "from accounts" in normalized
+            and "for update nowait" in normalized
+        ):
+            classifier_before_account.set()
+            assert allow_classifier_account.wait(10)
+
+    def classify():
+        with ft011_database.session() as session:
+            return SafetyGateClassificationService(
+                session,
+                model_executor=executor,
+            ).classify(command_for(boss, envelope))
+
+    def archive():
+        with engine.connect() as connection:
+            archiver_pid.append(int(connection.scalar(text("SELECT pg_backend_pid()"))))
+            connection.rollback()
+            archiver_pid_ready.set()
+            with OrmSession(
+                bind=connection,
+                autoflush=False,
+                expire_on_commit=False,
+            ) as session:
+                return FarmService(session).archive_plant(
+                    boss,
+                    plant_id=plant.plant_id,
+                )
+
+    event.listen(engine, "before_cursor_execute", before_cursor_execute)
+    try:
+        with (
+            ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="safety-classifier",
+            ) as classifier_pool,
+            ThreadPoolExecutor(max_workers=1) as archiver_pool,
+        ):
+            classifier_future = classifier_pool.submit(classify)
+            assert classifier_before_account.wait(10)
+            archiver_future = archiver_pool.submit(archive)
+            assert archiver_pid_ready.wait(10)
+            assert _wait_for_postgresql_lock(ft011_database, archiver_pid[0])
+            allow_classifier_account.set()
+            archive_result = archiver_future.result(timeout=10)
+            outcome = classifier_future.result(timeout=10)
+    finally:
+        allow_classifier_account.set()
+        event.remove(engine, "before_cursor_execute", before_cursor_execute)
+
+    assert _database_deadlocks(ft011_database) == deadlocks_before
+    assert archive_result.changed is True
+    assert outcome.outcome_kind == "guard_denied"
+    assert outcome.authoritative is False
+    assert outcome.effect == "no_effect"
+    assert outcome.provider_call_status == "completed"
+    assert outcome.error_code == "SAFETY_CLASSIFICATION_GUARD_DENIED"
+    assert len(executor.requests) == 1
+    with ft011_database.session() as session:
+        assert session.get(Plant, plant.plant_id).status == "archived"
+    assert _classification_count(ft011_database) == 0
+    assert _downstream_counts(ft011_database) == (0, 0, 0)
+
+
+class _PauseAfterGuardLocksRepository(SafetyClassificationRepository):
+    def __init__(self, session, locked, allow_persist):
+        super().__init__(session)
+        self._locked = locked
+        self._allow_persist = allow_persist
+
+    def lock_current_guard_rows(self, actor, *, plant_id):
+        super().lock_current_guard_rows(actor, plant_id=plant_id)
+        self._locked.set()
+        assert self._allow_persist.wait(10)
+
+
+def test_revoke_after_all_classifier_locks_serializes_after_classification(
+    ft011_database,
+    ft011_seed,
+):
+    farm, boss, _membership, plant = ft011_seed
+    engineer, engineer_membership = create_actor(ft011_database, farm, "engineer")
+    grant = grant_access(
+        ft011_database,
+        boss,
+        plant_id=plant.plant_id,
+        membership_id=engineer_membership.membership_id,
+    )
+    envelope = envelope_for(engineer, plant, grant_id=grant.grant_id)
+    executor = RecordingExecutor(candidate())
+    all_guard_rows_locked = threading.Event()
+    allow_classification_persist = threading.Event()
+    revoker_pid_ready = threading.Event()
+    revoker_pid: list[int] = []
+    engine = ft011_database.engine()
+    deadlocks_before = _database_deadlocks(ft011_database)
+
+    def classify():
+        with ft011_database.session() as session:
+            repository = _PauseAfterGuardLocksRepository(
+                session,
+                all_guard_rows_locked,
+                allow_classification_persist,
+            )
+            return SafetyGateClassificationService(
+                session,
+                model_executor=executor,
+                repository=repository,
+            ).classify(command_for(engineer, envelope))
+
+    def revoke():
+        with engine.connect() as connection:
+            revoker_pid.append(int(connection.scalar(text("SELECT pg_backend_pid()"))))
+            connection.rollback()
+            revoker_pid_ready.set()
+            with OrmSession(
+                bind=connection,
+                autoflush=False,
+                expire_on_commit=False,
+            ) as session:
+                return FarmService(session).revoke_access(
+                    boss,
+                    plant_id=plant.plant_id,
+                    membership_id=engineer_membership.membership_id,
+                )
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            classifier_future = pool.submit(classify)
+            assert all_guard_rows_locked.wait(10)
+            revoker_future = pool.submit(revoke)
+            assert revoker_pid_ready.wait(10)
+            assert _wait_for_postgresql_lock(ft011_database, revoker_pid[0])
+            allow_classification_persist.set()
+            outcome = classifier_future.result(timeout=10)
+            revoke_result = revoker_future.result(timeout=10)
+    finally:
+        allow_classification_persist.set()
+
+    assert _database_deadlocks(ft011_database) == deadlocks_before
+    assert outcome.outcome_kind == "classification_persisted"
+    assert outcome.authoritative is True
+    assert outcome.effect == "evidence_written"
+    assert outcome.error_code is None
+    assert revoke_result.changed is True
+    with ft011_database.session() as session:
+        assert session.get(PlantAccessGrant, grant.grant_id).status == "revoked"
+    assert len(executor.requests) == 1
+    assert _classification_count(ft011_database) == 1
+    assert _downstream_counts(ft011_database) == (0, 0, 0)
+
+
 class _WriteFailureRepository(SafetyClassificationRepository):
 
     def persist_first(self, _row):
         raise RuntimeError("synthetic persistence failure raw=candidate")
+
+
+class _AlwaysBusyGuardRepository(SafetyClassificationRepository):
+    def __init__(self, session):
+        super().__init__(session)
+        self.lock_attempts = 0
+
+    def lock_current_guard_rows(self, _actor, *, plant_id):
+        self.lock_attempts += 1
+        raise CurrentGuardLockUnavailable
+
+
+def test_guard_lock_restart_is_bounded_and_never_repeats_provider_io(
+    ft011_database,
+    ft011_seed,
+):
+    _farm, boss, _membership, plant = ft011_seed
+    envelope = envelope_for(boss, plant)
+    executor = RecordingExecutor(candidate())
+    with ft011_database.session() as session:
+        repository = _AlwaysBusyGuardRepository(session)
+        outcome = SafetyGateClassificationService(
+            session,
+            model_executor=executor,
+            repository=repository,
+        ).classify(command_for(boss, envelope))
+
+    assert repository.lock_attempts == 3
+    assert len(executor.requests) == 1
+    assert outcome.outcome_kind == "persistence_failed"
+    assert outcome.authoritative is False
+    assert outcome.effect == "no_effect"
+    assert outcome.provider_call_status == "completed"
+    assert outcome.error_code == "SAFETY_CLASSIFICATION_PERSISTENCE_FAILED"
+    assert _classification_count(ft011_database) == 0
+    assert _downstream_counts(ft011_database) == (0, 0, 0)
 
 
 def test_persistence_failure_is_redacted_no_effect(ft011_database, ft011_seed):
@@ -622,9 +1061,15 @@ def test_ft011_revision_is_ordered_head_and_guarded():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     revision = script.get_revision("head")
     assert revision is not None
-    assert revision.revision == "ft011_safety_classifications"
-    assert revision.down_revision == "ft009_plant_state"
-    source = Path(revision.path).read_text(encoding="utf-8")
+    assert revision.revision == "ft012_task_approval_outcomes"
+    assert revision.down_revision == "ft011_safety_action_decisions"
+    decisions_revision = script.get_revision("ft011_safety_action_decisions")
+    assert decisions_revision is not None
+    assert decisions_revision.down_revision == "ft011_safety_classifications"
+    classification_revision = script.get_revision("ft011_safety_classifications")
+    assert classification_revision is not None
+    assert classification_revision.down_revision == "ft009_plant_state"
+    source = Path(classification_revision.path).read_text(encoding="utf-8")
     assert "ON DELETE CASCADE" not in source.upper()
     assert "downgrade refused" in source
     assert "SELECT EXISTS (SELECT 1 FROM safety_classifications LIMIT 1)" in source

@@ -19,6 +19,7 @@ from .api import (
     plants_router,
     session_router,
 )
+from .api.task_follow_up import router as task_follow_up_router
 from .config import AppSettings
 from .database import DatabaseHandle, build_database
 from .agent_chat import PostgreSQLAgentIntroductionSink, reconcile_active_plants
@@ -65,6 +66,7 @@ def create_app(
     app.include_router(history_router)
     app.include_router(feed_router)
     app.include_router(plant_state_router)
+    app.include_router(task_follow_up_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

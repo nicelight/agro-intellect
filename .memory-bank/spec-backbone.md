@@ -101,14 +101,23 @@ last_updated: 2026-07-20
 - Current FT-010 boundary outcome: TASK-036 is scheduler-recorded `done` from
   current ATTEMPT 02 deterministic implementation, functional PASS, and
   semantic-pass evidence. FT-010 lifecycle remains `planned` pending an
-  explicit owner feature decision; TASK-037 remains `planned`, and this
-  reconciliation does not promote or select it.
-- Current FT-011 planning outcome: feature-local provider-neutral Safety
-  classification, immutable PostgreSQL classification/action decisions,
-  `approval_input=2h`, exact manual/unsupported action taxonomy, safe pending
-  UI projection, and verification contracts are complete. TASK-037 and
-  TASK-038 remain `planned`; run fresh `/review-tasks-plan FT-011`. FT-012
-  remains the owner of human decisions and later task/follow-up state.
+  explicit owner feature decision. The later FT-011 boundary below records
+  TASK-037 completion; this earlier reconciliation did not promote or select
+  it.
+- Current FT-011 W1/W2 boundary outcome: TASK-037 is scheduler-recorded `done`
+  from current ATTEMPT 03 provider-neutral deterministic implementation,
+  functional PASS, and semantic-pass evidence. ATTEMPT 01 and ATTEMPT 02
+  remain immutable failed history. TASK-038 is scheduler-recorded `done` from
+  current ATTEMPT 01 deterministic implementation, functional PASS, and
+  semantic-pass evidence. The current product migration head is
+  `ft011_safety_action_decisions` directly after
+  `ft011_safety_classifications` and `ft009_plant_state`; current PostgreSQL
+  evidence covers strict classification, exact action/authority/evidence
+  routing, atomic inert projection, archive/revoke/restore guards, and zero
+  downstream authority. Feature-local Safety design remains complete. FT-011
+  lifecycle remains `planned` pending an explicit owner feature decision, and
+  this reconciliation does not promote or select planned dependent TASK-039.
+  FT-012 remains the owner of human decisions and later task/follow-up state.
 - Current FT-012 planning outcome: feature-local Approval, Task, automatic
   +48-hour follow-up, Outcome, HTTP, Timeline, idempotency/concurrency, archive,
   and provider-neutral `task_follow_up` contracts are complete. TASK-039 and
@@ -147,11 +156,14 @@ last_updated: 2026-07-20
   requires deterministic schema, fake/spy, authorization/post-I/O, media,
   redaction, timeout/error, unbound-production, no-fallback, and no-authority
   evidence; it does not require provider selection, credentials, egress,
-  network, or live smoke. TASK-034, TASK-035, and TASK-036 are
+  network, or live smoke. TASK-034, TASK-035, TASK-036, TASK-037, and TASK-038 are
   scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle values remain
-  `planned` pending explicit owner decisions. TASK-037 and later affected
-  cards retain their prior `planned` status; this backbone reconciliation does
-  not promote or select them. FT-013 remains execution-excluded in this run
+  `planned` pending explicit owner decisions. FT-011 and EP-004 remain
+  `planned` pending explicit owner lifecycle decisions; planned TASK-039
+  remains a separate scheduler decision and this backbone reconciliation does
+  not promote or select it. Historical run-budget evidence does not amend
+  canonical workflow policy.
+  FT-013 remains execution-excluded in this run
   and requires fresh review before any future selection. Dataset Governance now has one lifecycle and one
   derived trainability authority; FT-014 exact persistence and evidence policy
   remain feature-local.

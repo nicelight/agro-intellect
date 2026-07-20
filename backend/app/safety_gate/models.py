@@ -5,7 +5,16 @@ from __future__ import annotations
 from datetime import datetime
 import uuid
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, Uuid, func
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..access_admin.models import Base
@@ -115,4 +124,189 @@ class SafetyClassification(Base):
     )
 
 
-__all__ = ["SafetyClassification"]
+class SafetyActionDecision(Base):
+    __tablename__ = "safety_action_decisions"
+    __table_args__ = (
+        UniqueConstraint(
+            "classification_message_id",
+            name="uq_safety_action_decisions_classification",
+        ),
+        CheckConstraint(
+            "actor_role_preset IN ('boss', 'engineer', 'consultant')",
+            name="ck_safety_action_decisions_actor_role",
+        ),
+        CheckConstraint(
+            "permission_source IN ('boss_role', 'plant_access_grant')",
+            name="ck_safety_action_decisions_permission_source",
+        ),
+        CheckConstraint(
+            "((permission_source = 'boss_role' AND actor_role_preset = 'boss' "
+            "AND grant_id IS NULL) OR "
+            "(permission_source = 'plant_access_grant' "
+            "AND actor_role_preset IN ('engineer', 'consultant') "
+            "AND grant_id IS NOT NULL))",
+            name="ck_safety_action_decisions_permission_shape",
+        ),
+        CheckConstraint(
+            "action_kind IN "
+            "('ph_adjustment', 'ec_adjustment', 'solution_change', "
+            "'pump_command', 'light_command', 'dosing_command', 'pruning', "
+            "'transplanting', 'root_trimming', 'other_physical_action')",
+            name="ck_safety_action_decisions_action_kind",
+        ),
+        CheckConstraint(
+            "safety_status IN "
+            "('safety_blocked', 'needs_fresh_evidence', "
+            "'pending_human_approval')",
+            name="ck_safety_action_decisions_safety_status",
+        ),
+        CheckConstraint(
+            "reason_code IN "
+            "('unsupported_action', 'approval_authority_missing', "
+            "'approval_input_missing_or_stale', 'ready_for_human_approval')",
+            name="ck_safety_action_decisions_reason_code",
+        ),
+        CheckConstraint(
+            "((action_kind IN "
+            "('pump_command', 'light_command', 'dosing_command', 'pruning', "
+            "'transplanting', 'root_trimming', 'other_physical_action') "
+            "AND safety_status = 'safety_blocked' "
+            "AND reason_code = 'unsupported_action') OR "
+            "(action_kind IN ('ph_adjustment', 'ec_adjustment', 'solution_change') "
+            "AND ((safety_status = 'safety_blocked' "
+            "AND reason_code = 'approval_authority_missing') OR "
+            "(safety_status = 'needs_fresh_evidence' "
+            "AND reason_code = 'approval_input_missing_or_stale') OR "
+            "(safety_status = 'pending_human_approval' "
+            "AND reason_code = 'ready_for_human_approval'))))",
+            name="ck_safety_action_decisions_route_matrix",
+        ),
+        CheckConstraint(
+            "ph_status IS NULL OR ph_status IN ('fresh', 'stale', 'missing')",
+            name="ck_safety_action_decisions_ph_status",
+        ),
+        CheckConstraint(
+            "ec_status IS NULL OR ec_status IN ('fresh', 'stale', 'missing')",
+            name="ck_safety_action_decisions_ec_status",
+        ),
+        CheckConstraint(
+            "((ph_status = 'missing' AND ph_measurement_id IS NULL "
+            "AND ph_measured_at IS NULL) OR "
+            "(ph_status IN ('fresh', 'stale') AND ph_measurement_id IS NOT NULL "
+            "AND ph_measured_at IS NOT NULL) OR ph_status IS NULL)",
+            name="ck_safety_action_decisions_ph_evidence_shape",
+        ),
+        CheckConstraint(
+            "((ec_status = 'missing' AND ec_measurement_id IS NULL "
+            "AND ec_measured_at IS NULL) OR "
+            "(ec_status IN ('fresh', 'stale') AND ec_measurement_id IS NOT NULL "
+            "AND ec_measured_at IS NOT NULL) OR ec_status IS NULL)",
+            name="ck_safety_action_decisions_ec_evidence_shape",
+        ),
+        CheckConstraint(
+            "((reason_code IN ('unsupported_action', 'approval_authority_missing') "
+            "AND ph_status IS NULL AND ec_status IS NULL "
+            "AND ph_measurement_id IS NULL AND ec_measurement_id IS NULL "
+            "AND ph_measured_at IS NULL AND ec_measured_at IS NULL "
+            "AND expires_at IS NULL) OR "
+            "(reason_code = 'approval_input_missing_or_stale' "
+            "AND ph_status IS NOT NULL AND ec_status IS NOT NULL "
+            "AND (ph_status <> 'fresh' OR ec_status <> 'fresh') "
+            "AND expires_at IS NULL) OR "
+            "(reason_code = 'ready_for_human_approval' "
+            "AND ph_status = 'fresh' AND ec_status = 'fresh' "
+            "AND ph_measurement_id IS NOT NULL AND ec_measurement_id IS NOT NULL "
+            "AND ph_measured_at IS NOT NULL AND ec_measured_at IS NOT NULL "
+            "AND expires_at IS NOT NULL))",
+            name="ck_safety_action_decisions_evidence_matrix",
+        ),
+        CheckConstraint(
+            "created_at = evaluated_at",
+            name="ck_safety_action_decisions_evaluation_timestamp",
+        ),
+        CheckConstraint(
+            "((reason_code = 'unsupported_action' "
+            "AND summary_text = "
+            "'Действие не поддерживается безопасным процессом MVP.') OR "
+            "(reason_code = 'approval_authority_missing' "
+            "AND summary_text = "
+            "'Действие заблокировано: у текущего пользователя нет права подтверждения.') OR "
+            "(reason_code = 'approval_input_missing_or_stale' "
+            "AND summary_text = "
+            "'Перед предложением действия нужны свежие измерения pH и EC.') OR "
+            "(reason_code = 'ready_for_human_approval' AND "
+            "((action_kind = 'ph_adjustment' AND summary_text = "
+            "'Предложена ручная корректировка pH. Требуется решение уполномоченного пользователя.') OR "
+            "(action_kind = 'ec_adjustment' AND summary_text = "
+            "'Предложена ручная корректировка EC питательного раствора. Требуется решение уполномоченного пользователя.') OR "
+            "(action_kind = 'solution_change' AND summary_text = "
+            "'Предложена ручная замена питательного раствора. Требуется решение уполномоченного пользователя.'))))",
+            name="ck_safety_action_decisions_summary",
+        ),
+    )
+
+    decision_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    classification_message_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("safety_classifications.message_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    farm_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("farms.farm_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    plant_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("plants.plant_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    actor_account_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("accounts.account_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    actor_membership_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("farm_memberships.membership_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    actor_role_preset: Mapped[str] = mapped_column(String(16), nullable=False)
+    permission_source: Mapped[str] = mapped_column(String(32), nullable=False)
+    grant_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("plant_access_grants.grant_id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+    action_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    safety_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    reason_code: Mapped[str] = mapped_column(String(64), nullable=False)
+    ph_measurement_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("manual_measurements.measurement_id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+    ec_measurement_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("manual_measurements.measurement_id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+    ph_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    ec_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    ph_measured_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    ec_measured_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    evaluated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    summary_text: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+__all__ = ["SafetyActionDecision", "SafetyClassification"]

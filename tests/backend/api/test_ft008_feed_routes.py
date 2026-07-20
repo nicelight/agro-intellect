@@ -12,6 +12,7 @@ from backend.app.agent_chat import PlantFeedError, PlantFeedErrorCode, PlantFeed
 from backend.app.main import create_app
 from tests.backend.agent_chat.conftest import ft008_database, ft008_seed  # noqa: F401
 from tests.backend.plant_operations.conftest import create_actor
+from tests.backend.safety_gate.conftest import ft011_database, ft011_seed  # noqa: F401
 
 
 def test_feed_openapi_is_protected_no_store_contract():
@@ -95,3 +96,61 @@ def test_feed_endpoint_persistence_error_is_no_store(ft008_database, ft008_seed)
     assert response.status_code == 500
     assert response.headers["cache-control"] == "no-store"
     assert response.json()["error"]["code"] == "FEED_PERSISTENCE_FAILED"
+
+
+def test_feed_response_union_returns_strict_inert_safety_status(
+    ft011_database,
+    ft011_seed,
+):
+    farm, boss, _membership, plant = ft011_seed
+    decision_id = uuid.uuid4()
+    message_id = uuid.uuid4()
+    summary = "Действие не поддерживается безопасным процессом MVP."
+    with ft011_database.session() as session, session.begin():
+        session.add(
+            UIFeedEvent(
+                ui_event_id=decision_id,
+                farm_id=farm.farm_id,
+                plant_id=plant.plant_id,
+                created_at=datetime(2026, 7, 20, 6, 0, tzinfo=timezone.utc),
+                source_type="safety",
+                source_id=str(decision_id),
+                source_refs=[
+                    f"message_envelope:{message_id}",
+                    f"safety_classification:{message_id}",
+                ],
+                display_kind="safety_status",
+                display_payload={
+                    "payload_kind": "safety_status",
+                    "decision_ref": f"safety_decision:{decision_id}",
+                    "classification_ref": f"safety_classification:{message_id}",
+                    "action_kind": "dosing_command",
+                    "safety_status": "safety_blocked",
+                    "reason_code": "unsupported_action",
+                    "summary_text": summary,
+                    "evidence_refs": [],
+                    "approval_input_freshness": None,
+                    "expires_at": None,
+                },
+                visible_to_roles=["boss", "engineer"],
+                visible_to_agents=False,
+                consumable_by_agents=False,
+                agent_id=None,
+                roster_version=None,
+            )
+        )
+    app = create_app(database=ft011_database)
+    app.dependency_overrides[require_actor_context] = lambda: boss
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        response = client.get(f"/api/plants/{plant.plant_id}/feed")
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "no-store"
+    item = next(
+        item
+        for item in response.json()["items"]
+        if item["display_kind"] == "safety_status"
+    )
+    assert item["display_kind"] == "safety_status"
+    assert item["display_payload"]["summary_text"] == summary
+    assert item["visible_to_agents"] is item["consumable_by_agents"] is False
+    assert "candidate" not in str(item).lower()

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..access_admin.actor_context import ActorContext
@@ -13,6 +13,13 @@ from ..database import DatabaseHandle
 from .authorization import lock_current_plant_authorization
 from .contracts import BusEventEnvelopeV1, UIFeedEventV1
 from .models import AgentBusEvent, UIFeedEvent
+from ..task_follow_up import (
+    ClassifiedMessageTaskCommandV1,
+    TaskFollowUpError,
+    TaskFollowUpService,
+    TaskKind,
+)
+from ..timeline import TimelineJsonlAppender
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +28,7 @@ class PublicationResult:
     reason_code: str | None = None
     bus_event_id: uuid.UUID | None = None
     ui_event_id: uuid.UUID | None = None
+    task_id: uuid.UUID | None = None
 
 
 class GuardedAgentPublicationService:
@@ -30,7 +38,36 @@ class GuardedAgentPublicationService:
     def publish(self, actor: ActorContext, envelope: MessageEnvelopeV1, classification: SafetyClassificationResultV1) -> PublicationResult:
         if not isinstance(envelope, MessageEnvelopeV1) or not isinstance(classification, SafetyClassificationResultV1) or classification.message_id != envelope.message_id or envelope.farm_id != actor.farm_id:
             return PublicationResult("rejected", "handoff_invalid")
-        if classification.classification in {"safe_task_request", "physical_action"}:
+        if classification.classification == "safe_task_request":
+            # FT-008 compatibility schemas intentionally stop before the Task
+            # tables.  The current product head dispatches only when both
+            # authoritative inputs are durably available.
+            tables = set(inspect(self._database.engine()).get_table_names())
+            if not {"safety_classifications", "tasks"} <= tables:
+                return PublicationResult("no_effect")
+            if envelope.agent_id == "companion":
+                return PublicationResult("no_effect")
+            try:
+                with self._database.session() as session:
+                    result = TaskFollowUpService(
+                        session,
+                        timeline_appender=TimelineJsonlAppender(self._database.settings),
+                    ).create_ordinary_task(
+                        ClassifiedMessageTaskCommandV1(
+                            actor_context=actor,
+                            message_envelope=envelope,
+                            classification=classification,
+                            task_kind=TaskKind(classification.safe_task_kind),
+                        )
+                    )
+            except (TaskFollowUpError, TypeError, ValueError):
+                return PublicationResult("rejected", "ordinary_task_rejected")
+            return PublicationResult(
+                "accepted" if result.result == "created" else "duplicate",
+                reason_code="ordinary_task_created",
+                task_id=result.task.task_id,
+            )
+        if classification.classification == "physical_action":
             return PublicationResult("no_effect")
         bus_id = uuid.uuid4() if classification.classification == "safe_information" else None
         ui_id = uuid.uuid4()

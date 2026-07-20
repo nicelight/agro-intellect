@@ -1,8 +1,7 @@
-"""Isolated PostgreSQL substrate for FT-011 classification tests."""
-
 from __future__ import annotations
 
 from contextlib import contextmanager
+from datetime import datetime, timezone
 import uuid
 
 import pytest
@@ -14,36 +13,48 @@ from sqlalchemy.engine import make_url
 from backend.app import AppSettings
 from backend.app.database import DatabaseHandle, build_database
 from backend.migrations import build_alembic_config
-from tests.backend.plant_operations.conftest import (
-    create_active_plant,
-    create_actor,
-    seed_farm,
-)
+from tests.backend.plant_operations.conftest import create_active_plant, create_actor, seed_farm
 
 
 @pytest.fixture
-def ft011_database():
+def ft012_database():
     with _postgres_database() as database:
         yield database
 
 
 @pytest.fixture
-def ft011_seed(ft011_database):
-    farm = seed_farm(ft011_database)
-    boss, membership = create_actor(ft011_database, farm, "boss")
+def ft012_seed(ft012_database):
+    farm = seed_farm(ft012_database)
+    boss, membership = create_actor(ft012_database, farm, "boss")
     plant = create_active_plant(
-        ft011_database,
-        boss,
-        plant_key=f"ft011_{uuid.uuid4().hex[:10]}",
+        ft012_database, boss, plant_key=f"ft012_{uuid.uuid4().hex[:10]}"
     )
     return farm, boss, membership, plant
+
+
+@pytest.fixture
+def task_timeline():
+    events = []
+
+    def append(event):
+        events.append(event)
+        event_id = uuid.uuid4()
+        return {
+            "timeline_event_id": str(event_id),
+            "timeline_ref": f"timeline.jsonl#{event_id}",
+            "event_type": event.event_type,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+    append.events = events
+    return append
 
 
 @contextmanager
 def _postgres_database():
     settings = AppSettings.from_env()
     base = build_database(settings)
-    schema = f"task037_safety_{uuid.uuid4().hex}"
+    schema = f"task039_ft012_{uuid.uuid4().hex}"
     scoped: DatabaseHandle | None = None
     try:
         assert base.engine().dialect.name == "postgresql"
@@ -53,21 +64,16 @@ def _postgres_database():
         url = make_url(settings.database_url).update_query_dict(
             {"options": f"-csearch_path={schema},public"}
         )
-        scoped = build_database(
-            settings.model_copy(
-                update={"database_url": url.render_as_string(hide_password=False)}
-            )
-        )
+        scoped = build_database(settings.model_copy(
+            update={"database_url": url.render_as_string(hide_password=False)}
+        ))
         script = ScriptDirectory.from_config(build_alembic_config(settings))
         revision_ids = (
-            "ft001_access_sessions",
-            "ft002_farm_plant_access",
-            "ft004_plant_operations",
-            "ft005_photo_intake",
-            "ft008_agent_chat_ui_feed",
-            "ft009_plant_state",
-            "ft011_safety_classifications",
-            "ft011_safety_action_decisions",
+            "ft001_access_sessions", "ft002_farm_plant_access",
+            "ft004_plant_operations", "ft005_photo_intake",
+            "ft008_agent_chat_ui_feed", "ft009_plant_state",
+            "ft011_safety_classifications", "ft011_safety_action_decisions",
+            "ft012_task_approval_outcomes",
         )
         with scoped.engine().connect() as connection:
             context = MigrationContext.configure(connection)
@@ -85,4 +91,4 @@ def _postgres_database():
         base.dispose()
 
 
-__all__ = ["ft011_database", "ft011_seed"]
+__all__ = ["ft012_database", "ft012_seed", "task_timeline"]

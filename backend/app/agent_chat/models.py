@@ -66,8 +66,16 @@ class UIFeedEvent(Base):
             name="ck_ui_feed_events_source_type",
         ),
         CheckConstraint(
-            "display_kind IN ('agent_introduction', 'agent_message', 'block_notice')",
+            "display_kind IN "
+            "('agent_introduction', 'agent_message', 'block_notice', 'safety_status')",
             name="ck_ui_feed_events_display_kind",
+        ),
+        CheckConstraint(
+            "((source_type = 'system' AND display_kind = 'agent_introduction') OR "
+            "(source_type = 'agent_message' AND display_kind = 'agent_message') OR "
+            "(source_type = 'safety' "
+            "AND display_kind IN ('block_notice', 'safety_status')))",
+            name="ck_ui_feed_events_source_display",
         ),
         CheckConstraint(
             "visible_to_agents IS FALSE",

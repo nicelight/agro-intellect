@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-18
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -28,8 +28,8 @@ source_of_truth:
   and structured trend/conflict/unknown assessment handoff.
 - [Hydroponics Advisor Runtime](hydroponics-advisor-runtime.md): authorized
   pH/EC and Plant-state input, missing-data policy, and pending advisor handoff.
-- [Safety Gate Runtime](safety-gate-runtime.md): strict model-backed semantic
-  candidate and project-owned classification mapping.
+- [Safety Gate Runtime](safety-gate-runtime.md): strict provider-neutral
+  semantic candidate and project-owned classification mapping.
 - [Task And Follow-Up Agent Runtime](task-follow-up-runtime.md): strict
   authorized Task/Outcome/evidence input, typed ordinary-task proposal, and
   classified Task handoff.

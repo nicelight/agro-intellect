@@ -30,11 +30,11 @@ source_of_truth:
 - [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/prd-to-tasks FT-007` reconciliation and fresh review approval.
 - [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): verified durable introductions, guarded typed Bus/literal UI publication, current-authority agent-context isolation, and protected Plant feed API; FT-016 retains frontend rendering ownership.
 - [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): W1/W2 task boundary complete with accepted deterministic Vision and Plant-state trust evidence; lifecycle remains planned pending an explicit owner feature decision, and live-provider image behavior remains deferred.
-- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): W1 task boundary complete with current ATTEMPT 02 deterministic implementation, functional PASS, and semantic-pass evidence; lifecycle remains planned pending an explicit owner feature decision, and TASK-037 remains scheduler-owned planned.
+- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): W1 task boundary complete with current ATTEMPT 02 deterministic implementation, functional PASS, and semantic-pass evidence; lifecycle remains planned pending an explicit owner feature decision.
 
 ## EP-004 Safety Tasks And Follow-Up
 
-- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): SDD design complete; two planned T3 tasks add provider-neutral immutable classification and two-hour-evidence Safety routing through pending human approval.
+- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): W1/W2 deterministic classification and Safety decision/projection task boundary complete through immutable `pending_human_approval`; lifecycle remains planned pending an explicit owner feature decision.
 - [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): SDD design complete; two planned T3 tasks add authoritative approval/task/follow-up/outcome state and the provider-neutral classified `task_follow_up` path.
 
 ## EP-005 Companion Governance

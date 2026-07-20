@@ -4,6 +4,60 @@ status: active
 ---
 # Changelog
 
+## 2026-07-20 — FT-011 W2 boundary evidence sync
+
+- Reconciled the scheduler-recorded completion of
+  `TASK-038-T3-FT-011-W2` using only current ATTEMPT 01 implementation `PASS`,
+  independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
+- Recorded the completed FT-011 W1/W2 deterministic task boundary across the
+  feature, EP-004, RTM evidence, implementation/testing docs, spec-backbone,
+  changelog, and feature/epic routing. FT-012 retains all human approval,
+  action Task, follow-up, and Outcome ownership.
+- Recorded `ft011_safety_action_decisions` as the current product migration
+  head directly after `ft011_safety_classifications` and `ft009_plant_state`.
+  Current evidence includes the six cross-feature exact-head regressions plus
+  task-local migration coverage, `55` focused passes, `169` aggregate passes,
+  `21` migration-compatibility passes, and `467` full deterministic passes.
+- Recorded exact action/authority/two-hour-evidence routing, atomic immutable
+  decision and inert UI projection, idempotency/concurrency/archive/revoke/
+  restore behavior, redaction, and zero downstream authority.
+- Preserved FT-011 and EP-004 lifecycle as `planned` pending explicit owner
+  decisions; applicable RTM lifecycles remain unchanged, and TASK-039 remains
+  authoritative `planned`. This sync makes no lifecycle, closure, promotion,
+  selection, unblock, or block decision and does not touch TASK-041/042/043.
+- No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
+  was required, checked, or claimed. Missing human-checkpoint markers remain
+  scheduler-accepted advisory process gaps.
+
+## 2026-07-20 — FT-011 W1 boundary evidence sync
+
+- Reconciled the scheduler-recorded completion of
+  `TASK-037-T3-FT-011-W1` using only current ATTEMPT 03 implementation `PASS`,
+  independent functional `VERDICT: PASS`, separate
+  `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence. ATTEMPT 01
+  archive/revoke-race failure and ATTEMPT 02 lock-order-deadlock failure remain
+  append-only history.
+- Recorded the completed provider-neutral classification boundary across
+  FT-011, EP-004, RTM evidence, implementation/testing docs, spec-backbone,
+  direct dependency notes, and feature/epic/contract/testing routers. Current
+  migration evidence keeps
+  `ft011_safety_classifications` directly after `ft009_plant_state`; all six
+  current exact-head assertions preserve that ancestry.
+- Recorded current PostgreSQL concurrency evidence for fail-closed archive/
+  revoke interleaves, deadlock-free production serialization, bounded
+  contention, first-write-wins, redaction, and zero downstream authority. The
+  safe liveness residual and absent human checkpoint remain owner-accepted
+  advisory gaps.
+- Preserved FT-011 and EP-004 lifecycle as `planned`; applicable shared REQ
+  lifecycles remain unchanged, and TASK-038 remains authoritative `planned`.
+  This sync makes no lifecycle, closure, promotion, selection, unblock, or
+  block decision.
+- Preserved the provider-neutral code-phase owner decision and current-run
+  attempt/failure budgets as operational evidence only. No provider/model/base
+  URL/Gemini/credential/egress/network/live-smoke result or canonical policy
+  amendment is claimed. TASK-041, TASK-042, and TASK-043 were not changed.
+
 ## 2026-07-20 — FT-010 W1 boundary evidence sync
 
 - Reconciled the scheduler-recorded completion of

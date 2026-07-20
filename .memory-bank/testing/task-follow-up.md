@@ -2,7 +2,7 @@
 description: Verification contract for FT-012 approvals, tasks, follow-ups, outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
 type: testing_spec
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/task-follow-up-lifecycle.md
@@ -31,9 +31,17 @@ immutable pending Safety decision through human task completion and Outcome.
 - PostgreSQL read/write smoke proves Task, Approval, Outcome, source refs,
   safe attribution, timestamps, and Timeline refs round-trip through the real
   repository/session path.
-- Existing exact-head assertions advance to the FT-012 revision only after the
-  implemented FT-011 heads; no test hardcodes the present FT-008 head as the
-  future parent.
+- The FT-012 revision uses
+  `down_revision=ft011_safety_action_decisions`. All eight current exact-head
+  consumers advance to the FT-012 revision in the same migration wave:
+  `tests/backend/access_admin/test_ft002_schema_migration.py`,
+  `tests/backend/photo_intake/test_ft005_migration_models.py`,
+  `tests/backend/plant_operations/test_ft004_migration_models.py`,
+  `tests/backend/agent_chat/test_ft008_migration_models.py`,
+  `tests/backend/plant_state/test_migration_models.py`,
+  `tests/backend/safety_gate/test_migration_models.py`,
+  `tests/backend/safety_gate/test_classification_persistence.py`, and
+  `tests/backend/test_foundation_database_contract.py`.
 
 ## Ordinary-task matrix
 
@@ -192,7 +200,7 @@ current deterministic REQ-011 evidence and does not claim real integration.
 - Deterministic competence runtime:
   `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/agent_runtime -m "not real_model" -q`
 - Exact-head compatibility:
-  `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/test_foundation_database_contract.py -q`
+  `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q`
 - Full deterministic suite: `.venv/bin/python -m pytest tests -m "not real_model" -q`
 - Memory Bank lint: `node scripts/mb-lint.mjs`
 - Diff check: `git diff --check`

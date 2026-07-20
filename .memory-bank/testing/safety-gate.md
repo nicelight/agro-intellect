@@ -2,7 +2,7 @@
 description: Verification contract for provider-neutral classification and physical-action Safety routing through pending approval.
 status: active
 type: testing_spec
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 source_of_truth:
   - .memory-bank/features/FT-011-safety-gate-physical-action-routing.md
   - .memory-bank/contracts/safety-gate-runtime.md
@@ -102,6 +102,45 @@ follow-up assertion.
   evidence evaluation or downstream execution.
 - `FT-011-BHV-003`: supported action with missing/stale approval input ->
   `needs_fresh_evidence`, never pending approval.
+
+## Current W1/W2 evidence
+
+- Scheduler closure selects only ATTEMPT 03 implementation `PASS`, independent
+  functional `VERDICT: PASS`, and separate
+  `SEMANTIC_VERDICT: semantic-pass`. ATTEMPT 01 archive/revoke race failure and
+  ATTEMPT 02 lock-order deadlock failure remain immutable history.
+- Current migration evidence keeps the single product head
+  `ft011_safety_classifications` directly after `ft009_plant_state`; the five
+  task-listed exact-head regressions plus the scheduler-authorized Plant State
+  assertion all preserve that ordered ancestry.
+- Real local-PostgreSQL evidence covers archive/revoke before final locks,
+  production classification/revocation partial acquisition, the reverse Boss
+  archive interleave, and revocation after all classification locks. Current
+  evidence reports no deadlock delta, stable serialization, one provider call,
+  and zero unauthorized/downstream rows.
+- Bounded later-row contention performs at most three write-transaction
+  attempts with a fresh current guard on each attempt and without repeating
+  provider I/O. Only lock-unavailable contention is retryable; other database
+  failures remain single-attempt, redacted, and fail-closed.
+- Scheduler closure selects W2 ATTEMPT 01 implementation `PASS`, independent
+  functional `VERDICT: PASS`, and separate
+  `SEMANTIC_VERDICT: semantic-pass`. Focused Safety action/UI evidence reports
+  `55 passed`; the aggregate reports `169 passed, 1 deselected`; migration
+  compatibility reports `21 passed`; and the full deterministic suite reports
+  `467 passed, 2 deselected`.
+- Current migration evidence keeps the single product head
+  `ft011_safety_action_decisions` directly after
+  `ft011_safety_classifications` and `ft009_plant_state`. Six cross-feature
+  exact-head regression files plus the task-local Safety migration test prove
+  the ordered ancestry and restrictive decision/UI constraints.
+- W2 PostgreSQL evidence covers all supported/unsupported actions, current
+  authority, independent pH/EC freshness and exact expiry, atomic decision/UI
+  rollback, idempotency/conflict/concurrency, archive/revoke/restore behavior,
+  inert feed payloads, and absence of downstream approval/task/Bus/Timeline/
+  device authority.
+- The accepted W1 residual is safe liveness loss under sustained contention;
+  no fairness/latency SLA is specified. No provider/model/base URL/Gemini/
+  credential/egress/network/live-smoke result is required or claimed.
 
 ## Current code-phase executor evidence
 

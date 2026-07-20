@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-012 human approval, task/follow-up outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 ---
 # IMPL-FT-012 — Human Approval Tasks And Follow-Up Outcomes
 
@@ -59,8 +59,9 @@ only a matched ordinary Task.
    resolution, redaction, and Timeline writer patterns.
 2. Add one post-FT-011 Alembic revision for `approvals`, `tasks`, and
    `outcomes`, with exact closed matrices, restrictive UUID FKs, natural
-   uniqueness, request ids/fingerprints, and no-cascade retention. Determine
-   `down_revision` from the implemented upstream head, not today's FT-008 head.
+   uniqueness, request ids/fingerprints, and no-cascade retention. Its
+   `down_revision` is the implemented upstream head
+   `ft011_safety_action_decisions`.
 3. Wire idempotent post-commit Approval materialization at the actual FT-011
    handoff seam. Its failure cannot roll back the immutable Safety decision;
    explicit approve/reject safely retries materialization.
@@ -166,6 +167,9 @@ assertions as applicable:
 - `tests/backend/photo_intake/test_ft005_migration_models.py`
 - `tests/backend/plant_operations/test_ft004_migration_models.py`
 - `tests/backend/agent_chat/test_ft008_migration_models.py`
+- `tests/backend/plant_state/test_migration_models.py`
+- `tests/backend/safety_gate/test_migration_models.py`
+- `tests/backend/safety_gate/test_classification_persistence.py`
 - `tests/backend/test_foundation_database_contract.py`
 
 ## Source artifacts
@@ -239,7 +243,8 @@ assertions as applicable:
 ## Quality gates and UAT
 
 - Run the task-specific commands in `.memory-bank/testing/task-follow-up.md`.
-- Run the five exact-head compatibility tests after the FT-012 migration.
+- Run the eight exact-head compatibility tests after the FT-012 migration:
+  `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q`.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` for both waves.
 - Run the full deterministic suite before handoff when the environment permits.
 - Current acceptance uses deterministic fake/spy evidence, including timeout,

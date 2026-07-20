@@ -160,8 +160,8 @@ endpoint milestone and is not claimed or required by this plan.
 - The absent human checkpoint is preserved as an accepted advisory warning.
   No provider, model, credential, egress, network, or live result is claimed.
 - FT-010 lifecycle remains `planned` pending an explicit owner decision.
-  Dependent TASK-037 remains `planned`; boundary sync does not promote or
-  select it.
+  TASK-037 was `planned` at this boundary and was subsequently completed under
+  its own FT-011/W1 ATTEMPT 03 scheduler evidence.
 
 Current evidence:
 [implementation](../../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-02.md),

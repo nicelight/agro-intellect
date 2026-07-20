@@ -18,6 +18,10 @@ _EVENT_SOURCE_TYPES = {
     "manual_measurement_recorded": "manual_measurement",
     "photo_accepted": "photo_catalog_item",
     "agent_runtime_decided": "agent_runtime_attempt",
+    "task_created": "task",
+    "task_completed": "task",
+    "approval_decided": "approval",
+    "follow_up_outcome_recorded": "outcome",
 }
 _SOURCE_REF_RE = re.compile(
     r"[a-z][a-z0-9_]{0,63}:[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z"
@@ -111,7 +115,67 @@ def _event_shape_is_valid(event: object) -> bool:
         return False
     if event.event_type == "agent_runtime_decided":
         return _agent_runtime_event_is_valid(event)
+    if event.event_type in {
+        "task_created",
+        "task_completed",
+        "approval_decided",
+        "follow_up_outcome_recorded",
+    }:
+        return _task_loop_event_is_valid(event)
     return True
+
+
+def _task_loop_event_is_valid(event: TimelineEvent) -> bool:
+    if event.plant_id is None or not _actor_ref_is_valid(event.actor_ref):
+        return False
+    refs = event.source_refs.get("record_refs")
+    if (
+        set(event.source_refs) != {"record_refs"}
+        or not isinstance(refs, list)
+        or len(refs) > 12
+        or len(refs) != len(set(refs))
+        or any(not isinstance(ref, str) or _SOURCE_REF_RE.fullmatch(ref) is None for ref in refs)
+    ):
+        return False
+    payload = event.payload_summary
+    if event.event_type == "task_created":
+        return (
+            set(payload) == {"task_kind", "task_source_type", "due_at", "source_ref_count"}
+            and payload["task_kind"] in {"check", "measurement", "action", "follow_up"}
+            and payload["task_source_type"] in {
+                "safe_task_request", "approved_action", "automatic_follow_up"
+            }
+            and (payload["due_at"] is None or isinstance(payload["due_at"], str))
+            and payload["source_ref_count"] == len(refs)
+        )
+    if event.event_type == "task_completed":
+        return (
+            set(payload) == {"task_kind", "completion_kind", "source_ref_count"}
+            and payload["task_kind"] in {"check", "measurement", "action", "follow_up"}
+            and payload["completion_kind"] in {"ordinary", "action", "outcome"}
+            and payload["source_ref_count"] == len(refs)
+        )
+    if event.event_type == "approval_decided":
+        return (
+            set(payload) == {"decision", "action_kind", "record_version", "action_task_id"}
+            and payload["decision"] in {"approved", "rejected"}
+            and payload["action_kind"] in {"ph_adjustment", "ec_adjustment", "solution_change"}
+            and payload["record_version"] == 2
+            and (
+                _canonical_uuid_text(payload["action_task_id"])
+                if payload["decision"] == "approved"
+                else payload["action_task_id"] is None
+            )
+        )
+    return (
+        set(payload) == {"follow_up_task_id", "outcome_value", "evidence_ref_count"}
+        and _canonical_uuid_text(payload["follow_up_task_id"])
+        and payload["outcome_value"] in {"improved", "worsened", "unchanged", "no_data"}
+        and isinstance(payload["evidence_ref_count"], int)
+        and not isinstance(payload["evidence_ref_count"], bool)
+        and 0 <= payload["evidence_ref_count"] <= 4
+        and payload["evidence_ref_count"] == len(refs)
+    )
 
 
 def _agent_runtime_event_is_valid(event: TimelineEvent) -> bool:

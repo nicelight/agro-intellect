@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-011 provider-neutral Safety classification and physical-action routing.
 status: active
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 ---
 # IMPL-FT-011 — Safety Gate Physical-Action Routing
 
@@ -86,6 +86,35 @@ action decision ending at `pending_human_approval`.
 - FT-012 consumes only the final immutable pending decision after this plan; it
   is not an implementation dependency for FT-011.
 
+## Current execution state
+
+- W1 `TASK-037-T3-FT-011-W1` is scheduler-recorded `done` from current
+  ATTEMPT 03 implementation, functional, semantic, and closure evidence.
+  ATTEMPT 01 and ATTEMPT 02 remain immutable failed history.
+- W1 established `ft011_safety_classifications` as the product migration head
+  directly after `ft009_plant_state`. Six current exact-head regression files,
+  including the scheduler-authorized adjacent Plant State assertion, preserve
+  that ancestry.
+- Current PostgreSQL concurrency evidence closes the earlier archive/revoke
+  write-window and cross-service deadlock failures, preserves first-write-wins,
+  bounds contention fail-closed without repeating provider I/O, and creates no
+  downstream authority.
+- W2 `TASK-038-T3-FT-011-W2` is scheduler-recorded `done` from current
+  ATTEMPT 01 implementation `PASS`, independent functional `VERDICT: PASS`,
+  separate `SEMANTIC_VERDICT: semantic-pass`, and closure evidence.
+- W2 establishes `ft011_safety_action_decisions` as the product migration head
+  directly after `ft011_safety_classifications` and `ft009_plant_state`. The
+  six cross-feature exact-head regression files plus the task-local migration
+  model test preserve that ancestry.
+- Current W2 evidence covers all three supported and seven unsupported action
+  kinds, current Boss/Engineer/Consultant authority, independent two-hour pH/EC
+  input, atomic immutable decision/UI persistence, idempotency/concurrency,
+  archive/revoke/restore guards, exact safe feed data, and no downstream
+  approval/task/Bus/Timeline/device/provider authority.
+- The plan's two task waves are complete. FT-011 lifecycle and dependent
+  TASK-039 promotion/selection remain explicit owner/scheduler decisions and
+  are not changed by this plan reconciliation.
+
 ## Expected touched files
 
 Classifier slice:
@@ -137,6 +166,8 @@ revision; W2 advances the same assertions to the action-decision/UI revision:
 - `tests/backend/photo_intake/test_ft005_migration_models.py`
 - `tests/backend/plant_operations/test_ft004_migration_models.py`
 - `tests/backend/agent_chat/test_ft008_migration_models.py`
+- `tests/backend/plant_state/test_migration_models.py` (the W1
+  scheduler-authorized adjacent exact-head assertion)
 - `tests/backend/test_foundation_database_contract.py`
 
 ## Source artifacts
@@ -205,7 +236,7 @@ revision; W2 advances the same assertions to the action-decision/UI revision:
 ## Quality gates and UAT
 
 - Run the task-specific commands in `.memory-bank/testing/safety-gate.md`.
-- After each FT-011 revision, run the five existing exact-head regression files
+- After each FT-011 revision, run the six current exact-head regression files
   named above and keep their ordered-history assertions aligned with that
   wave's new product head.
 - Run `node scripts/mb-lint.mjs` and `git diff --check`.
