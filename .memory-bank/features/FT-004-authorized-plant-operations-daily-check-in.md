@@ -99,7 +99,7 @@ outside FT-004.
 
 Current contracts add a 2000-code-point UI cap/counter and authoritative backend
 `OBSERVATION_TEXT_TOO_LONG` zero-write rejection without truncation or summary.
-Existing FT-004 evidence predates this delta. `/prd-to-tasks FT-007` must route
+Existing FT-004 evidence predates this delta. `/feature-to-tasks FT-007` must route
 the missing implementation/tests through Plant Operations and Operator UI
 owners rather than treating current code as compliant.
 

@@ -35,6 +35,8 @@ Supported arguments:
   work is required, a closed Foundation Gate before product task handoff;
 - relevant canonical specs and accepted operator decisions.
 
+Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
+
 If no argument is given, infer `--init` only when clearly before `/prd-to-features`, or
 `--all` only when clearly after `/prd-to-features`; otherwise halt and report the missing
 argument. Exclude reserved `FT-000` from product feature targets.
@@ -205,10 +207,12 @@ sources used, blockers, and one immediate next command:
 - successful `--init` -> `/prd-to-features`;
 - ready backbone with required foundation work not yet complete ->
   `/foundation-to-tasks` or continuation of its existing gate;
-- Planning Revision increased after indexed task generation ->
-  `/feature-to-tasks --all`, then `/review-tasks-plan --all`; previous product
-  task-plan approvals are stale, task statuses remain unchanged, and this branch
-  overrides the normal feature handoff;
+- Planning Revision increased after indexed task generation -> keep task
+  statuses unchanged and run `/feature-to-tasks FT-<NNN>`, then
+  `/review-tasks-plan FT-<NNN>`, separately for every affected active product
+  feature; only those approvals are stale, while features whose indexed tasks
+  are all `done|failed` retain historical approvals and require no migration
+  re-review; this branch overrides the normal feature handoff;
 - successful one-feature design -> `/feature-to-tasks FT-<NNN>`;
 - successful `--all` -> `/feature-to-tasks --all`;
 - unresolved decision -> named interactive repair skill; no task handoff.

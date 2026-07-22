@@ -1,10 +1,10 @@
 ---
 description: Project Constitution — governing principles for AI-first development.
 status: active
-version: 3
+version: 4
 project_principles: ratified
 ratified: 2026-05-27
-last_updated: 2026-07-03
+last_updated: 2026-07-23
 ---
 # Project Constitution
 
@@ -28,11 +28,20 @@ Project level is `medium`: use risk-aware specs and checks for risky zones, but 
 
 ### IV. Schema-Backed Task Execution
 
-Tasks MUST use the current schema-backed JSON task record model. The `tier: T0|T1|T2|T3` field classifies risk and recommends an execution profile; it does not by itself create mandatory protocol, verification, semantic-review, checkpoint, doctor, or synchronization gates.
+Tasks MUST use the current schema-backed JSON task record model. The
+`tier: T0|T1|T2|T3` field classifies risk and selects the required execution,
+protocol, verification, checkpoint, doctor, and synchronization route defined
+by the current DevRails workflow contracts.
 
 ### V. Risk-Based Definition of Done
 
-Every task SHOULD have evidence proportionate to its actual risk. Schema, contract, safety, data-integrity, UI/e2e, `/verify`, `/red-verify`, protocol, checkpoint, doctor, and synchronization checks are recommended tools, not automatic closure blockers for T2/T3. The explicit owner or scheduler may combine, reorder, skip, or accept residual risk based on the concrete change. Product safety rules, authorization boundaries, source-of-truth contracts, and explicit user decisions remain binding.
+Every non-terminal task MUST satisfy the current tier route before closure.
+Required schema, contract, safety, data-integrity, `/verify`, `/red-verify`,
+protocol, checkpoint, doctor, and synchronization gates cannot be waived merely
+to close the task. Additional checks remain risk-proportionate and must not be
+invented solely to fill a category. Product safety rules, authorization
+boundaries, source-of-truth contracts, and explicit user decisions remain
+binding.
 
 ### VI. Bounded Agent Autonomy
 
@@ -48,7 +57,12 @@ Low maintenance is a critical non-negotiable. Prefer simple local architecture, 
 
 ### IX. No Legacy Fallback and No Speculation
 
-Agents MUST NOT rely on deprecated task formats, old risk models, or undocumented assumptions. Unknowns MUST be recorded as blockers or explicit assumptions.
+Agents MUST NOT use deprecated task formats, old risk models, or undocumented
+assumptions for new or unfinished work. Terminal records created under the
+superseded workflow may be read only through the explicit validator
+compatibility rule; they are immutable history, not templates or acceptance
+evidence for current tasks. Unknowns MUST be recorded as blockers or explicit
+assumptions.
 
 ### X. Context Discipline
 
@@ -56,14 +70,23 @@ Agents SHOULD read the smallest sufficient context for the task. Higher-tier or 
 
 ### XI. Synchronization
 
-After meaningful changes, agents SHOULD synchronize affected Memory Bank docs, task state, changelog, and routing files. Synchronization timing is owner-controlled and is not an automatic T2/T3 closure gate.
+After meaningful changes, agents MUST synchronize affected Memory Bank docs,
+task state, changelog, and routing files at the boundary required by the current
+workflow. Status and evidence are written immediately; full `/mb-sync` follows
+the current wave/boundary contract.
 
 ## Governance Decisions
 
 - Project level: `medium`.
 - Architecture priority: KISS by default, stability-first for safety, data, and agent-contract boundaries.
-- Definition of Done: risk-informed and owner-controlled. T2/T3 workflow checks are recommendations; missing process artifacts produce warnings rather than automatic closure blockers.
-- T2/T3 execution amendment on 2026-07-03: protocol depth, task gates, `/verify`, `/red-verify`, human checkpoint, strict doctor, and `/mb-sync` are advisory unless the explicit owner makes a specific check mandatory for a concrete task/run.
+- Definition of Done: current non-terminal tasks follow the required tier route;
+  additional evidence remains risk-informed and KISS.
+- Workflow migration amendment on 2026-07-23: the 2026-07-03 advisory T2/T3
+  policy is superseded for new and unfinished work. Existing `done|failed`
+  records that retain deprecated `runtime_context.allowed_write_scope` remain
+  accepted historical terminal records. Their missing historical PASS,
+  semantic-pass, or human-checkpoint markers MUST NOT be synthesized
+  retroactively and do not waive current gates for other tasks.
 - Agent autonomy: plant state requires human/follow-up gate for confirmation; training data curation is mostly autonomous only with strong evidence.
 - MVP scope amendment on 2026-06-01: bounded local-first Farm workspace, local Accounts, role-scoped access, multiple Plants, and Companion governance are allowed in MVP after PRD/spec promotion; production SaaS and broad farm-management scope remain excluded.
 - Critical non-negotiable: low maintenance.
@@ -75,4 +98,4 @@ After meaningful changes, agents SHOULD synchronize affected Memory Bank docs, t
 - Amendments must include rationale and update affected docs if needed.
 - Constitution should stay short. Put concrete project rules into `invariants.md`, `contracts/*`, `states/*`, or workflow policy docs.
 
-**Version**: 3 | **Ratified**: 2026-05-27 | **Last updated**: 2026-07-03
+**Version**: 4 | **Ratified**: 2026-05-27 | **Last updated**: 2026-07-23

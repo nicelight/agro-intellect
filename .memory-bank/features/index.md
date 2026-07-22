@@ -27,7 +27,7 @@ source_of_truth:
 
 ## EP-003 Agent Runtime And Context Hygiene
 
-- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/prd-to-tasks FT-007` reconciliation and fresh review approval.
+- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/feature-to-tasks FT-007` reconciliation and fresh review approval.
 - [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): verified durable introductions, guarded typed Bus/literal UI publication, current-authority agent-context isolation, and protected Plant feed API; FT-016 retains frontend rendering ownership.
 - [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): W1/W2 task boundary complete with accepted deterministic Vision and Plant-state trust evidence; lifecycle remains planned pending an explicit owner feature decision, and live-provider image behavior remains deferred.
 - [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): W1 task boundary complete with current ATTEMPT 02 deterministic implementation, functional PASS, and semantic-pass evidence; lifecycle remains planned pending an explicit owner feature decision.

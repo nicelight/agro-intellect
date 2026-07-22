@@ -52,5 +52,5 @@ source_of_truth:
 
 ## Extension Route
 
-- `/prd-to-tasks FT-<NNN>` may extend this canonical spec only when product work needs to change app composition or shared substrate behavior.
+- `/feature-to-tasks FT-<NNN>` may extend this canonical spec only when product work needs to change app composition or shared substrate behavior.
 - Product-specific routes, schemas, migrations, states, and verification live in applicable subject specs.

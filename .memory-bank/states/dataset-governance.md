@@ -20,7 +20,7 @@ create a full dataset registry or real fine-tuning path in MVP.
 
 Exact persistence beyond the global fields below, lifecycle transitions,
 evidence-policy details, derived-value materialization, endpoint schemas, and
-UI behavior belong to `/prd-to-tasks FT-014`.
+UI behavior belong to `/feature-to-tasks FT-014`.
 
 ## Scope Boundaries
 

@@ -22,6 +22,8 @@ Expected `$ARGUMENTS`: one concrete `TASK-NNN-TN-FT-NNN-WN`.
 The caller has already selected this task. `/exe` never scans the queue or
 chooses another task.
 
+Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
+
 Require and resolve:
 - `.memory-bank/tasks/index.json` and exactly one matching indexed task record;
 - `.memory-bank/workflows/tier-policy.md`;
@@ -30,7 +32,8 @@ Require and resolve:
 - behavior specs only when linked in `source_artifacts` and useful as
   non-authoritative examples.
 
-For a product task whose feature is not `FT-000`, also require a positive Global
+For a product task whose feature is not `FT-000`, require current planning
+evidence only for that selected task's active feature: a positive Global
 Backbone `Planning Revision` and the latest feature-specific
 `/review-tasks-plan` `APPROVE` report with exact standalone
 `REVIEWED_PLANNING_REVISION: <N>` equal to it. FT-000 keeps its dedicated
@@ -66,10 +69,12 @@ Stop before implementation if the task is missing/malformed, already
 `blocked|failed|done`, has unmet dependencies, lacks required T2/T3 context, is
 objectively contradictory, is unverifiable, or is materially under-tiered.
 
-If product planning revision evidence is missing, invalid, or mismatched, every
-previous product task-plan approval is stale. Leave all task statuses unchanged
-and route `/feature-to-tasks --all`, then `/review-tasks-plan --all`, the
-applicable doctor gate, and retry the selected task.
+If product planning revision evidence is missing, invalid, or mismatched, the
+selected task's active feature approval is stale. Leave all task statuses
+unchanged and route `/feature-to-tasks FT-<NNN>`, then
+`/review-tasks-plan FT-<NNN>`, the applicable doctor gate, and retry the selected
+task. Features whose indexed tasks are all `done|failed` retain historical
+approvals and require no migration re-review.
 
 For a selected `planned` task, write `planned -> ready` only when this preflight
 proves it runnable; otherwise leave it `planned` and stop. A selected `ready`

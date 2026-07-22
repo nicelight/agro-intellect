@@ -173,6 +173,6 @@ Verification target:
 - FT-013..FT-016 must compose governance, dataset, local-security, and UI
   subject specs as applicable.
 
-Before any T2/T3 task is created, `/prd-to-tasks` performs registry/folder
+Before any T2/T3 task is created, `/feature-to-tasks` performs registry/folder
 discovery, links the relevant shared/canonical specs, and writes any missing
 concrete shape, rules, errors, and verification into exactly one subject path.

@@ -139,12 +139,12 @@ verifies these packages.
 
 | Decision | Why deferred | Trigger to revisit |
 |---|---|---|
-| Product auth/session schema | FT-001 already owns exact local account/session lifecycle and route contracts. | `/prd-to-tasks FT-001`. |
-| Single Farm and `tomato_001` seed implementation | FT-002 owns product seed semantics. Foundation only proves DB/migration capability. | `/prd-to-tasks FT-002`. |
-| Admin Account creation/audit tables | FT-003 owns direct local Account creation and admin audit semantics. | `/prd-to-tasks FT-003`. |
+| Product auth/session schema | FT-001 already owns exact local account/session lifecycle and route contracts. | `/feature-to-tasks FT-001`. |
+| Single Farm and `tomato_001` seed implementation | FT-002 owns product seed semantics. Foundation only proves DB/migration capability. | `/feature-to-tasks FT-002`. |
+| Admin Account creation/audit tables | FT-003 owns direct local Account creation and admin audit semantics. | `/feature-to-tasks FT-003`. |
 | Photo catalog/timeline/export schemas | These are product features, not bootstrap primitives. | Applicable feature-level subject specs. |
 | Agent/provider configuration | Current code phase requires no selected endpoint, credentials, or egress; production remains fail closed. | Future provider-integration milestone after explicit OpenAI-compatible endpoint selection. |
-| Svelte 5/SvelteKit frontend scaffold | Backend/local DB foundation is the immediate blocker; the Operator PWA scaffold belongs to FT-016. | `/prd-to-tasks FT-016`. |
+| Svelte 5/SvelteKit frontend scaffold | Backend/local DB foundation is the immediate blocker; the Operator PWA scaffold belongs to FT-016. | `/feature-to-tasks FT-016`. |
 | Docker-based database path | User target is local Linux Mint. Docker may be optional later, not required by Foundation. | Explicit operator request or deployment spec update. |
 
 ## Foundation Exit Criteria

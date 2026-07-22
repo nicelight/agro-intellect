@@ -75,6 +75,10 @@ status: active
 - **Если нет кода и нет PRD / clear concept / discovery artifacts** → это **skeleton-only**: попроси пользователя предоставить PRD, product brief или хотя бы требования текстом и остановись.
 
 ## 2) Правила (важно)
+- Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
+- Current Planning Revision review is required only for active product features;
+  features whose indexed tasks are all `done|failed` retain historical
+  approvals and require no migration re-review.
 - Если **нет PRD**, ты **НЕ** создаёшь/заполняешь:
   - `.memory-bank/epics/*`
   - `.memory-bank/features/*`
@@ -106,8 +110,8 @@ status: active
 - interactive: после `/prd-to-features` всегда пройди `/spec-design`; для local/simple feature-set pressure запиши minimal status с explicit `not_applicable` areas; если foundation required, пройди `/foundation-to-tasks`, `/mb-doctor --strict` и execute/verify `FT-000` до закрытия foundation gate; затем выбери фичу, при необходимости пройди `/feature-doctor FT-<NNN>`, затем `/feature-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>` и выполняй задачи по tier route: T0/T1 manual через `/exe TASK` с compact evidence/no-runnable-check note и optional local closure by explicit owner; T2 через `/exe` → `/verify` и `/mb-sync` на wave/feature boundary; T3 через `/exe` → `/verify` → `/red-verify` → `/mb-sync`; для T2 feature completion после всех задач выполни `/red-verify --feature FT-<NNN>`
 - Product JSON task queue unattended: используй `/autopilot` только когда
   product records уже подготовлены, Foundation is `not_required` or its named
-  final gate is `done` with no unresolved FT-000 work, every task-linked
-  product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the
+  final gate is `done` with no unresolved FT-000 work, every active product
+  feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the
   current positive Global Backbone Planning Revision, and strict doctor passes.
   `/autopilot` never executes FT-000
 - full unattended (`PRD → done`): используй `/autonomous`

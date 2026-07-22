@@ -95,7 +95,7 @@
     "Do not add frontend/PWA, scheduler, worker, outbox, raw proposal Bus publication, Timeline replay authority, or physical-action/Plant/device semantics."
   ],
   "runtime_context": {
-    "allowed_write_scope": [
+    "write_boundary": [
       "backend/app/companion_governance/",
       "backend/app/agent_chat/contracts.py",
       "backend/app/agent_chat/models.py",

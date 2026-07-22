@@ -179,7 +179,7 @@ source_of_truth:
   implementation delta is routed to planned TASK-030 without rewriting the
   historical failed/blocked lifecycle records.
 
-## /prd-to-tasks FT-007 Reconciled Handoff
+## /feature-to-tasks FT-007 Reconciled Handoff
 
 Bounded reconciliation preserves the historical records and creates this
 active replacement queue without executing any task:

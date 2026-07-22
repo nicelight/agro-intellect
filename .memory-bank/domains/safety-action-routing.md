@@ -225,7 +225,7 @@ instructions, an approval, or an action command.
   reference the retained decision only when it is still pending and unexpired
   and the command revalidates current ActorContext, active Plant, approval
   authority, immutable decision, and selected pH/EC freshness.
-- A safety decision has no update/delete/execute path in FT-011. FT-012 may
+- A safety decision has no update, delete, or execution endpoint in FT-011. FT-012 may
   reference only a current `pending_human_approval` decision and owns every
   later record/state.
 - No dedicated Timeline event is written; these PostgreSQL rows are the durable

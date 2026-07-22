@@ -61,7 +61,7 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 ## Architecture Spine
 
 #### AD-001 - Compact Foundation gates product tasking
-- Binds: product `/prd-to-tasks` and all non-`FT-000` task generation/execution.
+- Binds: product `/feature-to-tasks` and all non-`FT-000` task generation/execution.
 - Prevents: feature tasks inventing incompatible scaffold, bootstrap, task-record, database, migration, or local runtime-root conventions.
 - Rule: when [.memory-bank/foundation.md](../foundation.md) says `Foundation Required: true`, no product task may be generated or executed until `/foundation-to-tasks` creates a final `FT-000` gate task and that task is `done`.
 - Verification: `node scripts/mb-doctor.mjs` checks the Foundation anchors, final gate task, and product task dependencies.
@@ -79,7 +79,7 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 
 #### AD-003 - Brownfield baseline constrains contract refresh
 - Binds: `/spec-design` refresh, global contracts, Foundation sufficiency, and
-  downstream `/prd-to-tasks` refreshes.
+  downstream `/feature-to-tasks` refreshes.
 - Prevents: new global contracts silently contradicting verified FT-000 code,
   executable baseline evidence, or current brownfield project shape.
 - Rule: verified FT-000 code/evidence is authoritative below Constitution and

@@ -71,5 +71,5 @@ source_of_truth:
   Agent Chat Bus, Safety Action Lifecycle, and the Svelte 5 project rules define
   the SvelteKit/PWA stack, opaque candidate data, literal presentation, no
   instruction-channel promotion, and unchanged authority boundaries.
-- Feature-local status: pending `/prd-to-tasks FT-016` for concrete component,
+- Feature-local status: pending `/feature-to-tasks FT-016` for concrete component,
   route/view, and e2e mechanics.

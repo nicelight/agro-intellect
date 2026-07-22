@@ -121,15 +121,19 @@ status: active
   interview registry.
 
 ## Required gates
+- Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
 - latest `/review-tasks-plan FT-<NNN>` verdict must be `APPROVE` for every
-  task-linked product feature in the product queue, and its exact standalone
+  active product feature in the product queue, and its exact standalone
   `REVIEWED_PLANNING_REVISION: <N>` must equal the current positive Global
   Backbone Planning Revision; FT-000 uses its dedicated `/foundation-to-tasks`
   plus strict-doctor handoff instead
-- missing, invalid, or mismatched planning revision evidence makes every product
-  task-plan approval stale; keep task statuses unchanged and route
-  `/feature-to-tasks --all` -> `/review-tasks-plan --all` before product
-  promotion or selection
+- missing, invalid, or mismatched planning revision evidence makes the affected
+  active feature approval stale; keep task statuses unchanged and route that
+  feature through `/feature-to-tasks FT-<NNN>` ->
+  `/review-tasks-plan FT-<NNN>` before product promotion or selection
+- features whose indexed tasks are all `done|failed` retain historical approvals
+  and require no migration re-review; a material global design change still
+  reconciles every affected active feature
 - mandatory `/mb-doctor --strict` before `/autonomous` selects/promotes FT-000
   work, before `/autopilot` selects/promotes product work, after `/mb-sync`
   before further promotion, and before final success

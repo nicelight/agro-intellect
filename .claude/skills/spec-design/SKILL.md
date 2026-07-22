@@ -45,6 +45,8 @@ Require and read relevant evidence from:
 Resolve accepted target and observed current state through separate source
 roles.
 
+Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
+
 Normative target authority is:
 1. Constitution and explicit accepted operator decisions or policies;
 2. active accepted ADRs and authoritative canonical specs;
@@ -194,8 +196,9 @@ Planning revision rules:
 - A newly observed current-state drift or baseline correction alone does not
   increment Planning Revision when the accepted target is unchanged.
 - Repair a missing/invalid legacy value on the next successful run.
-- An increment after task generation makes all product task-plan reviews stale;
-  preserve task statuses and use the all-feature handoff below.
+- An increment after task generation makes only affected active product feature
+  reviews stale. Preserve task statuses; features whose indexed tasks are all
+  `done|failed` retain historical approvals and require no migration re-review.
 
 Mode meanings:
 - `local_simple_backbone`: explicitly local/simple feature pressure without a
@@ -481,9 +484,10 @@ Report backbone status/mode, artifact strategy, specs changed, matrix summary,
 operator decisions, Planning Revision before/after, blockers, and the immediate
 next command:
 - ready backbone + revision increased after indexed task generation -> rerun
-  `/foundation-to-tasks` first when Foundation is required, then
-  `/feature-to-tasks --all`, `/review-tasks-plan --all`, and the applicable
-  doctor/execution gate; this branch overrides the normal ready handoff;
+  `/foundation-to-tasks` first when Foundation is required, then run
+  `/feature-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, and the
+  applicable doctor/execution gate separately for every affected active product
+  feature; this branch overrides the normal ready handoff;
 - ready backbone + `Foundation Required: true` -> `/foundation-to-tasks`;
 - ready backbone + `Foundation Required: false` -> `/feature-to-tasks FT-<NNN>` in
   manual flow, or `/spec-auto --all` for autonomous feature design;

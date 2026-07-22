@@ -22,7 +22,7 @@ Agent Chat Bus is the domain-owned working event stream for agent-consumable con
 
 The verified FT-000 executable baseline does not implement Agent Chat Bus
 runtime code. This contract is a global guardrail for future product features;
-field refinements and implementation tasks belong to `/prd-to-tasks FT-<NNN>`.
+field refinements and implementation tasks belong to `/feature-to-tasks FT-<NNN>`.
 
 ## Contract Scope
 

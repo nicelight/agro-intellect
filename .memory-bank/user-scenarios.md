@@ -90,5 +90,5 @@ Decomposition implication: Companion governance is a typed state/workflow slice 
 
 - Status: ready_for_prd
 - Reviewed sources: active PRD, Product Brief, Project Constitution, invariants, glossary, and MVP v2 dossier.
-- Blocking gaps: none for `/prd` decomposition.
+- Blocking gaps: none for `/prd-to-features` decomposition.
 - Notes: `/spec-design` must later refine architecture, contracts, state machines, schemas, and verification strategy.

@@ -20,8 +20,8 @@ human-performed action task, and follow-up outcome. It is not an automated
 device-control spec.
 
 Exact domain action taxonomy, freshness windows, API route schemas, task table
-fields, and UI prompts belong to `/prd-to-tasks FT-011` and
-`/prd-to-tasks FT-012`. This shared spec owns the exact pre-safety
+fields, and UI prompts belong to `/feature-to-tasks FT-011` and
+`/feature-to-tasks FT-012`. This shared spec owns the exact pre-safety
 classification result and route classes needed by FT-007/008/011/012.
 
 ## Scope Boundaries

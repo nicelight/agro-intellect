@@ -268,7 +268,7 @@ from first demo.
 ## Verification Strategy
 
 - Constitution check: confirm PRD remains bounded local-first MVP and does not introduce production SaaS, cloud sync, enterprise identity, automated actuation, or broad farm-management scope.
-- Requirements decomposition readiness: verify all high-impact `NEEDS CLARIFICATION` items are resolved before `/prd`.
+- Requirements decomposition readiness: verify all high-impact `NEEDS CLARIFICATION` items are resolved before `/prd-to-features`.
 - Authorization tests later MUST cover Boss, Engineer, Consultant, missing PlantAccessGrant, archived Plant visibility, and context-builder filtering.
 - Cross-feature archive tests later MUST cover open task, approval, follow-up,
   agent publication, and Companion proposal records, including no transition

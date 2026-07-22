@@ -23,7 +23,7 @@ agent working context.
 The verified FT-000 executable baseline does not implement UI Feed runtime
 code. This contract is a global guardrail; concrete projection payloads,
 frontend routes, and component behavior belong to feature-level SDD design
-inside `/prd-to-tasks FT-008`, `/prd-to-tasks FT-016`, or another owning
+inside `/feature-to-tasks FT-008`, `/feature-to-tasks FT-016`, or another owning
 feature when a projection is feature-specific.
 
 ## Contract Scope

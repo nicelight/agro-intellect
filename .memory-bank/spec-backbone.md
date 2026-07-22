@@ -1,14 +1,14 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-07-20
+last_updated: 2026-07-23
 ---
 # SDD Spec Backbone
 
 ## Pre-PRD Spec Status
 - Status: ready_for_prd
 - Last updated: 2026-06-26
-- Notes: Active PRD contains enough actor, scenario, domain, constraint, non-goal, boundary, lifecycle, and risk evidence for `/prd` decomposition. No pre-PRD blocker remains.
+- Notes: Active PRD contains enough actor, scenario, domain, constraint, non-goal, boundary, lifecycle, and risk evidence for `/prd-to-features` decomposition. No pre-PRD blocker remains.
 
 ## Decomposition Inputs
 - User scenarios: [.memory-bank/user-scenarios.md](user-scenarios.md) captures Boss setup, Engineer Plant operations, Safety Gate/action task flow, and Companion governance scenarios.
@@ -39,7 +39,7 @@ last_updated: 2026-07-20
 |---|---|---|---|
 | Ordinary Task creation from classified output or approved governance decision | [Task And Approval HTTP](contracts/task-approval-http.md), [Task lifecycle](states/task-follow-up-lifecycle.md), [Task data](domains/task-approval-outcomes.md) | no | Extended the one `create_ordinary_task` seam with the exact closed source union, source refs, fingerprints, results, current guards, and branch-specific UoW ownership. |
 | Companion classification without premature ordinary dispatch | [Safety Action Lifecycle](states/safety-action-lifecycle.md), [Safety Gate Runtime](contracts/safety-gate-runtime.md), [MessageEnvelope](contracts/message-envelope.md), [Bus](contracts/agent-chat-bus.md), [UI Feed](contracts/ui-feed.md) | no | Added the server-derived `ordinary_dispatch|companion_governance_hold` consumer route without persisted schema expansion and closed its negative compatibility matrix. |
-| FT-013 HTTP views/errors, latest evidence selection, different-run concurrency, ref/read grammar | FT-013 registered feature-local contracts/data/testing | no | Closed by `/prd-to-tasks FT-013`: exact schemas/error mapping, one-row evidence selection, distinct-run serialization, canonical refs/derived reads, and deterministic classifier fake/spy composition are authoritative. |
+| FT-013 HTTP views/errors, latest evidence selection, different-run concurrency, ref/read grammar | FT-013 registered feature-local contracts/data/testing | no | Closed by the then-current FT-013 task-decomposition run: exact schemas/error mapping, one-row evidence selection, distinct-run serialization, canonical refs/derived reads, and deterministic classifier fake/spy composition are authoritative. |
 | FT-013 post-review Task/conclusion/context closure | [Task And Approval HTTP](contracts/task-approval-http.md), [Companion Governance Data](domains/companion-governance.md), [Companion Governance HTTP](contracts/companion-governance-http.md), [Agent Chat Bus](contracts/agent-chat-bus.md), [Provider Profiles](contracts/agent-model-provider-profiles.md) | no | Closed exact same-UoW approved proposal phase, open/unfocused conclusions, derived approved summary, reachable nested Task errors, and typed non-authoritative governance input. |
 
 ## Backbone Area Matrix
@@ -63,7 +63,7 @@ last_updated: 2026-07-20
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md) | Key architecture risks recorded. |
 | open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md) | No unresolved global/shared blocker remains; the FT-013 provider-input policy is closed by the explicit owner decision recorded on 2026-07-18. |
 
-## Handoff To /prd
+## Handoff To /prd-to-features
 - Ready: yes
 - Required reads: [.memory-bank/prd.md](prd.md), [.memory-bank/spec-index.md](spec-index.md), this file, [.memory-bank/user-scenarios.md](user-scenarios.md), [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md), [.memory-bank/states/lifecycle-map.md](states/lifecycle-map.md), [.memory-bank/invariants.md](invariants.md), and [.memory-bank/glossary.md](glossary.md).
 - Stop conditions: PRD scope changes; Pre-PRD Spec Status becomes stale/blocked; new ambiguity appears around actors, Farm/Plant boundaries, Safety Gate authority, Companion governance authority, or provider-neutral agent-runtime requirements.
@@ -81,7 +81,7 @@ last_updated: 2026-07-20
 - Status: complete and verified; [.memory-bank/foundation.md](foundation.md) owns the current gate state and executable-baseline evidence.
 - Downstream rule: product tasking must honor the Foundation gate recorded in the authoritative Foundation document.
 
-## Handoff To /prd-to-tasks
+## Handoff To /feature-to-tasks
 - Ready: yes for fresh task-plan review; this bounded reconciliation does not
   authorize execution or any lifecycle transition.
 - Current FT-008 outcome: feature-local Bus/UI envelopes, PostgreSQL
@@ -127,13 +127,14 @@ last_updated: 2026-07-20
   no-authority rules are implemented and verified. The current product
   migration head is `ft012_task_approval_outcomes` directly after
   `ft011_safety_action_decisions`, with all eight exact-head consumers passing.
-  TASK-040 is scheduler-owned `in_progress` after ATTEMPT 01 verification FAIL
-  and ATTEMPT 02 implementation BLOCKED; the current planning repair neither
-  selects nor consumes ATTEMPT 03 and claims no live-provider acceptance.
+  TASK-040 is scheduler-recorded `done` from ATTEMPT 06 implementation and
+  independent functional PASS under the explicit owner waiver of the remaining
+  red-verification stage. No semantic-pass or live-provider acceptance is
+  claimed; earlier failed and blocked attempts remain immutable history.
 - Current FT-013 repair outcome: shared ordinary-task source union and
   classification-only Companion governance hold are authoritative, with no
   second Task service or persisted route-schema expansion. The subsequent
-  `/prd-to-tasks FT-013` repair closed feature-local R4 B3-B6, serialized
+  FT-013 task-plan repair closed feature-local R4 B3-B6, serialized
   TASK-040 -> TASK-042, and reconciled TASK-041/TASK-042/TASK-043. The latest
   bounded repair also closed open/unfocused conclusion, same-UoW approved Task
   source, exact approved-summary, nested Task error translation, and direct
@@ -148,6 +149,7 @@ last_updated: 2026-07-20
 
 ## Global Backbone Status
 - Status: complete
+- Planning Revision: 1
 - Mode: strict_architecture_scaffold
 - Architecture artifact strategy: single-file
 - Not applicable areas:
@@ -167,8 +169,9 @@ last_updated: 2026-07-20
   TASK-039 are scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle
   values remain `planned` pending explicit owner decisions. FT-011, FT-012,
   and EP-004 remain `planned` pending explicit owner lifecycle decisions;
-  in-progress TASK-040 remains a separate scheduler retry/resume decision and
-  this backbone reconciliation does not select or consume ATTEMPT 03. The current product migration
+  TASK-040 is scheduler-recorded `done` from owner-accepted ATTEMPT 06
+  implementation and functional verification, with red-verification explicitly
+  waived and no semantic-pass claim. The current product migration
   head is `ft012_task_approval_outcomes` directly after
   `ft011_safety_action_decisions`. Historical run-budget evidence does not
   amend canonical workflow policy.

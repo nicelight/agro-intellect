@@ -33,6 +33,12 @@ const FOUNDATION_ONLY_DEFERRED_BACKBONE_STATUSES = new Set(['needed_before_tasks
 const COMPACT_TIERS = new Set(['T0', 'T1']);
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const TERMINAL_STATUSES = new Set(['done', 'failed']);
+const LEGACY_TERMINAL_GAP_CODES = new Set([
+  'TASK_DONE_EVIDENCE_MISSING',
+  'TASK_RED_VERIFY_EVIDENCE_MISSING',
+  'TASK_RED_VERIFY_VERDICT_MISSING',
+  'TASK_T3_CHECKPOINT_MISSING',
+]);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const SDD_SPEC_REQUIRED_TIERS = new Set(['T2', 'T3']);
 const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
@@ -55,6 +61,7 @@ const PATH_MARKER_RE =
 
 const options = parseArgs(process.argv.slice(2));
 const findings = [];
+const legacyTerminalGaps = new Map();
 let featureClarificationCache;
 
 if (options.help) {
@@ -526,6 +533,7 @@ function checkTaskReadiness() {
   checkT2FeatureSemanticCompletion(orderedRecords);
   checkFailedDependentsBlocked(orderedRecords);
   checkQueueState(orderedRecords, records, invalidEntries);
+  addLegacyTerminalCompatibilitySummary(orderedRecords);
   addQueueSummary(orderedRecords, invalidEntries);
 }
 
@@ -885,7 +893,7 @@ function checkFullProtocolTask(record) {
   if (!hasTaskStatusEvidence(task, task.status) && !hasProtocolOrArtifactStatusEvidence(id, task.status)) {
     const code = task.status === 'done' ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
     const expected = task.status === 'done' ? 'PASS' : 'FAIL/error';
-    addFinding(severity, code, `${rel}: ${task.tier} ${task.status} task has no ${expected} verification evidence/verdict.`, {
+    addTerminalClosureFinding(record, severity, code, `${rel}: ${task.tier} ${task.status} task has no ${expected} verification evidence/verdict.`, {
       path: rel,
       task_id: id,
       suggested_fix: `Record ${expected} evidence in task.verify, .protocols/${id}/, or .tasks/${id}/.`,
@@ -895,13 +903,14 @@ function checkFullProtocolTask(record) {
   if (task.status === 'done' && task.tier === 'T3') {
     const redFiles = redVerificationFiles(id);
     if (!redFiles.length) {
-      addFinding(severity, 'TASK_RED_VERIFY_EVIDENCE_MISSING', `${rel}: ${task.tier} done task has no red-verify evidence.`, {
+      addTerminalClosureFinding(record, severity, 'TASK_RED_VERIFY_EVIDENCE_MISSING', `${rel}: ${task.tier} done task has no red-verify evidence.`, {
         path: rel,
         task_id: id,
         suggested_fix: `Record red-verify evidence in .protocols/${id}/red-verification.md or .tasks/${id}/.`,
       });
     } else if (!hasClosureEligibleRedVerificationEvidence(redFiles)) {
-      addFinding(
+      addTerminalClosureFinding(
+        record,
         severity,
         'TASK_RED_VERIFY_VERDICT_MISSING',
         `${rel}: ${task.tier} done task has no closure-eligible red-verify semantic verdict.`,
@@ -916,7 +925,7 @@ function checkFullProtocolTask(record) {
 
     const text = protocolAndArtifactText(id);
     if (!hasExactMarker(text, T3_HUMAN_CHECKPOINT_MARKER)) {
-      addFinding(severity, 'TASK_T3_CHECKPOINT_MISSING', `${rel}: T3 done task has no exact ${T3_HUMAN_CHECKPOINT_MARKER} marker.`, {
+      addTerminalClosureFinding(record, severity, 'TASK_T3_CHECKPOINT_MISSING', `${rel}: T3 done task has no exact ${T3_HUMAN_CHECKPOINT_MARKER} marker.`, {
         path: rel,
         task_id: id,
         suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
@@ -1338,7 +1347,7 @@ function checkQueueState(records, recordsById, invalidEntries) {
 
   for (const record of readyCandidates) {
     addFinding(
-      'warning',
+      'info',
       'TASK_PLANNED_READY_CANDIDATE',
       `${record.rel}: planned task has all dependencies done and can be promoted to ready.`,
       {
@@ -1383,6 +1392,53 @@ function checkQueueState(records, recordsById, invalidEntries) {
 function isPlannedReadyCandidate(record, recordsById) {
   if (record.task.status !== 'planned' || !Array.isArray(record.task.depends_on)) return false;
   return record.task.depends_on.every((depId) => recordsById.get(depId)?.task.status === 'done');
+}
+
+function isLegacyTerminalRecord(record) {
+  const task = record?.task;
+  return Boolean(
+    task
+    && TERMINAL_STATUSES.has(task.status)
+    && isPlainObject(task.runtime_context)
+    && Object.prototype.hasOwnProperty.call(task.runtime_context, 'allowed_write_scope')
+  );
+}
+
+function addTerminalClosureFinding(record, severity, code, message, extra = {}) {
+  if (!isLegacyTerminalRecord(record) || !LEGACY_TERMINAL_GAP_CODES.has(code)) {
+    addFinding(severity, code, message, extra);
+    return;
+  }
+
+  const gaps = legacyTerminalGaps.get(record.id) ?? new Set();
+  gaps.add(code);
+  legacyTerminalGaps.set(record.id, gaps);
+}
+
+function addLegacyTerminalCompatibilitySummary(records) {
+  const legacyRecords = records.filter((record) => isLegacyTerminalRecord(record));
+  if (!legacyRecords.length) return;
+
+  const gapTypeCounts = {};
+  for (const gaps of legacyTerminalGaps.values()) {
+    for (const code of gaps) {
+      gapTypeCounts[code] = (gapTypeCounts[code] ?? 0) + 1;
+    }
+  }
+
+  addFinding(
+    'info',
+    'TASK_LEGACY_TERMINAL_COMPATIBILITY',
+    `Accepted ${legacyRecords.length} legacy terminal task records; preserved historical closure gaps for ${legacyTerminalGaps.size} records without treating them as new acceptance evidence.`,
+    {
+      path: TASK_INDEX_REL,
+      details: {
+        legacy_terminal_records: legacyRecords.length,
+        records_with_preserved_gaps: legacyTerminalGaps.size,
+        gap_types: gapTypeCounts,
+      },
+    }
+  );
 }
 
 function hasBlockedOrFailedUpstream(record, recordsById) {

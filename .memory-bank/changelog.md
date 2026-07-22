@@ -4,6 +4,20 @@ status: active
 ---
 # Changelog
 
+## 2026-07-23 — DevRails runtime adaptation
+
+- Added Global Backbone `Planning Revision: 1` and limited current planning
+  freshness to product features with indexed `planned|ready|in_progress|blocked`
+  work; completed-only features retain historical approvals.
+- Added validator compatibility for terminal legacy task records without
+  synthesizing PASS, semantic-pass, or human-checkpoint evidence. New and
+  unfinished tasks remain under the current strict tier contract.
+- Updated active Memory Bank routes to `/prd-to-features`,
+  `/feature-to-tasks`, and `/exe`. Older command names in prior changelog
+  entries are immutable historical descriptions, not executable routes.
+- Migrated TASK-041 through TASK-043 to `runtime_context.write_boundary` and
+  left TASK-000 through TASK-040 plus their protocols/reports unchanged.
+
 ## 2026-07-20 — FT-012 W1 boundary evidence sync
 
 - Reconciled the scheduler-recorded completion of

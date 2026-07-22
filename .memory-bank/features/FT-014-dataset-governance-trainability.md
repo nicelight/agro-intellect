@@ -62,5 +62,5 @@ source_of_truth:
   Dataset Governance.
 - Photo Intake's existing `can_train_on=false` remains an immutable source
   assertion and is not mutable trainability authority.
-- Feature-local status: pending `/prd-to-tasks FT-014` for exact persistence,
+- Feature-local status: pending `/feature-to-tasks FT-014` for exact persistence,
   evidence-policy, confirmation, agent I/O, API/export, and test contracts.

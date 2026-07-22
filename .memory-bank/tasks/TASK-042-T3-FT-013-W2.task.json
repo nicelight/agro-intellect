@@ -108,7 +108,7 @@
     "Do not create action Tasks, approve physical action, mutate Plant state, complete Tasks, record Outcomes, perform device work, or add frontend/PWA/scheduler/worker/outbox behavior."
   ],
   "runtime_context": {
-    "allowed_write_scope": [
+    "write_boundary": [
       "backend/app/companion_governance/",
       "backend/app/task_follow_up/",
       "backend/app/agent_chat/contracts.py",

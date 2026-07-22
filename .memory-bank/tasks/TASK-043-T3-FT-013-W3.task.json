@@ -95,7 +95,7 @@
     "Do not claim FT-013 acceptance from transport-only, schema-only, fake-production, fallback, or blocked/failed/model-silent output; require the complete deterministic authority and two-spy evidence matrix."
   ],
   "runtime_context": {
-    "allowed_write_scope": [
+    "write_boundary": [
       "backend/app/companion_governance/",
       "backend/app/agent_runtime/providers.py",
       "backend/app/agent_runtime/__init__.py",

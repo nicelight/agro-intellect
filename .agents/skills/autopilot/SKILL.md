@@ -18,6 +18,8 @@ features, design, the initial task queue, or execute FT-000 Foundation work.
 
 In this command, `task` and `queue` mean only indexed records whose `feature`
 is not `FT-000`. FT-000 records are read-only Foundation history.
+
+Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
 </objective>
 
 <input_contract>
@@ -31,7 +33,7 @@ Require:
   remains `planned|ready|in_progress|blocked`;
 - positive integer Global Backbone `Planning Revision`;
 - at least one indexed product task whose `feature` is not `FT-000`;
-- latest `/review-tasks-plan FT-<NNN>` `APPROVE` for every task-linked product
+- latest `/review-tasks-plan FT-<NNN>` `APPROVE` for every active product
   feature in the queue, with exact standalone
   `REVIEWED_PLANNING_REVISION: <N>` equal to the current Planning Revision;
 - no unresolved blocking operator decision;
@@ -59,11 +61,13 @@ Missing/invalid tier is `HALT_POLICY_VIOLATION`; clarification/design/Foundation
 handoff/readiness gaps use the applicable clarification or quality halt and
 repair route.
 
-Missing, invalid, or mismatched planning revision evidence means every previous
-product task-plan approval is stale. Return `HALT_QUALITY_GATES` without
-promoting or selecting work and route `/feature-to-tasks --all`, then
-`/review-tasks-plan --all`, the applicable doctor gate, and `/autopilot` resume.
-Do not mutate task statuses to represent this invalidation.
+Missing, invalid, or mismatched planning revision evidence makes only the
+affected active feature approval stale. Return `HALT_QUALITY_GATES` without
+promoting or selecting its work and route `/feature-to-tasks FT-<NNN>`, then
+`/review-tasks-plan FT-<NNN>`, the applicable doctor gate, and `/autopilot`
+resume. Do not mutate task statuses to represent this invalidation. Features
+whose indexed tasks are all `done|failed` retain historical approvals and
+require no migration re-review.
 </input_contract>
 
 <hard_invariants>
@@ -250,8 +254,9 @@ At each wave boundary:
 5. rerun `/review-tasks-plan FT-<NNN>` only for product features whose task
    cards, specs, dependencies, tier, scope, or plan assumptions changed; pure
    status/evidence closure does not trigger it;
-   if Global Backbone Planning Revision changed, stop the boundary and use the
-   all-feature stale-planning route from the input contract instead;
+   if Global Backbone Planning Revision changed, stop the boundary and apply
+   the feature-specific stale-planning route from the input contract to every
+   affected active product feature;
 6. only after all triggered gates pass, run the next recovery-first cycle and
    then the next promotion/dependent-
    blocking pass.
@@ -282,7 +287,7 @@ token/time/run budgets plus terminal vocabulary from autonomy policy/run status.
 Do not claim success unless:
 - no product task is `ready|in_progress` and no blocking product queue work
   remains;
-- every task-linked product feature has latest final `APPROVE`;
+- every active product feature has latest final `APPROVE`;
 - every such `APPROVE` records the current positive Planning Revision;
 - all required functional, T2 feature semantic, T3 task semantic/human gates
   pass, and Foundation remains `not_required` or its named gate task remains
