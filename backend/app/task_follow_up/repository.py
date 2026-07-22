@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from hashlib import sha256
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..access_admin.actor_context import ActorContext
@@ -21,7 +22,13 @@ from ..photo_intake.models import PhotoCatalogItem
 from ..plant_operations.models import DailyCheckIn, ManualMeasurement
 from ..plant_state.models import PlantStateRecord
 from ..safety_gate.models import SafetyActionDecision, SafetyClassification
-from .models import Approval, OrdinaryTaskDispatchDisposition, Outcome, Task
+from .models import (
+    Approval,
+    OrdinaryTaskDispatchDisposition,
+    Outcome,
+    Task,
+    TaskFollowUpRuntimeDisposition,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +138,36 @@ class TaskFollowUpRepository:
             can_mutate_tasks=can_mutate,
             can_approve_actions=can_approve,
         )
+
+    def acquire_task_follow_up_run_lock(
+        self,
+        run_id: uuid.UUID,
+        *,
+        lock_key: int | None = None,
+    ) -> None:
+        if not isinstance(run_id, uuid.UUID):
+            raise ValueError("A UUID run identity is required.")
+        key = task_follow_up_run_lock_key(run_id) if lock_key is None else lock_key
+        if (
+            isinstance(key, bool)
+            or not isinstance(key, int)
+            or not -(2**63) <= key < 2**63
+        ):
+            raise ValueError("A signed PostgreSQL advisory key is required.")
+        self.session.execute(select(func.pg_advisory_xact_lock(key))).one()
+
+    def runtime_disposition_for_run(
+        self,
+        run_id: uuid.UUID,
+        *,
+        for_update: bool = False,
+    ) -> TaskFollowUpRuntimeDisposition | None:
+        query = select(TaskFollowUpRuntimeDisposition).where(
+            TaskFollowUpRuntimeDisposition.run_id == run_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
 
     def safety_classification(
         self, message_id: uuid.UUID, *, for_update: bool = False
@@ -276,20 +313,6 @@ class TaskFollowUpRepository:
                 .with_for_update()
                 .execution_options(populate_existing=True)
             )
-        elif kind == "task":
-            row = self.session.scalar(
-                select(Task)
-                .where(Task.task_id == item_id)
-                .with_for_update()
-                .execution_options(populate_existing=True)
-            )
-        elif kind == "outcome":
-            row = self.session.scalar(
-                select(Outcome)
-                .where(Outcome.outcome_id == item_id)
-                .with_for_update()
-                .execution_options(populate_existing=True)
-            )
         else:
             model = {
                 "daily_checkin": (DailyCheckIn, DailyCheckIn.check_in_id),
@@ -309,6 +332,48 @@ class TaskFollowUpRepository:
         return (
             row is not None
             and getattr(row, "farm_id", farm_id) == farm_id
+            and getattr(row, "plant_id", None) == plant_id
+        )
+
+    def lock_task_follow_up_source_ref(
+        self,
+        ref: str,
+        *,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+    ) -> bool:
+        """Resolve only the competence's Task/Outcome/evidence source union."""
+
+        try:
+            kind, identifier = ref.split(":", maxsplit=1)
+            item_id = uuid.UUID(identifier)
+        except (ValueError, TypeError, AttributeError):
+            return False
+        model = {
+            "task": (Task, Task.task_id),
+            "outcome": (Outcome, Outcome.outcome_id),
+            "daily_checkin": (DailyCheckIn, DailyCheckIn.check_in_id),
+            "manual_measurement": (
+                ManualMeasurement,
+                ManualMeasurement.measurement_id,
+            ),
+            "plant_state_record": (
+                PlantStateRecord,
+                PlantStateRecord.state_record_id,
+            ),
+        }.get(kind)
+        if model is None:
+            return False
+        entity, key = model
+        row = self.session.scalar(
+            select(entity)
+            .where(key == item_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return (
+            row is not None
+            and getattr(row, "farm_id", None) == farm_id
             and getattr(row, "plant_id", None) == plant_id
         )
 
@@ -387,4 +452,15 @@ def _utc(value: datetime) -> datetime:
     return normalized.astimezone(timezone.utc)
 
 
-__all__ = ["CurrentTaskScope", "TaskFollowUpRepository"]
+def task_follow_up_run_lock_key(run_id: uuid.UUID) -> int:
+    if not isinstance(run_id, uuid.UUID):
+        raise ValueError("A UUID run identity is required.")
+    digest = sha256(b"ft012-task-follow-up:" + run_id.bytes).digest()
+    return int.from_bytes(digest[:8], byteorder="big", signed=True)
+
+
+__all__ = [
+    "CurrentTaskScope",
+    "TaskFollowUpRepository",
+    "task_follow_up_run_lock_key",
+]

@@ -1,7 +1,7 @@
 {
   "id": "TASK-040-T3-FT-012-W2",
   "title": "Run provider-neutral Task and Follow-Up Agent through ordinary-task authority",
-  "status": "in_progress",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-012",
   "reqs": [
@@ -184,6 +184,449 @@
         "consecutive_failures": 2
       },
       "next_owner": "Scheduler/orchestrator for controlled /prd-to-tasks FT-012 reconciliation of pre-classification durable denial authority, then fresh review before any later attempt."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "03",
+      "decided_at": "2026-07-20T16:03:32+05:00",
+      "basis": "ATTEMPT 01 is not closable and ATTEMPT 02 stopped before product edits. Controlled FT-012 reconciliation selected the additive immutable runtime disposition, exact task-local result union, shared short run-lock discipline, W1 resolver isolation, migration/head scope, and deterministic crash/race matrix. Two fresh planning reviews exposed bounded gaps; their repairs narrowed and closed B-01, B-02, and B-03R. The final fresh review is APPROVE with all four groups PASS, no blocker, and no executor guessing. Fresh strict doctor passed with 0 errors.",
+      "evidence": [
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-RUNTIME-DENIAL-REPAIR-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-REVIEW-BLOCKERS-REPAIR-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-B03R-DETERMINISTIC-RACES-REPAIR-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-B03R-REPAIRED-REVIEW-20260720-final-report-docs-01.md"
+      ],
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 2,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 2
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke is deferred and is not required or claimed.",
+      "bug_loop_guard": "ATTEMPT 03 uses the newly planned durable runtime-disposition authority and exact race/result contracts; it is not a repetition of the blocked ATTEMPT 02 approach.",
+      "next_gate": "Fresh-session bounded /execute for TASK-040 ATTEMPT 03."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "03",
+      "verdict": "PASS",
+      "verified_at": "2026-07-20T17:13:36+05:00",
+      "basis": "Independent real-PostgreSQL deterministic verification passed the original two HIGH regressions, exact task-local result and seven-group race/crash/lock matrix, runtime and dispatch authority, current authorization, migration-head compatibility, full regression, lint, compile, diff, scope, and provider-neutral anti-authority checks with no substantive finding.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-03.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-040-T3-FT-012-W2/verification.md"
+      ],
+      "gate_summary": {
+        "focused_original_defects_and_races": "PASS: 16 passed",
+        "runtime_agent": "PASS: 74 passed, 1 deselected",
+        "bounded_postgresql_repair": "PASS: 47 passed",
+        "scoped_authority": "PASS: 192 passed, 1 deselected",
+        "migration_head_consumers": "PASS: 47 passed",
+        "full_deterministic": "PASS: 520 passed, 2 deselected, 207 warnings",
+        "mb_lint_compile_diff_scope": "PASS: lint 207 files; compileall; global/scoped diff; 18/18 scope"
+      },
+      "findings": "NONE",
+      "provider_acceptance": "Provider-neutral deterministic fake/spy evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for separately selected red-verification if desired and the explicit lifecycle/queue decision; task remains in_progress."
+    },
+    {
+      "stage": "adversarial_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "03",
+      "verdict": "FAIL",
+      "semantic_verdict": "semantic-fail",
+      "verified_at": "2026-07-20T17:31:04+05:00",
+      "basis": "Independent real-PostgreSQL adversarial verification passed the canonical TASK-040 matrix but reproduced three corrupt-graph resolver defects required to fail closed by the direct runtime contract. A denied classified disposition can hide an existing Task, a consumed graph with a changed Task create_request_fingerprint can be returned as an exact duplicate, and a denied runtime disposition with mutually inconsistent audit refs can be replayed as trusted denial.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt03_adversarial.py",
+        ".protocols/TASK-040-T3-FT-012-W2/red-verification.md"
+      ],
+      "findings": [
+        "HIGH: dispatch outcome denied plus an existing Task for the same classification returns stored denial instead of TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED.",
+        "HIGH: a consumed Task graph with a changed create_request_fingerprint returns ALREADY_CONSUMED instead of TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED.",
+        "MEDIUM: inconsistent runtime_event_ref timeline_event_id and timeline_ref values are accepted as a trusted stored denial."
+      ],
+      "gate_summary": {
+        "canonical_bounded": "PASS: 47 passed",
+        "adversarial_corrupt_graph": "FAIL: 0 passed, 3 failed",
+        "scoped_diff_and_static_provider_guard": "PASS"
+      },
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining": 2,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 3
+      },
+      "provider_acceptance": "Provider-neutral deterministic fake/spy evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for a fresh bounded same-task repair attempt; lifecycle remains in_progress and TASK-041 through TASK-043 remain excluded."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "04",
+      "decided_at": "2026-07-20T17:32:10+05:00",
+      "basis": "ATTEMPT 03 closes the prior two HIGH defects and passes functional verification, but independent adversarial verification reproduced three distinct fail-closed corrupt-graph defects. The direct runtime contract already requires corrupt or mismatched persisted graphs to return TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED with null refs, so a bounded same-task resolver repair is explicit and requires no requirement, schema, provider, or public-contract decision. Fresh strict doctor passed with 0 errors.",
+      "bounded_repair": [
+        "Before returning a downstream denied result, prove that no Task exists for the classification; any denied-plus-Task graph returns TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED with null refs.",
+        "Before returning ALREADY_CONSUMED, validate the complete authoritative Task identity including the exact create_request_fingerprint and source graph; any mismatch returns TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED with null refs.",
+        "Validate persisted runtime_event_ref as one internally consistent canonical audit reference, including equality of timeline_event_id and the UUID encoded by timeline_ref plus the direct contract's canonical timestamp rules; inconsistency returns TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED with null refs.",
+        "Promote all three adversarial reproductions into canonical PostgreSQL regressions and retain the existing original-defect, seven-group race, authorization, migration-head, provider-neutral, full deterministic, lint, compile, diff, scope, and anti-cheat gates."
+      ],
+      "forbidden_workarounds": [
+        "Do not weaken or rewrite the canonical corrupt-graph requirement to match current behavior.",
+        "Do not delete or mutate persisted authority, synthesize a success/denial, add a process-local cache, or treat Timeline as business authority.",
+        "Do not add provider binding, network calls, credentials, fallback, fake production output, model actuation authority, schema expansion, or unrelated lifecycle behavior."
+      ],
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-03.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt03_adversarial.py"
+      ],
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 1,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 3
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke is deferred and is not required or claimed.",
+      "bug_loop_guard": "ATTEMPT 04 is limited to three newly reproduced resolver validations and their canonical regressions; it must not repeat the already closed ATTEMPT 01 defects or redesign the ATTEMPT 03 authority.",
+      "next_gate": "Fresh-session bounded /execute for TASK-040 ATTEMPT 04."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "04",
+      "verdict": "PASS",
+      "verified_at": "2026-07-20T18:05:05+05:00",
+      "basis": "Independent local-PostgreSQL verification proved the three ATTEMPT 03 corrupt-graph findings closed, retained the original two HIGH regressions and all seven collision/crash/lock/race groups, and passed scoped authority, exact-head, full deterministic, lint, compile, diff, scope, and provider-neutral anti-authority gates without a substantive finding.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-04.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-04.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt03_adversarial.py"
+      ],
+      "gate_summary": {
+        "prior_adversarial_and_promoted_repair": "PASS: 3 plus 6 passed",
+        "focused_original_and_groups": "PASS: 15 passed, 34 deselected",
+        "runtime_agent": "PASS: 80 passed, 1 deselected",
+        "bounded_postgresql": "PASS: 53 passed",
+        "scoped_authority": "PASS: 198 passed, 1 deselected",
+        "migration_head_consumers": "PASS: 47 passed",
+        "full_deterministic": "PASS: 526 passed, 2 deselected, 207 warnings",
+        "mb_lint_compile_diff_scope": "PASS: lint 207 files; compile; global diff; 18/18 scope"
+      },
+      "findings": "NONE",
+      "provider_acceptance": "Provider-neutral deterministic fake/spy evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for the separately selected ATTEMPT 04 red-verification and explicit lifecycle decision; task remains in_progress."
+    },
+    {
+      "stage": "adversarial_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "04",
+      "verdict": "FAIL",
+      "semantic_verdict": "semantic-fail",
+      "verified_at": "2026-07-20T18:19:30+05:00",
+      "basis": "Fresh local-PostgreSQL semantic QA passed the promoted ATTEMPT 04 cases but reproduced four additional exact-graph violations. A denied graph can hide a same-run Task on an alternate classification; consumed replay accepts changed human attribution; a different valid same-Plant source graph can self-confirm after recomputing the fingerprint from mutated Task fields; and noncanonical uppercase UUID source text is accepted.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-04.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt04_adversarial.py"
+      ],
+      "findings": [
+        "HIGH: downstream denial hides a Task with the same create_request_id/run_id when that Task points to another classification.",
+        "HIGH: consumed replay does not compare Task human attribution to the original command ActorContext.",
+        "HIGH: consumed replay recomputes its expected fingerprint from mutable Task fields and accepts another valid same-Plant source graph instead of the immutable classification/envelope source set.",
+        "MEDIUM: consumed replay accepts a noncanonical uppercase UUID source ref after fingerprint recomputation."
+      ],
+      "gate_summary": {
+        "new_persisted_graph_batch": "FAIL: 0 passed, 4 failed",
+        "retry_side_effects": "PASS: exact 0/0/0/0 model/audit/Safety/Task calls in all four cases",
+        "prior_canonical_baseline": "PASS as recorded by current ATTEMPT 04 functional verification"
+      },
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining": 1,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 4
+      },
+      "provider_acceptance": "Provider-neutral deterministic local PostgreSQL evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Scheduler/orchestrator for the final bounded same-task repair attempt; lifecycle remains in_progress and TASK-041 through TASK-043 remain excluded."
+    },
+    {
+      "stage": "scheduler_retry_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "05",
+      "decided_at": "2026-07-20T18:21:12+05:00",
+      "basis": "ATTEMPT 04 passes functional verification but is not semantically closable because fresh PostgreSQL evidence proves the resolver still validates a consumed Task partly against its own mutable fields and checks denial contradiction only through one classification. Direct canonical contracts already require exact Task authority and failure for every corrupt or mismatched persisted graph. The final bounded repair therefore derives expected identity independently from the runtime command, exact persisted handoff/classification, ActorContext, and canonical ordered source set; no requirement, schema, provider, or public-contract decision is needed. Fresh strict doctor passed with 0 errors.",
+      "bounded_repair": [
+        "For a downstream denied result, search the run-wide Task effect identity: any Task whose create_request_id equals this run_id makes the denial graph corrupt regardless of classification linkage and returns TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED with null refs.",
+        "For consumed replay, compare Task human attribution exactly to the command ActorContext and compare run, Farm, Plant, agent, classification/message, kind, text, and ordered sources to independently derived trusted inputs rather than to Task-owned fields.",
+        "Derive the expected ordered source graph from the exact persisted handoff/classification authority used by the original writer, require every literal ref to use canonical lowercase UUID text and the closed grammar, and compute the expected create_request_fingerprint from those trusted inputs. Never recompute expected identity from a mutated Task row.",
+        "Promote all four ATTEMPT 04 reproductions plus a bounded field/source mutation table into canonical PostgreSQL regressions, retaining all prior ATTEMPT 01/03/04 defects, seven-group races, authorization, migration-head, provider-neutral, full deterministic, lint, compile, diff, scope, and anti-cheat gates."
+      ],
+      "forbidden_workarounds": [
+        "Do not trust a fingerprint recomputed from Task-owned mutable fields, normalize noncanonical persisted refs into acceptance, or inspect only the current classification for run-wide contradiction.",
+        "Do not mutate or delete corrupt persisted rows, synthesize a trusted duplicate/denial, add process-local state, or use Timeline as Task/source authority.",
+        "Do not add provider binding, network calls, credentials, fallback, fake production output, model authority, schema expansion, unrelated lifecycle behavior, or specification weakening."
+      ],
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-04.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt04_adversarial.py"
+      ],
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 4
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke is deferred and is not required or claimed.",
+      "bug_loop_guard": "ATTEMPT 05 must replace Task-self-derived replay validation with one independently derived exact authority proof and canonicalize the complete ATTEMPT 04 mutation matrix; another sequence of isolated special-case checks is not an acceptable repair.",
+      "next_gate": "Fresh-session bounded /execute for TASK-040 ATTEMPT 05."
+    },
+    {
+      "stage": "controlled_reconciliation",
+      "mode": "scheduler",
+      "decision": "resume_in_progress",
+      "attempt": "05",
+      "decided_at": "2026-07-20T19:32:11+05:00",
+      "basis": "The first ATTEMPT 05 implementation closed the selected source-universe and ActorContext defects, but interim independent verification found that mutated Task display_text could still self-confirm after recomputing the Task-owned fingerprint. A bounded implementation amendment then proved that the original text is not reconstructable from existing independent durable authority. Controlled FT-012 reconciliation selected one additive immutable classified-disposition fingerprint commitment, and fresh /review-tasks-plan approved the design with no blockers. ATTEMPT 05 remains open; this reconciliation is not ATTEMPT 06 and does not consume another attempt.",
+      "selected_design": [
+        "Add nullable lowercase SHA-256 ordinary_task_dispatch_dispositions.expected_task_create_fingerprint; consumed writers persist the exact writer-computed ordinary Task fingerprint atomically in the existing Task/audit/disposition unit of work, while denied rows persist null.",
+        "Resolve consumed replay only when the independent stored disposition commitment equals Task.create_request_fingerprint and equals a fresh canonical recomputation over normalized text, exact kind, canonical ordered sources, run/request identity, message identity, and classification identity; retain separate Farm, Plant, origin-agent, and ActorContext checks.",
+        "Do not persist raw candidate text or the full MessageEnvelope, do not use Timeline as authority, do not backfill legacy consumed null commitments from mutable Task data, and fail such legacy replay closed.",
+        "Keep the migration nullable and use the reviewed PostgreSQL NOT VALID consumed/non-null versus denied/null constraint together with fresh-schema ORM parity, all eight exact-head consumers, explicit downgrade handling, and deterministic regression coverage."
+      ],
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-05.md",
+        ".tasks/TASK-040-T3-FT-012-W2/verify_attempt05_structural_authority.py",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-ATTEMPT05-AUTHORITY-COMMITMENT-RECONCILIATION-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-ATTEMPT05-AUTHORITY-COMMITMENT-REVIEW-20260720-final-report-docs-01.md"
+      ],
+      "planning_review": "APPROVE: all four review groups PASS; blockers none; report SHA-256 271b18c54eab61d8d75e61ac500a21cbca025269b184339ea4e1177a6af4ec0f.",
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining_after_selection": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 4
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke is deferred and is not required or claimed.",
+      "next_gate": "Fresh-session bounded /execute amendment within open TASK-040 ATTEMPT 05; write a supplemental non-overwriting implementation report, then use fresh independent /verify and /red-verify sessions."
+    },
+    {
+      "stage": "red_verification",
+      "mode": "scheduler",
+      "decision": "failed",
+      "attempt": "05",
+      "decided_at": "2026-07-20T20:22:08+05:00",
+      "basis": "ATTEMPT 05 implementation and independent functional verification pass, but separate fresh semantic review proves that the new classified-disposition commitment is not PostgreSQL write-once. Coordinated persisted-state changes can update the Task graph, Task fingerprint, and disposition commitment together and are then accepted as an already-consumed duplicate. The commitment is therefore an application-inserted second hash, not yet the canonical immutable independent durable authority required for closure.",
+      "findings": [
+        "HIGH: coordinated display_text plus Task fingerprint plus disposition commitment change returns duplicate/TASK_FOLLOW_UP_ALREADY_CONSUMED instead of null-ref TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED.",
+        "HIGH: coordinated alternate valid source subset plus both digests returns the same trusted duplicate.",
+        "HIGH: coordinated Task kind plus matching classification fields/result digest plus both digests returns the same trusted duplicate; Task-only fingerprint recomputation correctly fails closed."
+      ],
+      "gate_summary": {
+        "new_commitment_diagnostic": "FAIL: 3 failed, 1 passed; exact replay calls remain model/audit/Safety/Task 0/0/0/0",
+        "retained_structural_authority": "PASS: 12 passed",
+        "retained_attempt04_diagnostic": "PASS: 4 passed",
+        "retained_focused_matrix": "PASS: 35 passed, 17 deselected",
+        "functional_verify": "PASS: findings 0; full deterministic 547 passed, 2 deselected"
+      },
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-REPAIR-final-report-code-05.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-05.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-05.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt05_commitment_adversarial.py"
+      ],
+      "run_budget": {
+        "max_attempts_per_task": 5,
+        "attempts_remaining": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 5
+      },
+      "provider_acceptance": "Provider-neutral deterministic local PostgreSQL evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Explicit owner recovery instruction applies; reconcile exactly one PostgreSQL write-once commitment guard, obtain fresh task-plan review, then recover this failed task without touching TASK-041 through TASK-043."
+    },
+    {
+      "stage": "owner_recovery_authorization",
+      "mode": "scheduler",
+      "decision": "failed_pending_controlled_recovery",
+      "attempt": "06",
+      "decided_at": "2026-07-20T20:22:08+05:00",
+      "basis": "The owner explicitly instructed the scheduler not to stop at HALT_FAILURE_BUDGET and to continue when the next bounded repair is understood rather than repeat a bug loop. The ATTEMPT 05 semantic evidence isolates one common enforceability gap and the independent Reviewer confirms that a PostgreSQL write-once update guard for the commitment closes all three reproductions without redesign. This authorizes one task-scoped recovery attempt under tier-policy while leaving the global run limit unchanged.",
+      "recovery_scope": [
+        "Reconcile and implement PostgreSQL write-once enforcement for ordinary_task_dispatch_dispositions.expected_task_create_fingerprint after its initial consumed value is stored; denied null semantics and the existing insert path remain unchanged.",
+        "Prove all three coordinated ATTEMPT 05 mutations fail closed, while valid identical replay, Task-only mismatch rejection, legacy consumed NULL fail-closed, atomic writer rollback, same-run races, and all eight exact-head consumers remain correct.",
+        "Do not redesign the authority, persist candidate/envelope data, widen public schemas, change provider acceptance, or touch TASK-041 through TASK-043."
+      ],
+      "recovery_budget": {
+        "global_max_attempts_per_task": 5,
+        "effective_task_scoped_limit": 6,
+        "exact_next_attempt": "06",
+        "authorized_recovery_attempts": 1,
+        "attempts_remaining_after_attempt06_selection": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures_before_recovery": 5
+      },
+      "required_gates": [
+        "Controlled /prd-to-tasks FT-012 reconciliation for the write-once guard and migration/test contract.",
+        "Fresh independent /review-tasks-plan FT-012 APPROVE.",
+        "Non-attempt failed -> planned recovery followed by strict doctor, promotion, selection, fresh /execute ATTEMPT 06, independent /verify, and separate /red-verify."
+      ],
+      "next_gate": "Controlled bounded /prd-to-tasks FT-012 reconciliation; lifecycle remains failed until planning and review are complete."
+    },
+    {
+      "stage": "controlled_recovery",
+      "mode": "scheduler",
+      "decision": "planned",
+      "attempt": "06",
+      "decided_at": "2026-07-20T20:48:30+05:00",
+      "basis": "The owner-authorized write-once recovery was reconciled by controlled /prd-to-tasks and independently approved by fresh /review-tasks-plan. The selected PostgreSQL BEFORE UPDATE OF expected_task_create_fingerprint guard, ORM/Alembic parity, legacy-null behavior, downgrade contract, error mapping, direct regression matrix, and all eight exact-head consumers are complete and feasible. This evidence-preserving failed -> planned transition is non-attempt lifecycle recovery: ATTEMPT 06 is named but not started or consumed.",
+      "evidence": [
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-REVIEW-20260720-final-report-docs-01.md"
+      ],
+      "planning_review": "APPROVE: all four groups PASS; blockers none; report SHA-256 4b974fcffd329b2503ededa9eb0a1d93afcc2ca45c9d321cf7ea27ca28020ad8.",
+      "recovery_budget": {
+        "global_max_attempts_per_task": 5,
+        "effective_task_scoped_limit": 6,
+        "exact_next_attempt": "06",
+        "authorized_recovery_attempts": 1,
+        "attempts_remaining_before_selection": 1,
+        "attempts_remaining_after_attempt06_selection": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 5
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke remains deferred and is not required or claimed.",
+      "next_gate": "Fresh strict doctor over the recovered planned queue before promotion."
+    },
+    {
+      "stage": "scheduler_recovery_promotion",
+      "mode": "scheduler",
+      "decision": "ready",
+      "attempt": "06",
+      "decided_at": "2026-07-20T20:59:37+05:00",
+      "basis": "Fresh strict doctor over the recovered planned queue passed with 0 errors, 21 advisory warnings, and 2 info. TASK-039 is done, controlled ATTEMPT 06 planning and fresh review are current, and no blocker prevents promotion. This planned -> ready transition does not start or consume ATTEMPT 06.",
+      "strict_doctor": "PASS: 0 errors, 21 advisory warnings, 2 info.",
+      "recovery_budget": {
+        "global_max_attempts_per_task": 5,
+        "effective_task_scoped_limit": 6,
+        "exact_next_attempt": "06",
+        "authorized_recovery_attempts": 1,
+        "attempts_remaining_before_selection": 1,
+        "attempts_remaining_after_attempt06_selection": 0,
+        "consecutive_failures": 5
+      },
+      "exclusions": "TASK-041, TASK-042, and TASK-043 remain planned and are not promoted, selected, executed, verified, or changed.",
+      "next_gate": "Fresh strict doctor over the ready queue before scheduler selection and ATTEMPT 06 consumption."
+    },
+    {
+      "stage": "scheduler_recovery_selection",
+      "mode": "scheduler",
+      "decision": "in_progress",
+      "attempt": "06",
+      "decided_at": "2026-07-20T21:02:14+05:00",
+      "basis": "Fresh strict doctor over the ready queue passed with 0 errors, 20 advisory warnings, and 2 info. TASK-040 is the only selected candidate, TASK-039 is done, the owner-authorized recovery handoff has current planning APPROVE evidence, and the exact write-once repair is materially distinct from ATTEMPT 05. Scheduler selected and consumed the sole ATTEMPT 06 recovery attempt.",
+      "bounded_repair": [
+        "Install the reviewed PostgreSQL BEFORE UPDATE OF expected_task_create_fingerprint write-once trigger/function using OLD/NEW IS DISTINCT FROM, stable object names, and SQLSTATE 23514; preserve the existing INSERT shape constraint.",
+        "Provide matching PostgreSQL-only SQLAlchemy fresh-schema DDL events and Alembic current-head upgrade/downgrade behavior, including schema qualification, idempotence, dependency-safe cleanup, and downgrade refusal with runtime authority or a non-null commitment.",
+        "Map applicable persistence failures to the existing canonical redacted domain result without raw database leakage; preserve writer atomicity, rollback, advisory locks, races, valid replay, denied-null, and legacy-null fail-closed behavior.",
+        "Promote the three coordinated ATTEMPT 05 reproductions into passing regressions and retain Task-only, prior authority, migration, exact-head, scoped, full deterministic, lint, compile, diff, scope, and anti-authority gates."
+      ],
+      "forbidden_workarounds": [
+        "Do not replace the durable guard with an application-only check, a CHECK constraint that cannot compare OLD and NEW, self-derived backfill, mutable cache, Timeline authority, or persisted raw candidate/envelope data.",
+        "Do not redesign the disposition authority, widen public schemas, change provider binding/acceptance, or touch TASK-041 through TASK-043."
+      ],
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-05.md",
+        ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt05_commitment_adversarial.py",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-REVIEW-20260720-final-report-docs-01.md"
+      ],
+      "selected_stages": [
+        "execute",
+        "verify",
+        "red-verify"
+      ],
+      "strict_doctor": "PASS: 0 errors, 20 advisory warnings, 2 info.",
+      "recovery_budget": {
+        "global_max_attempts_per_task": 5,
+        "effective_task_scoped_limit": 6,
+        "exact_attempt": "06",
+        "authorized_recovery_attempts": 1,
+        "attempts_remaining_after_selection": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures": 5
+      },
+      "provider_acceptance": "Provider-neutral deterministic code phase; provider/model/base URL/Gemini/credential/egress/network/live smoke remains deferred and is not required or claimed.",
+      "bug_loop_guard": "ATTEMPT 06 is limited to database-enforced write-once commitment semantics and the three coordinated persisted-state regressions; another application-only equality layer or broader authority redesign is not acceptable.",
+      "next_gate": "Fresh-session bounded /execute for TASK-040 ATTEMPT 06."
+    },
+    {
+      "stage": "scheduler_closure",
+      "mode": "scheduler",
+      "decision": "done",
+      "attempt": "06",
+      "decided_at": "2026-07-20T23:43:29+05:00",
+      "basis": "ATTEMPT 06 implementation and independent functional verification pass the owner-selected deterministic code-phase acceptance for the reviewed PostgreSQL write-once recovery. The owner explicitly waived the remaining ATTEMPT 06 /red-verify and further repeated checks to limit execution cost. Under the project T2/T3 advisory override, that confidence-stage waiver permits lifecycle closure from accepted current-attempt evidence. No semantic-pass claim is made for the waived stage, and the incomplete task-local semantic diagnostic is not selected as closure evidence.",
+      "accepted_evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-06.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-06.md",
+        ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-20260720-final-report-docs-01.md",
+        ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-REVIEW-20260720-final-report-docs-01.md"
+      ],
+      "gate_summary": {
+        "implementation": "PASS: focused write-once 14 passed/68 deselected; structural 12; ATTEMPT 04 diagnostic 4; runtime 102 passed/1 deselected; bounded PostgreSQL 82; scoped 227 passed/1 deselected; exact-head 47; full deterministic 555 passed/2 deselected; lint/compile/diff/scope PASS",
+        "functional_verification": "PASS: findings 0; all selected implementation counts, PostgreSQL catalog/schema behavior, error mapping, scope, and provider-neutral claims independently reproduced",
+        "historical_attempt05_oracle": "NOT A PASS GATE: unchanged diagnostic remains 3 failed/1 passed because three setup commits are now rejected by the PostgreSQL write-once guard before the historical runtime assertions; its SHA-256 remains e7545f889ba0cf4bdeb63919f081e4cce6370d78ea9526d4df67db60175d1261",
+        "red_verification": "WAIVED BY OWNER before final verdict/report; no semantic-pass claim and no incomplete diagnostic selected for closure"
+      },
+      "report_hashes": {
+        "implementation": "14ed9fe612873ca80eff5c23b2593b3ed1fee474ef8f5ece83e930744efbf0b1",
+        "functional_verification": "d0e1dc628b46034a9702b46385cad5af7effe38492cbe9200d93f4dfa98861af"
+      },
+      "waivers": [
+        "ATTEMPT 06 /red-verify completion and verdict are owner-waived.",
+        "No additional repeated broad/full test suites are required for this closure."
+      ],
+      "residuals": [
+        "The interrupted task-local ATTEMPT 06 semantic diagnostic has no accepted verdict and remains non-authoritative evidence.",
+        "Real selected-provider validation remains deferred and is not claimed.",
+        "The deterministic suite retains 207 pre-existing deprecation warnings."
+      ],
+      "run_budget": {
+        "global_max_attempts_per_task": 5,
+        "effective_task_scoped_limit": 6,
+        "closed_attempt": "06",
+        "recovery_attempts_remaining": 0,
+        "max_consecutive_failures": 5,
+        "consecutive_failures_after_closure": 0
+      },
+      "exclusions": "TASK-041, TASK-042, and TASK-043 remain planned and were not promoted, selected, executed, verified, or changed.",
+      "provider_acceptance": "Provider-neutral deterministic code phase only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was required, run, or claimed.",
+      "next_gate": "Pause at the completed-task durable checkpoint for context compaction; feature-local Memory Bank reconciliation and run terminalization may resume afterward without reopening TASK-040."
     }
   ],
   "docs": [
@@ -203,10 +646,13 @@
     "Pending MessageEnvelope, matching classification, ordinary-task idempotency, and kind-mismatch no-effect evidence.",
     "Pre/post-I/O, classification-write, task-write, revoke, and archive race evidence.",
     "No fallback/fake/canned production output, no auth/UI/Bus/Timeline replay egress, and safe audit/redaction evidence.",
-    "Deterministic timeout, provider error, invalid output, exact fake/spy call count, and unbound-production evidence."
+    "Deterministic timeout, provider error, invalid output, exact fake/spy call count, and unbound-production evidence.",
+    "Exact TaskFollowUpDispositionResultV1 status/code/ref evidence for run conflict, disposition failure, incomplete or non-taskable handoff, downstream denial/consumption, and replay-blocked authority.",
+    "Seven-case PostgreSQL collision/crash/retry/lock-order/race evidence with exact rows, call counts, rollback/noise, and new-run eligibility.",
+    "Independent consumed-Task commitment evidence for normalized text, kind, ordered sources, run/message identity, separate ActorContext/scope/agent/classification attribution, PostgreSQL write-once enforcement, legacy-null migration, coordinated replacement rejection, and atomic rollback."
   ],
   "purpose": "Make the canonical task_follow_up roster member operational as a provider-neutral, permission-aware competence whose only possible product effect is one matched ordinary Task through existing project classification and PostgreSQL authority.",
-  "success_outcome": "One strict provider-neutral task_follow_up invocation over current authorized PostgreSQL Task/Outcome/evidence records can emit only a check, measurement, or follow_up proposal; after model I/O it commits exactly one immutable run/fingerprint runtime disposition as publication_denied or envelope_handed_off with one post-guard message. A matching classification and current ordinary-task guard then create exactly one same-kind Task through the existing classified disposition and sole Task writer. Same-run retry/conflict/concurrency, restore, audit/commit failure, and runtime-versus-classified races create no replay or contradictory effect; new evaluation requires new command/run/message identities. W1 Outcome evidence remains closed while the competence uses a separate source resolver. Deterministic acceptance remains provider-neutral with no provider/model/base URL/credential/egress/network/live-smoke requirement or claim.",
+  "success_outcome": "One strict provider-neutral task_follow_up invocation over current authorized PostgreSQL Task/Outcome/evidence records can emit only a check, measurement, or follow_up proposal. A successfully audited post-model guard denial or speak/envelope handoff commits exactly one immutable run/fingerprint runtime disposition as publication_denied or envelope_handed_off; context_denied, runtime_not_configured, provider_failed, output_invalid, passing-guard model_silent, and audit_failed commit none. A matching classification and current ordinary-task guard create exactly one same-kind Task through the existing classified disposition and sole Task writer, which atomically stores an independent expected Task-create fingerprint without persisting candidate text or the full envelope. PostgreSQL makes that commitment write-once after insert: every distinct digest replacement or null/value transition is rejected with the canonical 23514 diagnostic and coordinates a full transaction rollback. Consumed replay requires the preserved commitment to equal the Task fingerprint and canonical text/kind/ordered-source preimage, with ActorContext/scope/agent/classification checked separately; legacy null and every mismatch return redacted null-ref disposition failure. Existing TaskFollowUpRunResultV1 remains unchanged; strict competence-local TaskFollowUpDispositionResultV1 resolves conflict, persistence failure, incomplete/non-taskable handoff, downstream denied/consumed, and replay-blocked retries with exact safe refs and no stale envelope or executor/writer calls. The seven required collision/crash/lock/race groups prove no replay or contradictory effect and new command/run/message eligibility. W1 Outcome evidence remains closed; acceptance stays provider-neutral with no provider/model/base URL/credential/egress/network/live-smoke requirement or claim.",
   "anti_goals": [
     "Do not widen generic ProviderRequestV1, MessageEnvelope, Safety classification, or roster identity contracts.",
     "Do not let the model approve/reject, create action, complete Tasks, record Outcomes, mutate Plant state, invoke tools/devices, or bypass TASK-039 authority.",
@@ -264,7 +710,22 @@
     ".memory-bank/behavior-specs/FT-012-BHV-003-real-agent-ordinary-task.behavior.json",
     ".protocols/FT-012/decision-log.md",
     ".memory-bank/tasks/plans/IMPL-FT-012.md",
-    ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-RUNTIME-DENIAL-REPAIR-20260720-final-report-docs-01.md"
+    ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-RUNTIME-DENIAL-REPAIR-20260720-final-report-docs-01.md",
+    ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-RUNTIME-DENIAL-REPAIRED-REVIEW-20260720-final-report-docs-01.md",
+    ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-REVIEW-BLOCKERS-REPAIR-20260720-final-report-docs-01.md",
+    ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-REVIEW-BLOCKERS-REPAIRED-REVIEW-20260720-final-report-docs-01.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-04.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-05.md",
+    ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-ATTEMPT05-AUTHORITY-COMMITMENT-RECONCILIATION-20260720-final-report-docs-01.md",
+    ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-ATTEMPT05-AUTHORITY-COMMITMENT-REVIEW-20260720-final-report-docs-01.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-REPAIR-final-report-code-05.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-05.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-05.md",
+    ".tasks/TASK-040-T3-FT-012-W2/red_verify_attempt05_commitment_adversarial.py",
+    ".tasks/TASK-MB-PRD-TO-TASKS/TASK-MB-PRD-TO-TASKS-S-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-20260720-final-report-docs-01.md",
+    ".tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-012-TASK040-ATTEMPT06-WRITE-ONCE-RECOVERY-REVIEW-20260720-final-report-docs-01.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-06.md",
+    ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-06.md"
   ],
   "normative_inputs": [
     ".memory-bank/contracts/task-follow-up-runtime.md",
@@ -293,7 +754,10 @@
     "A non-silent result creates only a pending task_request MessageEnvelope; the existing project classifier must persist the exact same safe_task_kind before TASK-039 may create a Task.",
     "The strict provider-neutral seam has no selected provider/model/base URL; production remains unbound and fail-closed, test fakes/spies are explicit, I/O is outside transactions, and every owning writer repeats current guards.",
     "The task_follow_up runtime stage writes only the additive ft012_runtime_dispositions authority after model I/O under a short run-key advisory lock; the same lock and exact handed-off identity are required by the downstream classified Task writer, and no transaction/lock spans Task model or Safety-classifier I/O.",
+    "TaskFollowUpInvocationResultV1 is the task-local union of unchanged TaskFollowUpRunResultV1 and strict TaskFollowUpDispositionResultV1; the latter has exact result_status/result_code/nullability/ref semantics and never widens global AgentRuntimeOutcomeV1.",
+    "Only successfully audited publication_guard_denied and envelope_ready branches create the two-value runtime disposition; context_denied, runtime_not_configured, provider_failed, output_invalid, passing-guard model_silent, and audit_failed create none and retain their existing same-run retry path.",
     "W1 record_follow_up_outcome keeps its closed evidence resolver and rejects task:/outcome: refs; W2 Task/Outcome source-record lookup is competence-specific and cannot be reused by the Outcome writer.",
+    "Every new consumed ordinary_task_dispatch_dispositions row stores expected_task_create_fingerprint equal to the writer-computed classified-message Task create fingerprint in the same Task/audit/disposition UoW; denied rows store null. A named PostgreSQL BEFORE UPDATE trigger rejects every distinct post-insert commitment change, including digest replacement and null/value transitions, with SQLSTATE 23514 and stable diagnostic constraint ck_ordinary_task_dispatch_commitment_write_once. Pre-existing consumed rows are not self-derived/backfilled and replay-fail on null; no candidate text or full MessageEnvelope becomes durable.",
     "Deterministic acceptance requires exact task_follow_up and Safety fake/spy calls plus exactly one ordinary Task; fallback, production fake, silence, blocked, failed, mismatch, or direct action effect is not acceptance."
   ],
   "invariants": [
@@ -301,7 +765,8 @@
     "The task_follow_up agent can never create action, approve or reject, complete a Task, record an Outcome, confirm Plant state, or produce a device effect.",
     "UI Feed, Bus history, Timeline replay, raw chat, ActorContext/session/grant payloads, caller refs, prompts, provider history, hidden reasoning, and credentials never enter provider input.",
     "Archived or unauthorized Plant state creates no model-backed Task effect and restore never replays the denied run.",
-    "One run/fingerprint has exactly one immutable runtime-stage disposition; publication_denied and the same run's classified consumed/denied state cannot coexist, and envelope_handed_off never mints or replays a second message.",
+    "Every successfully audited publication_guard_denied or envelope_ready branch has exactly one immutable runtime-stage disposition; other common runtime outcomes have none. publication_denied and the same run's classified consumed/denied state cannot coexist, and envelope_handed_off never mints or replays a second message.",
+    "A consumed task_follow_up replay is exact only when Task.create_request_fingerprint, the PostgreSQL write-once classified-disposition expected fingerprint, and canonical recomputation over normalized text/kind/ordered sources plus trusted run/message identity all agree, while ActorContext/scope/agent/classification attribution matches separately; any missing or mismatched value fails redacted with null refs and zero replay calls, and coordinated attempts to replace the commitment abort and roll back before replay.",
     "Test fakes/spies are explicit seams only; no fake, canned, hardcoded, fallback, or failure-silence production path satisfies acceptance."
   ],
   "verification_targets": [
@@ -311,6 +776,16 @@
     "Authorization tests prove current pre/post-I/O, classifier, task-write, session/grant revoke, wrong-Farm, and archive races fail closed with no restore replay.",
     "PostgreSQL tests prove exact runtime-disposition schema/migration head, command fingerprint, identical denied retry, changed-input conflict, concurrent same-run first-write, post-model archive/revoke durability, audit/commit rollback, runtime/classified exclusion, one post-guard message, and new-identity eligibility.",
     "Regression tests prove task:/outcome: are accepted only by the competence source resolver and remain rejected by W1 record_follow_up_outcome evidence validation.",
+    "Forced advisory-key collision tests use two distinct full run UUIDs sharing one injected lock key and prove two isolated denial rows, model/audit/Safety/Task counts 2/2/0/0, zero mixed identity, and independent new-run eligibility.",
+    "Crash-after-handoff tests prove one committed envelope_handed_off row/message/audit with no classification/ordinary/Task, first-call counts 1/1/0/0, then exact HANDOFF_INCOMPLETE null-ref retry with 0/0/0/0 and new-run eligibility.",
+    "Classifier guard and persistence failure tests prove the committed handoff remains one-shot and no classification/ordinary/Task commits: first-call model/audit/Safety/Task counts are 1/1/0/0 for pre-executor guard denial and 1/1/1/0 for post-executor persistence failure; same-run HANDOFF_INCOMPLETE null-ref retry is 0/0/0/0 and a new run is eligible.",
+    "Classification-then-crash tests prove one matching classification but no ordinary disposition/Task, first-call counts 1/1/1/0, then HANDOFF_INCOMPLETE with classification ref and zero retry calls.",
+    "Handed-off retry matrix proves exact local results/refs for absent or taskable/non-taskable classification, downstream denied, downstream consumed with current authority, replay-blocked consumed state, and corrupt/missing graph; every retry changes no row and calls no model/audit/Safety/Task writer.",
+    "Consumed-Task authority matrix proves baseline duplicate success; normal consumed/non-null and denied/null inserts; PostgreSQL 23514 rejection and complete rollback for each coordinated ATTEMPT 05 text, valid-source-subset, and kind/classification plus both-digest replacement; Task-only mutation plus recomputed fingerprint remains an exact null-ref TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED at 0/0/0/0 calls; direct digest and null/value UPDATE rejection; actor, alternate-classification, scope/agent/message, canonical-ref, missing/wrong commitment, and legacy-null failures; writer rollback; same-run races; fresh-schema/migration parity; all eight exact-head consumers; and no self-derived backfill or raw-envelope persistence.",
+    "Group-6 lock_order_consumed_success_v1 proves the exact preflight, post-model, and classified-writer advisory/runtime/classified/current-lock/write/commit trace; model and Safety spies each observe no open transaction or held advisory lock. Its sole result is TaskFollowUpRunResultV1 task_created with classification/Task refs, final runtime/message/classification/ordinary/Task cardinality handedoff/pending/matching/consumed/1, aggregate model/runtime-audit/Safety/Task-service calls 1/1/1/1, exactly two authoritative audits, zero noise/rollback, old-run ALREADY_CONSUMED retry at 0/0/0/0, and an isolated new-run task_created probe.",
+    "Group-7 eligible-first releases the eligible invocation through consumed Task return before its denied peer: returns are RUN_CREATED(C,T) then LOCAL_DUPLICATE(C,T), final rows are handedoff/pending/matching/consumed/1, calls are 2/1/1/1, authoritative/noise audits are 2/0, rollback is zero, old retry is LOCAL_DUPLICATE at 0/0/0/0, and an isolated fresh run is task_created.",
+    "Group-7 denied-first releases the denied invocation through commit/return before its eligible peer: both return the same stored RUN_DENIED with AGENT_PUBLICATION_BLOCKED and null refs, final rows are publication_denied/0/0/0/0, calls are 2/1/0/0, authoritative/noise audits are 1/0, rollback is zero, old retry is the stored denial at 0/0/0/0, and a fresh eligible run after authority recovery is task_created.",
+    "Group-7 late-denial-first starts from committed handoff plus matching classification and releases the late denial before the classified writer: returns are LOCAL_INCOMPLETE(C) then RUN_CREATED(C,T); classified-writer-first reverses release and returns RUN_CREATED(C,T) then LOCAL_DUPLICATE(C,T). Each finishes handedoff/pending/matching/consumed/1 with calls 2/1/1/1, authoritative/noise audits 2/0, zero rollback, old-run LOCAL_DUPLICATE at 0/0/0/0, and an isolated fresh task_created run; publication_denied plus a classified disposition, second rows/messages, and duplicate Tasks are exactly zero.",
     "Provider-neutral tests prove explicit test fake/spy construction, exact call counts and allowlists, timeout/provider-error/invalid-output handling, unbound-production failure, no default/fallback/fake production output, redacted logs/audit/evidence, and compatibility with the existing Agent Runtime outcome matrix."
   ]
 }

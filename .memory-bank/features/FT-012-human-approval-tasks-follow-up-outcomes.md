@@ -57,6 +57,19 @@ spec_design_links:
   either terminally denied or hands off exactly one post-guard message. It
   cannot conflict with the downstream classified-message disposition, and the
   same run never allocates another message after restore or retry.
+- TASK-040 proves that boundary with one exact consumed-success lock-order
+  fixture and four barrier-controlled orders. Eligible-first finishes consumed
+  before its peer resolves `ALREADY_CONSUMED`; denied-first makes both peers
+  return the same stored denial; late-denial-first returns classification-only
+  `HANDOFF_INCOMPLETE` before the classified writer succeeds; classified-
+  writer-first succeeds before the late peer resolves `ALREADY_CONSUMED`.
+  These are exact outcomes, not scheduler-dependent alternatives; canonical
+  row/call/audit/rollback counts live in the Task Follow-Up testing spec.
+- Only successfully audited post-model guard denial or speak/envelope handoff
+  owns that two-value row; context/config/provider/output/passing-guard silence/
+  audit failures create none. Same-run handed-off conflict, incomplete,
+  non-taskable, downstream denied/consumed, and replay-blocked states return the
+  strict task-local disposition result without changing global Agent Runtime.
 - Follow-up outcome captures exactly
   `improved|worsened|unchanged|no_data`; non-`no_data` values require evidence
   refs.
@@ -77,6 +90,18 @@ spec_design_links:
 - Restore must not turn a pre-classification runtime denial into an operative
   run. A conflicting same-run command fails closed; reevaluation requires a
   new command/run and then a new post-guard message.
+- A committed handoff interrupted before classifier or Task writer is not
+  replayed: exact retry resolves its persisted absent/non-taskable/denied/
+  consumed downstream state without any model/classifier/Task call, then
+  requires a new run for fresh evaluation.
+- A consumed handoff is a duplicate only when an independent immutable
+  classified-disposition commitment matches the Task create fingerprint and
+  canonical text/kind/ordered-source preimage, while scope/agent/ActorContext
+  attribution matches separately. PostgreSQL makes that commitment write-once:
+  coordinated Task/classification plus both-digest replacement aborts and
+  rolls back, while Task-only corruption remains a redacted null-ref failure.
+  Missing legacy commitment or any corrupt graph fails with the existing
+  error; raw candidate text and the full MessageEnvelope remain transient.
 
 ## Verification Targets
 
@@ -91,6 +116,11 @@ spec_design_links:
   creation; identical/conflicting/concurrent same-run calls, disposition
   commit failure, runtime-versus-classified race, and new-identity eligibility
   are deterministic PostgreSQL cases.
+- Integration: Task text mutation with a recomputed Task-owned fingerprint,
+  actor/source/classification/canonical-ref mutations, missing/wrong independent
+  commitment, all three coordinated ATTEMPT 05 replacements rejected by the
+  PostgreSQL write-once guard, no-self-derived legacy migration, rollback, and
+  all prior groups 1-7 fail closed or preserve their exact accepted results.
 - E2E: approved human-performed action creates follow-up and outcome evidence.
 
 ## Normative Backbone Links
@@ -127,16 +157,20 @@ spec_design_links:
   concurrency, rollback, strict HTTP/raw-path validation, branch-exact
   Timeline refs, and zero device or Plant-state effects are independently
   verified.
-- The accepted W1 product head is `ft012_task_approval_outcomes` directly
-  after `ft011_safety_action_decisions`. TASK-040 now plans the narrow additive
-  `ft012_runtime_dispositions` revision and all eight exact-head updates; the
-  implemented head does not advance until that task succeeds.
-- `TASK-040-T3-FT-012-W2` remains scheduler-owned `in_progress`. ATTEMPT 01
-  verification found the W1 evidence-resolver widening and restore-operative
-  denied run; ATTEMPT 02 stopped before product edits on the missing durable
-  pre-classification authority. This reconciliation selects no ATTEMPT 03 and
-  changes no lifecycle/status or attempt budget. FT-012 lifecycle remains
-  `planned` pending the open wave and explicit owner decision.
+- The accepted W1 boundary remains `ft012_task_approval_outcomes` directly
+  after `ft011_safety_action_decisions`. The current accumulated TASK-040 work
+  has advanced the repository Alembic head and all eight exact-head consumers
+  to the still-unclosed additive `ft012_runtime_dispositions` revision; this is
+  implementation state, not TASK-040 closure evidence.
+- `TASK-040-T3-FT-012-W2` is scheduler-recorded `failed` from the current
+  ATTEMPT 05 semantic failure: the independent commitment was insert-correct
+  but PostgreSQL still permitted coordinated replacement. Explicit owner
+  recovery authorizes exactly ATTEMPT 06 with effective task limit `6`, one
+  recovery attempt, and unchanged global maximum `5`. This reconciliation
+  changes no lifecycle/status and does not consume ATTEMPT 06; planning review,
+  failed-to-planned recovery, strict doctor, promotion, and selection remain
+  scheduler-owned gates. FT-012 lifecycle remains `planned` pending the open
+  wave and explicit owner decision.
 - No provider/model/base URL/Gemini/credential/egress/network/live-smoke
   result was required, checked, or claimed for W1. The absent human checkpoint
   was accepted by the scheduler as an advisory T3 process gap.

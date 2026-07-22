@@ -7,6 +7,7 @@ import uuid
 
 from sqlalchemy import (
     CheckConstraint,
+    DDL,
     DateTime,
     ForeignKey,
     Index,
@@ -16,11 +17,84 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    event,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..access_admin.models import Base, JSON_DOCUMENT
+
+
+class TaskFollowUpRuntimeDisposition(Base):
+    __tablename__ = "task_follow_up_runtime_dispositions"
+    __table_args__ = (
+        PrimaryKeyConstraint(
+            "run_id",
+            name="pk_task_follow_up_runtime_dispositions",
+        ),
+        UniqueConstraint(
+            "message_id",
+            name="uq_task_follow_up_runtime_dispositions_message",
+        ),
+        CheckConstraint(
+            "command_sha256 ~ '^[0-9a-f]{64}$'",
+            name="ck_task_follow_up_runtime_dispositions_command_sha256",
+        ).ddl_if(dialect="postgresql"),
+        CheckConstraint(
+            "input_sha256 IS NULL OR input_sha256 ~ '^[0-9a-f]{64}$'",
+            name="ck_task_follow_up_runtime_dispositions_input_sha256",
+        ).ddl_if(dialect="postgresql"),
+        CheckConstraint(
+            "outcome IN ('envelope_handed_off', 'publication_denied')",
+            name="ck_task_follow_up_runtime_dispositions_outcome",
+        ),
+        CheckConstraint(
+            "denial_code IS NULL OR denial_code = 'AGENT_PUBLICATION_BLOCKED'",
+            name="ck_task_follow_up_runtime_dispositions_denial_code",
+        ),
+        CheckConstraint(
+            "jsonb_typeof(runtime_event_ref) = 'object'",
+            name="ck_task_follow_up_runtime_dispositions_event_ref_object",
+        ).ddl_if(dialect="postgresql"),
+        CheckConstraint(
+            "((outcome = 'envelope_handed_off' AND message_id IS NOT NULL "
+            "AND input_sha256 IS NOT NULL AND denial_code IS NULL) OR "
+            "(outcome = 'publication_denied' AND message_id IS NULL "
+            "AND input_sha256 IS NULL "
+            "AND denial_code = 'AGENT_PUBLICATION_BLOCKED'))",
+            name="ck_task_follow_up_runtime_dispositions_terminal_matrix",
+        ),
+    )
+
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        primary_key=True,
+    )
+    farm_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("farms.farm_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    plant_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("plants.plant_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    command_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    outcome: Mapped[str] = mapped_column(String(32), nullable=False)
+    message_id: Mapped[uuid.UUID | None] = mapped_column(Uuid(as_uuid=True))
+    input_sha256: Mapped[str | None] = mapped_column(String(64))
+    denial_code: Mapped[str | None] = mapped_column(String(32))
+    model_ref: Mapped[str] = mapped_column(String(193), nullable=False)
+    runtime_event_ref: Mapped[dict[str, object]] = mapped_column(
+        JSON_DOCUMENT,
+        nullable=False,
+    )
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
 
 
 class OrdinaryTaskDispatchDisposition(Base):
@@ -52,6 +126,14 @@ class OrdinaryTaskDispatchDisposition(Base):
             "(outcome = 'denied' AND denial_code IS NOT NULL))",
             name="ck_ordinary_task_dispatch_dispositions_terminal_matrix",
         ),
+        CheckConstraint(
+            "((outcome = 'consumed' "
+            "AND expected_task_create_fingerprint IS NOT NULL "
+            "AND expected_task_create_fingerprint ~ '^[0-9a-f]{64}$') OR "
+            "(outcome = 'denied' "
+            "AND expected_task_create_fingerprint IS NULL))",
+            name="ck_ordinary_task_dispatch_dispositions_commitment_matrix",
+        ).ddl_if(dialect="postgresql"),
     )
 
     classification_message_id: Mapped[uuid.UUID] = mapped_column(
@@ -72,10 +154,51 @@ class OrdinaryTaskDispatchDisposition(Base):
     )
     input_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    expected_task_create_fingerprint: Mapped[str | None] = mapped_column(
+        String(64)
+    )
     denial_code: Mapped[str | None] = mapped_column(String(32))
     recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+event.listen(
+    OrdinaryTaskDispatchDisposition.__table__,
+    "after_create",
+    DDL(
+        """
+CREATE FUNCTION ft012_enforce_ordinary_dispatch_commitment_write_once()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF OLD.expected_task_create_fingerprint IS DISTINCT FROM
+       NEW.expected_task_create_fingerprint THEN
+        RAISE EXCEPTION USING
+            ERRCODE = '23514',
+            MESSAGE = 'ordinary task dispatch commitment is write-once',
+            CONSTRAINT = 'ck_ordinary_task_dispatch_commitment_write_once';
+    END IF;
+    RETURN NEW;
+END;
+$$
+"""
+    ).execute_if(dialect="postgresql"),
+)
+event.listen(
+    OrdinaryTaskDispatchDisposition.__table__,
+    "after_create",
+    DDL(
+        """
+CREATE TRIGGER trg_ordinary_task_dispatch_commitment_write_once
+BEFORE UPDATE OF expected_task_create_fingerprint
+ON %(fullname)s
+FOR EACH ROW
+EXECUTE FUNCTION ft012_enforce_ordinary_dispatch_commitment_write_once()
+"""
+    ).execute_if(dialect="postgresql"),
+)
 
 
 class Approval(Base):
@@ -381,4 +504,10 @@ class Outcome(Base):
     task_completed_event_ref: Mapped[dict[str, object]] = mapped_column(JSON_DOCUMENT, nullable=False)
 
 
-__all__ = ["Approval", "OrdinaryTaskDispatchDisposition", "Outcome", "Task"]
+__all__ = [
+    "Approval",
+    "OrdinaryTaskDispatchDisposition",
+    "Outcome",
+    "Task",
+    "TaskFollowUpRuntimeDisposition",
+]

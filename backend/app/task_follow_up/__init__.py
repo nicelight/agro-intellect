@@ -16,8 +16,18 @@ from .contracts import (
     TaskKind,
     TaskStatus,
 )
-from .models import Approval, OrdinaryTaskDispatchDisposition, Outcome, Task
-from .repository import CurrentTaskScope, TaskFollowUpRepository
+from .models import (
+    Approval,
+    OrdinaryTaskDispatchDisposition,
+    Outcome,
+    Task,
+    TaskFollowUpRuntimeDisposition,
+)
+from .repository import (
+    CurrentTaskScope,
+    TaskFollowUpRepository,
+    task_follow_up_run_lock_key,
+)
 from .runtime import (
     AssembledTaskFollowUpInputV1,
     DatabaseTaskFollowUpInputAssembler,
@@ -25,6 +35,7 @@ from .runtime import (
     TaskFollowUpInputDenied,
     TaskFollowUpModelExecutor,
     TaskFollowUpRuntimeService,
+    task_follow_up_command_fingerprint,
 )
 from .runtime_contracts import (
     ORDINARY_TASK_KINDS,
@@ -32,7 +43,9 @@ from .runtime_contracts import (
     TRIGGER_KINDS,
     TaskFollowUpAgentDefinitionV1,
     TaskFollowUpCommandV1,
+    TaskFollowUpDispositionResultV1,
     TaskFollowUpInputRecordV1,
+    TaskFollowUpInvocationResultV1,
     TaskFollowUpModelResultV1,
     TaskFollowUpProviderRequestV1,
     TaskFollowUpRunResultV1,
@@ -63,19 +76,24 @@ __all__ = [
     "TRIGGER_KINDS",
     "TaskFollowUpAgentDefinitionV1",
     "TaskFollowUpCommandV1",
+    "TaskFollowUpDispositionResultV1",
     "TaskFollowUpError",
     "TaskFollowUpErrorCode",
     "TaskFollowUpInputAssembler",
     "TaskFollowUpInputDenied",
     "TaskFollowUpInputRecordV1",
+    "TaskFollowUpInvocationResultV1",
     "TaskFollowUpModelExecutor",
     "TaskFollowUpModelResultV1",
     "TaskFollowUpProviderRequestV1",
     "TaskFollowUpRepository",
     "TaskFollowUpRunResultV1",
     "TaskFollowUpRuntimeService",
+    "TaskFollowUpRuntimeDisposition",
     "TaskFollowUpRuntimeValidationError",
     "TaskFollowUpService",
     "TaskKind",
     "TaskStatus",
+    "task_follow_up_command_fingerprint",
+    "task_follow_up_run_lock_key",
 ]

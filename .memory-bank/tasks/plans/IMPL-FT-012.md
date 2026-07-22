@@ -132,16 +132,38 @@ only a matched ordinary Task.
    reuse that same lock/row check at the classified Task writer. Allocate an
    eligible message only after the locked current guard, release the
    transaction before Safety classifier I/O, and never persist/replay the
-   envelope payload.
-7. Split W2 source revalidation from the existing W1 Outcome evidence
+   envelope payload. In that same revision, add only
+   `ordinary_task_dispatch_dispositions.expected_task_create_fingerprint` and
+   its consumed/non-null versus denied/null matrix. Install the same named
+   PostgreSQL `BEFORE UPDATE` write-once function/trigger in the Alembic
+   revision and fresh-schema ORM table DDL; reject every distinct commitment
+   replacement with exact SQLSTATE `23514`. Do not self-derive a commitment
+   for existing consumed rows; retain legacy null and fail replay closed.
+7. Add strict task-local `TaskFollowUpDispositionResultV1` and return it only
+   for run conflict, disposition storage failure, handed-off replay states, and
+   downstream denied/consumed resolution. Keep `TaskFollowUpRunResultV1` and
+   global `AgentRuntimeOutcomeV1` unchanged. Only successfully audited guard
+   denial/envelope-ready creates the two-value row; existing context/config/
+   provider/output/silence/audit branches create none and retain normal retry.
+8. Split W2 source revalidation from the existing W1 Outcome evidence
    resolver. The competence resolver may load its strict Task/Outcome/evidence
    record union; `record_follow_up_outcome` continues rejecting `task:` and
    `outcome:` refs.
-8. Add deterministic outbound-snapshot, schema/matrix, archive-race,
+9. Add deterministic outbound-snapshot, schema/matrix, archive-race,
    idempotency, timeout/error, redaction, unbound-production, and no-authority
    fake/spy tests plus PostgreSQL fingerprint, identical/conflicting retry,
    concurrent run, runtime/classified exclusion, rollback, exact-head, and
-   new-identity cases.
+   new-identity cases. Implement every one of the seven required collision,
+   crash, classifier, persisted-classification, downstream retry, lock-order,
+   and two-race groups from `.memory-bank/testing/task-follow-up.md`; their
+   exact rows/calls/refs cannot be replaced by a generic concurrency test.
+   Add the consumed-Task authority matrix for text plus recomputed Task
+   fingerprint, actor/source/alternate-classification/canonical refs,
+   missing/wrong commitment, legacy null, atomic rollback, and unchanged
+   groups 1-7. Promote the three ATTEMPT 05 coordinated text/source/kind
+   reproductions as direct PostgreSQL update-rejection cases, retain the
+   Task-only replay-failure control, and prove normal consumed/denied inserts,
+   writer rollback, same-run races, and all eight exact-head consumers.
 
 ## Dependencies and waves
 
@@ -168,14 +190,18 @@ only a matched ordinary Task.
   boundary. It also implements current authority/evidence/archive guards,
   exact retry/conflict/concurrency/rollback behavior, protected raw-path HTTP,
   branch-exact Timeline summaries, and no-actuation/no-Plant-state limits.
-- `ft012_task_approval_outcomes` is the current product migration head directly
-  after `ft011_safety_action_decisions`; the eight listed compatibility
-  consumers pass against this exact head.
-- W2 `TASK-040-T3-FT-012-W2` remains scheduler-owned `in_progress`. ATTEMPT 01
-  verification reproduced two HIGH defects; ATTEMPT 02 stopped before product
-  edits because pre-classification denial had no permissible durable owner.
-  This bounded reconciliation defines the repair but does not select/start
-  ATTEMPT 03, change lifecycle/status, or consume attempt budget.
+- The accepted W1 boundary is `ft012_task_approval_outcomes` directly after
+  `ft011_safety_action_decisions`. Current accumulated TASK-040 implementation
+  has advanced the repository Alembic head and all eight listed exact-head
+  consumers to `ft012_runtime_dispositions`; the open recovery must amend that
+  same unclosed revision rather than add another migration head.
+- W2 `TASK-040-T3-FT-012-W2` is scheduler-recorded `failed` from current
+  ATTEMPT 05 semantic evidence: three coordinated mutations could replace the
+  Task-owned digest and independent commitment together. Explicit owner
+  recovery names exact next ATTEMPT 06, effective TASK-040 limit `6`, one
+  recovery attempt, and unchanged global maximum `5`. This bounded
+  reconciliation defines only the write-once repair, changes no lifecycle,
+  and does not start or consume ATTEMPT 06.
 
 ## Expected touched files
 
@@ -200,7 +226,8 @@ Core lifecycle/API/persistence slice:
 Provider-neutral runtime slice:
 
 - `backend/app/task_follow_up/` for competence-specific contracts, assembler,
-  service/orchestration, and production composition;
+  service/orchestration, production composition, and the PostgreSQL-only ORM
+  table DDL events that give fresh schemas the same write-once trigger;
 - `backend/app/agent_runtime/providers.py`
 - `backend/app/agent_runtime/__init__.py`
 - `backend/app/main.py` only if composition wiring is needed;
@@ -273,6 +300,19 @@ updates every repository exact-head assertion below in the same execution:
   authority for `task_follow_up`. It stores no envelope/provider/auth payload,
   and the shared short run lock prevents contradiction with the downstream
   classified disposition without spanning Task model or Safety model I/O.
+- Only successfully audited post-model guard denial or envelope handoff owns
+  that two-value row. All other common outcomes retain their existing no-row
+  behavior. New retry/conflict/failure semantics use the strict task-local
+  disposition result and never widen global `AgentRuntimeOutcomeV1`.
+- The existing classified writer persists one independent expected
+  ordinary-create fingerprint with every new consumed disposition in the same
+  UoW as Task/audit/disposition. It commits no raw candidate/full envelope.
+  Replay requires equality with the Task fingerprint and canonical
+  recomputation, then separately checks scope, agent, classification, and
+  ActorContext attribution; legacy null and every mismatch fail redacted.
+  PostgreSQL rejects every distinct post-insert commitment change, including
+  null/value transitions and digest replacement, so coordinated changes abort
+  and roll back rather than replacing the independent proof.
 - Human approval revalidates current ActorContext, active Plant, immutable
   Safety decision, exact expiry, and pH/EC evidence; fresh evidence alone is
   never approval.
@@ -304,6 +344,41 @@ updates every repository exact-head assertion below in the same execution:
   same-run behavior, post-model archive/revoke durability, one post-guard
   message, runtime/classified exclusion, persistence rollback, and new command/
   run/message eligibility;
+- exact task-local status/code/ref matrices for conflict, persistence failure,
+  incomplete and non-taskable handoff, downstream denial/consumption, and
+  current-authority replay block, all with zero retry executor/writer calls;
+- exact independent consumed-Task commitment across normalized text, kind,
+  ordered source refs, run/message identity, separate actor/scope/agent/
+  classification checks, missing/wrong/legacy-null commitment, rollback, and
+  no raw-envelope persistence;
+- exact named write-once function/trigger parity in migrated and fresh ORM
+  schemas; `23514` direct rejection for digest replacement and null/value
+  transitions; three coordinated ATTEMPT 05 rollback cases; Task-only
+  fail-closed control; valid unrelated update semantics; no legacy backfill;
+  and refusal-safe dependency-ordered downgrade;
+- seven separate deterministic groups: forced advisory-key collision/full-UUID
+  isolation; post-handoff pre-classifier crash; classifier guard/persistence
+  failure; persisted-classification pre-Task crash; absent/denied/consumed
+  downstream retry matrix; exact `lock_order_consumed_success_v1`; and four
+  barrier-controlled eligible/denied/classified-writer orders;
+- `lock_order_consumed_success_v1` returns normal `task_created(C,T)`, commits
+  exactly handoff/pending-message/matching-classification/consumed/one Task,
+  calls model/runtime-audit/Safety/Task-service `1/1/1/1`, records exactly two
+  authoritative audits and zero noise/rollback, proves the full preflight,
+  post-model, and classified-writer order plus no transaction/advisory lock at
+  either executor, resolves the old run as `ALREADY_CONSUMED(C,T)` at
+  `0/0/0/0`, and admits an isolated fresh `task_created(C2,T2)` run;
+- group-7 barriers first complete both model calls, then release participants
+  serially: eligible-first returns `RUN_CREATED(C,T)` then
+  `LOCAL_DUPLICATE(C,T)` with success rows and `2/1/1/1`; denied-first returns
+  stored `RUN_DENIED` for both with denial-only rows and `2/1/0/0`;
+  late-denial-first after committed handoff/classification returns
+  `LOCAL_INCOMPLETE(C)` then `RUN_CREATED(C,T)`; classified-writer-first
+  returns `RUN_CREATED(C,T)` then `LOCAL_DUPLICATE(C,T)`. Both late cases end
+  with the exact success rows and `2/1/1/1`; success cases have two
+  authoritative audits, denial has one, and all have zero noise/rollback,
+  exact zero contradictory/second rows or duplicate Tasks, zero-call terminal
+  old-run retry, and an isolated successful fresh-run probe;
 - W1 Outcome evidence rejects `task:`/`outcome:` while the competence-only
   source resolver accepts only its strict runtime record union;
 - Boss/Engineer/Consultant, grant, archive/restore, expiry boundary, and

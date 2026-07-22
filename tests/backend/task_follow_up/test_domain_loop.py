@@ -8,9 +8,13 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
 import pytest
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from alembic.script import ScriptDirectory
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
+from backend.app import AppSettings
 from backend.app.agent_runtime.contracts import SafetyClassificationResultV1
 from backend.app.access_admin.farm_service import FarmService
 from backend.app.plant_operations import ManualMeasurement
@@ -33,6 +37,7 @@ from backend.app.task_follow_up import (
     TaskKind,
 )
 from backend.app.task_follow_up.contracts import canonical_fingerprint
+from backend.migrations import build_alembic_config
 from tests.backend.plant_operations.conftest import (
     archive_plant,
     create_active_plant,
@@ -43,6 +48,18 @@ from tests.backend.safety_gate.helpers import envelope_for
 
 
 NOW = datetime(2026, 7, 20, 8, 0, tzinfo=timezone.utc)
+
+
+@pytest.fixture(autouse=True)
+def _apply_runtime_disposition_revision(ft012_database):
+    script = ScriptDirectory.from_config(
+        build_alembic_config(AppSettings.from_env())
+    )
+    with ft012_database.engine().connect() as connection:
+        context = MigrationContext.configure(connection)
+        with Operations.context(context):
+            script.get_revision("ft012_runtime_dispositions").module.upgrade()
+        connection.commit()
 
 
 def _measurement(database, actor, plant, *, ph=None, ec=None, measured_at=NOW):
@@ -232,6 +249,7 @@ def test_archived_ordinary_denial_is_terminal_and_both_new_identities_are_requir
         assert disposition is not None
         assert disposition.run_id == command.message_envelope.run_id
         assert disposition.outcome == "denied"
+        assert disposition.expected_task_create_fingerprint is None
         assert disposition.denial_code == "TASK_PLANT_NOT_ACTIVE"
         assert session.scalar(select(func.count(Task.task_id))) == 0
 
@@ -326,6 +344,17 @@ def test_disposition_rolls_back_with_audit_failure_then_concurrent_retry_consume
         assert disposition is not None
         assert disposition.outcome == "consumed"
         assert disposition.denial_code is None
+        task = session.scalar(
+            select(Task).where(
+                Task.classification_message_id
+                == disposition.classification_message_id
+            )
+        )
+        assert task is not None
+        assert (
+            disposition.expected_task_create_fingerprint
+            == task.create_request_fingerprint
+        )
         assert session.scalar(select(func.count(Task.task_id))) == 1
     assert [event.event_type for event in task_timeline.events] == ["task_created"]
 
@@ -658,3 +687,138 @@ def test_ownerless_or_unrelated_integrity_error_stays_persistence_failure(
         assert session.scalar(select(func.count(Task.task_id)).where(
             Task.completion_request_id == request_id
         )) == 0
+
+
+def test_commitment_guard_persistence_error_uses_existing_redacted_mapping(
+    ft012_database,
+    ft012_seed,
+    task_timeline,
+):
+    farm, boss, _membership, plant = ft012_seed
+    command = _ordinary_command(ft012_database, farm, boss, plant)
+
+    class Diagnostic:
+        constraint_name = "ck_ordinary_task_dispatch_commitment_write_once"
+
+    class DriverError(Exception):
+        def __init__(self):
+            super().__init__("raw database detail must not leak")
+            self.diag = Diagnostic()
+
+    with ft012_database.session() as session:
+        def fail_flush(*_args, **_kwargs):
+            raise IntegrityError(
+                "raw database detail must not leak",
+                {},
+                DriverError(),
+            )
+
+        session.flush = fail_flush
+        with pytest.raises(TaskFollowUpError) as failed:
+            TaskFollowUpService(
+                session,
+                timeline_appender=task_timeline,
+                clock=lambda: NOW,
+            ).create_ordinary_task(command)
+
+    assert failed.value.code is TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+    assert str(failed.value) == "TASK_PERSISTENCE_FAILED"
+    assert failed.value.__cause__ is None
+    with ft012_database.session() as session:
+        assert session.scalar(
+            select(func.count(Task.task_id)).where(
+                Task.create_request_id == command.message_envelope.run_id
+            )
+        ) == 0
+
+
+@pytest.mark.parametrize("ref_kind", ["task", "outcome"])
+def test_w1_outcome_evidence_still_rejects_task_and_outcome_refs(
+    ft012_database,
+    ft012_seed,
+    task_timeline,
+    ref_kind,
+):
+    farm, boss, _membership, plant = ft012_seed
+
+    def create_follow_up():
+        decision_id, _ph, _ec = _pending_decision(
+            ft012_database,
+            farm,
+            boss,
+            plant,
+            expires_at=NOW + timedelta(hours=1),
+        )
+        with ft012_database.session() as session:
+            service = TaskFollowUpService(
+                session,
+                timeline_appender=task_timeline,
+                clock=lambda: NOW,
+            )
+            service.materialize_pending_approval(decision_id)
+            action = service.decide_approval(
+                _approval_command(boss, plant, decision_id)
+            ).action_task
+        assert action is not None
+        with ft012_database.session() as session:
+            follow_up = TaskFollowUpService(
+                session,
+                timeline_appender=task_timeline,
+                clock=lambda: NOW,
+            ).complete_task(
+                CompleteTaskCommandV1(
+                    actor_context=boss,
+                    plant_id=plant.plant_id,
+                    task_id=action.task_id,
+                    request_id=uuid.uuid4(),
+                )
+            ).follow_up_task
+        assert follow_up is not None
+        return action, follow_up
+
+    action, target = create_follow_up()
+    if ref_kind == "task":
+        bad_ref = f"task:{action.task_id}"
+    else:
+        _source_action, source_follow_up = create_follow_up()
+        with ft012_database.session() as session:
+            source = TaskFollowUpService(
+                session,
+                timeline_appender=task_timeline,
+                clock=lambda: NOW,
+            ).record_outcome(
+                RecordOutcomeCommandV1(
+                    actor_context=boss,
+                    plant_id=plant.plant_id,
+                    follow_up_task_id=source_follow_up.task_id,
+                    request_id=uuid.uuid4(),
+                    value=OutcomeValue.NO_DATA,
+                    evidence_refs=(),
+                )
+            ).outcome
+        bad_ref = f"outcome:{source.outcome_id}"
+
+    with ft012_database.session() as session, pytest.raises(TaskFollowUpError) as failed:
+        TaskFollowUpService(
+            session,
+            timeline_appender=task_timeline,
+            clock=lambda: NOW,
+        ).record_outcome(
+            RecordOutcomeCommandV1(
+                actor_context=boss,
+                plant_id=plant.plant_id,
+                follow_up_task_id=target.task_id,
+                request_id=uuid.uuid4(),
+                value=OutcomeValue.IMPROVED,
+                evidence_refs=(bad_ref,),
+            )
+        )
+    assert failed.value.code is TaskFollowUpErrorCode.TASK_EVIDENCE_REQUIRED
+    with ft012_database.session() as session:
+        stored = session.get(Task, target.task_id)
+        assert stored is not None and stored.status == "open"
+        assert session.scalar(
+            select(func.count(Outcome.outcome_id)).where(
+                Outcome.follow_up_task_id == target.task_id
+            )
+        ) == 0

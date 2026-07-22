@@ -1061,8 +1061,11 @@ def test_ft011_revision_is_ordered_head_and_guarded():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     revision = script.get_revision("head")
     assert revision is not None
-    assert revision.revision == "ft012_task_approval_outcomes"
-    assert revision.down_revision == "ft011_safety_action_decisions"
+    assert revision.revision == "ft012_runtime_dispositions"
+    assert revision.down_revision == "ft012_task_approval_outcomes"
+    ft012 = script.get_revision("ft012_task_approval_outcomes")
+    assert ft012 is not None
+    assert ft012.down_revision == "ft011_safety_action_decisions"
     decisions_revision = script.get_revision("ft011_safety_action_decisions")
     assert decisions_revision is not None
     assert decisions_revision.down_revision == "ft011_safety_classifications"

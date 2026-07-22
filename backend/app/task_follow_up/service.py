@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
+import re
 import uuid
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -30,8 +32,18 @@ from .contracts import (
     ordered_unique,
     timestamp_text,
 )
-from .models import Approval, OrdinaryTaskDispatchDisposition, Outcome, Task
-from .repository import CurrentTaskScope, TaskFollowUpRepository
+from .models import (
+    Approval,
+    OrdinaryTaskDispatchDisposition,
+    Outcome,
+    Task,
+    TaskFollowUpRuntimeDisposition,
+)
+from .repository import (
+    CurrentTaskScope,
+    TaskFollowUpRepository,
+    task_follow_up_run_lock_key,
+)
 
 
 _ACTION_TEXT = {
@@ -56,11 +68,13 @@ class TaskFollowUpService:
         repository: TaskFollowUpRepository | None = None,
         timeline_appender=None,
         clock=None,
+        run_lock_key: Callable[[uuid.UUID], int] | None = None,
     ) -> None:
         self._session = session
         self._repository = repository or TaskFollowUpRepository(session)
         self._timeline = timeline_appender or TimelineJsonlAppender()
         self._clock = clock or _utc_now
+        self._run_lock_key = run_lock_key or task_follow_up_run_lock_key
 
     def create_ordinary_task(
         self, command: ClassifiedMessageTaskCommandV1
@@ -92,18 +106,53 @@ class TaskFollowUpService:
         denial_code: TaskFollowUpErrorCode | None = None
         try:
             with self._session.begin():
+                runtime_disposition = None
+                if envelope.agent_id == "task_follow_up":
+                    self._repository.acquire_task_follow_up_run_lock(
+                        envelope.run_id,
+                        lock_key=self._run_lock_key(envelope.run_id),
+                    )
+                    runtime_disposition = (
+                        self._repository.runtime_disposition_for_run(
+                            envelope.run_id,
+                            for_update=True,
+                        )
+                    )
+                    message_disposition = (
+                        self._repository.dispatch_disposition_for_message(
+                            envelope.message_id,
+                            for_update=True,
+                        )
+                    )
+                    run_disposition = self._repository.dispatch_disposition_for_run(
+                        envelope.run_id,
+                        for_update=True,
+                    )
+                else:
+                    message_disposition = None
+                    run_disposition = None
                 classification = self._repository.safety_classification(
                     envelope.message_id, for_update=True
                 )
                 self._validate_classified_source(command, classification)
                 assert classification is not None
-
-                message_disposition = self._repository.dispatch_disposition_for_message(
-                    envelope.message_id, for_update=True
-                )
-                run_disposition = self._repository.dispatch_disposition_for_run(
-                    envelope.run_id, for_update=True
-                )
+                if runtime_disposition is not None or envelope.agent_id == "task_follow_up":
+                    self._validate_runtime_handoff(
+                        envelope,
+                        runtime_disposition,
+                        input_sha256=input_sha256,
+                    )
+                if envelope.agent_id != "task_follow_up":
+                    message_disposition = (
+                        self._repository.dispatch_disposition_for_message(
+                            envelope.message_id,
+                            for_update=True,
+                        )
+                    )
+                    run_disposition = self._repository.dispatch_disposition_for_run(
+                        envelope.run_id,
+                        for_update=True,
+                    )
                 if message_disposition is not None or run_disposition is not None:
                     return self._resolve_dispatch_disposition(
                         command,
@@ -130,6 +179,9 @@ class TaskFollowUpService:
                     plant_id=envelope.plant_id,
                     input_sha256=input_sha256,
                     outcome="denied" if denial_code is not None else "consumed",
+                    expected_task_create_fingerprint=(
+                        None if denial_code is not None else fingerprint
+                    ),
                     denial_code=denial_code.value if denial_code is not None else None,
                     recorded_at=now,
                 )
@@ -140,7 +192,12 @@ class TaskFollowUpService:
                     if scope.farm_id != envelope.farm_id:
                         raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
                     for ref in envelope.source_refs:
-                        if not self._repository.lock_authoritative_ref(
+                        resolver = (
+                            self._repository.lock_task_follow_up_source_ref
+                            if envelope.agent_id == "task_follow_up"
+                            else self._repository.lock_authoritative_ref
+                        )
+                        if not resolver(
                             ref,
                             farm_id=envelope.farm_id,
                             plant_id=envelope.plant_id,
@@ -567,6 +624,25 @@ class TaskFollowUpService:
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
 
     @staticmethod
+    def _validate_runtime_handoff(
+        envelope: MessageEnvelopeV1,
+        disposition: TaskFollowUpRuntimeDisposition | None,
+        *,
+        input_sha256: str,
+    ) -> None:
+        if (
+            disposition is None
+            or disposition.run_id != envelope.run_id
+            or disposition.farm_id != envelope.farm_id
+            or disposition.plant_id != envelope.plant_id
+            or disposition.outcome != "envelope_handed_off"
+            or disposition.message_id != envelope.message_id
+            or disposition.input_sha256 != input_sha256
+            or disposition.denial_code is not None
+        ):
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
+
+    @staticmethod
     def _scope_denial_code(
         scope: CurrentTaskScope | None,
     ) -> TaskFollowUpErrorCode | None:
@@ -612,6 +688,10 @@ class TaskFollowUpService:
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
 
         if disposition.outcome == "denied":
+            if disposition.expected_task_create_fingerprint is not None:
+                raise TaskFollowUpError(
+                    TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+                )
             task = repository.task_for_classification(
                 envelope.message_id, for_update=True
             )
@@ -634,7 +714,20 @@ class TaskFollowUpService:
                     TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
                 )
             raise TaskFollowUpError(code)
-        if disposition.outcome != "consumed" or disposition.denial_code is not None:
+        if (
+            disposition.outcome != "consumed"
+            or disposition.denial_code is not None
+            or not isinstance(
+                disposition.expected_task_create_fingerprint,
+                str,
+            )
+            or re.fullmatch(
+                r"[0-9a-f]{64}",
+                disposition.expected_task_create_fingerprint,
+            )
+            is None
+            or disposition.expected_task_create_fingerprint != fingerprint
+        ):
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED)
 
         scope = self._require_scope(
@@ -672,18 +765,47 @@ class TaskFollowUpService:
         clean_repository = TaskFollowUpRepository(self._session)
         try:
             with self._session.begin():
+                if command.message_envelope.agent_id == "task_follow_up":
+                    clean_repository.acquire_task_follow_up_run_lock(
+                        command.message_envelope.run_id,
+                        lock_key=self._run_lock_key(
+                            command.message_envelope.run_id
+                        ),
+                    )
+                    runtime_disposition = clean_repository.runtime_disposition_for_run(
+                        command.message_envelope.run_id,
+                        for_update=True,
+                    )
+                    message_disposition = (
+                        clean_repository.dispatch_disposition_for_message(
+                            command.message_envelope.message_id,
+                            for_update=True,
+                        )
+                    )
+                    run_disposition = clean_repository.dispatch_disposition_for_run(
+                        command.message_envelope.run_id,
+                        for_update=True,
+                    )
+                    self._validate_runtime_handoff(
+                        command.message_envelope,
+                        runtime_disposition,
+                        input_sha256=input_sha256,
+                    )
                 classification = clean_repository.safety_classification(
                     command.message_envelope.message_id, for_update=True
                 )
                 self._validate_classified_source(command, classification)
-                message_disposition = (
-                    clean_repository.dispatch_disposition_for_message(
-                        command.message_envelope.message_id, for_update=True
+                if command.message_envelope.agent_id != "task_follow_up":
+                    message_disposition = (
+                        clean_repository.dispatch_disposition_for_message(
+                            command.message_envelope.message_id,
+                            for_update=True,
+                        )
                     )
-                )
-                run_disposition = clean_repository.dispatch_disposition_for_run(
-                    command.message_envelope.run_id, for_update=True
-                )
+                    run_disposition = clean_repository.dispatch_disposition_for_run(
+                        command.message_envelope.run_id,
+                        for_update=True,
+                    )
                 if message_disposition is None and run_disposition is None:
                     raise TaskFollowUpError(
                         TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED

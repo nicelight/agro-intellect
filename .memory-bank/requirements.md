@@ -369,8 +369,10 @@ source_of_truth:
   FT-012 W1 consumes those authority/publication seams without re-owning them.
 - FT-012 and EP-004 lifecycle values remain `planned` pending the open W2 and
   explicit owner feature/epic decisions. TASK-040 remains scheduler-owned
-  `planned`; this sync makes no promotion, selection, unblock, or block
-  decision and does not touch TASK-041/TASK-042/TASK-043.
+  `in_progress` after ATTEMPT 01 verification FAIL and ATTEMPT 02
+  implementation BLOCKED; this sync makes no retry/resume selection, ATTEMPT
+  03 consumption, lifecycle transition, unblock, or block decision and does
+  not touch TASK-041/TASK-042/TASK-043.
 - No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
   was required, checked, or claimed. The absent human checkpoint remains a
   scheduler-accepted advisory T3 process gap.

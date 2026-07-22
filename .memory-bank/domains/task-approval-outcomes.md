@@ -89,6 +89,33 @@ full UUID and fingerprints. Each writer takes this lock in a short transaction,
 then re-reads both disposition tables before any insert. No transaction or
 advisory lock is held across Task model or Safety-classifier I/O.
 
+Observable lock order is exact. Runtime preflight takes the advisory lock,
+then reads runtime disposition, classified disposition, and only the matching
+classification/Task/current-scope rows required to resolve an existing handoff.
+Post-model terminal selection takes advisory lock -> runtime disposition ->
+classified disposition -> current session/Account/Membership/Plant/grant rows
+in the established repository order -> audit append -> runtime-row insert ->
+commit. The `task_follow_up` classified writer takes advisory lock -> runtime
+disposition -> classified disposition -> classification -> current-scope and
+source rows -> audit/Task/disposition writes -> commit. Tests observe this
+order; both the Task Follow-Up model executor and Safety classifier executor
+must see `session.in_transaction() == false`, and the advisory transaction must
+already be committed when either executor is called.
+
+The deterministic success/eligible-first/late-race fixture has the exact final
+row vector `1 envelope_handed_off / 1 pending message identity / 1 matching
+classification / 1 consumed disposition / 1 Task`. The denial-first fixture
+has `1 publication_denied / 0 / 0 / 0 / 0`. Barriers release one writer through
+commit and return before the other: eligible-first and classified-writer-first
+make the later participant resolve the committed consumed graph; late-
+denial-first makes it resolve the committed classification-only graph before
+the classified writer consumes it; denial-first makes the later participant
+resolve the stored denial. Thus the exact final count of
+`publication_denied + consumed|denied` contradictions, second runtime/message/
+classification/disposition rows, and duplicate Tasks is zero in all four
+orders. The complete participant results, calls, audits, rollback, and fresh-
+run probes are fixed by `.memory-bank/testing/task-follow-up.md` groups 6/7.
+
 After model I/O, the runtime takes the run lock and owning current-scope row
 locks, repeats the current guard, appends the sanitized runtime audit, and
 commits exactly one runtime row. Guard denial commits
@@ -98,19 +125,34 @@ the Safety classifier with the in-memory envelope. The row is never used to
 reconstruct or replay an envelope.
 
 An identical retry of a committed `publication_denied` fingerprint returns its
-stored safe denial without another provider/classifier/Task call. A different
-fingerprint for the same run conflicts. `envelope_handed_off` also forbids a
-second envelope or classifier path for that run; the downstream classified
-disposition owns any committed Task/denial, and an incomplete handoff fails
-closed. A fresh evaluation therefore requires a new command and `run_id`, then
-a new post-guard `message_id`.
+stored safe denial without another model/audit/classifier/Task call. A different
+fingerprint returns task-local `TASK_FOLLOW_UP_RUN_CONFLICT` with no refs.
+`envelope_handed_off` also forbids a second envelope or classifier path. It is
+resolved read-only through the competence-local result contract: absent or
+exact taskable classification without a dispatch is
+`TASK_FOLLOW_UP_HANDOFF_INCOMPLETE`; exact non-taskable classification is
+`TASK_FOLLOW_UP_ALREADY_NOT_TASKABLE`; downstream denied is
+`TASK_FOLLOW_UP_DISPATCH_DENIED`; consumed plus exact Task/current read authority
+is `TASK_FOLLOW_UP_ALREADY_CONSUMED`; consumed without current read authority is
+`TASK_FOLLOW_UP_REPLAY_BLOCKED`. Conflicting graphs and disposition storage
+failures are `TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED`. A fresh evaluation
+requires a new command and `run_id`, then a new post-guard `message_id`.
 
 If audit append fails, the runtime row rolls back and the existing strict audit
-failure is returned. If runtime-row read/lock/flush/commit fails, a redacted
-competence-local persistence failure is returned and no classifier or Task
-writer is called. An audit append that precedes a failed commit may remain
-non-authoritative noise. Only a committed row is a terminal runtime denial or
-handoff.
+failure is returned. If runtime-row read/lock/flush/commit fails, strict
+`TaskFollowUpDispositionResultV1` returns
+`TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED` with null refs and no classifier or
+Task writer. An audit append that precedes a failed commit may remain exactly
+one non-authoritative event. Only a committed row is a terminal runtime denial
+or handoff.
+
+`context_denied`, `runtime_not_configured`, `provider_failed`, `output_invalid`,
+passing-guard `model_silent`, and `audit_failed` create no runtime disposition.
+Their same-run retry repeats the existing normal pre-provider/model/audit path;
+it does not use the disposition result. A post-model guard denial, including
+one reached before a would-be silence result is returned, instead owns the
+durable `publication_denied` row. Thus the two-value table remains exact and
+does not become a generic Agent Runtime outcome ledger.
 
 ## `ordinary_task_dispatch_dispositions`
 
@@ -127,17 +169,44 @@ UI, MessageEnvelope, or classification projection:
 - `input_sha256`: exact lowercase classification input fingerprint for the
   validated envelope;
 - `outcome`: `consumed|denied`;
+- nullable `expected_task_create_fingerprint`: independent lowercase SHA-256
+  commitment to the exact classified-message ordinary-task create preimage;
+  required for every newly written `consumed` row and null for `denied`;
 - nullable `denial_code`:
   `TASK_SCOPE_NOT_FOUND|TASK_COMMAND_FORBIDDEN|TASK_PLANT_NOT_ACTIVE`;
 - `recorded_at`: timezone-aware UTC server timestamp.
 
-Database checks enforce the exact terminal matrix: `consumed` has no
-`denial_code`; `denied` has exactly one closed current-guard denial code. There
+Database checks enforce the exact terminal matrix: a new `consumed` row has no
+`denial_code` and one canonical `expected_task_create_fingerprint`; `denied`
+has exactly one closed current-guard denial code and a null commitment. There
 is no pending state, update path, delete path, retry counter, payload text,
 authorization snapshot, Timeline ref, or Bus/UI field. `tasks` remains the
 sole Task authority and its existing unique `classification_message_id`
 relates a consumed disposition to the Task without duplicating `task_id` in
 the disposition row.
+
+PostgreSQL makes `expected_task_create_fingerprint` write-once after insert.
+The named `BEFORE UPDATE OF expected_task_create_fingerprint` trigger
+`trg_ordinary_task_dispatch_commitment_write_once` calls
+`ft012_enforce_ordinary_dispatch_commitment_write_once()`. The function
+compares `OLD` and `NEW` with `IS DISTINCT FROM`; every value replacement,
+including digest-to-digest, null-to-digest, and digest-to-null, raises
+SQLSTATE `23514` with diagnostic constraint name
+`ck_ordinary_task_dispatch_commitment_write_once`. Assigning the same value is
+not a replacement and may pass this trigger. An update that does not name or
+change the commitment may also pass this trigger, but it remains subject to
+all existing checks, keys, and FKs; the product exposes no disposition update
+command.
+
+This separation preserves the exact row populations. Inserts do not invoke
+the update trigger: the existing matrix check requires a new `consumed` row to
+carry one lowercase 64-hex digest and a `denied` row to carry null. A legacy
+pre-migration consumed null remains readable and unmodified. It cannot be
+backfilled because null-to-digest is rejected by the write-once trigger; since
+the matrix is `NOT VALID` but enforced for every newly inserted or rewritten
+tuple, even an unrelated rewrite of that legacy-invalid tuple fails closed.
+Valid consumed and denied rows may update unrelated fields only when every
+existing constraint still accepts the resulting tuple.
 
 For a first exact handoff, the service validates the immutable persisted
 classification and envelope input fingerprint, acquires the established
@@ -154,6 +223,30 @@ disposition persistence failure creates no Task and cannot be treated as
 success. Restore never edits or deletes the row and cannot make `denied`
 operative; a new runtime invocation requires both a new `run_id` and a new
 `message_id`.
+
+The existing writer computes one classified-message ordinary-create
+fingerprint before the write and assigns the exact same value to
+`Task.create_request_fingerprint` and the disposition's
+`expected_task_create_fingerprint`. The Task, consumed disposition, commitment,
+and required audit ref commit or roll back together. On replay, the independent
+disposition value is compared to both the Task value and a canonical
+recomputation from the Task row plus trusted run/message identity. Separate
+checks prove ActorContext account/membership/role, Farm/Plant scope,
+`created_by_agent_id`, and classification content. Missing/wrong commitment or
+any mismatch is corrupt authority, never an identical duplicate.
+
+The normal writer remains insert-only, so the trigger does not alter its
+transaction, advisory-lock order, or uniqueness-race recovery. If a direct or
+future maintenance transaction coordinates Task/classification changes with a
+commitment replacement, PostgreSQL aborts that transaction at `23514`; all of
+its coordinated row changes roll back. The current Task service has no update
+surface and adds no new error code: an in-scope SQLAlchemy persistence failure
+continues to map to `TASK_PERSISTENCE_FAILED`, while a direct database
+regression asserts the SQLSTATE and constraint name. After rollback, an exact
+runtime replay sees the original graph and may return the existing duplicate;
+if Task-only corruption committed without changing the commitment, the
+existing resolver returns the redacted null-ref
+`TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED`.
 
 For `origin_agent_id=task_follow_up` only, this classified-message branch first
 takes the same FT-012 run advisory lock and requires the immutable runtime row
@@ -355,6 +448,12 @@ Derived server timestamps, ActorContext, UI text, Timeline ids, and database
 row order are not fingerprint inputs. They are revalidated/current output, not
 caller-controlled identity.
 
+Thus the classified-message create fingerprint covers normalized text, kind,
+the exact ordered source graph, run/request id, and message/classification
+identity. It does not cover Farm/Plant scope, origin agent, or ActorContext
+attribution; those remain mandatory separate comparisons and are not copied
+into the commitment preimage.
+
 ## Transaction and Timeline ordering
 
 The services use the existing transaction/UoW and Timeline append seam:
@@ -427,12 +526,34 @@ wave. Downgrade removes only FT-012 objects in reverse FK order and never
 rewrites FT-011 or earlier rows.
 
 TASK-040 adds one narrow revision `ft012_runtime_dispositions` directly after
-`ft012_task_approval_outcomes`. It creates only
-`task_follow_up_runtime_dispositions`; it does not alter the established W1
-tables, Safety classifications, MessageEnvelope, or Task/Outcome schemas. All
-eight repository exact-head consumers advance to this new revision in the same
-wave. Downgrade refuses while a runtime disposition exists and otherwise drops
-only this table.
+`ft012_task_approval_outcomes`. It creates
+`task_follow_up_runtime_dispositions` and adds
+`ordinary_task_dispatch_dispositions.expected_task_create_fingerprint` plus
+its exact matrix check and named write-once function/trigger; it does not
+change the established identity/denial union, Safety classifications,
+MessageEnvelope, or Task/Outcome schemas. Upgrade order is column, `NOT VALID`
+matrix check, function, trigger, then runtime table. The migration does not
+backfill this value from mutable Task fields: pre-existing consumed rows retain
+null and fail closed on replay. PostgreSQL enforces the matrix for every new or
+rewritten row without retroactively blessing legacy rows.
+
+Fresh PostgreSQL schemas created from ORM metadata install the same named
+function and trigger through PostgreSQL-only table DDL events; non-PostgreSQL
+metadata receives no trigger DDL. `create_all(checkfirst=True)` remains
+idempotent because the events run only when the table is actually created, and
+normal Alembic `upgrade head` applies the named revision once through version
+tracking; direct repeated invocation of the revision function is not a
+supported migration path. The current product head remains
+`ft012_runtime_dispositions` directly after
+`ft012_task_approval_outcomes`, and all eight repository exact-head consumers
+continue to select that head.
+
+Downgrade performs one refusal preflight before destructive DDL: it refuses if
+any runtime disposition exists or any non-null expected Task-create commitment
+exists. When empty of both authorities, it drops the runtime table, trigger,
+function, matrix check, and commitment column in dependency-safe reverse order
+without rewriting W1 rows. Legacy consumed null or denied null rows alone do
+not manufacture a commitment and do not trigger that refusal.
 
 The later FT-013 migration adds only the `governance_decision` source value,
 nullable unique restrictive `decision_record_id`, and the extended exact source
@@ -457,7 +578,15 @@ post-model archive/revoke durability, audit/commit failure rollback, concurrent
 first terminal write, no contradictory runtime/classified disposition, one
 post-guard message on eligible success, new-identity eligibility, and strict
 separation of the W1 Outcome evidence resolver from the competence source
-resolver.
+resolver. They also prove new consumed writes atomically persist the exact
+independent commitment, denied writes keep it null, legacy consumed null fails
+closed without backfill, and text/kind/source/fingerprint mutations cannot
+self-confirm. Direct PostgreSQL tests inspect the named function/trigger in
+both migrated and fresh-ORM schemas; assert `23514` plus the stable diagnostic
+constraint for digest replacement and null/value transitions; prove unrelated
+valid-row updates remain trigger-permitted; and prove the three coordinated
+ATTEMPT 05 text, source-subset, and kind mutations abort and roll back before
+they can replace the original commitment.
 
 FT-013 integration additionally proves DecisionRecord/Task atomicity,
 identical-versus-conflicting DecisionRecord retries, exact classification-kind

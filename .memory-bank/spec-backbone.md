@@ -127,9 +127,9 @@ last_updated: 2026-07-20
   no-authority rules are implemented and verified. The current product
   migration head is `ft012_task_approval_outcomes` directly after
   `ft011_safety_action_decisions`, with all eight exact-head consumers passing.
-  TASK-040 remains scheduler-owned `planned` for the provider-neutral
-  `task_follow_up` runtime; this reconciliation does not promote or select it
-  and claims no live-provider acceptance.
+  TASK-040 is scheduler-owned `in_progress` after ATTEMPT 01 verification FAIL
+  and ATTEMPT 02 implementation BLOCKED; the current planning repair neither
+  selects nor consumes ATTEMPT 03 and claims no live-provider acceptance.
 - Current FT-013 repair outcome: shared ordinary-task source union and
   classification-only Companion governance hold are authoritative, with no
   second Task service or persisted route-schema expansion. The subsequent
@@ -167,8 +167,8 @@ last_updated: 2026-07-20
   TASK-039 are scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle
   values remain `planned` pending explicit owner decisions. FT-011, FT-012,
   and EP-004 remain `planned` pending explicit owner lifecycle decisions;
-  planned TASK-040 remains a separate scheduler decision and this backbone
-  reconciliation does not promote or select it. The current product migration
+  in-progress TASK-040 remains a separate scheduler retry/resume decision and
+  this backbone reconciliation does not select or consume ATTEMPT 03. The current product migration
   head is `ft012_task_approval_outcomes` directly after
   `ft011_safety_action_decisions`. Historical run-budget evidence does not
   amend canonical workflow policy.

@@ -81,8 +81,11 @@ def test_ft005_revision_is_ordered_head_and_contains_guarded_downgrade():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     product_head = script.get_revision("head")
     assert product_head is not None
-    assert product_head.revision == "ft012_task_approval_outcomes"
-    assert product_head.down_revision == "ft011_safety_action_decisions"
+    assert product_head.revision == "ft012_runtime_dispositions"
+    assert product_head.down_revision == "ft012_task_approval_outcomes"
+    ft012 = script.get_revision("ft012_task_approval_outcomes")
+    assert ft012 is not None
+    assert ft012.down_revision == "ft011_safety_action_decisions"
 
     ft011_decisions = script.get_revision("ft011_safety_action_decisions")
     assert ft011_decisions is not None

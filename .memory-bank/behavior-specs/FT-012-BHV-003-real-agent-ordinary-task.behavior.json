@@ -15,8 +15,9 @@
   "then": {
     "created_task_kind": "the same check|measurement|follow_up kind",
     "created_task_count": 1,
-    "same_run_retry": "cannot allocate another message; an identical denied retry returns the stored denial and conflicting input fails closed",
-    "restore_and_concurrency": "restore cannot make the denied run operative, concurrent same-run terminal writes cannot contradict classified dispatch, and reevaluation requires a new command/run/message",
+    "same_run_retry": "cannot allocate another message; an identical denied retry returns the stored denial, conflicting input returns TASK_FOLLOW_UP_RUN_CONFLICT, and committed handoff resolves through the strict task-local incomplete|not_taskable|denied|duplicate|blocked result matrix with zero executor/writer calls",
+    "consumed_commitment": "the classified disposition stores one PostgreSQL write-once expected Task-create fingerprint; coordinated Task/classification plus both-digest replacement is rejected and rolled back, Task-only corruption replay fails closed, denied stores null, and legacy consumed null is never backfilled",
+    "restore_and_concurrency": "restore cannot make the denied run operative; lock_order_consumed_success_v1 proves task_created then zero-call ALREADY_CONSUMED retry; deterministic barriers fix eligible-first as RUN_CREATED then LOCAL_DUPLICATE, denied-first as the same stored RUN_DENIED for both, late-denial-first as LOCAL_INCOMPLETE then RUN_CREATED, and classified-writer-first as RUN_CREATED then LOCAL_DUPLICATE; every success order ends handedoff plus consumed, every denial-first order ends denial only, and reevaluation requires a new command/run/message",
     "action_task_created": false,
     "approval_or_completion_effect": false,
     "fake_fallback_or_silent_acceptance": false
