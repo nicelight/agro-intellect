@@ -4,20 +4,11 @@ status: active
 ---
 # MB-SYNC — Memory Bank synchronization workflow
 
-## Advisory T2/T3 interpretation
-
-For T2/T3, all protocol, verification, semantic-review, checkpoint, doctor,
-and synchronization requirements below are recommended defaults. The explicit
-owner or scheduler may combine, reorder, skip, or waive them; missing process
-artifacts should produce warnings rather than automatic closure rejection.
-Product/spec contradictions, unsafe actions, and missing authority remain real
-blockers. This section governs any stricter legacy wording later in this file.
-
 ## Когда запускать
 - Один раз в конце текущей wave, после того как scheduler/explicit owner сразу
   записал closure/failure/blocking decision, final task status и evidence links
   каждой task в authoritative indexed `.memory-bank/tasks/TASK-*.task.json` и
-  завершил выбранные `/verify` / `/red-verify` checks.
+  завершил required `/verify` / `/red-verify` gates.
 - Раньше конца wave только если продолжение текущей wave реально зависит от
   согласованного RTM/index/spec/contract/changelog state или sync явно запросил
   owner. Early sync не заменяет итоговый wave-boundary sync.
@@ -48,18 +39,32 @@ blockers. This section governs any stricter legacy wording later in this file.
 - Перед handoff to another agent when they need fresh durable Memory Bank state.
 - При ощущении drift между кодом и документацией.
 
-## Status ownership
+## Ownership boundary
 
-- Canonical closure, attempt, retry, recovery, and evidence-selection semantics
-  live only in [.memory-bank/workflows/tier-policy.md](tier-policy.md).
-- `/mb-sync` reconciles already-written task state. It does not decide closure,
-  failure, blocking, retry, or promotion and must not reconstruct a decision
-  from historical artifacts.
-- In scheduler mode `/autopilot` or `/autonomous` writes lifecycle decisions;
-  in manual mode an explicit standalone owner does so.
-- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate
-  in product feature-completion semantics.
-- `wave` is feature-local; this workflow runs at the `(feature, wave)` boundary.
+- Canonical lifecycle, tier gates, manual-versus-scheduler closure rules, and
+  status ownership live only in `.memory-bank/workflows/tier-policy.md`.
+- Before sync, the scheduler or explicit manual owner must already have written
+  its allowed closure/failure/blocking decision, final task status, and evidence
+  links to the authoritative indexed `.task.json` record.
+- `/mb-sync` reconciles that already-decided state into RTM, feature/epic
+  lifecycle, indexes, routers, specs, evidence links, and changelog. It never
+  decides closure/failure/blocking/promotion, unblocks dependents, or treats a
+  verdict existing only in transient context as durable state.
+- `/mb-sync` owns only reconciliation and sync-local consistency validation:
+  after its changes, it re-reads the links, indexes, RTM, lifecycle/spec state,
+  and other reconciled surfaces it actually changed. It does not run full
+  `node scripts/mb-lint.mjs` or `/mb-doctor`.
+- `.memory-bank/templates/protocols/*` is framework-owned installer state.
+  Runtime `/mb-sync` must not edit those files or add a project router/index for
+  that exact template leaf; filled `.protocols/<TASK_ID>/*` remains task-owned.
+- In scheduler flow, `/autonomous` or `/autopilot` is the sole owner of the
+  authoritative post-sync `mb-lint` followed by `/mb-doctor --strict`, before
+  promotion or success. In manual flow, the successful sync handoff names the
+  explicit top-level caller/owner; that owner runs the applicable post-sync
+  lint/doctor before its next handoff.
+- If the required owner decision is missing or conflicts with tier policy,
+  report a consistency gap and return to that owner. Do not infer a scheduler
+  or manual mode and do not add a persisted mode field.
 
 ## Чеклист
 
@@ -74,7 +79,7 @@ blockers. This section governs any stricter legacy wording later in this file.
 ### 2) SDD design state
 - [ ] `.memory-bank/spec-backbone.md` Global Backbone Status and Backbone Area
   Matrix are still truthful. Stale `needed_before_tasks` rows are resolved,
-  reported, or routed to `/spec-design` / `/prd-to-tasks`; do not guess design
+  reported, or routed to `/spec-design` / `/feature-to-tasks`; do not guess design
   decisions during sync.
 - [ ] `.memory-bank/spec-index.md` remains a pure registry/planned-spec index.
   Active rows use `Type | Path | Status | Scope | Change route`; it does not
@@ -82,7 +87,7 @@ blockers. This section governs any stricter legacy wording later in this file.
   feature usage, API rules, state machines, data schemas, or contract details.
 - [ ] Feature frontmatter `spec_design_status` and `spec_design_links` match the
   actual linked specs. Stale or contradictory feature design is marked/reported
-  as `blocked` and routed to `/prd-to-tasks FT-<NNN>` for feature-level
+  as `blocked` and routed to `/feature-to-tasks FT-<NNN>` for feature-level
   canonical spec repair
   or `/spec-design` for shared/global repair; no new `stale` lifecycle/status
   value is introduced.
@@ -123,23 +128,29 @@ blockers. This section governs any stricter legacy wording later in this file.
 - [ ] `.memory-bank/changelog.md` содержит запись о текущей wave/change.
 - [ ] Формат: `## [YYYY-MM-DD] Wave N / описание` → список изменений.
 
-### 7) Lint
-- [ ] `node scripts/mb-lint.mjs` — 0 errors.
-- [ ] Все `.memory-bank/**/*.md` имеют frontmatter.
-- [ ] Ссылки не битые.
+### 7) Sync-local consistency validation
+- [ ] Re-read every link, index, RTM row, lifecycle/spec state, router,
+  evidence link, and changelog entry changed by this sync; confirm each agrees
+  with its already-authoritative source.
+- [ ] Check only the files and relationships actually reconciled. Do not run
+  full `mb-lint` or `/mb-doctor` inside `/mb-sync`.
 
-### 8) Readiness gates
-- [ ] `/mb-doctor --strict` passes after sync for `/autonomous` and
-  `/autopilot` handoff.
-- [ ] `/mb-doctor --strict` is also run for T3, complex T2,
-  foundation/dependency/stale-doc/risky-link cases before execution
-  handoff.
-- [ ] Strict mode is not required for a bare generated skeleton or simple manual
-  T0/T1 local closure.
+### 8) Caller-owned post-sync gates
+- [ ] In scheduler flow, `/autonomous` or `/autopilot` runs authoritative
+  `node scripts/mb-lint.mjs` and then `/mb-doctor --strict` after sync and
+  before promotion or success; `/mb-sync` does not duplicate either gate.
+- [ ] In manual flow, the sync handoff names the explicit top-level
+  caller/owner that runs applicable post-sync lint/doctor before its next
+  handoff. Doctor remains conditional for T3, complex T2,
+  foundation/dependency/stale-doc/risky-link boundaries.
+- [ ] A bare generated skeleton or simple manual T0/T1 local closure gains no
+  new full sync, lint, or strict-doctor requirement.
 
 ### 9) Index
 - [ ] `.memory-bank/index.md` содержит аннотированные ссылки на все новые/изменённые документы.
-- [ ] Router-индексы в папках с >3 документами присутствуют.
+- [ ] Router-индексы в project documentation folders с >3 документами
+      присутствуют; exact framework-owned `.memory-bank/templates/protocols/`
+      leaf исключён.
 
 ## Формат changelog
 
@@ -158,7 +169,16 @@ status: active
 ```
 
 ## Если что-то не проходит
-1. Исправь проблему немедленно (пока контекст свеж).
-2. Если исправление нетривиально — создай schema-backed task record и обнови `.memory-bank/tasks/index.json`.
-3. В interactive режиме можно отметить partial sync в `changelog.md`.
-4. В autonomous режиме partial sync недопустим: остановись с `HALT_QUALITY_GATES`.
+1. Исправь немедленно только механическую consistency/link/router проблему,
+   которая не требует нового owner decision.
+2. Если исправление меняет product/design/contract/task/lifecycle meaning,
+   остановись и верни gap соответствующему owner; `/mb-sync` не выбирает
+   трактовку и не создаёт task от своего имени.
+3. Если explicit owner уже решил создать follow-up, он добавляет normal
+   schema-backed task record через существующий planning/ownership route, после
+   чего sync reconciles index/RTM/changelog.
+4. В interactive режиме можно отметить partial sync в `changelog.md` только с
+   явным owner decision и открытым blocker.
+5. В autonomous режиме partial sync недопустим: остановись с
+   `HALT_QUALITY_GATES` либо с записанным clarification/blocking halt для
+   unresolved operator decision.

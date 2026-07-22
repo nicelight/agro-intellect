@@ -24,6 +24,7 @@ const TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$/;
 const FOUNDATION_TASK_ID_FORMAT = 'TASK-NNN-TN-FT-000-WN';
 const FOUNDATION_TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-000-W[0-9]+$/;
 const FOUNDATION_GATE_PENDING = 'pending_foundation_to_tasks';
+const UNRESOLVED_FOUNDATION_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked']);
 const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
@@ -46,12 +47,9 @@ const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|con
 const ARCHITECTURE_CONTRACT_ADR_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`]+/i;
 const EVIDENCE_WORD_RE = /\b(evidence|result|fail|failed|error|output|log|artifact|report)\b/i;
 const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
-const EXACT_FAIL_EVIDENCE_RE = /^\s*VERDICT: FAIL\s*$/im;
 const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
 const RED_VERIFY_PASS_RE = /^\s*SEMANTIC_VERDICT: semantic-pass\s*$/im;
 const T3_HUMAN_CHECKPOINT_MARKER = 'HUMAN_CHECKPOINT: done';
-const NUMBERED_TASK_REPORT_RE = /-S-(RED-VERIFY|VERIFY|IMPL)-final-report-(?:code|docs)-([0-9]{2})\.md$/i;
-const ATTEMPT_MARKER_RE = /^\s*ATTEMPT:\s*([0-9]{2})\s*$/im;
 const PATH_MARKER_RE =
   /(?:^|[\s"`'])(?:\.{1,2}\/|\/|[A-Za-z]:\\)[^\s"`']+|\b[A-Za-z0-9_.-]+\/[A-Za-z0-9_.\/-]+\b|\b[\w.-]+\.(?:md|txt|log|json|xml|html|htm|png|jpg|jpeg|webm|mp4)\b/i;
 
@@ -235,7 +233,7 @@ function checkBackboneReadiness() {
         path: SPEC_BACKBONE_REL,
         details: { status: 'missing', migration_hint: migrationHint },
         suggested_fix:
-          `Run /spec-init to create ${SPEC_BACKBONE_REL}, then /spec-design after /prd. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.`,
+          `Run /spec-init to create ${SPEC_BACKBONE_REL}, then /spec-design after /prd-to-features. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /feature-to-tasks.`,
       }
     );
     return;
@@ -275,12 +273,12 @@ function checkBackboneReadiness() {
     addFinding(
       severity,
       'SPEC_BACKBONE_NOT_READY',
-      `${SPEC_BACKBONE_REL}: pre-PRD framing is prepared for /prd; Global Backbone Status is intentionally pending until /spec-design.`,
+      `${SPEC_BACKBONE_REL}: pre-PRD framing is prepared for /prd-to-features; Global Backbone Status is intentionally pending until /spec-design.`,
       {
         path: SPEC_BACKBONE_REL,
         details,
         suggested_fix:
-          'Continue with /prd, then run /spec-design before /prd-to-tasks, /autopilot, or autonomous scheduler mode.',
+          'Continue with /prd-to-features, then run /spec-design before /feature-to-tasks, /autopilot, or autonomous scheduler mode.',
       }
     );
     return;
@@ -294,7 +292,7 @@ function checkBackboneReadiness() {
       path: SPEC_BACKBONE_REL,
       details,
       suggested_fix:
-        'Run /spec-design after /prd. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.',
+        'Run /spec-design after /prd-to-features. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /feature-to-tasks.',
     }
   );
 }
@@ -479,7 +477,7 @@ function checkTaskReadiness() {
   if (!indexRead.ok) {
     addFinding('error', 'TASK_INDEX_INVALID', indexRead.message, {
       path: TASK_INDEX_REL,
-      suggested_fix: 'Create a valid JSON task index or run mb-init/prd-to-tasks.',
+      suggested_fix: 'Create a valid JSON task index or run mb-init/feature-to-tasks.',
     });
     return;
   }
@@ -498,7 +496,7 @@ function checkTaskReadiness() {
     addFinding(severity, 'TASK_INDEX_EMPTY', 'No task records yet. This is valid for a fresh skeleton.', {
       path: TASK_INDEX_REL,
       suggested_fix: options.strict
-        ? 'Create task records via /prd-to-tasks FT-XXX after /write-prd and /prd.'
+        ? 'Create task records via /feature-to-tasks FT-XXX after /write-prd and /prd-to-features.'
         : undefined,
     });
     addQueueSummary([], []);
@@ -514,7 +512,6 @@ function checkTaskReadiness() {
   for (const record of orderedRecords) {
     checkFoundationWave(record);
     checkReadyDependencies(record, records);
-    checkAttemptEvidenceConsistency(record);
     checkInProgressProtocol(record);
     checkFullProtocolTask(record);
     checkCompactDoneProtocol(record);
@@ -633,9 +630,17 @@ function checkFoundationWave(record) {
 
 function checkFoundationReadiness(orderedRecords, records) {
   const foundationAbs = path.join(ROOT, FOUNDATION_REL);
-  if (!isFile(foundationAbs)) return;
-
   const severity = options.strict ? 'error' : 'warning';
+
+  if (!isFile(foundationAbs)) {
+    addFinding(severity, 'FOUNDATION_ANCHORS_INVALID', `${FOUNDATION_REL}: a non-empty indexed task queue requires an explicit Foundation decision.`, {
+      path: FOUNDATION_REL,
+      details: { issue: 'foundation_file_missing' },
+      suggested_fix: 'Run /spec-design to record the accepted Foundation decision and current Gate Anchors before unattended execution.',
+    });
+    return;
+  }
+
   const text = fs.readFileSync(foundationAbs, 'utf8').replace(/\r\n/g, '\n');
   const anchors = parseFoundationAnchors(text);
   const issues = validateFoundationAnchors(anchors);
@@ -650,8 +655,36 @@ function checkFoundationReadiness(orderedRecords, records) {
     return;
   }
 
-  if (anchors.required !== true) return;
-  if (anchors.gateTask === FOUNDATION_GATE_PENDING) return;
+  const foundationRecords = orderedRecords.filter((record) => record.task.feature === 'FT-000');
+  const productRecords = orderedRecords.filter((record) => record.task.feature !== 'FT-000');
+
+  if (anchors.required === false) {
+    if (!foundationRecords.length) return;
+
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: Foundation is not required, but indexed FT-000 records still exist.`, {
+      path: FOUNDATION_REL,
+      details: {
+        gate_task: anchors.gateTask,
+        foundation_tasks: foundationRecords.map((record) => ({
+          id: record.id,
+          path: record.rel,
+          status: record.task.status,
+        })),
+      },
+      suggested_fix:
+        'Reconcile the accepted Foundation decision through /spec-design; use /foundation-to-tasks --verify-existing only when existing-baseline evidence is the authoritative route.',
+    });
+    return;
+  }
+
+  if (anchors.gateTask === FOUNDATION_GATE_PENDING) {
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: required Foundation still has a pending final gate.`, {
+      path: FOUNDATION_REL,
+      details: { gate_task: anchors.gateTask },
+      suggested_fix: 'Run /foundation-to-tasks to create/reconcile the FT-000 queue and replace the pending anchor with its concrete final gate task ID.',
+    });
+    return;
+  }
 
   const gate = records.get(anchors.gateTask);
   if (!gate || gate.task.feature !== 'FT-000') {
@@ -669,15 +702,47 @@ function checkFoundationReadiness(orderedRecords, records) {
     return;
   }
 
-  const productRecords = orderedRecords.filter((record) => record.task.feature !== 'FT-000');
+  if (gate.task.status === 'failed') {
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${gate.rel}: the named final foundation gate has failed.`, {
+      path: gate.rel,
+      task_id: anchors.gateTask,
+      details: { status: gate.task.status },
+      suggested_fix:
+        'Reconcile a valid replacement final gate through /foundation-to-tasks, then resume the /autonomous-owned FT-000 phase.',
+    });
+    return;
+  }
 
   if (productRecords.length && gate.task.status !== 'done') {
     addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${gate.rel}: foundation gate task is not done.`, {
       path: gate.rel,
       task_id: anchors.gateTask,
       details: { status: gate.task.status },
-      suggested_fix: 'Finish /execute, /verify, and /mb-sync for the foundation gate task before product feature execution.',
+      suggested_fix: 'Finish /exe, /verify, and /mb-sync for the foundation gate task before product feature execution.',
     });
+  }
+
+  if (productRecords.length && gate.task.status === 'done') {
+    const unresolvedFoundationRecords = foundationRecords
+      .filter((record) => record.id !== anchors.gateTask)
+      .filter((record) => UNRESOLVED_FOUNDATION_STATUSES.has(record.task.status));
+
+    if (unresolvedFoundationRecords.length) {
+      addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: product tasks exist while FT-000 work remains unresolved.`, {
+        path: FOUNDATION_REL,
+        task_id: anchors.gateTask,
+        details: {
+          gate_task: anchors.gateTask,
+          unresolved_foundation_tasks: unresolvedFoundationRecords.map((record) => ({
+            id: record.id,
+            path: record.rel,
+            status: record.task.status,
+          })),
+        },
+        suggested_fix:
+          'Return to the /autonomous-owned Foundation phase and resolve planned, ready, in_progress, or blocked FT-000 work before /autopilot.',
+      });
+    }
   }
 
   const missing = productRecords
@@ -777,21 +842,15 @@ function checkReadyDependencies(record, records) {
 function checkInProgressProtocol(record) {
   const { id, rel, task } = record;
   if (task.status !== 'in_progress') return;
-
-  addFinding('warning', 'TASK_IN_PROGRESS_RESUME_REQUIRED', `${rel}: in_progress task must be resumed before promotion or ready-task selection.`, {
-    path: rel,
-    task_id: id,
-    details: currentAttemptSummary(id),
-    suggested_fix: 'Resume the next missing stage from the highest numbered attempt; halt if the artifacts do not identify one safe next stage.',
-  });
-
   if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
-  if (isDirectory(path.join(ROOT, '.protocols', id))) return;
+  const runRel = normalizeRel(path.join('.protocols', id, 'run.md'));
+  if (isFile(path.join(ROOT, runRel))) return;
 
-  addFinding('warning', 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', `${rel}: in_progress task has no .protocols/${id}/ directory.`, {
+  const severity = options.strict ? 'error' : 'warning';
+  addFinding(severity, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', `${rel}: in_progress task has no compact ${runRel}.`, {
     path: rel,
     task_id: id,
-    suggested_fix: `Create .protocols/${id}/ with the tier-appropriate protocol files or move the task out of in_progress.`,
+    suggested_fix: `Create ${runRel} from the framework template or move the task out of in_progress.`,
   });
 }
 
@@ -800,9 +859,7 @@ function checkFullProtocolTask(record) {
   if (!FULL_PROTOCOL_TIERS.has(task.tier)) return;
   if (!FULL_PROTOCOL_STATUSES.has(task.status)) return;
 
-  // T2/T3 execution evidence is advisory. Strict mode reports missing
-  // protocol/verify/red-verify/checkpoint artifacts without blocking closure.
-  const severity = 'warning';
+  const severity = options.strict ? 'error' : 'warning';
   const missing = missingFullProtocolFiles(id);
   if (missing.length) {
     addFinding(severity, 'TASK_FULL_PROTOCOL_MISSING', `${rel}: ${task.tier} ${task.status} task is missing full protocol files.`, {
@@ -825,12 +882,7 @@ function checkFullProtocolTask(record) {
 
   if (task.status === 'in_progress') return;
 
-  const numberedStatusEvidence = hasCurrentAttemptStatusEvidence(id, task.status);
-  const hasStatusEvidence = numberedStatusEvidence === undefined
-    ? hasTaskStatusEvidence(task, task.status) || hasProtocolOrArtifactStatusEvidence(id, task.status)
-    : numberedStatusEvidence;
-
-  if (!hasStatusEvidence) {
+  if (!hasTaskStatusEvidence(task, task.status) && !hasProtocolOrArtifactStatusEvidence(id, task.status)) {
     const code = task.status === 'done' ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
     const expected = task.status === 'done' ? 'PASS' : 'FAIL/error';
     addFinding(severity, code, `${rel}: ${task.tier} ${task.status} task has no ${expected} verification evidence/verdict.`, {
@@ -848,16 +900,16 @@ function checkFullProtocolTask(record) {
         task_id: id,
         suggested_fix: `Record red-verify evidence in .protocols/${id}/red-verification.md or .tasks/${id}/.`,
       });
-    } else if (!hasSemanticPassRedVerificationEvidence(redFiles)) {
+    } else if (!hasClosureEligibleRedVerificationEvidence(redFiles)) {
       addFinding(
         severity,
         'TASK_RED_VERIFY_VERDICT_MISSING',
-        `${rel}: ${task.tier} done task has no recommended semantic-pass red-verify verdict.`,
+        `${rel}: ${task.tier} done task has no closure-eligible red-verify semantic verdict.`,
         {
           path: rel,
           task_id: id,
           details: { files: redFiles.map((file) => normalizeRel(path.relative(ROOT, file))) },
-          suggested_fix: `Record SEMANTIC_VERDICT: semantic-pass in the current numbered red-verify report, or use legacy protocol/artifact evidence only when no declared attempt exists.`,
+          suggested_fix: `Record SEMANTIC_VERDICT: semantic-pass in .protocols/${id}/red-verification.md or a red-verify artifact.`,
         }
       );
     }
@@ -867,7 +919,7 @@ function checkFullProtocolTask(record) {
       addFinding(severity, 'TASK_T3_CHECKPOINT_MISSING', `${rel}: T3 done task has no exact ${T3_HUMAN_CHECKPOINT_MARKER} marker.`, {
         path: rel,
         task_id: id,
-        suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} in a current numbered report, or use legacy protocol/artifact evidence only when no declared attempt exists.`,
+        suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
       });
     }
   }
@@ -877,23 +929,11 @@ function checkCompactDoneProtocol(record) {
   const { id, rel, task } = record;
   if (task.status !== 'done' || !COMPACT_TIERS.has(task.tier)) return;
 
-  const numberedStatusEvidence = hasCurrentAttemptStatusEvidence(id, 'done');
-  if (numberedStatusEvidence !== undefined) {
-    if (!numberedStatusEvidence) {
-      addFinding('warning', 'TASK_DONE_EVIDENCE_MISSING', `${rel}: current numbered attempt has no PASS verification verdict.`, {
-        path: rel,
-        task_id: id,
-        details: currentAttemptSummary(id),
-        suggested_fix: 'Use only current-attempt evidence when the explicit owner records the lifecycle decision.',
-      });
-    }
-    return;
-  }
-
   const runRel = normalizeRel(path.join('.protocols', id, 'run.md'));
   const runAbs = path.join(ROOT, runRel);
   if (!isFile(runAbs)) {
-    addFinding('warning', 'TASK_COMPACT_RUN_MISSING', `${rel}: ${task.tier} done task is missing compact ${runRel}.`, {
+    const severity = options.strict || task.tier === 'T1' ? 'error' : 'warning';
+    addFinding(severity, 'TASK_COMPACT_RUN_MISSING', `${rel}: ${task.tier} done task is missing compact ${runRel}.`, {
       path: rel,
       task_id: id,
       details: { expected: runRel },
@@ -906,7 +946,7 @@ function checkCompactDoneProtocol(record) {
   try {
     text = fs.readFileSync(runAbs, 'utf8').replace(/\r\n/g, '\n');
   } catch (err) {
-    addFinding('warning', 'TASK_COMPACT_RUN_UNREADABLE', `${runRel} could not be read: ${err.message}`, {
+    addFinding('error', 'TASK_COMPACT_RUN_UNREADABLE', `${runRel} could not be read: ${err.message}`, {
       path: runRel,
       task_id: id,
     });
@@ -916,7 +956,7 @@ function checkCompactDoneProtocol(record) {
   const hasCompactPassVerdict = hasPassingVerdict(text);
 
   if (options.strict && !hasCompactPassVerdict) {
-    addFinding('warning', 'TASK_COMPACT_VERDICT_MISSING', `${runRel}: done ${task.tier} task has no recommended VERDICT: PASS.`, {
+    addFinding('error', 'TASK_COMPACT_VERDICT_MISSING', `${runRel}: strict mode requires VERDICT: PASS for a done ${task.tier} task.`, {
       path: runRel,
       task_id: id,
       suggested_fix: 'Record a clear VERDICT: PASS after verification succeeds.',
@@ -924,7 +964,8 @@ function checkCompactDoneProtocol(record) {
   }
 
   if (!hasCompactPassVerdict && !hasEvidenceContent(text) && !hasTaskEvidence(task)) {
-    addFinding('warning', 'TASK_COMPACT_EVIDENCE_MISSING', `${runRel}: compact protocol has no concrete evidence marker.`, {
+    const severity = options.strict ? 'error' : 'warning';
+    addFinding(severity, 'TASK_COMPACT_EVIDENCE_MISSING', `${runRel}: compact protocol has no concrete evidence marker.`, {
       path: runRel,
       task_id: id,
       suggested_fix: 'Record command output, artifact/log path, or a short result summary in the compact run.',
@@ -938,25 +979,12 @@ function checkTerminalEvidence(record) {
   if (task.status === 'done' && COMPACT_TIERS.has(task.tier)) return;
   if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
 
-  const numberedStatusEvidence = hasCurrentAttemptStatusEvidence(id, task.status);
-  if (numberedStatusEvidence !== undefined) {
-    if (!numberedStatusEvidence) {
-      const code = task.status === 'done' ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
-      addFinding('warning', code, `${rel}: current numbered attempt does not support status ${task.status}.`, {
-        path: rel,
-        task_id: id,
-        details: currentAttemptSummary(id),
-        suggested_fix: 'Use only current-attempt evidence when the explicit owner records the lifecycle decision.',
-      });
-    }
-    return;
-  }
-
   if (hasTaskEvidence(task) || hasProtocolOrArtifactEvidence(id, task.status)) return;
 
   const code = task.status === 'done' ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
   const expected = task.status === 'done' ? 'pass/result/verdict evidence' : 'failure/error/verdict evidence';
-  addFinding('warning', code, `${rel}: ${task.status} task has no minimal ${expected}.`, {
+  const severity = options.strict ? 'error' : 'warning';
+  addFinding(severity, code, `${rel}: ${task.status} task has no minimal ${expected}.`, {
     path: rel,
     task_id: id,
     suggested_fix: 'Record verification evidence in task.verify, .protocols/<TASK_ID>/run.md, or task artifacts.',
@@ -1050,7 +1078,7 @@ function checkSddSpecLinkage(record) {
       feature_spec_design_links: featureSpec?.links.existing ?? [],
       missing_feature_spec_design_links: featureSpec?.links.missing ?? [],
     },
-    suggested_fix: `Rerun /prd-to-tasks ${featureId ?? 'FT-<NNN>'} to repair/reconcile feature specs and task cards, or run /spec-auto for autonomous design; then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
+    suggested_fix: `Rerun /feature-to-tasks ${featureId ?? 'FT-<NNN>'} to repair/reconcile feature specs and task cards, or run /spec-auto for autonomous design; then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
   });
 }
 
@@ -1084,11 +1112,12 @@ function checkSingleCardHandoffCompleteness(record) {
   const runtimeContext = isPlainObject(task.runtime_context) ? task.runtime_context : null;
   const hasTouchedFiles =
     Array.isArray(task.touched_files) && task.touched_files.some((value) => nonEmptyString(value));
-  const hasAllowedWriteScope =
-    Array.isArray(runtimeContext?.allowed_write_scope)
-    && runtimeContext.allowed_write_scope.some((value) => nonEmptyString(value));
-  if (!hasTouchedFiles && !hasAllowedWriteScope) {
-    issues.push('touched_files or runtime_context.allowed_write_scope must ground execution scope');
+  const writeBoundary = runtimeContext?.write_boundary ?? runtimeContext?.allowed_write_scope;
+  const hasWriteBoundary =
+    Array.isArray(writeBoundary)
+    && writeBoundary.some((value) => nonEmptyString(value));
+  if (!hasTouchedFiles && !hasWriteBoundary) {
+    issues.push('touched_files or runtime_context.write_boundary must describe the expected change surface');
   }
 
   const hasGateCommand =
@@ -1109,7 +1138,7 @@ function checkSingleCardHandoffCompleteness(record) {
     task_id: id,
     details: { issues },
     suggested_fix:
-      'Repair the indexed task card through /prd-to-tasks or /foundation-to-tasks; keep optional evidence-driven fields empty when no grounded value exists.',
+      'Repair the indexed task card through /feature-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and write_boundary only for a deliberate hard boundary.',
   });
 }
 
@@ -1143,7 +1172,7 @@ function checkFeatureClarificationReadiness() {
       addFinding(severity, 'FEATURE_CLARIFICATION_PENDING', `${feature.rel}: feature clarification is ${feature.status}.`, {
         path: feature.rel,
         details: { feature: feature.id, status: feature.status },
-        suggested_fix: `Run /clarify-feature ${feature.id} until critical ambiguity is resolved before /prd-to-tasks.`,
+        suggested_fix: `Run /feature-doctor ${feature.id} until critical ambiguity is resolved before /feature-to-tasks.`,
       });
     }
   }
@@ -1205,7 +1234,7 @@ function checkTasksFromUnclarifiedFeatures(records) {
           feature_paths: group.featurePaths,
           tasks: group.tasks,
         },
-        suggested_fix: `Complete /clarify-feature ${group.featureId} before generating or running task records for that feature.`,
+        suggested_fix: `Complete /feature-doctor ${group.featureId} before generating or running task records for that feature.`,
       }
     );
   }
@@ -1218,8 +1247,9 @@ function checkFailedTaskClosure(records) {
   for (const failed of failedRecords) {
     if (hasBugDocMentioningTask(failed.id) || hasFollowUpReferencingTask(records, failed.id)) continue;
 
+    const severity = options.strict ? 'error' : 'warning';
     addFinding(
-      'warning',
+      severity,
       'FAILED_BUG_OR_FOLLOWUP_MISSING',
       `${failed.rel}: failed task has no bug doc mentioning ${failed.id} and no follow-up task depending on or referencing it.`,
       {
@@ -1247,8 +1277,7 @@ function checkT2FeatureSemanticCompletion(records) {
     if (record.task.tier === 'T2') group.hasT2 = true;
   }
 
-  // T2 feature semantic review is recommended, not a hard readiness gate.
-  const severity = 'warning';
+  const severity = options.strict ? 'error' : 'warning';
   for (const group of groups.values()) {
     if (!group.hasT2) continue;
     if (!group.records.every((record) => record.task.status === 'done')) continue;
@@ -1435,11 +1464,6 @@ function hasCompactOnlyProtocol(id) {
 }
 
 function redVerificationFiles(id) {
-  const currentAttempt = currentNumberedAttemptReports(id);
-  if (currentAttempt.length) {
-    return currentAttempt.filter((report) => report.stage === 'RED-VERIFY').map((report) => report.file);
-  }
-
   const protocolFile = path.join(ROOT, '.protocols', id, 'red-verification.md');
   const files = isFile(protocolFile) ? [protocolFile] : [];
   return [
@@ -1448,7 +1472,7 @@ function redVerificationFiles(id) {
   ];
 }
 
-function hasSemanticPassRedVerificationEvidence(files) {
+function hasClosureEligibleRedVerificationEvidence(files) {
   return files.some((file) => {
     try {
       return RED_VERIFY_PASS_RE.test(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'));
@@ -1459,19 +1483,6 @@ function hasSemanticPassRedVerificationEvidence(files) {
 }
 
 function protocolAndArtifactText(id) {
-  const currentAttempt = currentNumberedAttemptReports(id);
-  if (currentAttempt.length) {
-    return currentAttempt
-      .map((report) => {
-        try {
-          return fs.readFileSync(report.file, 'utf8');
-        } catch {
-          return '';
-        }
-      })
-      .join('\n');
-  }
-
   const files = [
     ...listFiles(path.join(ROOT, '.protocols', id)).filter((file) => file.endsWith('.md')),
     ...listFiles(path.join(ROOT, '.tasks', id)).filter((file) => /\.(md|txt|log|json)$/i.test(file)),
@@ -1494,115 +1505,6 @@ function hasExactMarker(text, marker) {
 
 function isRedVerificationFile(file) {
   return /red/i.test(path.basename(file));
-}
-
-function numberedTaskReports(taskId) {
-  return taskReportEntries(taskId)
-    .filter((report) => report.declaredAttempt === report.suffixAttempt)
-    .map((report) => ({
-      file: report.file,
-      stage: report.stage,
-      attempt: report.suffixAttempt,
-    }));
-}
-
-function taskReportEntries(taskId) {
-  return listFiles(path.join(ROOT, '.tasks', taskId))
-    .map((file) => {
-      const base = path.basename(file);
-      if (!base.startsWith(`${taskId}-S-`)) return null;
-      const match = NUMBERED_TASK_REPORT_RE.exec(base);
-      if (!match) return null;
-      let declaredAttempt;
-      try {
-        const marker = ATTEMPT_MARKER_RE.exec(fs.readFileSync(file, 'utf8'));
-        declaredAttempt = marker ? Number(marker[1]) : undefined;
-      } catch {
-        return null;
-      }
-      const suffixAttempt = Number(match[2]);
-      return {
-        file,
-        stage: match[1].toUpperCase(),
-        suffixAttempt,
-        declaredAttempt,
-      };
-    })
-    .filter((report) => report && report.declaredAttempt !== undefined);
-}
-
-function checkAttemptEvidenceConsistency(record) {
-  const reports = taskReportEntries(record.id);
-  if (!reports.length) return;
-
-  const mismatched = reports.filter((report) => report.declaredAttempt !== report.suffixAttempt);
-  const valid = reports.filter((report) => report.declaredAttempt === report.suffixAttempt);
-  const latestAttempt = valid.length ? Math.max(...valid.map((report) => report.suffixAttempt)) : undefined;
-  const currentVerify = latestAttempt === undefined
-    ? []
-    : valid.filter((report) => report.suffixAttempt === latestAttempt && report.stage === 'VERIFY');
-  const verdicts = new Set();
-
-  for (const report of currentVerify) {
-    try {
-      const text = fs.readFileSync(report.file, 'utf8');
-      if (PASS_EVIDENCE_RE.test(text)) verdicts.add('PASS');
-      if (EXACT_FAIL_EVIDENCE_RE.test(text)) verdicts.add('FAIL');
-    } catch {
-      // Unreadable optional evidence is reported by the owning stage/check.
-    }
-  }
-
-  if (!mismatched.length && verdicts.size < 2) return;
-
-  addFinding(options.strict ? 'error' : 'warning', 'TASK_ATTEMPT_EVIDENCE_INVALID', `${record.rel}: numbered attempt evidence is mismatched or conflicting.`, {
-    path: record.rel,
-    task_id: record.id,
-    details: {
-      mismatched: mismatched.map((report) => ({
-        file: normalizeRel(path.relative(ROOT, report.file)),
-        suffix_attempt: report.suffixAttempt,
-        declared_attempt: report.declaredAttempt,
-      })),
-      conflicting_verify_attempt: verdicts.size > 1 ? latestAttempt : null,
-    },
-    suggested_fix: 'Correct the report suffix/ATTEMPT marker or keep one unambiguous current VERIFY verdict before scheduler progression.',
-  });
-}
-
-function currentNumberedAttemptReports(taskId) {
-  const reports = numberedTaskReports(taskId);
-  if (!reports.length) return [];
-  const latestAttempt = Math.max(...reports.map((report) => report.attempt));
-  return reports.filter((report) => report.attempt === latestAttempt);
-}
-
-function currentAttemptSummary(taskId) {
-  const reports = currentNumberedAttemptReports(taskId);
-  if (!reports.length) return { attempt: null, stages: [], evidence_mode: 'legacy_protocol_or_task_record' };
-  return {
-    attempt: reports[0].attempt,
-    stages: [...new Set(reports.map((report) => report.stage))].sort(),
-    evidence_mode: 'numbered_reports',
-  };
-}
-
-function hasCurrentAttemptStatusEvidence(taskId, status) {
-  const reports = currentNumberedAttemptReports(taskId);
-  if (!reports.length) return undefined;
-
-  const marker = status === 'done' ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
-  const eligible = status === 'done'
-    ? reports.filter((report) => report.stage === 'VERIFY')
-    : reports.filter((report) => report.stage !== 'RED-VERIFY');
-
-  return eligible.some((report) => {
-    try {
-      return marker.test(fs.readFileSync(report.file, 'utf8'));
-    } catch {
-      return false;
-    }
-  });
 }
 
 function hasBugDocMentioningTask(taskId) {
