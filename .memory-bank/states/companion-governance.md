@@ -2,7 +2,7 @@
 description: Global Companion governance lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-07-18
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -23,7 +23,7 @@ Exact DB fields and transaction rules live in
 [.memory-bank/domains/companion-governance.md](../domains/companion-governance.md).
 The protected HTTP boundary lives in
 [.memory-bank/contracts/companion-governance-http.md](../contracts/companion-governance-http.md),
-and the explicit model-backed invocation lives in
+and the explicit provider-neutral invocation lives in
 [.memory-bank/contracts/companion-runtime.md](../contracts/companion-runtime.md).
 
 ## Scope Boundaries
@@ -39,7 +39,7 @@ and the explicit model-backed invocation lives in
   - [.memory-bank/contracts/companion-governance-http.md](../contracts/companion-governance-http.md):
     defines protected commands, reads, and stable errors.
   - [.memory-bank/contracts/companion-runtime.md](../contracts/companion-runtime.md):
-    defines explicit real-model invocation and proposal handoff.
+    defines explicit provider-neutral invocation and proposal handoff.
   - [.memory-bank/contracts/agent-chat-bus.md](../contracts/agent-chat-bus.md):
     defines approved governance summary consumability.
   - [.memory-bank/contracts/ui-feed.md](../contracts/ui-feed.md): defines

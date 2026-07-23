@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD core domain framing for MVP v2 decomposition.
 status: active
-last_updated: 2026-07-17
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/glossary.md
@@ -47,7 +47,10 @@ source_of_truth:
 - Every Farm/Plant read, mutation, context-builder path, task, approval, and audit record must be actor-scoped through ActorContext.
 - Backend authorization enforces Farm/Plant access; UI visibility controls are presentation only.
 - MVP permission overrides are limited to `plant_approve_actions`; other permissions come from role presets and PlantAccessGrant.
-- Product-agent runtime/demo outputs must use real LLM/model-backed flows over actual scoped Plant data.
+- Current code-phase product-agent flows use provider-neutral adapters over
+  actual scoped Plant data. Acceptance uses deterministic test-only fake/spy
+  executors; production fails closed without an explicitly selected endpoint
+  and has no fake, canned, hardcoded, or fallback output.
 - UI Feed, raw chat, raw reasoning, spoiler notes, and admin UI text must not become agent working context. Authorized typed governance content may be supplied through an owning agent-specific provider contract without gaining fact or authority semantics.
 - Physical-action wording requires fresh data, Safety Gate pass, authorized human approval, and task/action tracking.
 - Governance DecisionRecord is not Safety Gate approval and cannot mutate Plant state or unlock physical action.

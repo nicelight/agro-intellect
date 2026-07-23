@@ -9,7 +9,7 @@
   },
   "when": {
     "command": "the Engineer explicitly invokes Companion for that issue",
-    "result": "the real-model route returns a valid newly classified proposal"
+    "result": "the provider-neutral runtime returns a valid newly classified proposal through explicit Companion and Safety test fake/spy seams"
   },
   "then": {
     "proposal": "the previous proposal becomes superseded and the new proposal becomes the only pending proposal",

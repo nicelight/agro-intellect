@@ -82,7 +82,8 @@
     "Proof that TASK-043 alone registers the complete Companion router in production main.py after TASK-040, while all read/decision/run routes and OpenAPI are reachable exactly once.",
     "Pending MessageEnvelope, matching classification, TASK-041 current proposal/attention persistence, early duplicate with null runtime outcome and zero provider/envelope reconstruction, supersede, and no-governance-on-failure evidence.",
     "Pre/post-I/O, issue-version, grant/revoke, archive, classifier, and proposal-write race evidence plus no fallback/fake/canned production output and safe audit/redaction.",
-    "Deterministic Companion plus Safety fake/spy exact-call evidence over PostgreSQL context, including timeout/provider-error/invalid-output, unbound production, one persisted matching classification/current proposal, and zero Safety decision/DecisionRecord/Task/action effect."
+    "Deterministic Companion plus Safety fake/spy exact-call evidence over PostgreSQL context, including timeout/provider-error/invalid-output, unbound production, one persisted matching classification/current proposal, and zero Safety decision/DecisionRecord/Task/action effect.",
+    "Current-attempt T3 protocol evidence with fresh functional verification, /verify VERDICT: PASS, per-task /red-verify SEMANTIC_VERDICT: semantic-pass, and the exact HUMAN_CHECKPOINT: done marker before explicit-owner or scheduler closure."
   ],
   "purpose": "Make canonical companion operational through one production-registered protected router and explicit provider-neutral command whose only successful product handoff is a strictly classified current proposal persisted by TASK-041 authority, after TASK-042 and TASK-040 have completed the governance, shared Task package, executor-composition, and Safety-classifier boundaries.",
   "success_outcome": "The complete Companion router is registered exactly once in the production app after TASK-040; one authorized explicit POST deterministically selects the canonical check-in and exactly one manual-measurement row, invokes exactly one explicit Companion spy and one explicit safety_gate spy, maps their strict matching results through pending MessageEnvelope and persisted classification, and persists exactly one current proposal with active attention through TASK-041. Deterministic evidence covers strict schemas, authorization plus post-I/O recheck, exact outbound allowlists, timeout/error/invalid output, redaction, unbound production, and no fallback/fake production without provider/model/base URL/credential/egress/network/live-smoke requirements; duplicate/non-trigger/failure paths create no extra effect.",
@@ -95,25 +96,6 @@
     "Do not claim FT-013 acceptance from transport-only, schema-only, fake-production, fallback, or blocked/failed/model-silent output; require the complete deterministic authority and two-spy evidence matrix."
   ],
   "runtime_context": {
-    "write_boundary": [
-      "backend/app/companion_governance/",
-      "backend/app/agent_runtime/providers.py",
-      "backend/app/agent_runtime/__init__.py",
-      "backend/app/api/companion.py",
-      "backend/app/main.py",
-      "tests/backend/companion_governance/test_runtime.py",
-      "tests/backend/api/test_ft013_companion_run_route.py",
-      "tests/backend/api/test_ft013_companion_app_registration.py",
-      "tests/backend/agent_runtime/test_ft007_roster_providers.py",
-      ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
-      ".memory-bank/contracts/companion-runtime.md",
-      ".memory-bank/contracts/agent-model-provider-profiles.md",
-      ".memory-bank/runbooks/agent-runtime-providers.md",
-      ".memory-bank/testing/companion-governance.md",
-      ".memory-bank/tasks/TASK-043-T3-FT-013-W3.task.json",
-      ".protocols/TASK-043-T3-FT-013-W3/",
-      ".tasks/TASK-043-T3-FT-013-W3/"
-    ],
     "forbidden_scope": [
       "TASK-041 tables/focus/attention/proposal lifecycle or TASK-042 DecisionRecord/effect/close semantics except a narrowly proven compatibility repair.",
       "Generic ProviderRequestV1, MessageEnvelope, SafetyClassificationResultV1, or canonical roster identity widening.",

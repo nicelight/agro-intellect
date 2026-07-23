@@ -4,6 +4,38 @@ status: active
 ---
 # Changelog
 
+## 2026-07-23 — FT-013 workflow-protocol task reconciliation
+
+- Reconciled `TASK-041`, `TASK-042`, and `TASK-043` against the current task
+  schema, Planning Revision 1, and strict T3 tier route while preserving their
+  identities, waves, dependencies, `planned` statuses, and product outcomes.
+- Removed copied hard `write_boundary` allowlists; retained advisory
+  `touched_files` plus hard `forbidden_scope` and `stop_conditions`.
+- Added current-attempt full-protocol, fresh `/verify PASS`, per-task
+  `/red-verify semantic-pass`, and exact `HUMAN_CHECKPOINT: done` closure
+  obligations to every card.
+- Aligned the FT-013 feature/plan/behavior handoff and direct canonical scope
+  descriptions with provider-neutral deterministic acceptance and fail-closed
+  unbound production.
+- Recorded `ft012_runtime_dispositions` from completed TASK-040 as the concrete
+  brownfield migration head that TASK-041 must extend and whose exact-head
+  regressions it must advance.
+- No implementation, task promotion, execution protocol, Execution Attempt,
+  provider selection, credentialed smoke, or lifecycle transition was made.
+
+## 2026-07-23 — Pre-PRD provider-neutral drift sync
+
+- Reconciled `user-scenarios.md`, `domains/core-domain.md`,
+  `contracts/boundary-map.md`, and `states/lifecycle-map.md` with the accepted
+  provider-neutral code-phase policy recorded on 2026-07-19.
+- Removed stale real-LLM/live-provider acceptance wording while preserving
+  actual scoped Plant-data and real photo-byte requirements.
+- Recorded deterministic fake/spy executors as test-only acceptance seams,
+  unbound fail-closed production with no fake/canned fallback, and deferred
+  real-endpoint verification as a separate future integration milestone.
+- No task, feature, epic, requirement, lifecycle, or canonical-path state was
+  changed.
+
 ## 2026-07-23 — DevRails runtime adaptation
 
 - Added Global Backbone `Planning Revision: 1` and limited current planning

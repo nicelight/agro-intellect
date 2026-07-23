@@ -83,9 +83,10 @@
     "Boss, granted Engineer, Consultant read-only, current grant, wrong-Farm, archive, restore, and no-existence-leak matrix evidence.",
     "IssueStack ordering/focus, active-attention reuse, proposal sequence/supersede, request fingerprint, same-run identical retry/conflict, distinct-run serialized multi-effect behavior, and controlled concurrent-write evidence.",
     "Attention/proposal UI identity, literal redaction, Timeline cardinality, retained feed read, and projection-conflict rollback evidence.",
-    "Exact issue/detail HTTP fields, canonical refs, active-else-latest attention, proposal ordering/nullability, no-store/error behavior, and proof that this wave exposes no run, decision, close, Task, Bus, Safety, Plant-state, or device authority."
+    "Exact issue/detail HTTP fields, canonical refs, active-else-latest attention, proposal ordering/nullability, no-store/error behavior, and proof that this wave exposes no run, decision, close, Task, Bus, Safety, Plant-state, or device authority.",
+    "Current-attempt T3 protocol evidence with fresh functional verification, /verify VERDICT: PASS, per-task /red-verify SEMANTIC_VERDICT: semantic-pass, and the exact HUMAN_CHECKPOINT: done marker before explicit-owner or scheduler closure."
   ],
-  "purpose": "Establish the retained PostgreSQL governance aggregate and independently verifiable IssueStack/current-proposal authority that later human-decision and real-Companion waves can consume without duplicating focus, attention, supersede, projection, or idempotency logic.",
+  "purpose": "Establish the retained PostgreSQL governance aggregate and independently verifiable IssueStack/current-proposal authority that later human-decision and provider-neutral Companion-runtime waves can consume without duplicating focus, attention, supersede, projection, or idempotency logic.",
   "success_outcome": "The backend can persist and read one Plant-scoped IssueStack with at most one focused open issue, one active HumanAttentionNeeded cycle, and one current pending proposal per issue; a newer validated proposal atomically supersedes the previous pending proposal while reusing active attention, exact retries are idempotent, conflicts/archive/grant races write nothing, and only strict non-agent-consumable attention/proposal UI plus redacted issue/proposal Timeline records are emitted, with no public mutation or binding decision/effect path yet.",
   "anti_goals": [
     "Do not expose the explicit model run, proposal decision, issue close, or arbitrary proposal-create HTTP command in this wave.",
@@ -95,40 +96,6 @@
     "Do not add frontend/PWA, scheduler, worker, outbox, raw proposal Bus publication, Timeline replay authority, or physical-action/Plant/device semantics."
   ],
   "runtime_context": {
-    "write_boundary": [
-      "backend/app/companion_governance/",
-      "backend/app/agent_chat/contracts.py",
-      "backend/app/agent_chat/models.py",
-      "backend/app/agent_chat/publication.py",
-      "backend/app/api/companion.py",
-      "backend/app/api/feed.py",
-      "backend/app/api/__init__.py",
-      "backend/app/timeline/writer.py",
-      "backend/migrations/versions/",
-      "tests/backend/companion_governance/test_proposal_lifecycle.py",
-      "tests/backend/companion_governance/test_migration_models.py",
-      "tests/backend/companion_governance/test_proposal_projection.py",
-      "tests/backend/api/test_ft013_companion_read_routes.py",
-      "tests/backend/agent_chat/",
-      "tests/backend/access_admin/test_ft002_schema_migration.py",
-      "tests/backend/photo_intake/test_ft005_migration_models.py",
-      "tests/backend/plant_operations/test_ft004_migration_models.py",
-      "tests/backend/agent_chat/test_ft008_migration_models.py",
-      "tests/backend/safety_gate/test_migration_models.py",
-      "tests/backend/task_follow_up/test_migration_models.py",
-      "tests/backend/test_foundation_database_contract.py",
-      ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
-      ".memory-bank/states/companion-governance.md",
-      ".memory-bank/domains/companion-governance.md",
-      ".memory-bank/contracts/companion-governance-http.md",
-      ".memory-bank/testing/companion-governance.md",
-      ".memory-bank/contracts/ui-feed.md",
-      ".memory-bank/domains/agent-chat-ui-feed-storage.md",
-      ".memory-bank/contracts/timeline-event.md",
-      ".memory-bank/tasks/TASK-041-T3-FT-013-W1.task.json",
-      ".protocols/TASK-041-T3-FT-013-W1/",
-      ".tasks/TASK-041-T3-FT-013-W1/"
-    ],
     "forbidden_scope": [
       "TASK-042 DecisionRecord/close commands, ordinary-task source/effects, decision Bus/context, or binding decision projections.",
       "TASK-043 Companion request/result, provider composition, external egress, explicit run endpoint, or credentialed smoke.",
@@ -136,7 +103,7 @@
       "Safety approval, action Task, Plant-state confirmation, device commands, automated actuation, frontend/PWA, scheduler, worker, outbox, or hard delete."
     ],
     "stop_conditions": [
-      "The actual TASK-039 migration head or persisted classification/shared UI constraints differ materially from the linked canonical contracts.",
+      "The current post-TASK-040 migration head ft012_runtime_dispositions or persisted classification/shared UI constraints differ materially from the linked canonical contracts.",
       "The four-table governance aggregate cannot preserve exact restrictive/deferrable relations and terminal DecisionRecord references in one additive schema revision.",
       "Focus, active-attention reuse, proposal supersede, required UI projections, and Timeline refs cannot commit atomically under concurrent writes.",
       "Implementation would require a public proposal mutation, raw proposal/rationale as agent fact, a new permission, or Timeline/UI replay as mutable authority.",
@@ -168,7 +135,7 @@
   ],
   "constraints": [
     "The first FT-013 migration creates the complete four-table governance aggregate so proposal/attention terminal references are never weakened, but this wave creates no DecisionRecord row or decision command.",
-    "Every exact-head assertion present after TASK-039, including Safety Gate and Task Follow-Up migration-model tests, advances to the aggregate revision in this task.",
+    "The aggregate migration starts from the current ft012_runtime_dispositions head produced by completed TASK-040, and every exact-head assertion present at execution preflight, including Safety Gate and Task Follow-Up migration-model tests, advances to the aggregate revision in this task.",
     "The Companion read router is verified through an isolated FastAPI test app and is not registered in backend/app/main.py until TASK-043 serializes production composition after TASK-040.",
     "Proposal persistence accepts only a validated matching classification/runtime handoff through the internal service; no public caller may submit proposal text, effect, refs, or authorization data.",
     "One Plant has at most one focused open issue; one issue has at most one active attention and pending proposal; a newer proposal supersedes the current pending proposal and reuses active attention atomically.",

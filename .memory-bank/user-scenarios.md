@@ -2,7 +2,7 @@
 description: Pre-PRD user scenarios for MVP v2 decomposition.
 status: active
 owner: product
-last_updated: 2026-07-06
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/prd.md
   - project_dossier_v2.md
@@ -39,7 +39,10 @@ Decomposition implication: account/session/authz, Farm/Plant lifecycle, PlantAcc
    created by that Engineer.
 5. Engineer records observations, uploads a photo, and/or enters pH/EC measurements.
 6. Backend persists runtime state, local photo artifacts, catalog refs, and timeline audit/export refs.
-7. Real LLM/model-backed product agents process actual scoped Plant data and publish only through project-owned boundaries.
+7. Provider-neutral product-agent adapters process actual scoped Plant data
+   through strict schemas. Current code-phase acceptance uses deterministic
+   test-only fake/spy executors, while production remains unbound and fails
+   closed until a future endpoint is explicitly selected.
 8. UI Feed displays human-facing cards, prompts, tasks, approvals, history, and storage warnings while remaining unavailable as agent working context.
 
 Decomposition implication: daily operations, photo intake, runtime state, agent publication, UI Feed, and context hygiene must be cut with ActorContext and Plant authorization in mind.

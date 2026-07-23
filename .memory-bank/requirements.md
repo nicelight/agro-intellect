@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-20
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -116,7 +116,7 @@ source_of_truth:
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 missing/stale-data policy plus completed FT-011 deterministic classification and Safety routing through pending human approval; lifecycle awaits explicit owner reconciliation | planned |
 | REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
-| REQ-017 | EP-005 | FT-013 | unit: focus/attention/proposal lifecycle and derived conclusion; integration: retained non-operative governance records, DecisionRecord creation, and explicit real Companion proposal | planned |
+| REQ-017 | EP-005 | FT-013 | unit: focus/attention/proposal lifecycle and derived conclusion; integration: retained non-operative governance records, DecisionRecord creation, and an explicit provider-neutral Companion proposal through deterministic fake/spy executors; real-provider tests run only after an explicit user request | planned |
 | REQ-018 | EP-005, EP-004 | FT-013, FT-011, FT-012 | integration: closed atomic governance effects separated from Safety Gate/action authority and revalidated after restore | planned |
 | REQ-019 | EP-006 | FT-014 | unit: trainability default false; integration: evidence refs required | planned |
 | REQ-020 | EP-006 | FT-015 | integration: loopback/LAN controls, secret redaction, storage prompt | planned |
@@ -141,11 +141,13 @@ source_of_truth:
   Companion `existing_issue` request includes persisted open-Issue
   `summary_text`.
 - `TASK-041-T3-FT-013-W1`, `TASK-042-T3-FT-013-W2`, and
-  `TASK-043-T3-FT-013-W3` are indexed `planned` behind the existing planned
-  FT-012 chain; TASK-042 now also depends directly on TASK-040 to serialize the
-  shared Task Follow-Up package. Global and feature design are complete; run a
-  fresh `/review-tasks-plan FT-013` before execution selection. No
-  implementation, real-provider result, or RTM lifecycle promotion is claimed.
+  `TASK-043-T3-FT-013-W3` remain indexed `planned`. TASK-039 and TASK-040 are
+  `done`, so TASK-041 is dependency-ready at point of use; TASK-042 still
+  depends on TASK-041 and directly on TASK-040 to serialize the shared Task
+  Follow-Up package, while TASK-043 remains behind TASK-042. Global and feature
+  design are complete; run a fresh `/review-tasks-plan FT-013` before execution
+  selection. No FT-013 implementation, real-provider result, or RTM lifecycle
+  promotion is claimed.
 
 ## Current FT-001 Evidence Note
 

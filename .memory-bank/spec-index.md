@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-19
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -55,9 +55,9 @@ source_of_truth:
 | interface_contract | [.memory-bank/contracts/vision-observation-runtime.md](contracts/vision-observation-runtime.md) | active | Authorized real-photo Vision Observation input and pending model handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/plant-state-runtime.md](contracts/plant-state-runtime.md) | active | Authorized Plant State trend/conflict/unknown model assessment handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/hydroponics-advisor-runtime.md](contracts/hydroponics-advisor-runtime.md) | active | Authorized pH/EC and Plant-state input, missing-data policy, and pending advisor handoff | `/feature-to-tasks` or `/spec-design` |
-| interface_contract | [.memory-bank/contracts/safety-gate-runtime.md](contracts/safety-gate-runtime.md) | active | Strict model-backed Safety candidate and project-owned classification mapping | `/feature-to-tasks` or `/spec-design` |
-| interface_contract | [.memory-bank/contracts/task-follow-up-runtime.md](contracts/task-follow-up-runtime.md) | active | Strict real Task and Follow-Up Agent input, proposal, classification, and ordinary-task handoff | `/feature-to-tasks` or `/spec-design` |
-| interface_contract | [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md) | active | Explicit real Companion input, result, classification, trigger, and proposal handoff | `/feature-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/safety-gate-runtime.md](contracts/safety-gate-runtime.md) | active | Strict provider-neutral Safety candidate and project-owned classification mapping | `/feature-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/task-follow-up-runtime.md](contracts/task-follow-up-runtime.md) | active | Strict authorized Task/Outcome input, provider-neutral proposal/classification, and ordinary-task handoff | `/feature-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md) | active | Explicit provider-neutral Companion input, result, classification, trigger, and proposal handoff | `/feature-to-tasks` or `/spec-design` |
 | agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured pending pre-safety agent output | `/feature-to-tasks` or `/spec-design` |
 | presentation_contract | [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md) | active | Human-facing non-authoritative projection | `/spec-design` |
 | audit_contract | [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md) | active | Append-only timeline event, current event registry, and minimal append writer seam | `/spec-design` or `/feature-to-tasks` |

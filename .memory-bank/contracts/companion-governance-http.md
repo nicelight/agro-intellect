@@ -2,7 +2,7 @@
 description: Protected Companion IssueStack, proposal decision, close, and explicit invocation HTTP contract.
 status: active
 type: api_contract
-last_updated: 2026-07-18
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md
   - .memory-bank/states/companion-governance.md
@@ -18,8 +18,8 @@ source_of_truth:
 ## Scope
 
 Defines protected Plant-scoped IssueStack reads, issue detail, explicit
-model-backed Companion invocation, current-proposal decision, and resolved
-issue close commands.
+provider-neutral Companion invocation, current-proposal decision, and
+resolved issue close commands.
 
 ## Out of scope
 
@@ -284,7 +284,7 @@ All errors use the global safe envelope with request correlation:
 | 409 | `COMPANION_VERSION_CONFLICT` | `COMPANION_VERSION_CONFLICT`, nested `TASK_VERSION_CONFLICT`, or `SAFETY_CLASSIFICATION_CONFLICT`, including request/fingerprint reuse and stated concurrency/version conflicts |
 | 422 | `COMPANION_EFFECT_INVALID` | `COMPANION_EFFECT_INVALID`; no decision/effect was written |
 | 422 | `VALIDATION_FAILED` | FastAPI/Pydantic, malformed path/query/cursor, unknown/repeated fields, or strict cross-field validation |
-| 500 | `COMPANION_RUNTIME_AUDIT_FAILED` | `AGENT_AUDIT_FAILED`; the real runtime audit failed before a usable handoff |
+| 500 | `COMPANION_RUNTIME_AUDIT_FAILED` | `AGENT_AUDIT_FAILED`; the runtime audit failed before a usable handoff |
 | 500 | `COMPANION_AUDIT_FAILED` | governance `COMPANION_AUDIT_FAILED` or nested `TASK_AUDIT_FAILED`; required governance/Task Timeline append failed and the complete decision UoW rolled back |
 | 500 | `COMPANION_CLASSIFICATION_PERSISTENCE_FAILED` | `SAFETY_CLASSIFICATION_PERSISTENCE_FAILED`; no authoritative classification/proposal exists |
 | 500 | `COMPANION_READ_INCONSISTENT` | `COMPANION_READ_INCONSISTENT`, nested `TASK_SOURCE_INVALID`, or `AGENT_CONTEXT_DENIED/input_contract_violation`; authoritative input/read/source rows violate the closed runtime, Task-source, approved-summary, or conclusion matrix |

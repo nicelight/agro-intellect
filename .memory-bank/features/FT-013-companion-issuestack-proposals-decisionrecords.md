@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-07-19
+last_updated: 2026-07-23
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -149,5 +149,9 @@ spec_design_links:
   real response/classifier evidence belongs to the shared future milestone.
 - Execution note: TASK-041, TASK-042, and TASK-043 remain explicitly excluded
   from execution in this reconciliation. Their ids, tiers, waves, dependencies,
-  and `planned` lifecycle are unchanged; fresh `/review-tasks-plan FT-013` is
-  required before any later owner selection.
+  and `planned` lifecycle are unchanged. TASK-039 and TASK-040 are now `done`,
+  so TASK-041 is dependency-ready at point of use, but `/exe` owns its full T3
+  protocol/neutral Execution Attempt setup and lifecycle promotion. The cards'
+  `touched_files` are advisory; hard semantics remain in their canonical specs,
+  `forbidden_scope`, and `stop_conditions`. Fresh
+  `/review-tasks-plan FT-013` is required before any later owner selection.

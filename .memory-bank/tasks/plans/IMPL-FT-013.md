@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-013 Companion IssueStack governance, atomic DecisionRecord effects, and explicit provider-neutral Companion invocation.
 status: active
-last_updated: 2026-07-19
+last_updated: 2026-07-23
 ---
 # IMPL-FT-013 — Companion IssueStack Proposals And DecisionRecords
 
@@ -171,9 +171,11 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 - Foundation gate `TASK-004-T2-FT-000-W0` is satisfied transitively through
   the existing dependency chain.
 - `TASK-041-T3-FT-013-W1` depends directly on
-  `TASK-039-T3-FT-012-W1`, because its aggregate migration follows the actual
-  FT-012 head and its validated proposal handoff relies on the implemented
-  classifier persistence chain.
+  `TASK-039-T3-FT-012-W1` for the implemented classifier persistence chain.
+  Since TASK-040 is already `done`, execution preflight must base the aggregate
+  migration on the current `ft012_runtime_dispositions` head and advance every
+  current exact-head assertion; the terminal brownfield baseline does not
+  change the preserved runnable FT-013 DAG.
 - `TASK-042-T3-FT-013-W2` depends on TASK-041 and TASK-040. It consumes
   TASK-041 proposal authority and the completed FT-012 runtime/package surface,
   reaches TASK-039 ordinary-task workflow effects transitively, and cannot run
@@ -182,17 +184,24 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
   pattern and shared provider files.
-- All upstream dependencies are `planned`; all three FT-013 cards therefore
-  remain `planned`. TASK-041/TASK-042 build and verify the Companion router in
-  isolated test apps without touching `main.py`; TASK-043 is the only FT-013
-  production-registration owner and depends on TASK-040, so the executable DAG
-  serializes both the earlier Task Follow-Up package frontier and the later
-  shared `main.py`/provider composition surface.
+- TASK-039 and TASK-040 are `done`. TASK-041 is therefore dependency-ready at
+  point of use; TASK-042 and TASK-043 remain blocked by their preceding FT-013
+  waves. All three cards remain `planned` because `/feature-to-tasks` does not
+  start execution: `/exe` owns current dependency preflight, full task-protocol
+  and neutral Execution Attempt setup, then `planned -> ready -> in_progress`.
+  TASK-041/TASK-042 build and verify the Companion router in isolated test apps
+  without touching `main.py`; TASK-043 is the only FT-013 production-
+  registration owner, so the executable DAG serializes both the earlier Task
+  Follow-Up frontier and later shared `main.py`/provider composition surface.
 - Current reconciliation does not authorize TASK-041, TASK-042, or TASK-043
   execution. All remain `planned` and execution-excluded until a fresh
   `/review-tasks-plan FT-013` and explicit later owner selection.
 
 ## Expected touched files
+
+These paths are advisory and non-exhaustive planning hints. They are not a
+hard write allowlist; the task's semantic scope, direct canonical specs,
+`forbidden_scope`, and `stop_conditions` govern execution.
 
 IssueStack/proposal-authority slice:
 
@@ -364,6 +373,23 @@ public-contract widening need.
   current closure evidence.
 - Browser Companion cards remain FT-016; backend JSON/OpenAPI behavior is
   verified here.
+
+## Execution protocol and closure
+
+- Planning leaves every card `planned` and does not pre-create
+  `.protocols/<TASK>/` state or an Execution Attempt.
+- `/exe` rechecks current dependencies and scope, initializes or reconciles the
+  full T3 protocol, creates one neutral current Execution Attempt, then owns
+  `planned -> ready -> in_progress` immediately before implementation writes.
+- Every wave requires fresh functional evidence for the current attempt plus
+  `/verify` `VERDICT: PASS`, per-task `/red-verify`
+  `SEMANTIC_VERDICT: semantic-pass`, and exact
+  `HUMAN_CHECKPOINT: done` before closure eligibility.
+- Only the scheduler or explicit manual owner records the final lifecycle
+  decision. Full `/mb-sync` runs at the current wave boundary unless an earlier
+  reconciled-state dependency or explicit owner request requires it.
+- The cards intentionally omit a hard `write_boundary`: `touched_files` is
+  advisory, while `forbidden_scope` and `stop_conditions` remain hard.
 
 ## Constitution Check
 
