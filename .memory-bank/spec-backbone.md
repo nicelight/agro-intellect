@@ -127,12 +127,14 @@ last_updated: 2026-07-23
   no-authority rules are implemented and verified. At the TASK-039 W1
   boundary, the product migration head was `ft012_task_approval_outcomes`
   directly after `ft011_safety_action_decisions`, with all eight exact-head
-  consumers passing. TASK-040 later advanced the current head to
-  `ft012_runtime_dispositions` and is scheduler-recorded `done` from ATTEMPT 06
-  implementation and
-  independent functional PASS under the explicit owner waiver of the remaining
-  red-verification stage. No semantic-pass or live-provider acceptance is
-  claimed; earlier failed and blocked attempts remain immutable history.
+  consumers passing. TASK-040 later advanced the then-current head to
+  `ft012_runtime_dispositions` and historically closed from ATTEMPT 06
+  implementation plus independent functional PASS under the explicit owner
+  waiver of the remaining red-verification stage. On 2026-07-24 the operator
+  reopened the same task as `planned` for bounded runtime-ledger and
+  direct-corruption simplification; all prior closure/evidence remains
+  immutable history, and no new implementation PASS, semantic-pass, or
+  live-provider acceptance is claimed.
 - Current FT-013 repair outcome: shared ordinary-task source union and
   classification-only Companion governance hold are authoritative, with no
   second Task service or persisted route-schema expansion. The subsequent
@@ -172,13 +174,14 @@ last_updated: 2026-07-23
   TASK-039 are scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle
   values remain `planned` pending explicit owner decisions. FT-011, FT-012,
   and EP-004 remain `planned` pending explicit owner lifecycle decisions;
-  TASK-040 is scheduler-recorded `done` from owner-accepted ATTEMPT 06
-  implementation and functional verification, with red-verification explicitly
-  waived and no semantic-pass claim. The current product migration head is
-  `ft012_runtime_dispositions` directly after
-  `ft012_task_approval_outcomes`. Historical run-budget evidence does not amend
-  canonical workflow policy.
-  FT-013 remains execution-excluded in this run
-  and requires fresh review before any future selection. Dataset Governance now has one lifecycle and one
+  TASK-040 is `planned` after an explicit same-ID operator reopen that
+  preserves its owner-accepted ATTEMPT 06 closure as history. The repository
+  migration chain currently reaches `ft013_governance_aggregate` after the
+  historical `ft012_runtime_dispositions`; TASK-040 must add a forward cleanup
+  revision after the executor-confirmed head rather than rewrite either
+  revision. Historical run-budget evidence does not amend canonical workflow
+  policy. FT-013 W2/W3 remain execution-excluded while their planned
+  dependency TASK-040 is open and require fresh applicable review before any
+  future selection. Dataset Governance now has one lifecycle and one
   derived trainability authority; FT-014 exact persistence and evidence policy
   remain feature-local.

@@ -11,6 +11,11 @@
 - последствия и восстановимость failure;
 - объём решений оператора и изменений accepted requirements.
 
+Каждый нумерованный пункт ниже — один coherent refactoring package, который
+удобно передать одному агенту как одну новую task. Поле **Исходный task scope**
+указано, если package целиком относится к одной существующей indexed task. Это
+ownership reference, а не разрешение повторно открыть `done` task.
+
 ## Рациональная граница threat model
 
 Строгая защита остаётся обязательной для:
@@ -29,171 +34,233 @@
 восстанавливаемым UI/diagnostic defect, предпочтительны maintenance и
 исправление записи, а не новый production invariant.
 
-## 1. Упростить anti-corruption replay в Task Follow-Up
+## 1. Упростить весь Task Follow-Up runtime/replay package
 
 **Приоритет:** максимальный.  
 **Confidence:** high.
+**Исходный task scope:** [TASK-040-T3-FT-012-W2](.memory-bank/tasks/TASK-040-T3-FT-012-W2.task.json).
 
 ### Текущий механизм
 
-Exact retry проверяет не только реальную idempotency, но и согласованность
-Task, classification, disposition, source refs и независимого commitment:
+Один runtime package одновременно содержит две тесно связанные защиты:
 
 - [task-follow-up lifecycle](.memory-bank/states/task-follow-up-lifecycle.md);
+- [runtime contract](.memory-bank/contracts/task-follow-up-runtime.md);
 - [runtime replay](backend/app/task_follow_up/runtime.py);
 - [runtime dispositions migration](backend/migrations/versions/ft012_runtime_dispositions.py);
-- [hostile runtime tests](tests/backend/task_follow_up/test_runtime.py).
+- [hostile runtime tests](tests/backend/task_follow_up/test_runtime.py);
+- [runtime verification matrix](.memory-bank/testing/task-follow-up.md).
 
-Механизм включает отдельный expected Task-create fingerprint, write-once
-PostgreSQL trigger, повторную загрузку source authority, повторную сборку
+Первая часть — anti-corruption exact replay: expected Task-create fingerprint,
+write-once PostgreSQL trigger, повторная загрузка source authority, сборка
 source universe и сравнение нескольких fingerprints.
+
+Вторая часть — отдельный runtime disposition ledger с собственной таблицей,
+advisory locks, terminal result union, pre/post-I/O resolution, crash windows и
+широкой race matrix. При этом public endpoint, worker и scheduler отсутствуют,
+а production model binding остаётся unbound.
 
 ### Какой failure предотвращается
 
-Согласованная ручная подмена нескольких связанных записей так, чтобы обычные
-FK, uniqueness и request fingerprint продолжали выглядеть корректно.
+Package предотвращает два failure:
+
+1. согласованную ручную подмену нескольких Task/classification/disposition rows
+   так, чтобы обычные FK, uniqueness и request fingerprint выглядели корректно;
+2. конкурентный или crash-retry запуск одного и того же internal runtime run.
 
 - Через публичный API: нет.
-- Через штатный application path: практически нет.
-- Через internal misuse: только при обходе service boundary.
-- Через прямую порчу БД: да; hostile tests местами удаляют constraint/trigger.
+- Через штатный production path: runtime caller пока не зарегистрирован.
+- Через internal misuse: возможен повторный injected вызов.
+- Через прямую порчу БД: да; hostile tests местами удаляют constraint/trigger
+  и согласованно изменяют несколько authority rows.
 
-Последствие — возврат неверного ordinary Task при retry. Это не создаёт
-automated actuation или физического эффекта. Состояние восстанавливается
-maintenance, исправлением записи или новым run.
+Последствия — лишний model invocation, новый internal run или возврат неверного
+ordinary Task после специально подготовленной DB corruption. Automated
+actuation или физического эффекта нет. Canonical Task writer, authorization,
+current guards и обычная Task idempotency продолжают предотвращать
+duplicate/unauthorized Task. Восстановление — новый run, maintenance или
+исправление записи.
 
 ### Цена
 
-Высокая: production code, PL/pgSQL lifecycle, cross-table coupling, сложная
-миграция, большая hostile-test matrix и высокая стоимость любого изменения
-Task/provenance contracts.
+Очень высокая: отдельная DB lifecycle model до появления caller, PL/pgSQL
+commitment lifecycle, advisory-lock protocol, replay state machine,
+cross-table coupling и большая concurrency/corruption verification matrix.
+Раздельный рефакторинг оставил бы временно противоречивую модель: упрощённый
+replay поверх ledger, нормативно созданного именно для сложного replay.
 
 ### Рекомендация
 
-Удалить:
+В одной task:
 
-- independent expected Task-create commitment;
-- write-once trigger, существующий только для этого commitment;
-- глубокую повторную проверку всей provenance graph на exact retry;
-- tests, которые доказывают устойчивость к согласованной ручной порче БД.
+- удалить independent expected Task-create commitment, его write-once trigger
+  и глубокую проверку всей provenance graph на exact retry;
+- отложить runtime disposition ledger до появления реального durable
+  worker/scheduler, delivery identity и определённой retry/crash семантики;
+- оставить линейный путь
+  `invoke → post-I/O guard → classify → canonical Task writer`;
+- убрать tests, доказывающие устойчивость к согласованной ручной порче БД;
+- уже развёрнутые DB objects сначала перестать использовать, а физическое
+  удаление выполнять только отдельной безопасной forward migration после
+  проверки данных.
 
 Оставить:
 
 - command/request fingerprint;
 - unique natural keys;
-- advisory lock и transaction;
-- terminal disposition;
+- transaction и реальные write-side serialization guards;
+- ordinary dispatch disposition;
 - current authorization/archive checks;
-- Task FK и реальную race/crash idempotency;
+- Task FK и реальную write-side race/idempotency;
 - проверки provider output и write-boundary provenance.
 
-**Residual risk:** оператор с прямым SQL-доступом может согласованно подменить
-несколько authority rows. Это принимается как maintenance/security incident.
+**Residual risk:** privileged SQL operator может согласованно подменить
+authority rows; искусственный internal caller может повторно оплатить model
+invocation. Это принимается как maintenance/security incident до появления
+реального runtime delivery path.
 
-**Требуется:** изменение normative lifecycle/testing specs и отдельная
-task decomposition до реализации.
+**Требуется:** единое изменение normative lifecycle/runtime/testing specs и
+одна новая task decomposition. В этой же task удалять DB objects только если
+preflight докажет безопасность для deployment data; иначе оставить их
+неиспользуемыми и не расширять scope отдельным cleanup.
 
-## 2. Остановить hostile-probe ratchet в Companion read integrity
+## 2. Упростить Companion aggregate, projection и read integrity
 
 **Приоритет:** очень высокий.  
 **Confidence:** high.
+**Исходный task scope:** [TASK-041-T3-FT-013-W1](.memory-bank/tasks/TASK-041-T3-FT-013-W1.task.json).
 
 ### Текущий механизм
 
-Companion detail/read path загружает и проверяет целый retained graph, включая
-точную ref grammar, state combinations и последовательность proposal records:
+Один Companion integrity graph содержит три взаимозависимых механизма:
 
 - [integrity validator](backend/app/companion_governance/integrity.py);
 - [Companion service](backend/app/companion_governance/service.py);
+- [projection implementation](backend/app/companion_governance/projections.py);
+- [Companion models](backend/app/companion_governance/models.py);
+- [FT-013 migration](backend/migrations/versions/ft013_companion_governance_aggregate.py);
 - [read-route corruption tests](tests/backend/api/test_ft013_companion_read_routes.py);
+- [projection corruption tests](tests/backend/companion_governance/test_proposal_projection.py);
 - [red-verification history](.protocols/TASK-041-T3-FT-013-W1/red-verification.md).
+
+1. Detail/read path доказывает полную непротиворечивость retained graph,
+   включая ref grammar, state combinations и proposal sequence.
+2. Supersede требует exact equality ранее сохранённой UI projection и
+   ожидаемого canonical event; presentation mismatch отменяет authority write.
+3. Текущая связь хранится в двух направлениях:
+   `proposal.attention_id` и `attention.current_proposal_id`, что требует
+   cyclic/deferrable FK, pointer update и дополнительной graph validation.
 
 Последовательные hostile probes уже породили проверки projection conflicts,
 noncanonical refs, cross-Plant edges, caller provenance, impossible proposal
-sequence и uppercase UUID в сохранённой записи.
+sequence, uppercase UUID и соседних duplicated pointers.
 
 ### Какой failure предотвращается
 
-GET не возвращает graph, который приложение само не умеет записать.
+Package предотвращает возврат или развитие graph, который sole application
+assembler сам не умеет записать:
 
 - Через публичный API: большая часть состояний недостижима.
 - Через штатный application path: большая часть недостижима.
 - Через internal misuse: частично.
 - Через прямую порчу БД: да.
 
-Для impossible sequence или нестандартного spelling сохранённого UUID
-последствия — 500 либо плохой UI. Authority, authorization и physical safety не
-изменяются. Восстановление — исправление записи или maintenance.
+При ослаблении текущего механизма возможны безопасный 500, временно неверный
+UI Feed или необходимость rebuild projection. Authority, authorization и
+physical safety не изменяются. Presentation rows и duplicated pointer
+восстанавливаются из Proposal/Issue authority.
 
 ### Цена
 
-Высокая и растущая: каждый новый probe соседнего поля создаёт invariant,
-validator, дополнительные branches и новую regression matrix.
+Очень высокая: каждый новый probe соседнего поля создаёт invariant, validator,
+branches и regression matrix; authority write зависит от полной presentation
+schema; duplicated pointer добавляет cyclic schema dependency, version/lock
+surface и ещё один consistency lifecycle.
 
 ### Рекомендация
 
-- Не добавлять bespoke validators только для impossible sequence или stored
-  UUID spelling.
-- Проверять untrusted provider input и Farm/Plant ownership на write boundary.
-- Оставить DB constraints, FK, uniqueness и transaction для достижимых
-  invariants.
-- На read path проверять security-sensitive ownership и минимальную
-  сериализуемость, но не доказывать полную непротиворечивость retained graph.
-- Не считать red-verify finding самостоятельным product requirement.
+В одной task:
 
-**Residual risk:** ручная порча БД может привести к безопасному 500 или
-maintenance incident.
+- проверять untrusted provider input, Farm/Plant ownership и достижимые
+  invariants на owning write boundary;
+- оставить DB constraints, FK, one-pending uniqueness и transaction;
+- на read path проверять security-sensitive ownership и минимальную
+  сериализуемость, но не полную semantic эквивалентность retained graph;
+- при supersede пересобирать/перезаписывать derived projection из authority
+  вместо exact-equality precondition;
+- оставить `proposal.attention_id`, а current Proposal определять как
+  единственную pending row;
+- при необходимости продолжать возвращать вычисленный `current_proposal_id` в
+  прежнем HTTP response;
+- не добавлять validators только ради impossible sequence, stored UUID
+  spelling или согласованной direct-DB corruption;
+- если schema уже развёрнута, reverse pointer сначала перестать считать
+  authority и удалять только безопасной forward migration.
 
-**Требуется:** сначала зафиксировать operator threat-model decision; затем
-сузить Companion testing/integrity specs.
+Оставить атомарное создание authority и новой projection, ограничения
+`visible_to_agents`, `consumable_by_agents=false`, authorization, Plant
+isolation и безопасную сериализацию.
 
-## 3. Не позволять повреждённой UI projection блокировать authority write
+**Residual risk:** ручная порча DB/projection может привести к 500 или
+maintenance/rebuild; current Proposal требует индексированного query.
+
+**Требуется:** сначала зафиксировать operator threat-model/schema decision,
+затем одной task сузить Companion domain/state/testing specs, aggregate,
+projection и integrity tests. Публичный response contract можно сохранить.
+
+## 3. Вернуть production model composition в нормативно unbound состояние
 
 **Приоритет:** высокий.  
 **Confidence:** high.
+**Исходный task scope:** [TASK-031-T3-FT-007-W2](.memory-bank/tasks/TASK-031-T3-FT-007-W2.task.json).
 
 ### Текущий механизм
 
-При supersede система требует точного совпадения ранее сохранённой UI Feed
-projection с ожидаемым canonical event. Несовпадение presentation row отменяет
-всю transaction:
+Активный provider contract не выбирает provider, model, endpoint, credentials
+или egress policy и запрещает изобретать production configuration до решения
+оператора:
 
-- [projection implementation](backend/app/companion_governance/projections.py);
-- [proposal service](backend/app/companion_governance/service.py);
-- [projection corruption tests](tests/backend/companion_governance/test_proposal_projection.py).
+- [provider profile contract](.memory-bank/contracts/agent-model-provider-profiles.md);
+- [production provider composition](backend/app/agent_runtime/providers.py);
+- [runtime configuration](backend/app/config.py);
+- [provider composition tests](tests/backend/agent_runtime/test_ft007_roster_providers.py).
+
+Несмотря на это, implementation уже содержит DeepSeek, Gemini и ChatGPT OAuth
+factories, native imports, provider-specific environment bindings и production
+composition. Production application caller для этого composition не найден.
 
 ### Какой failure предотвращается
 
-Новая authority proposal не создаётся поверх вручную изменённой presentation
-projection.
+Будущий deployment сможет выбрать один из нескольких providers без нового
+adapter slice.
 
-- Через публичный API: нет.
-- Через штатный application path: нет при корректном producer.
-- Через internal misuse: возможно.
-- Через прямую порчу БД: да.
-
-Без fail-closed поведения возможен временно неверный UI Feed. Projection
-неавторитетна и может быть восстановлена из authority.
+- Через публичный API: сейчас недостижимо.
+- Через штатный production path: binding отсутствует.
+- Через internal misuse/configuration: возможно случайно активировать
+  неутверждённый egress.
+- Authority/safety consequence: прямой пользы сейчас нет; ошибочное включение
+  увеличивает credential и data-egress surface.
 
 ### Цена
 
-Средне-высокая: authority зависит от полной presentation schema, каждое
-изменение UI event расширяет transaction failure surface и тестовую матрицу.
+Средне-высокая: преждевременные adapters, configuration grammar, dependency
+coupling и tests для нескольких вариантов, ни один из которых не принят
+deployment contract.
 
 ### Рекомендация
 
-- Сохранить атомарное создание authority и новой projection.
-- При supersede пересобирать/перезаписывать derived projection из authority
-  вместо exact-equality precondition.
-- Оставить ограничения `visible_to_agents`, `consumable_by_agents=false`,
-  authorization и Plant isolation.
+- Удалить или отложить provider-specific production factories и неактивные
+  config fields.
+- Оставить provider-neutral `ModelExecutor`, strict result validation, test DI
+  и fail-closed unbound production result.
+- После выбора оператора реализовать один adapter под реальный endpoint,
+  authentication и egress policy.
 
-**Residual risk:** при внутреннем defect UI projection может быть временно
-исправлена перезаписью без отдельного сигнала о старой рассинхронизации. Это
-допустимо при логировании.
+**Residual risk:** после выбора provider потребуется отдельный небольшой
+implementation slice. До этого реальный product outcome не теряется.
 
-**Требуется:** проверить формулировку atomic projection requirement; product
-outcome менять не требуется.
+**Требуется:** implementation alignment с уже активным contract; выбор
+конкретного provider остаётся решением оператора.
 
 ## 4. Упростить durable introduction batch из восьми roster events
 
@@ -243,7 +310,79 @@ all-eight-or-nothing семантику. Запрет agent consumption долж
 **Требуется:** явное решение оператора и изменение принятого REQ-013/контракта.
 Текущая implementation в основном соответствует принятой спецификации.
 
-## 5. Централизовать проверку глобального Alembic head
+## 5. Упростить provider provenance и `source_refs` contracts
+
+**Приоритет:** средне-высокий.
+**Confidence:** very high.
+
+### Текущий механизм
+
+Один provider-boundary package содержит две формы дублирования provenance:
+
+1. Vision provider result возвращает authority-bearing `source_refs`, после
+   чего несколько слоёв проверяют foreign, duplicate, reordered и
+   noncanonical combinations.
+2. Несколько provider request contracts передают одни source references и в
+   input records, и в отдельном outer `source_refs`, после чего trusted
+   assembler доказывает их exact equality.
+
+- [vision runtime contract](.memory-bank/contracts/vision-observation-runtime.md);
+- [vision result contracts](backend/app/vision_observation/contracts.py);
+- [vision service](backend/app/vision_observation/service.py);
+- [Plant State promotion](backend/app/plant_state/service.py);
+- [vision contract tests](tests/backend/vision_observation/test_contracts.py);
+- [agent runtime adapter contract](.memory-bank/contracts/agent-runtime-adapter.md);
+- [generic runtime contracts](backend/app/agent_runtime/contracts.py);
+- [plant-state contract tests](tests/backend/plant_state/test_contracts.py).
+
+При этом текущий invocation уже относится ровно к одному Photo, которое
+application проверило по ActorContext, Plant, path containment, size и hash.
+Provider является недоверенным интерпретатором bytes, но не должен выбирать
+identity authoritative evidence.
+
+### Какой failure предотвращается
+
+Provider возвращает observation с foreign/duplicated Photo ref либо trusted
+assembler создаёт две несовпадающие request collections.
+
+- Через публичный API: напрямую нет.
+- Через реальный provider output: да только для result refs.
+- Через штатный request path: mismatch возможен только как coding defect
+  assembler.
+- Consequence: неверная provenance observation; automated actuation всё равно
+  запрещено. Для request mismatch consequence — ранний 500.
+- Восстановление: отклонение результата и новый run.
+
+Failure реалистичен, но текущий механизм защищает неверный boundary: authority
+identity сначала отдаётся provider, а затем дорого проверяется.
+
+### Цена
+
+Средне-высокая: duplicated request fields, result grammar, canonicalization,
+cross-layer validators, serialization coupling и combinatorial test matrices
+для identities, которые application уже знает.
+
+### Рекомендация
+
+- Удалить `source_refs` из Vision provider result либо игнорировать это поле.
+- После успешной проверки model content trusted assembler добавляет ровно
+  `photo:<photo_id>` из invocation context.
+- В provider requests оставить input records; outer `source_refs` вычислять как
+  property или непосредственно перед вызовом provider.
+- Для contracts, где provider действительно возвращает несколько citations,
+  проверять их только против authoritative refs, вычисленных из input records.
+- Сохранить strict validation model-produced content, message/run binding,
+  Photo byte integrity, same-Plant checks и human promotion.
+
+**Residual risk:** single-photo invocation не выражает provider-selected
+дополнительный источник, а duplicated request intent больше не валидируется
+отдельно. Оба поведения не являются принятым outcome; при multi-photo input
+authoritative ref list по-прежнему формирует application.
+
+**Требуется:** одна cross-runtime contract task для request/result models,
+assemblers и tests. Authorization и safety requirements не меняются.
+
+## 6. Централизовать проверку глобального Alembic head
 
 **Приоритет:** средне-высокий.  
 **Confidence:** high.
@@ -284,7 +423,7 @@ Exact-head assertions также распределены по feature migration
 если testing spec не требует fan-out явно. FT-013 testing wording следует
 скорректировать.
 
-## 6. Убрать domain-specific state matrices из общего Timeline writer
+## 7. Убрать domain-specific state matrices из общего Timeline writer
 
 **Приоритет:** средний.  
 **Confidence:** high.
@@ -332,56 +471,6 @@ Domain payload/state validation оставить producer tests и typed constru
 
 **Требуется:** локальное архитектурное изменение и корректировка timeline tests;
 traceability outcome сохраняется.
-
-## 7. Вычислять provider `source_refs` из records
-
-**Приоритет:** средне-низкий.  
-**Confidence:** high.
-
-### Текущий механизм
-
-Несколько provider request contracts передают source references дважды:
-
-- в каждом input record;
-- отдельным outer `source_refs`, который должен точно совпасть с records.
-
-Пример:
-
-- [agent runtime adapter contract](.memory-bank/contracts/agent-runtime-adapter.md);
-- [generic runtime contracts](backend/app/agent_runtime/contracts.py);
-- [vision contracts](backend/app/vision_observation/contracts.py);
-- [plant-state contract tests](tests/backend/plant_state/test_contracts.py).
-
-### Какой failure предотвращается
-
-Единственный trusted assembler создаёт две несовпадающие коллекции.
-
-- Через публичный API: нет.
-- Через штатный path: только coding defect assembler.
-- Последствие: ранний 500.
-- Output provenance всё равно отдельно проверяется.
-
-### Цена
-
-Средняя совокупно: дублированные fields, validators, serialization contracts и
-tests в нескольких runtimes.
-
-### Рекомендация
-
-Request принимает только records, а `source_refs`:
-
-- вычисляется как property; либо
-- формируется непосредственно перед provider call из records.
-
-Проверки того, что provider output ссылается только на разрешённые inputs,
-должны сохраниться.
-
-**Residual risk:** отсутствует отдельный сигнал о bug, при котором assembler
-хотел передать refs, которых нет в records; такой intent сам по себе не является
-полезным контрактом.
-
-**Требуется:** согласованное изменение adapter spec и contracts до выбора
-внешнего production provider.
 
 ## 8. Сократить перекрывающиеся verification matrices
 
@@ -433,7 +522,7 @@ Failure реалистичен, однако ценность многократ
 - Safety Gate classification evidence и human approval;
 - PostgreSQL transactions/constraints для реальных lifecycle races;
 - request/run/message idempotency;
-- provider-output validation;
+- provider-output validation для model-produced content;
 - secret/auth redaction;
 - data-preservation migration tests;
 - публичные HTTP response/error/cache contracts.
@@ -442,10 +531,16 @@ Failure реалистичен, однако ценность многократ
 
 1. Оператор фиксирует threat model: ручная согласованная порча PostgreSQL —
    maintenance/security incident, не поддерживаемый application state.
-2. Отдельно пересматриваются normative Task Follow-Up и Companion integrity
-   requirements для кандидатов 1–3.
-3. Оператор решает, менять ли product outcome introduction batch из кандидата
-   4.
-4. После spec decisions планируются независимые simplification tasks.
-5. Кандидаты 5–8 выполняются как последующие ограниченные cleanup/workflow
-   changes без смешивания с authority/security границами.
+2. Оператор одновременно подтверждает Companion schema decision из кандидата
+   2; после этого кандидаты 1 и 2 планируются как две независимые T3
+   refactoring tasks.
+3. Кандидат 3 выполняется отдельной task как alignment implementation с уже
+   активным unbound provider contract.
+4. Оператор отдельно решает, менять ли introduction outcome из кандидата 4;
+   при принятии весь bootstrap/persistence/reconciliation package меняется
+   одной task.
+5. Кандидат 5 выполняется одной cross-runtime provider-contract task с
+   сохранением Photo integrity и model-content validation.
+6. Кандидаты 6 и 7 выполняются как две независимые low-coupling cleanup tasks.
+7. Кандидат 8 остаётся отдельным workflow-policy change и не смешивается с
+   product/runtime refactoring.

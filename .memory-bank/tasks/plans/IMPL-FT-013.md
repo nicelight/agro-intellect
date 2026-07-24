@@ -172,10 +172,10 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   the existing dependency chain.
 - `TASK-041-T3-FT-013-W1` depends directly on
   `TASK-039-T3-FT-012-W1` for the implemented classifier persistence chain.
-  Since TASK-040 is already `done`, execution preflight must base the aggregate
-  migration on the current `ft012_runtime_dispositions` head and advance every
-  current exact-head assertion; the terminal brownfield baseline does not
-  change the preserved runnable FT-013 DAG.
+  TASK-041 implemented its aggregate migration after the historical
+  `ft012_runtime_dispositions` head. The reopened TASK-040 must now add its
+  forward cleanup after the executor-confirmed current head and advance every
+  current exact-head assertion without rewriting either applied revision.
 - `TASK-042-T3-FT-013-W2` depends on TASK-041 and TASK-040. It consumes
   TASK-041 proposal authority and the completed FT-012 runtime/package surface,
   reaches TASK-039 ordinary-task workflow effects transitively, and cannot run
@@ -184,11 +184,12 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
   pattern and shared provider files.
-- TASK-039, TASK-040, and TASK-041 are `done`. TASK-041 closed on owner-accepted
-  Attempt 05 functional PASS with its latest semantic-fail preserved as
-  accepted residual risk and no semantic-pass claim. TASK-042 and TASK-043
-  remain `planned`; selecting TASK-042 is a separate explicit owner/workflow
-  decision.
+- TASK-039 and TASK-041 are `done`; TASK-040 is `planned` after the explicit
+  same-ID operator reopen. TASK-041 closed on owner-accepted Attempt 05
+  functional PASS with its latest semantic-fail preserved as accepted residual
+  risk and no semantic-pass claim. TASK-042 and TASK-043 remain `planned` and
+  cannot be selected until their TASK-040 dependency closes and their planning
+  evidence is applicable.
 - TASK-041/TASK-042 build and verify the Companion router in isolated test apps
   without touching `main.py`; TASK-043 remains the only FT-013 production-
   registration owner, so the remaining executable DAG preserves the later

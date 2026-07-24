@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-012
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-20
+last_updated: 2026-07-24
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -52,24 +52,18 @@ spec_design_links:
   current Plant/archive/authorization state cannot become operative after
   restore with the same `run_id` or `message_id`; a new Agent Runtime
   invocation with both new identities is required.
-- A post-model `task_follow_up` current-guard decision is also one-shot before
-  MessageEnvelope/classification: one immutable run/fingerprint disposition is
-  either terminally denied or hands off exactly one post-guard message. It
-  cannot conflict with the downstream classified-message disposition, and the
-  same run never allocates another message after restore or retry.
-- TASK-040 proves that boundary with one exact consumed-success lock-order
-  fixture and four barrier-controlled orders. Eligible-first finishes consumed
-  before its peer resolves `ALREADY_CONSUMED`; denied-first makes both peers
-  return the same stored denial; late-denial-first returns classification-only
-  `HANDOFF_INCOMPLETE` before the classified writer succeeds; classified-
-  writer-first succeeds before the late peer resolves `ALREADY_CONSUMED`.
-  These are exact outcomes, not scheduler-dependent alternatives; canonical
-  row/call/audit/rollback counts live in the Task Follow-Up testing spec.
-- Only successfully audited post-model guard denial or speak/envelope handoff
-  owns that two-value row; context/config/provider/output/passing-guard silence/
-  audit failures create none. Same-run handed-off conflict, incomplete,
-  non-taskable, downstream denied/consumed, and replay-blocked states return the
-  strict task-local disposition result without changing global Agent Runtime.
+- `task_follow_up` has no pre-classification runtime ledger or durable delivery
+  contract in the current MVP. Each injected invocation follows the linear
+  path `invoke -> post-I/O current guard -> sanitized audit -> transient
+  MessageEnvelope -> classify -> canonical Task writer`.
+  A denied or interrupted invocation may be called again and may repeat model,
+  audit, or classification work; it cannot bypass the current guards or create
+  a second ordinary Task for an already consumed run/message identity.
+- Runtime command fingerprints remain deterministic inputs and the classified
+  ordinary-task writer retains its transaction, natural keys, run-key
+  serialization, Task FK, and `consumed|denied` disposition. No runtime-stage
+  row, replay result union, or exact crash-window recovery is required before a
+  real worker/scheduler and delivery identity exist.
 - Follow-up outcome captures exactly
   `improved|worsened|unchanged|no_data`; non-`no_data` values require evidence
   refs.
@@ -87,21 +81,18 @@ spec_design_links:
   must not resume it automatically.
 - Restore must not re-evaluate a terminally denied classified-message
   disposition or turn its retained envelope/classification into a Task.
-- Restore must not turn a pre-classification runtime denial into an operative
-  run. A conflicting same-run command fails closed; reevaluation requires a
-  new command/run and then a new post-guard message.
-- A committed handoff interrupted before classifier or Task writer is not
-  replayed: exact retry resolves its persisted absent/non-taskable/denied/
-  consumed downstream state without any model/classifier/Task call, then
-  requires a new run for fresh evaluation.
-- A consumed handoff is a duplicate only when an independent immutable
-  classified-disposition commitment matches the Task create fingerprint and
-  canonical text/kind/ordered-source preimage, while scope/agent/ActorContext
-  attribution matches separately. PostgreSQL makes that commitment write-once:
-  coordinated Task/classification plus both-digest replacement aborts and
-  rolls back, while Task-only corruption remains a redacted null-ref failure.
-  Missing legacy commitment or any corrupt graph fails with the existing
-  error; raw candidate text and the full MessageEnvelope remain transient.
+- A pre-classification denial or interruption is not durable runtime state.
+  Re-invocation re-runs the normal provider/current-guard/classifier path; this
+  may repeat non-authoritative work but never weakens authorization or the sole
+  Task writer.
+- A consumed classified handoff retry resolves only through the immutable
+  classified disposition and Task's unique classification link, then repeats
+  current read/task authority before exposing the Task. It does not depend on a
+  pre-classification runtime row, reconstruct the original Task
+  text/kind/source preimage, or add an independent Task-create commitment.
+  Coordinated direct PostgreSQL row corruption is outside the current product
+  threat model; raw candidate text and the full MessageEnvelope remain
+  transient.
 
 ## Verification Targets
 
@@ -112,15 +103,13 @@ spec_design_links:
 - Integration: a classified ordinary message denied by a current guard remains
   denied after restore for the same run/message identities, while a new
   invocation with new identities may pass current guards.
-- Integration: post-model archive/revoke denial persists before envelope
-  creation; identical/conflicting/concurrent same-run calls, disposition
-  commit failure, runtime-versus-classified race, and new-identity eligibility
-  are deterministic PostgreSQL cases.
-- Integration: Task text mutation with a recomputed Task-owned fingerprint,
-  actor/source/classification/canonical-ref mutations, missing/wrong independent
-  commitment, all three coordinated ATTEMPT 05 replacements rejected by the
-  PostgreSQL write-once guard, no-self-derived legacy migration, rollback, and
-  all prior groups 1-7 fail closed or preserve their exact accepted results.
+- Integration: post-I/O archive/revoke denial creates no envelope or Task;
+  repeated internal invocation rechecks current authority and may repeat model
+  work because no durable runtime delivery/replay contract exists.
+- Integration: ordinary-task write races prove at most one Task and one
+  classified `consumed|denied` disposition per run/message identity, atomic
+  rollback, current-authority duplicate reads, and no runtime-ledger,
+  direct-corruption, or exact crash-window acceptance matrix.
 - E2E: approved human-performed action creates follow-up and outcome evidence.
 
 ## Normative Backbone Links
@@ -158,19 +147,18 @@ spec_design_links:
   Timeline refs, and zero device or Plant-state effects are independently
   verified.
 - The accepted W1 boundary remains `ft012_task_approval_outcomes` directly
-  after `ft011_safety_action_decisions`. The current accumulated TASK-040 work
-  has advanced the repository Alembic head and all eight exact-head consumers
-  to the still-unclosed additive `ft012_runtime_dispositions` revision; this is
-  implementation state, not TASK-040 closure evidence.
-- `TASK-040-T3-FT-012-W2` is scheduler-recorded `failed` from the current
-  ATTEMPT 05 semantic failure: the independent commitment was insert-correct
-  but PostgreSQL still permitted coordinated replacement. Explicit owner
-  recovery authorizes exactly ATTEMPT 06 with effective task limit `6`, one
-  recovery attempt, and unchanged global maximum `5`. This reconciliation
-  changes no lifecycle/status and does not consume ATTEMPT 06; planning review,
-  failed-to-planned recovery, strict doctor, promotion, and selection remain
-  scheduler-owned gates. FT-012 lifecycle remains `planned` pending the open
-  wave and explicit owner decision.
+  after `ft011_safety_action_decisions`. Historical TASK-040 added
+  `ft012_runtime_dispositions`; later feature work may already own the current
+  repository head. The reopened repair adds only a forward cleanup revision
+  after the executor-confirmed head and rewrites neither history.
+- `TASK-040-T3-FT-012-W2` retains its complete ATTEMPT 01-06 history,
+  including the owner-accepted ATTEMPT 06 implementation/functional closure
+  and its explicit semantic-stage waiver. On 2026-07-24 the operator first
+  superseded coordinated direct-PostgreSQL-corruption hardening and then also
+  superseded the pre-classification runtime ledger, zero-call replay, and its
+  seven crash/race groups. The same task remains `planned`; T3, W2, dependency,
+  provider-neutral product behavior, classified write-side concurrency/
+  idempotency, and all public/access boundaries remain unchanged.
 - No provider/model/base URL/Gemini/credential/egress/network/live-smoke
   result was required, checked, or claimed for W1. The absent human checkpoint
   was accepted by the scheduler as an advisory T3 process gap.
@@ -184,11 +172,11 @@ spec_design_links:
   Task/Approval/Outcome states, exact FT-011 handoff and expiry reuse,
   transactional approval/action/follow-up/outcome uniqueness, persisted
   idempotency fingerprints, protected HTTP commands, Timeline refs, archive
-  races, and the strict typed `task_follow_up` path. The runtime path now has a
-  narrow immutable pre-classification disposition plus the existing downstream
-  classified disposition, coordinated by one short run lock without model-I/O
-  transaction. No scheduler, worker, outbox, device effect, generic run ledger,
-  or second proposal state machine is introduced.
+  races, and the strict typed `task_follow_up` path. The runtime path is linear
+  and best-effort with no pre-classification persistence; the downstream
+  classified disposition remains the sole one-shot Task-write authority. No
+  scheduler, worker, outbox, device effect, runtime ledger, or second proposal
+  state machine is introduced.
 - Current code-phase closure uses test-only fake/spy Task Follow-Up and Safety
   classifier executors; production has no fake fallback and fails closed while
   unbound. Real endpoint calls are deferred to the shared future milestone.

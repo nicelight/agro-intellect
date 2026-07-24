@@ -4,6 +4,30 @@ status: active
 ---
 # Changelog
 
+## 2026-07-24 — TASK-040 same-ID runtime simplification reconciliation
+
+- Reopened only `TASK-040-T3-FT-012-W2` from `done` to `planned` on explicit
+  operator authority while preserving its ID, T3 tier, W2 wave, TASK-039
+  dependency, provider-neutral product outcome, and complete ATTEMPT 01-06
+  closure/evidence history. No replacement task was created.
+- Superseded the pre-classification runtime disposition ledger, zero-call
+  same-run replay/result union, seven ledger-specific crash/race groups, the
+  independent Task-create commitment/write-once/deep-graph hardening, and
+  their hostile tests as current acceptance requirements.
+- Preserved the linear provider -> post-I/O guard -> sanitized audit ->
+  transient MessageEnvelope -> Safety -> canonical Task writer path, current
+  ActorContext/Farm/Plant authority, ordinary classified disposition, Task
+  request fingerprint, real PostgreSQL write-side concurrency/idempotency,
+  provider validation, public HTTP contracts, and no-action/device boundary.
+- Planned one forward cleanup after the executor-confirmed current migration
+  head. Commitment objects are always removed; the historical runtime table
+  is dropped only after an empty-table preflight, while any row stops before
+  DDL/data mutation for an operator data-preservation handoff.
+- Reconciled affected FT-012 specs, behavior, testing, IMPL-FT-012, global
+  current-state routing, and dependent IMPL-FT-013 status. Fresh
+  `/review-tasks-plan FT-012` is required before execution; no code,
+  migration, test, execution attempt, or PASS claim was produced.
+
 ## 2026-07-24 — TASK-041 W1 explicit owner closure
 
 - Closed `TASK-041-T3-FT-013-W1` as `done` on the explicit manual owner's

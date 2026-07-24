@@ -6,18 +6,18 @@
     "plant": "active and currently authorized",
     "provider": "one explicit test-only task_follow_up fake/spy executor; production remains unbound and fail closed",
     "context": "strict PostgreSQL task, outcome, and evidence records only",
-    "run_identity": "one TaskFollowUp command run_id with its canonical command fingerprint"
+    "run_identity": "one injected TaskFollowUp command run_id; no durable worker/scheduler delivery identity exists"
   },
   "when": {
-    "success_flow": "typed model proposal passes the post-model current guard, commits one runtime envelope_handed_off disposition, becomes one pending task_request envelope, and receives the matching project classification",
-    "denial_flow": "the same stage instead observes archive or revoke and commits publication_denied before any envelope or classification"
+    "success_flow": "typed model proposal passes the post-model current guard, becomes one transient pending task_request envelope, receives the matching project classification, and reaches the canonical ordinary Task writer",
+    "denial_flow": "the same stage instead observes archive or revoke and returns a blocked result before any envelope, classification, or Task write"
   },
   "then": {
     "created_task_kind": "the same check|measurement|follow_up kind",
     "created_task_count": 1,
-    "same_run_retry": "cannot allocate another message; an identical denied retry returns the stored denial, conflicting input returns TASK_FOLLOW_UP_RUN_CONFLICT, and committed handoff resolves through the strict task-local incomplete|not_taskable|denied|duplicate|blocked result matrix with zero executor/writer calls",
-    "consumed_commitment": "the classified disposition stores one PostgreSQL write-once expected Task-create fingerprint; coordinated Task/classification plus both-digest replacement is rejected and rolled back, Task-only corruption replay fails closed, denied stores null, and legacy consumed null is never backfilled",
-    "restore_and_concurrency": "restore cannot make the denied run operative; lock_order_consumed_success_v1 proves task_created then zero-call ALREADY_CONSUMED retry; deterministic barriers fix eligible-first as RUN_CREATED then LOCAL_DUPLICATE, denied-first as the same stored RUN_DENIED for both, late-denial-first as LOCAL_INCOMPLETE then RUN_CREATED, and classified-writer-first as RUN_CREATED then LOCAL_DUPLICATE; every success order ends handedoff plus consumed, every denial-first order ends denial only, and reevaluation requires a new command/run/message",
+    "same_run_retry": "a repeated internal invocation may repeat model, audit, and classifier work because no durable runtime replay contract exists; canonical ordinary-dispatch run/message uniqueness and Task request idempotency still prevent a second Task",
+    "consumed_retry": "the classified disposition and Task unique classification link preserve write-side one-shot idempotency; an exact classified retry repeats current ActorContext/Farm/Plant read authority and returns the existing Task without another Task write",
+    "restore_and_concurrency": "a pre-classification denial is re-evaluated under current authority if explicitly invoked again; real concurrent classified writers serialize and commit at most one consumed-or-denied disposition and one Task, while runtime-ledger crash windows and zero-call replay are not current acceptance",
     "action_task_created": false,
     "approval_or_completion_effect": false,
     "fake_fallback_or_silent_acceptance": false

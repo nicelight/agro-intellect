@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-012 human approval, task/follow-up outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
-last_updated: 2026-07-20
+last_updated: 2026-07-24
 ---
 # IMPL-FT-012 — Human Approval Tasks And Follow-Up Outcomes
 
@@ -35,9 +35,8 @@ only a matched ordinary Task.
 - competence-specific `task_follow_up` request/result, strict provider-neutral
   executor seam, pending MessageEnvelope, matching classification, and ordinary-task
   handoff;
-- immutable pre-classification `task_follow_up` runtime disposition keyed by
-  exact run/command fingerprint, coordinated with the classified-message
-  disposition without a transaction across model I/O;
+- linear best-effort `task_follow_up` invocation with no pre-classification
+  runtime ledger, durable delivery identity, or zero-call replay contract;
 - a competence-only Task/Outcome source-record resolver that does not widen
   W1 Outcome evidence acceptance;
 - deterministic, PostgreSQL, HTTP, compatibility, outbound-spy, and anti-cheat
@@ -122,48 +121,36 @@ only a matched ordinary Task.
 4. Reuse the provider-neutral executor seam, no fallback, post-I/O current
    authorization, sanitized common audit, and pending
    MessageEnvelope semantics.
-5. Route one valid non-silent proposal through the actual Safety classifier.
-   Require exact task-kind equality and then invoke the TASK-039 ordinary-task
-   service. Every other class, mismatch, conflict, or current-guard denial has
-   no Task effect and no restore replay.
-6. Add the narrow `ft012_runtime_dispositions` migration after the accepted W1
-   head. After model output, commit exactly one immutable
-   `envelope_handed_off|publication_denied` row under a short run advisory lock;
-   reuse that same lock/row check at the classified Task writer. Allocate an
-   eligible message only after the locked current guard, release the
-   transaction before Safety classifier I/O, and never persist/replay the
-   envelope payload. In that same revision, add only
-   `ordinary_task_dispatch_dispositions.expected_task_create_fingerprint` and
-   its consumed/non-null versus denied/null matrix. Install the same named
-   PostgreSQL `BEFORE UPDATE` write-once function/trigger in the Alembic
-   revision and fresh-schema ORM table DDL; reject every distinct commitment
-   replacement with exact SQLSTATE `23514`. Do not self-derive a commitment
-   for existing consumed rows; retain legacy null and fail replay closed.
-7. Add strict task-local `TaskFollowUpDispositionResultV1` and return it only
-   for run conflict, disposition storage failure, handed-off replay states, and
-   downstream denied/consumed resolution. Keep `TaskFollowUpRunResultV1` and
-   global `AgentRuntimeOutcomeV1` unchanged. Only successfully audited guard
-   denial/envelope-ready creates the two-value row; existing context/config/
-   provider/output/silence/audit branches create none and retain normal retry.
+5. Route one valid non-silent proposal linearly through the post-I/O current
+   guard, sanitized attempt audit, actual Safety classifier, and TASK-039
+   ordinary-task service. Require exact task-kind equality. Every other class,
+   mismatch, conflict, or current-guard denial has no Task effect. Repeated
+   internal invocation may repeat model/audit/classifier work but must recheck
+   current authority and cannot create a duplicate Task.
+6. Remove `TaskFollowUpRuntimeDisposition`, its repository/runtime/service
+   coupling, runtime preflight/replay resolver, shared runtime writer lock
+   protocol, and `TaskFollowUpDispositionResultV1`. Keep
+   `TaskFollowUpRunResultV1`, global `AgentRuntimeOutcomeV1`, and the
+   classified ordinary writer's transaction/run-key serialization unchanged.
+7. Add one forward cleanup migration after the executor-confirmed current
+   head. Always remove `expected_task_create_fingerprint`, its matrix,
+   function, and trigger. Remove `task_follow_up_runtime_dispositions` only
+   after a before-DDL preflight proves it empty; any deployment row stops
+   execution without schema/data mutation. Fresh ORM metadata omits all removed
+   objects and existing FT-012/FT-013 revisions are never rewritten.
 8. Split W2 source revalidation from the existing W1 Outcome evidence
    resolver. The competence resolver may load its strict Task/Outcome/evidence
    record union; `record_follow_up_outcome` continues rejecting `task:` and
    `outcome:` refs.
-9. Add deterministic outbound-snapshot, schema/matrix, archive-race,
-   idempotency, timeout/error, redaction, unbound-production, and no-authority
-   fake/spy tests plus PostgreSQL fingerprint, identical/conflicting retry,
-   concurrent run, runtime/classified exclusion, rollback, exact-head, and
-   new-identity cases. Implement every one of the seven required collision,
-   crash, classifier, persisted-classification, downstream retry, lock-order,
-   and two-race groups from `.memory-bank/testing/task-follow-up.md`; their
-   exact rows/calls/refs cannot be replaced by a generic concurrency test.
-   Add the consumed-Task authority matrix for text plus recomputed Task
-   fingerprint, actor/source/alternate-classification/canonical refs,
-   missing/wrong commitment, legacy null, atomic rollback, and unchanged
-   groups 1-7. Promote the three ATTEMPT 05 coordinated text/source/kind
-   reproductions as direct PostgreSQL update-rejection cases, retain the
-   Task-only replay-failure control, and prove normal consumed/denied inserts,
-   writer rollback, same-run races, and all eight exact-head consumers.
+9. Add deterministic outbound-snapshot, schema, archive-race, timeout/error,
+   redaction, unbound-production, and no-authority fake/spy tests. Keep the
+   cheapest sufficient real PostgreSQL write-side matrix: identical/conflicting
+   classified writers, consumed/denied uniqueness, current-authority duplicate
+   read, Task/disposition/audit rollback, and at most one Task. Remove the
+   independent commitment, runtime-ledger replay/crash/advisory matrices,
+   coordinated direct-SQL probes, and related hostile tests. Prove linear
+   routing, no mapped/written runtime ledger, data-safe forward cleanup,
+   fresh-schema absence, and current exact-head compatibility.
 
 ## Dependencies and waves
 
@@ -191,17 +178,19 @@ only a matched ordinary Task.
   exact retry/conflict/concurrency/rollback behavior, protected raw-path HTTP,
   branch-exact Timeline summaries, and no-actuation/no-Plant-state limits.
 - The accepted W1 boundary is `ft012_task_approval_outcomes` directly after
-  `ft011_safety_action_decisions`. Current accumulated TASK-040 implementation
-  has advanced the repository Alembic head and all eight listed exact-head
-  consumers to `ft012_runtime_dispositions`; the open recovery must amend that
-  same unclosed revision rather than add another migration head.
-- W2 `TASK-040-T3-FT-012-W2` is scheduler-recorded `failed` from current
-  ATTEMPT 05 semantic evidence: three coordinated mutations could replace the
-  Task-owned digest and independent commitment together. Explicit owner
-  recovery names exact next ATTEMPT 06, effective TASK-040 limit `6`, one
-  recovery attempt, and unchanged global maximum `5`. This bounded
-  reconciliation defines only the write-once repair, changes no lifecycle,
-  and does not start or consume ATTEMPT 06.
+  `ft011_safety_action_decisions`. Historical TASK-040 added
+  `ft012_runtime_dispositions`; subsequent FT-013 work may already be the
+  repository head. The reopened repair therefore adds one forward cleanup
+  revision after the executor-confirmed current head and does not rewrite
+  either existing revision.
+- W2 `TASK-040-T3-FT-012-W2` preserves its complete ATTEMPT 01-06 history and
+  the owner-accepted ATTEMPT 06 implementation/functional closure with the
+  explicit semantic-stage waiver. The final 2026-07-24 operator decision
+  supersedes both coordinated direct-PostgreSQL-corruption hardening and the
+  pre-classification runtime ledger/replay/crash matrix, and keeps the same
+  task `planned`. Its ID, T3 tier, W2 wave, dependency, provider-neutral product
+  outcome, public contracts, and real classified write-side
+  concurrency/idempotency requirements remain unchanged.
 
 ## Expected touched files
 
@@ -226,18 +215,14 @@ Core lifecycle/API/persistence slice:
 Provider-neutral runtime slice:
 
 - `backend/app/task_follow_up/` for competence-specific contracts, assembler,
-  service/orchestration, production composition, and the PostgreSQL-only ORM
-  table DDL events that give fresh schemas the same write-once trigger;
-- `backend/app/agent_runtime/providers.py`
-- `backend/app/agent_runtime/__init__.py`
-- `backend/app/main.py` only if composition wiring is needed;
-- `backend/migrations/versions/ft012_runtime_dispositions.py`;
+  linear service/orchestration, ordinary-writer decoupling, and simplified ORM
+  metadata;
+- `backend/migrations/versions/ft012_simplify_task_follow_up_runtime.py` as
+  one forward cleanup revision after the executor-confirmed current head;
 - `tests/backend/task_follow_up/test_runtime.py`
 - `tests/backend/task_follow_up/test_domain_loop.py` for the W1 evidence-union
   non-regression;
-- `tests/backend/task_follow_up/test_migration_models.py`;
-- `tests/backend/agent_runtime/test_ft007_roster_providers.py` for the shared
-  provider construction/outbound compatibility seam.
+- `tests/backend/task_follow_up/test_migration_models.py`.
 
 The canonical roster id and generic Agent Runtime request/service already
 exist. `backend/app/agent_runtime/roster.py`, generic contracts, Plant
@@ -245,8 +230,9 @@ Operations, Access/Admin, and the future Safety package are touched only if
 the implemented upstream seam proves a narrow compatibility edit necessary;
 execution must stop rather than silently widening their public contracts.
 
-TASK-040 advances the implemented W1 head to `ft012_runtime_dispositions` and
-updates every repository exact-head assertion below in the same execution:
+The reopened TASK-040 advances the executor-confirmed current head to its
+forward cleanup revision and updates every repository exact-head assertion
+below in the same execution:
 
 - `tests/backend/access_admin/test_ft002_schema_migration.py`
 - `tests/backend/photo_intake/test_ft005_migration_models.py`
@@ -255,10 +241,12 @@ updates every repository exact-head assertion below in the same execution:
 - `tests/backend/plant_state/test_migration_models.py`
 - `tests/backend/safety_gate/test_migration_models.py`
 - `tests/backend/safety_gate/test_classification_persistence.py`
+- `tests/backend/companion_governance/test_migration_models.py`
 - `tests/backend/test_foundation_database_contract.py`
 
 ## Source artifacts
 
+- `SIMPLIFICATION.md`
 - `.memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md`
 - `.memory-bank/epics/EP-004-safety-tasks-follow-up.md`
 - `.memory-bank/requirements.md` (`REQ-003`, `REQ-004`, `REQ-010`, `REQ-011`,
@@ -296,23 +284,21 @@ updates every repository exact-head assertion below in the same execution:
 - PostgreSQL terminal dispatch dispositions are the sole one-shot authority
   for classified ordinary-message consumption/denial. Their message and run
   identities cannot be cleared or re-evaluated after restore.
-- The immutable runtime disposition is the sole pre-classification one-shot
-  authority for `task_follow_up`. It stores no envelope/provider/auth payload,
-  and the shared short run lock prevents contradiction with the downstream
-  classified disposition without spanning Task model or Safety model I/O.
-- Only successfully audited post-model guard denial or envelope handoff owns
-  that two-value row. All other common outcomes retain their existing no-row
-  behavior. New retry/conflict/failure semantics use the strict task-local
-  disposition result and never widen global `AgentRuntimeOutcomeV1`.
-- The existing classified writer persists one independent expected
-  ordinary-create fingerprint with every new consumed disposition in the same
-  UoW as Task/audit/disposition. It commits no raw candidate/full envelope.
-  Replay requires equality with the Task fingerprint and canonical
-  recomputation, then separately checks scope, agent, classification, and
-  ActorContext attribution; legacy null and every mismatch fail redacted.
-  PostgreSQL rejects every distinct post-insert commitment change, including
-  null/value transitions and digest replacement, so coordinated changes abort
-  and roll back rather than replacing the independent proof.
+- `task_follow_up` is a linear best-effort invocation with no
+  pre-classification runtime authority. It repeats current guards after model
+  I/O, keeps provider/Safety I/O outside Task write transactions, and may
+  repeat non-authoritative model/audit/classifier work when explicitly
+  reinvoked.
+- `TaskFollowUpRunResultV1` remains the only competence-local result. No
+  runtime disposition result union or global `AgentRuntimeOutcomeV1` widening
+  is permitted.
+- The existing classified writer atomically persists Task, audit ref, and the
+  consumed disposition. Exact classified retry resolves the uniquely linked
+  Task only after current ActorContext/Farm/Plant read/task authority and no
+  second Task write. It does not depend on a runtime row, persist an independent
+  commitment, or deep-reconstruct historical Task text/kind/sources/
+  attribution. Direct coordinated PostgreSQL corruption is outside the current
+  threat model.
 - Human approval revalidates current ActorContext, active Plant, immutable
   Safety decision, exact expiry, and pH/EC evidence; fresh evidence alone is
   never approval.
@@ -340,45 +326,21 @@ updates every repository exact-head assertion below in the same execution:
   writes;
 - terminal consumed/denied disposition matrix, same-identity archived denial
   after restore, new run/message eligibility, and disposition write failure;
-- runtime command fingerprint, exact denied retry, conflicting and concurrent
-  same-run behavior, post-model archive/revoke durability, one post-guard
-  message, runtime/classified exclusion, persistence rollback, and new command/
-  run/message eligibility;
-- exact task-local status/code/ref matrices for conflict, persistence failure,
-  incomplete and non-taskable handoff, downstream denial/consumption, and
-  current-authority replay block, all with zero retry executor/writer calls;
-- exact independent consumed-Task commitment across normalized text, kind,
-  ordered source refs, run/message identity, separate actor/scope/agent/
-  classification checks, missing/wrong/legacy-null commitment, rollback, and
-  no raw-envelope persistence;
-- exact named write-once function/trigger parity in migrated and fresh ORM
-  schemas; `23514` direct rejection for digest replacement and null/value
-  transitions; three coordinated ATTEMPT 05 rollback cases; Task-only
-  fail-closed control; valid unrelated update semantics; no legacy backfill;
-  and refusal-safe dependency-ordered downgrade;
-- seven separate deterministic groups: forced advisory-key collision/full-UUID
-  isolation; post-handoff pre-classifier crash; classifier guard/persistence
-  failure; persisted-classification pre-Task crash; absent/denied/consumed
-  downstream retry matrix; exact `lock_order_consumed_success_v1`; and four
-  barrier-controlled eligible/denied/classified-writer orders;
-- `lock_order_consumed_success_v1` returns normal `task_created(C,T)`, commits
-  exactly handoff/pending-message/matching-classification/consumed/one Task,
-  calls model/runtime-audit/Safety/Task-service `1/1/1/1`, records exactly two
-  authoritative audits and zero noise/rollback, proves the full preflight,
-  post-model, and classified-writer order plus no transaction/advisory lock at
-  either executor, resolves the old run as `ALREADY_CONSUMED(C,T)` at
-  `0/0/0/0`, and admits an isolated fresh `task_created(C2,T2)` run;
-- group-7 barriers first complete both model calls, then release participants
-  serially: eligible-first returns `RUN_CREATED(C,T)` then
-  `LOCAL_DUPLICATE(C,T)` with success rows and `2/1/1/1`; denied-first returns
-  stored `RUN_DENIED` for both with denial-only rows and `2/1/0/0`;
-  late-denial-first after committed handoff/classification returns
-  `LOCAL_INCOMPLETE(C)` then `RUN_CREATED(C,T)`; classified-writer-first
-  returns `RUN_CREATED(C,T)` then `LOCAL_DUPLICATE(C,T)`. Both late cases end
-  with the exact success rows and `2/1/1/1`; success cases have two
-  authoritative audits, denial has one, and all have zero noise/rollback,
-  exact zero contradictory/second rows or duplicate Tasks, zero-call terminal
-  old-run retry, and an isolated successful fresh-run probe;
+- linear provider -> post-I/O guard -> audit -> transient envelope -> Safety ->
+  ordinary writer routing, including allowed repeated internal model/audit/
+  classifier work and no mapped/written runtime ledger;
+- service-owned classified retry through classification/disposition identity
+  plus the unique Task link, current authority block, missing-link redacted
+  failure, rollback, and no raw-envelope persistence;
+- forward cleanup migration after the executor-confirmed current head, fresh
+  ORM absence of the removed commitment and runtime-ledger objects,
+  before-DDL refusal when historical runtime rows exist,
+  rollback-compatible downgrade, and exact-head consumer updates without
+  rewriting FT-013 migration history;
+- real write-side concurrency matrix: identical classified writers resolve one
+  Task, conflicting writers preserve the winner, denial commits no Task,
+  Task/disposition/audit atomic rollback, and provider/Safety I/O outside the
+  Task transaction;
 - W1 Outcome evidence rejects `task:`/`outcome:` while the competence-only
   source resolver accepts only its strict runtime record union;
 - Boss/Engineer/Consultant, grant, archive/restore, expiry boundary, and
@@ -397,9 +359,9 @@ updates every repository exact-head assertion below in the same execution:
 ## Quality gates and UAT
 
 - Run the task-specific commands in `.memory-bank/testing/task-follow-up.md`.
-- Run the eight exact-head compatibility tests after the TASK-040 runtime
-  disposition migration:
-  `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/test_foundation_database_contract.py -q`.
+- Run all current exact-head compatibility tests after the TASK-040 cleanup
+  migration:
+  `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q`.
 - Run the bounded W2 repair matrix:
   `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/task_follow_up/test_domain_loop.py tests/backend/task_follow_up/test_migration_models.py -m "not real_model" -q`.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` for both waves.

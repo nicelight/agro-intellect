@@ -369,11 +369,12 @@ source_of_truth:
   open. REQ-010 and the FT-007/FT-008-owned REQ-013 outcome remain `verified`;
   FT-012 W1 consumes those authority/publication seams without re-owning them.
 - FT-012 and EP-004 lifecycle values remain `planned` pending the open W2 and
-  explicit owner feature/epic decisions. TASK-040 remains scheduler-owned
-  `in_progress` after ATTEMPT 01 verification FAIL and ATTEMPT 02
-  implementation BLOCKED; this sync makes no retry/resume selection, ATTEMPT
-  03 consumption, lifecycle transition, unblock, or block decision and does
-  not touch TASK-041/TASK-042/TASK-043.
+  explicit owner feature/epic decisions. TASK-040 historically closed after
+  ATTEMPT 06 and retains that complete closure/evidence record, but the
+  operator reopened the same task as `planned` on 2026-07-24 for bounded
+  runtime-ledger and direct-corruption simplification. This planning
+  reconciliation creates no new task, implementation PASS, execution attempt,
+  or RTM lifecycle transition; dependent TASK-042/TASK-043 remain `planned`.
 - No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
   was required, checked, or claimed. The absent human checkpoint remains a
   scheduler-accepted advisory T3 process gap.

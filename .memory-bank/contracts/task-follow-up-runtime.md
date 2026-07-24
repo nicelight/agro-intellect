@@ -2,7 +2,7 @@
 description: Strict provider-neutral Task and Follow-up Agent input, proposal, classification, and ordinary-task handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-20
+last_updated: 2026-07-24
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -193,93 +193,39 @@ and ActorContext snapshot are never independently sufficient authority.
 `silent` creates no MessageEnvelope, classification, or Task. Provider,
 validation, guard, audit, or persistence failure cannot be relabeled silence.
 
-### Runtime-stage one-shot disposition
+### Linear runtime boundary
 
-After model output, the runtime owns one narrow immutable PostgreSQL
-`task_follow_up_runtime_dispositions` row for this competence. It is keyed by
-`run_id` and the exact `command_sha256`; it is neither a generic Agent Runtime
-ledger nor Task, Safety, Timeline, Bus, or UI authority. Its closed terminal
-runtime-stage outcome is:
+The current MVP has no durable caller, worker, scheduler, delivery identity, or
+accepted runtime retry/crash contract for this competence. The runtime
+therefore writes no pre-classification disposition and exposes no runtime
+replay result union.
 
-- `envelope_handed_off`: the post-model current guard passed, the one
-  post-guard `message_id` and exact envelope input fingerprint are stored, and
-  the in-memory envelope may proceed once to the canonical Safety classifier;
-- `publication_denied`: the post-model current guard denied with the sole safe
-  code `AGENT_PUBLICATION_BLOCKED`; no `message_id` or envelope fingerprint
-  exists.
+Every explicit invocation performs:
 
-Both rows retain only safe `model_ref` and `agent_runtime_decided` event-ref
-metadata required to reproduce a strict stored denial. They never persist
-candidate text, provider request/response, MessageEnvelope payload, auth or
-permission snapshots, credentials, prompts, or raw errors. The disposition
-row, not its Timeline ref, is denial authority.
+1. current authorization and deterministic PostgreSQL input assembly;
+2. provider-neutral model execution outside a database transaction;
+3. post-I/O current authorization/Plant recheck;
+4. sanitized `agent_runtime_decided` attempt audit;
+5. one transient pending MessageEnvelope for a valid non-silent result;
+6. canonical Safety classification; and
+7. the sole ordinary Task writer for an exact matching safe task kind.
 
-The post-model terminal decision uses a short PostgreSQL transaction: acquire
-the FT-012 run-key transaction advisory lock, re-read any runtime or classified
-dispatch disposition, lock/re-evaluate current scope, append the sanitized
-runtime audit, insert the immutable runtime row, and commit. Model execution
-and the later Safety classifier call occur outside this transaction. An
-eligible envelope is allocated only after the locked current guard passes and
-is never reconstructed or replayed from the row.
+Context denial, unbound runtime, provider failure, invalid output, silence,
+audit failure, post-I/O denial, classifier failure, and Task failure use the
+existing `TaskFollowUpRunResultV1` branches and create no runtime ledger row.
+An explicit retry repeats the linear path and may repeat model, audit, or
+classification work. This accepted residual remains bounded because the
+ordinary writer's persisted classification, unique run/message identities,
+transaction, Task request fingerprint, and `consumed|denied` disposition
+prevent a duplicate Task.
 
-An exact retry of a stored `publication_denied` fingerprint returns the same
-strict `TaskFollowUpRunResultV1` runtime denial reconstructed only from the
-row's safe model/event refs, with zero model, audit, classifier, MessageEnvelope,
-or Task calls. Reusing `run_id` with a different fingerprint and every
-`envelope_handed_off` retry use the competence-local result contract below;
-they never create or reuse another envelope. Runtime-disposition
-read/lock/flush/commit failure also uses that local result and never widens the
-global `AgentRuntimeOutcomeV1` union.
-
-For `origin_agent_id=task_follow_up`, the ordinary Task service takes the same
-short run-key lock and requires the exact immutable
-`envelope_handed_off/run_id/message_id/input_sha256/Farm/Plant` row before it
-may write its existing classified-message disposition. The runtime denial
-writer checks that classified disposition under the same lock. Therefore one
-run cannot commit both `publication_denied` and a classified `consumed|denied`
-result. Concurrent same-run invocations may complete provider I/O, but only the
-first matching terminal runtime write wins; later identical/conflicting calls
-perform no classifier or Task effect.
-
-A consumed classified disposition also carries one immutable independent
-`expected_task_create_fingerprint`. The existing ordinary-task writer computes
-it from the exact canonical classified-message create preimage and stores it in
-the same transaction as the Task and consumed disposition. The preimage
-contains normalized display text, exact ordinary kind, ordered canonical Task
-source refs, run/request id, and message id; message id is also the
-classification identity. It does not contain Farm/Plant scope, origin agent,
-or human attribution, which replay verifies separately against the runtime,
-classification, Task, and command ActorContext. No candidate text or full
-MessageEnvelope is persisted.
-
-That commitment is immutable at the PostgreSQL boundary, not only by service
-convention. The data spec's named `BEFORE UPDATE` trigger rejects every
-distinct old/new commitment value with SQLSTATE `23514`; a coordinated change
-to Task/classification fields and both digests therefore aborts and rolls back
-instead of creating a newly self-consistent replay graph. The canonical writer
-remains insert-only, consumed/denied insert semantics remain owned by the
-matrix check, and no new runtime or public error union is introduced.
-
-### Disposition applicability to existing runtime outcomes
-
-The two-value table does not represent every Agent Runtime outcome. Its exact
-applicability and same-run behavior are:
-
-| Existing common outcome | Runtime row | Same-run retry |
-|---|---|---|
-| `context_denied` or `runtime_not_configured` | none | repeats pre-provider checks; model/audit/classifier/Task calls remain `0` for that failed invocation |
-| `provider_failed` or `output_invalid` | none | starts one new model attempt and existing audit behavior; it may later reach any normal branch |
-| `model_silent` after a passing post-model guard | none | starts one new model attempt; silence is not durable one-shot authority |
-| `audit_failed` on any branch | none; any uncommitted runtime row rolls back | starts one new model attempt; no classifier/Task call occurred in the failed invocation |
-| successfully audited `publication_guard_denied` | one `publication_denied` | returns the stored strict denial with all executor/writer/audit call counts `0` |
-| successfully audited `envelope_ready` | one `envelope_handed_off` | resolves only from the runtime row plus persisted classification/dispatch/Task authority through `TaskFollowUpDispositionResultV1`; all executor/writer/audit call counts `0` |
-
-An `output_invalid` result never reaches the post-model current guard.
-`model_silent` reaches the current guard first: a failed guard therefore becomes
-the normal durable `publication_denied` branch, while only a passing guard
-allows non-durable `model_silent`. The one-row invariant applies only to a
-successfully audited guard denial or speak/envelope handoff, not to the other
-rows in this matrix.
+The ordinary writer may retain its short run-key serialization for real
+write-side races, but it does not read or validate
+`task_follow_up_runtime_dispositions`. A consumed classified disposition and
+the Task commit atomically. Its exact classified retry returns the linked Task
+only under current read/task authority, without reconstructing Task
+text/kind/source history or storing an independent commitment. Coordinated
+direct PostgreSQL corruption is outside this contract.
 
 ## Internal orchestration result
 
@@ -309,78 +255,10 @@ guard failure uses the classification-failure row rather than exposing an
 untrusted existing result. This result is an internal orchestration handoff,
 not a public API or mutable authority row.
 
-### Competence-local disposition result
-
-`TaskFollowUpDispositionResultV1` is a second strict internal result used only
-for run-disposition preflight/replay/failure. It contains exactly:
-
-- `schema_version=1`, `run_id`;
-- `result_status=conflict|failed|incomplete|not_taskable|denied|duplicate|blocked`;
-- one non-null `result_code` from the closed matrix below;
-- nullable safe `classification_ref` and `task_ref`;
-- `retry_requires_new_run=true`.
-
-It contains no `AgentRuntimeOutcomeV1`, MessageEnvelope/message ref, proposed
-kind, candidate/provider/model/audit payload, denial detail, or auth state.
-`TaskFollowUpInvocationResultV1` is the internal return union
-`TaskFollowUpRunResultV1 | TaskFollowUpDispositionResultV1`; no global Agent
-Runtime contract or code changes.
-
-| Condition | Status / code | Classification / Task refs |
-|---|---|---|
-| Same `run_id`, different `command_sha256` | `conflict / TASK_FOLLOW_UP_RUN_CONFLICT` | null / null |
-| Runtime-disposition read, advisory-lock, flush, or commit failure; or corrupt/mismatched persisted graph | `failed / TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED` | null / null |
-| `envelope_handed_off`, no persisted classification | `incomplete / TASK_FOLLOW_UP_HANDOFF_INCOMPLETE` | null / null |
-| `envelope_handed_off`, exact matching taskable classification, no classified disposition | `incomplete / TASK_FOLLOW_UP_HANDOFF_INCOMPLETE` | matching classification ref / null |
-| `envelope_handed_off`, exact persisted non-taskable classification, no classified disposition | `not_taskable / TASK_FOLLOW_UP_ALREADY_NOT_TASKABLE` | matching classification ref / null |
-| Matching classified disposition is `denied` | `denied / TASK_FOLLOW_UP_DISPATCH_DENIED` | matching classification ref / null |
-| Matching classified disposition is `consumed`, exact Task exists, and current read/task authority passes | `duplicate / TASK_FOLLOW_UP_ALREADY_CONSUMED` | matching classification ref / existing Task ref |
-| Matching consumed disposition exists but current read/task authority fails | `blocked / TASK_FOLLOW_UP_REPLAY_BLOCKED` | null / null |
-
-An existing classification is exposed only when its message, run, Farm/Plant,
-input hash, and classification content exactly match the immutable handoff.
-A conflicting/untrusted classification or a consumed disposition without its
-exact Task is the redacted disposition-failure row. These replay results never
-call the model, audit appender, Safety classifier, or Task writer. The old run
-remains one-shot in every case; retry or recovery uses a new command/run and an
-eligible new post-guard message.
-
-An exact consumed Task additionally requires all three values to agree: the
-Task's persisted `create_request_fingerprint`, the disposition's independent
-`expected_task_create_fingerprint`, and a fresh canonical recomputation over
-the Task row's normalized text/kind/ordered refs plus the trusted run/message
-identity. Account, membership, role, Farm, Plant, agent, and classification
-attribution are compared separately. A missing or malformed commitment,
-including a legacy null, or any mismatch returns
-`failed/TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED` with null refs and exact
-model/audit/Safety/Task calls `0/0/0/0`. Replay never treats
-`input_sha256` as a substitute: the full envelope preimage is transient and
-cannot be reconstructed independently.
-
-At first invocation, a disposition read/lock failure before model execution
-returns the local failure with model/audit/Safety/Task counts `0/0/0/0`. A
-post-model lock failure returns it after exactly one model call and before
-audit/Safety/Task (`1/0/0/0`). A flush/commit failure after successful audit
-returns it after `1/1/0/0`, leaves no runtime row, and may leave exactly one
-non-authoritative audit event. It never reports the normal
-`publication_guard_denied` or `envelope_ready` result unless the runtime row
-committed.
-
-Deterministic race conformance uses completion barriers, never scheduler
-sampling. If an eligible invocation completes the exact matching
-classification plus consumed Task before its denied peer resumes, the returns
-are normal `task_created(C,T)` then local
-`duplicate/TASK_FOLLOW_UP_ALREADY_CONSUMED(C,T)`. If denial commits first,
-both participants return the same stored normal `publication_guard_denied /
-AGENT_PUBLICATION_BLOCKED` result with null refs. After a handoff and matching
-classification are committed, a late denial released before the classified
-writer returns local `incomplete/TASK_FOLLOW_UP_HANDOFF_INCOMPLETE(C,null)` and
-the writer then returns normal `task_created(C,T)`; with the writer released
-first, it returns `task_created(C,T)` and the late denial returns local
-`duplicate/TASK_FOLLOW_UP_ALREADY_CONSUMED(C,T)`. Both late orders finish with
-the same immutable handoff plus consumed disposition and never with a runtime
-denial. Exact row/call/audit/rollback cardinalities and the named lock-order
-fixture are canonical in `.memory-bank/testing/task-follow-up.md` group 6/7.
+`TaskFollowUpRunResultV1` is the sole competence-local invocation result. The
+historical `TaskFollowUpDispositionResultV1` conflict/incomplete/denied/
+duplicate/blocked matrix is removed with the runtime ledger and is not mapped
+into global `AgentRuntimeOutcomeV1`.
 
 ## Executor and failure behavior
 
@@ -392,9 +270,11 @@ changes the binding.
 Provider I/O occurs outside database transactions. Current
 session/account/membership/grant and active Plant checks run before assembly,
 after model I/O, at classification persistence, and at Task insertion through
-their owning boundaries. Restore never replays a denied or already handed-off
-run. Reevaluation requires a new `TaskFollowUpCommandV1` with a new `run_id`;
-an eligible post-guard path then allocates a new `message_id`.
+their owning boundaries. A pre-classification denial or interrupted invocation
+is not durable delivery state; an explicit retry re-runs these checks and may
+allocate a new transient message. Once a classified `consumed|denied`
+disposition exists, its run/message identities remain terminal under the
+ordinary Task contract.
 
 Errors, logs, Timeline, and evidence exclude request/response bodies, candidate
 text, quoted task text, prompts, credentials, auth state, raw exceptions,
@@ -403,20 +283,18 @@ authoritative; route mismatch adds no mutable failure record.
 
 ## Verification
 
-Current code-phase tests must prove exact request/result/orchestration shapes, deterministic
-record selection, typed quoted-data isolation, forbidden-source and auth-data
-absence, allowed-kind policy, no duplicate automatic follow-up, strict pending
-MessageEnvelope mapping, matched classification, ordinary-task idempotency,
-runtime command fingerprints, identical/conflicting same-run behavior,
-post-model archive/revoke denial retention, concurrent same-run first-write,
-runtime/classified-disposition exclusion, disposition rollback, new-identity
-eligibility, independent consumed-Task commitment and legacy-null failure,
-PostgreSQL write-once rejection of all three coordinated ATTEMPT 05 mutations,
-current authorization/archive races, fake/spy success, timeout,
-provider-error, invalid-output and classification paths, no production
-fallback, redaction, and zero action/approval/completion/outcome/device/Plant-state authority. A
-strict fake/spy `task_follow_up` proposal plus strict fake/spy classifier result
-may create exactly one ordinary Task as deterministic code-phase evidence.
+Current code-phase tests must prove exact request/result/orchestration shapes,
+deterministic record selection, typed quoted-data isolation, forbidden-source
+and auth-data absence, allowed-kind policy, no duplicate automatic follow-up,
+strict transient MessageEnvelope mapping, matched classification, linear
+post-I/O guard routing, ordinary-task write-side idempotency and rollback,
+classified-disposition duplicate/conflict behavior, current authorization/
+archive races, fake/spy success, timeout, provider-error, invalid-output and
+classification paths, no mapped or written runtime ledger, no production
+fallback, redaction, and zero action/approval/completion/outcome/device/
+Plant-state authority. A strict fake/spy `task_follow_up` proposal plus strict
+fake/spy classifier result may create exactly one ordinary Task as
+deterministic code-phase evidence.
 
 Real response/classifier calls are deferred to the single provider runbook
 milestone after endpoint selection and are not current closure evidence.
