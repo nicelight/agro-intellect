@@ -5,10 +5,12 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 from sqlalchemy import select
 
 from backend.app.access_admin.dependencies import require_actor_context
 from backend.app.agent_chat import PlantFeedError, PlantFeedErrorCode, PlantFeedService, UIFeedEvent
+from backend.app.api.feed import CompanionAttentionPayload, CompanionDecisionPayload
 from backend.app.main import create_app
 from tests.backend.agent_chat.conftest import ft008_database, ft008_seed  # noqa: F401
 from tests.backend.plant_operations.conftest import create_actor
@@ -19,6 +21,62 @@ def test_feed_openapi_is_protected_no_store_contract():
     operation = create_app().openapi()["paths"]["/api/plants/{plant_id}/feed"]["get"]
     assert {item["name"] for item in operation["parameters"]} >= {"plant_id", "cursor", "limit"}
     assert {"200", "401", "403", "404", "422", "500"}.issubset(operation["responses"])
+
+
+def test_feed_companion_payload_models_expose_and_enforce_exact_constraints():
+    uuid_fragment = (
+        r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    )
+    schemas = create_app().openapi()["components"]["schemas"]
+    expected = {
+        "CompanionAttentionPayload": {
+            "attention_ref": rf"^companion_attention:{uuid_fragment}$",
+            "issue_ref": rf"^companion_issue:{uuid_fragment}$",
+            "summary_text": (1, 500),
+        },
+        "CompanionProposalPayload": {
+            "proposal_ref": rf"^companion_proposal:{uuid_fragment}$",
+            "issue_ref": rf"^companion_issue:{uuid_fragment}$",
+            "summary_text": (1, 500),
+        },
+        "CompanionDecisionPayload": {
+            "decision_record_ref": rf"^decision_record:{uuid_fragment}$",
+            "issue_ref": rf"^companion_issue:{uuid_fragment}$",
+            "proposal_ref": rf"^companion_proposal:{uuid_fragment}$",
+            "decision_summary": (1, 500),
+        },
+    }
+    for schema_name, fields in expected.items():
+        properties = schemas[schema_name]["properties"]
+        for field_name, constraint in fields.items():
+            if isinstance(constraint, tuple):
+                assert (
+                    properties[field_name]["minLength"],
+                    properties[field_name]["maxLength"],
+                ) == constraint
+            else:
+                assert properties[field_name]["pattern"] == constraint
+
+    with pytest.raises(ValidationError):
+        CompanionAttentionPayload.model_validate(
+            {
+                "payload_kind": "companion_attention",
+                "attention_ref": f"companion_attention:{uuid.uuid4()}",
+                "issue_ref": f"issue:{uuid.uuid4()}",
+                "summary_text": "Требуется решение.",
+            }
+        )
+    with pytest.raises(ValidationError):
+        CompanionDecisionPayload.model_validate(
+            {
+                "payload_kind": "companion_decision",
+                "decision_record_ref": f"decision_record:{uuid.uuid4()}",
+                "issue_ref": f"companion_issue:{uuid.uuid4()}",
+                "proposal_ref": f"companion_proposal:{uuid.uuid4()}",
+                "decision_summary": "x" * 501,
+                "safety_gate_authority": "not_granted",
+            }
+        )
 
 
 def test_feed_service_pages_literal_rows_and_allows_archived_history(ft008_database, ft008_seed):

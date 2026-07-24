@@ -4,6 +4,21 @@ status: active
 ---
 # Changelog
 
+## 2026-07-24 — TASK-041 W1 explicit owner closure
+
+- Closed `TASK-041-T3-FT-013-W1` as `done` on the explicit manual owner's
+  instruction after Attempt 05 independent functional `VERDICT: PASS`.
+- Preserved red-verification report 04 and its `semantic-fail` unchanged; no
+  semantic-pass is claimed. The owner accepted its three findings as residual
+  risk outside the practical W1 product threat model because one bypasses the
+  future runtime assembler through a direct internal call and two require
+  direct PostgreSQL mutation.
+- Recorded the exact `HUMAN_CHECKPOINT: done` marker and durable owner closure
+  rationale without changing code or canonical specifications.
+- Kept FT-013 and mapped requirement lifecycle values unchanged because W2/W3
+  remain open. TASK-042 and TASK-043 stay `planned` and were not promoted,
+  selected, executed, or verified by this closure.
+
 ## 2026-07-23 — FT-013 workflow-protocol task reconciliation
 
 - Reconciled `TASK-041`, `TASK-042`, and `TASK-043` against the current task

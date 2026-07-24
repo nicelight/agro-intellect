@@ -62,19 +62,23 @@ class UIFeedEvent(Base):
     __tablename__ = "ui_feed_events"
     __table_args__ = (
         CheckConstraint(
-            "source_type IN ('system', 'agent_message', 'safety')",
+            "source_type IN "
+            "('system', 'agent_message', 'safety', 'companion_governance')",
             name="ck_ui_feed_events_source_type",
         ),
         CheckConstraint(
             "display_kind IN "
-            "('agent_introduction', 'agent_message', 'block_notice', 'safety_status')",
+            "('agent_introduction', 'agent_message', 'block_notice', "
+            "'safety_status', 'companion_governance')",
             name="ck_ui_feed_events_display_kind",
         ),
         CheckConstraint(
             "((source_type = 'system' AND display_kind = 'agent_introduction') OR "
             "(source_type = 'agent_message' AND display_kind = 'agent_message') OR "
             "(source_type = 'safety' "
-            "AND display_kind IN ('block_notice', 'safety_status')))",
+            "AND display_kind IN ('block_notice', 'safety_status')) OR "
+            "(source_type = 'companion_governance' "
+            "AND display_kind = 'companion_governance'))",
             name="ck_ui_feed_events_source_display",
         ),
         CheckConstraint(

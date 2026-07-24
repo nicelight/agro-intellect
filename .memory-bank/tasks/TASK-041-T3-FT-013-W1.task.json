@@ -1,7 +1,7 @@
 {
   "id": "TASK-041-T3-FT-013-W1",
   "title": "Establish Companion IssueStack and proposal authority",
-  "status": "planned",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-013",
   "reqs": [
@@ -66,7 +66,137 @@
       "required": true
     }
   ],
-  "verify": [],
+  "verify": [
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "01",
+      "verdict": "PASS",
+      "verified_at": "2026-07-24T02:23:20+05:00",
+      "basis": "Fresh task-scoped PostgreSQL, access, concurrency, projection, HTTP/read, migration, broad deterministic regression, static scope, and verifier-owned authority/archive evidence passed without relying on execute receipts.",
+      "evidence": [
+        ".protocols/TASK-041-T3-FT-013-W1/verification.md",
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt01_contract_matrix.py"
+      ],
+      "gate_summary": {
+        "companion_proposal_authority": "PASS: 19 passed",
+        "proposal_access_feed_regression": "PASS: 116 passed",
+        "migration_head_compatibility": "PASS: 32 passed",
+        "full_deterministic": "PASS: 574 passed, 2 deselected",
+        "verifier_contract_matrix": "PASS: 1 passed",
+        "compile_lint_diff_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Run per-task /red-verify, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "02",
+      "verdict": "PASS",
+      "verified_at": "2026-07-24T11:13:42+05:00",
+      "basis": "Fresh Attempt 02 PostgreSQL, HTTP/read, access, concurrency, projection-conflict, exact-ref, migration, broad deterministic regression, static-scope, and verifier-owned repair/authority/archive evidence passed without reusing execute receipts.",
+      "evidence": [
+        ".protocols/TASK-041-T3-FT-013-W1/verification.md",
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt02_repair_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt01_contract_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/red_verify_attempt01_semantic_probes.py"
+      ],
+      "gate_summary": {
+        "combined_verifier_hostile_matrix": "PASS: 5 passed",
+        "companion_proposal_authority": "PASS: 21 passed",
+        "proposal_access_feed_regression": "PASS: 117 passed",
+        "migration_head_compatibility": "PASS: 32 passed",
+        "full_deterministic": "PASS: 576 passed, 2 deselected",
+        "compile_lint_diff_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Run fresh per-task /red-verify against Attempt 02, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "04",
+      "verdict": "PASS",
+      "verified_at": "2026-07-24T15:29:43+05:00",
+      "basis": "Fresh Attempt 04 PostgreSQL, access, lifecycle, concurrency, complete-projection, retained-graph, HTTP/read, migration, broad deterministic regression, static-scope, and verifier-owned integrity evidence passed without reusing execute receipts or historical functional verdicts.",
+      "evidence": [
+        ".protocols/TASK-041-T3-FT-013-W1/verification.md",
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-VERIFY-final-report-docs-04.md",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt04_integrity_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt01_contract_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt02_repair_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/red_verify_attempt01_semantic_probes.py",
+        ".tasks/TASK-041-T3-FT-013-W1/red_verify_attempt02_semantic_probes.py"
+      ],
+      "gate_summary": {
+        "attempt04_verifier_integrity_matrix": "PASS: 3 passed",
+        "historical_hostile_matrix_rerun": "PASS: 7 passed",
+        "companion_proposal_authority": "PASS: 27 passed",
+        "proposal_access_feed_regression": "PASS: 121 passed",
+        "migration_head_compatibility": "PASS: 32 passed",
+        "full_deterministic": "PASS: 582 passed, 2 deselected",
+        "compile_lint_diff_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Run fresh per-task /red-verify against Attempt 04, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "05",
+      "verdict": "PASS",
+      "verified_at": "2026-07-24T18:00:10+05:00",
+      "basis": "Fresh Attempt 05 PostgreSQL authority/access/archive/projection/integrity, closed provider-ref provenance, strict production Plant Feed OpenAPI/runtime schemas, migration compatibility, broad deterministic regression, static scope, and verifier-owned functional evidence passed without reusing execute receipts or historical functional verdicts.",
+      "evidence": [
+        ".protocols/TASK-041-T3-FT-013-W1/verification.md",
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-VERIFY-final-report-docs-05.md",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt05_functional_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt04_integrity_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt02_repair_matrix.py",
+        ".tasks/TASK-041-T3-FT-013-W1/verify_attempt01_contract_matrix.py"
+      ],
+      "gate_summary": {
+        "combined_verifier_matrix": "PASS: 9 passed",
+        "companion_proposal_authority": "PASS: 28 passed",
+        "plant_feed_api": "PASS: 9 passed",
+        "proposal_access_feed_regression": "PASS: 122 passed",
+        "migration_head_compatibility": "PASS: 32 passed",
+        "full_deterministic": "PASS: 584 passed, 2 deselected",
+        "compile_lint_diff_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Run fresh per-task /red-verify against Attempt 05, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "owner_lifecycle_closure",
+      "mode": "manual_explicit_owner",
+      "decision": "done",
+      "attempt": "05",
+      "decided_at": "2026-07-24T18:55:48+05:00",
+      "basis": "The explicit owner accepted the independently verified Attempt 05 implementation and ordered TASK-041 closed without further agents or repeated verification. The latest red-verification semantic-fail remains unchanged and is not represented as semantic-pass. The owner rejected its three probes as closure blockers for the current product threat model: F1 requires bypassing the future TASK-043 runtime assembler through a direct internal W1 service call, while F2 and F3 require direct PostgreSQL mutation into states not produced by supported W1 paths.",
+      "accepted_evidence": [
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-EXECUTE-final-report-code-05.md",
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-VERIFY-final-report-docs-05.md",
+        ".tasks/TASK-041-T3-FT-013-W1/TASK-041-T3-FT-013-W1-S-RED-VERIFY-final-report-docs-04.md",
+        ".protocols/TASK-041-T3-FT-013-W1/administrative-closure.md"
+      ],
+      "gate_summary": {
+        "functional_verification": "PASS: combined verifier matrix 9; proposal authority 28; Plant Feed API 9; access/feed regression 122; migration compatibility 32; full deterministic 584 passed, 2 deselected; compile/lint/diff/scope PASS",
+        "red_verification": "OWNER-ACCEPTED semantic-fail as residual risk; no semantic-pass claim",
+        "human_checkpoint": "HUMAN_CHECKPOINT: done by direct owner closure instruction"
+      },
+      "accepted_residual_risk": [
+        "An unsupported caller that bypasses the future TASK-043 runtime assembler can construct cross-Plant optional evidence provenance for the internal W1 persistence service.",
+        "Direct database corruption can create impossible proposal sequence ordering that the W1 protected detail read does not reject.",
+        "Direct database corruption can store an uppercase UUID projection ref that escapes as an unstructured 500 without Cache-Control: no-store."
+      ],
+      "scope": "No code or specification repair is authorized by this closure. TASK-042 and TASK-043 remain planned and are not automatically promoted or selected.",
+      "next_gate": "TASK-041 is terminal done. Any later TASK-042 selection is a separate explicit owner/workflow decision."
+    }
+  ],
   "docs": [
     ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
     ".memory-bank/states/companion-governance.md",

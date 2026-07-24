@@ -104,8 +104,11 @@ def test_ft002_revision_is_in_ordered_product_history_and_contains_no_destructiv
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     product_head = script.get_revision("head")
     assert product_head is not None
-    assert product_head.revision == "ft012_runtime_dispositions"
-    assert product_head.down_revision == "ft012_task_approval_outcomes"
+    assert product_head.revision == "ft013_governance_aggregate"
+    assert product_head.down_revision == "ft012_runtime_dispositions"
+    runtime_dispositions = script.get_revision("ft012_runtime_dispositions")
+    assert runtime_dispositions is not None
+    assert runtime_dispositions.down_revision == "ft012_task_approval_outcomes"
     ft012 = script.get_revision("ft012_task_approval_outcomes")
     assert ft012 is not None
     assert ft012.down_revision == "ft011_safety_action_decisions"

@@ -142,9 +142,10 @@ last_updated: 2026-07-23
   source, exact approved-summary, nested Task error translation, and direct
   TASK-042 Task-contract routing. The explicit owner decision permits only
   persisted open-Issue `summary_text` as typed non-authoritative Companion
-  `existing_issue` input. TASK-041/TASK-042/TASK-043 remain `planned` and
-  explicitly excluded from execution in this run. A fresh
-  `/review-tasks-plan FT-013` is required before any later execution selection.
+  `existing_issue` input. TASK-041 is owner-recorded `done` from Attempt 05
+  functional PASS with its latest semantic-fail preserved and accepted as
+  residual risk; no semantic-pass is claimed. TASK-042/TASK-043 remain
+  `planned`, and no dependent selection or lifecycle promotion is implied.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.

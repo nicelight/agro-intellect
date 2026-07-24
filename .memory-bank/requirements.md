@@ -140,14 +140,13 @@ source_of_truth:
   without granting fact or downstream authority semantics. The current
   Companion `existing_issue` request includes persisted open-Issue
   `summary_text`.
-- `TASK-041-T3-FT-013-W1`, `TASK-042-T3-FT-013-W2`, and
-  `TASK-043-T3-FT-013-W3` remain indexed `planned`. TASK-039 and TASK-040 are
-  `done`, so TASK-041 is dependency-ready at point of use; TASK-042 still
-  depends on TASK-041 and directly on TASK-040 to serialize the shared Task
-  Follow-Up package, while TASK-043 remains behind TASK-042. Global and feature
-  design are complete; run a fresh `/review-tasks-plan FT-013` before execution
-  selection. No FT-013 implementation, real-provider result, or RTM lifecycle
-  promotion is claimed.
+- `TASK-041-T3-FT-013-W1` is owner-recorded `done` from Attempt 05 independent
+  functional PASS with the latest semantic-fail preserved and explicitly
+  accepted as residual risk; no semantic-pass is claimed. TASK-042 and
+  TASK-043 remain indexed `planned`, with TASK-043 still behind TASK-042.
+  Global/feature design and the W1 governance aggregate are implemented, but
+  no real-provider result or FT-013/RTM lifecycle promotion is claimed while
+  W2/W3 remain open.
 
 ## Current FT-001 Evidence Note
 

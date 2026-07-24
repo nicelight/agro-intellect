@@ -1,4 +1,5 @@
 from .admin import router as admin_router
+from .companion import router as companion_router
 from .history import router as history_router
 from .feed import router as feed_router
 from .operations import router as operations_router
@@ -9,6 +10,7 @@ from .session import router as session_router
 
 __all__ = [
     "admin_router",
+    "companion_router",
     "history_router",
     "feed_router",
     "operations_router",

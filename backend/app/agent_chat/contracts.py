@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import re
 from types import MappingProxyType
+import unicodedata
 import uuid
 
 
@@ -158,6 +159,8 @@ class BusEventEnvelopeV1:
 
 
 def _ui_payload(value: object, kind: str) -> Mapping[str, object]:
+    if kind == "companion_governance":
+        return _companion_ui_payload(value)
     shapes = {
         "agent_introduction": {"payload_kind", "agent_id", "display_name", "competence_summary", "introduction_text", "roster_version"},
         "agent_message": {"payload_kind", "agent_id", "candidate_claim_type", "quoted_text"},
@@ -175,6 +178,69 @@ def _ui_payload(value: object, kind: str) -> Mapping[str, object]:
     else:
         if not isinstance(f["agent_id"], str) or _AGENT_RE.fullmatch(f["agent_id"]) is None or not isinstance(f["roster_version"], int) or isinstance(f["roster_version"], bool) or f["roster_version"] < 1 or any(not isinstance(f[k], str) or not f[k] for k in ("display_name", "competence_summary", "introduction_text")): raise AgentChatContractError()
     return MappingProxyType(f)
+
+
+def _companion_ui_payload(value: object) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise AgentChatContractError()
+    payload_kind = value.get("payload_kind")
+    shapes = {
+        "companion_attention": {
+            "payload_kind",
+            "attention_ref",
+            "issue_ref",
+            "summary_text",
+        },
+        "companion_proposal": {
+            "payload_kind",
+            "proposal_ref",
+            "issue_ref",
+            "proposal_state",
+            "summary_text",
+        },
+        "companion_decision": {
+            "payload_kind",
+            "decision_record_ref",
+            "issue_ref",
+            "proposal_ref",
+            "decision_summary",
+            "safety_gate_authority",
+        },
+    }
+    if payload_kind not in shapes:
+        raise AgentChatContractError()
+    fields = _closed(value, shapes[str(payload_kind)])
+    _typed_ref(fields["issue_ref"], "companion_issue")
+    if payload_kind == "companion_attention":
+        _typed_ref(fields["attention_ref"], "companion_attention")
+        _compact_text(fields["summary_text"])
+    elif payload_kind == "companion_proposal":
+        _typed_ref(fields["proposal_ref"], "companion_proposal")
+        if fields["proposal_state"] not in {
+            "pending",
+            "approved",
+            "rejected",
+            "superseded",
+        }:
+            raise AgentChatContractError()
+        _compact_text(fields["summary_text"])
+    else:
+        _typed_ref(fields["decision_record_ref"], "decision_record")
+        _typed_ref(fields["proposal_ref"], "companion_proposal")
+        _compact_text(fields["decision_summary"])
+        if fields["safety_gate_authority"] != "not_granted":
+            raise AgentChatContractError()
+    return MappingProxyType(fields)
+
+
+def _compact_text(value: object) -> None:
+    if (
+        not isinstance(value, str)
+        or value != value.strip()
+        or not 1 <= len(value) <= 500
+        or any(unicodedata.category(character).startswith("C") for character in value)
+    ):
+        raise AgentChatContractError()
 
 
 def _safety_status_payload(fields: dict[str, object]) -> None:
@@ -283,7 +349,7 @@ class UIFeedEventV1:
     def from_untrusted(cls, value: object) -> "UIFeedEventV1":
         f = _closed(value, {"schema_version", "ui_event_id", "created_at", "farm_id", "plant_id", "source_type", "source_id", "source_refs", "display_kind", "display_payload", "visible_to_roles", "visible_to_agents", "consumable_by_agents"})
         kind = f["display_kind"]
-        if f["schema_version"] != 1 or kind not in {"agent_introduction", "agent_message", "block_notice", "safety_status"} or f["source_type"] not in {"system", "agent_message", "safety"} or f["visible_to_agents"] is not False or f["consumable_by_agents"] is not False: raise AgentChatContractError()
+        if f["schema_version"] != 1 or kind not in {"agent_introduction", "agent_message", "block_notice", "safety_status", "companion_governance"} or f["source_type"] not in {"system", "agent_message", "safety", "companion_governance"} or f["visible_to_agents"] is not False or f["consumable_by_agents"] is not False: raise AgentChatContractError()
         roles = tuple(f["visible_to_roles"]) if isinstance(f["visible_to_roles"], list) else ()
         if not roles or len(roles) != len(set(roles)) or not set(roles).issubset(_ROLES): raise AgentChatContractError()
         source_id = _uuid(f["source_id"])
@@ -295,6 +361,7 @@ class UIFeedEventV1:
             "agent_message": "agent_message",
             "block_notice": "safety",
             "safety_status": "safety",
+            "companion_governance": "companion_governance",
         }[str(kind)]
         if source_type != expected_source:
             raise AgentChatContractError()
@@ -315,12 +382,61 @@ class UIFeedEventV1:
             if ui_event_id != source_id or payload["decision_ref"] != decision_ref or refs != expected_refs or roles != ("boss", "engineer"):
                 raise AgentChatContractError()
             return cls(ui_event_id, _time(f["created_at"]), _uuid(f["farm_id"]), _uuid(f["plant_id"]), source_type, str(source_id), refs, str(kind), payload, roles)
+        elif kind == "companion_governance":
+            payload = _ui_payload(f["display_payload"], str(kind))
+            payload_kind = payload["payload_kind"]
+            issue_ref = str(payload["issue_ref"])
+            if payload_kind == "companion_attention":
+                primary_ref = str(payload["attention_ref"])
+                expected_refs = (
+                    issue_ref,
+                    primary_ref,
+                    _ref_of_kind(refs, 2, "companion_proposal"),
+                )
+            elif payload_kind == "companion_proposal":
+                primary_ref = str(payload["proposal_ref"])
+                expected_refs = (
+                    issue_ref,
+                    _ref_of_kind(refs, 1, "companion_attention"),
+                    primary_ref,
+                    _ref_of_kind(refs, 3, "safety_classification"),
+                )
+            else:
+                primary_ref = str(payload["decision_record_ref"])
+                expected_refs = (
+                    issue_ref,
+                    str(payload["proposal_ref"]),
+                    primary_ref,
+                    *(
+                        (_ref_of_kind(refs, 3, "task"),)
+                        if len(refs) == 4
+                        else ()
+                    ),
+                )
+            primary_id = _typed_ref(primary_ref, primary_ref.split(":", 1)[0])
+            if (
+                source_id != primary_id
+                or ui_event_id != primary_id
+                or refs != expected_refs
+                or roles != ("boss", "engineer", "consultant")
+            ):
+                raise AgentChatContractError()
+            return cls(ui_event_id, _time(f["created_at"]), _uuid(f["farm_id"]), _uuid(f["plant_id"]), source_type, str(source_id), refs, str(kind), payload, roles)
         elif f"message_envelope:{source_id}" not in refs:
             raise AgentChatContractError()
         return cls(ui_event_id, _time(f["created_at"]), _uuid(f["farm_id"]), _uuid(f["plant_id"]), source_type, str(source_id), refs, str(kind), _ui_payload(f["display_payload"], str(kind)), roles)
 
     def as_value(self) -> dict[str, object]:
         return {"schema_version": 1, "ui_event_id": str(self.ui_event_id), "created_at": timestamp_text(self.created_at), "farm_id": str(self.farm_id), "plant_id": str(self.plant_id), "source_type": self.source_type, "source_id": self.source_id, "source_refs": list(self.source_refs), "display_kind": self.display_kind, "display_payload": dict(self.display_payload), "visible_to_roles": list(self.visible_to_roles), "visible_to_agents": False, "consumable_by_agents": False}
+
+
+def _ref_of_kind(refs: tuple[str, ...], index: int, kind: str) -> str:
+    try:
+        ref = refs[index]
+    except IndexError:
+        raise AgentChatContractError() from None
+    _typed_ref(ref, kind)
+    return ref
 
 
 __all__ = ["AgentChatContractError", "BusEventEnvelopeV1", "UIFeedEventV1", "timestamp_text"]

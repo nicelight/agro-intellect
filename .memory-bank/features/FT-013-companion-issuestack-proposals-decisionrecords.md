@@ -147,11 +147,9 @@ spec_design_links:
   Companion and Safety fake/spy executors and does not require credentials,
   egress, network, or live smoke. Production remains unbound and fail closed;
   real response/classifier evidence belongs to the shared future milestone.
-- Execution note: TASK-041, TASK-042, and TASK-043 remain explicitly excluded
-  from execution in this reconciliation. Their ids, tiers, waves, dependencies,
-  and `planned` lifecycle are unchanged. TASK-039 and TASK-040 are now `done`,
-  so TASK-041 is dependency-ready at point of use, but `/exe` owns its full T3
-  protocol/neutral Execution Attempt setup and lifecycle promotion. The cards'
-  `touched_files` are advisory; hard semantics remain in their canonical specs,
-  `forbidden_scope`, and `stop_conditions`. Fresh
-  `/review-tasks-plan FT-013` is required before any later owner selection.
+- Execution note: TASK-041 is owner-recorded `done` from Attempt 05
+  independent functional PASS. Its latest semantic-fail remains unchanged and
+  is accepted as residual risk without a semantic-pass claim. TASK-042 and
+  TASK-043 remain `planned`; neither was promoted or selected by the W1
+  closure. Their `touched_files` are advisory; hard semantics remain in their
+  canonical specs, `forbidden_scope`, and `stop_conditions`.

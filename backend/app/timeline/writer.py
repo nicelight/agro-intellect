@@ -22,6 +22,9 @@ _EVENT_SOURCE_TYPES = {
     "task_completed": "task",
     "approval_decided": "approval",
     "follow_up_outcome_recorded": "outcome",
+    "companion_issue_opened": "companion_issue",
+    "companion_proposal_created": "companion_proposal",
+    "companion_proposal_superseded": "companion_proposal",
 }
 _SOURCE_REF_RE = re.compile(
     r"[a-z][a-z0-9_]{0,63}:[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z"
@@ -122,7 +125,124 @@ def _event_shape_is_valid(event: object) -> bool:
         "follow_up_outcome_recorded",
     }:
         return _task_loop_event_is_valid(event)
+    if event.event_type in {
+        "companion_issue_opened",
+        "companion_proposal_created",
+        "companion_proposal_superseded",
+    }:
+        return _companion_proposal_event_is_valid(event)
     return True
+
+
+def _companion_proposal_event_is_valid(event: TimelineEvent) -> bool:
+    if (
+        event.plant_id is None
+        or event.source_id.version != 4
+        or not _actor_ref_is_valid(event.actor_ref)
+        or event.actor_ref["role_preset"] not in {"boss", "engineer"}
+    ):
+        return False
+    refs = event.source_refs.get("record_refs")
+    if (
+        set(event.source_refs) != {"record_refs"}
+        or not isinstance(refs, list)
+        or len(refs) != len(set(refs))
+        or any(
+            not isinstance(ref, str) or _SOURCE_REF_RE.fullmatch(ref) is None
+            for ref in refs
+        )
+    ):
+        return False
+    payload = event.payload_summary
+    if event.event_type == "companion_proposal_superseded":
+        if len(refs) != 4:
+            return False
+        expected_kinds = (
+            "companion_issue",
+            "companion_attention",
+            "companion_proposal",
+            "companion_proposal",
+        )
+        parsed = [
+            _canonical_typed_uuid_ref(ref, kind)
+            for ref, kind in zip(refs, expected_kinds, strict=True)
+        ]
+        return (
+            all(value is not None for value in parsed)
+            and parsed[2] == event.source_id
+            and set(payload)
+            == {"proposal_sequence", "replacement_proposal_id", "record_version"}
+            and _positive_int(payload["proposal_sequence"])
+            and _canonical_uuid_text(payload["replacement_proposal_id"])
+            and parsed[3] == uuid.UUID(str(payload["replacement_proposal_id"]))
+            and payload["record_version"] == 2
+        )
+    if not _companion_input_refs_are_valid(refs, plant_id=event.plant_id):
+        return False
+    if event.event_type == "companion_issue_opened":
+        return (
+            set(payload) == {"issue_status", "is_focused", "source_ref_count"}
+            and payload["issue_status"] == "open"
+            and payload["is_focused"] is True
+            and payload["source_ref_count"] == len(refs)
+        )
+    return (
+        set(payload)
+        == {
+            "proposal_sequence",
+            "proposed_effect",
+            "suggested_resolution",
+            "attention_sequence",
+            "source_ref_count",
+        }
+        and _positive_int(payload["proposal_sequence"])
+        and payload["proposed_effect"]
+        in {"discussion_only", "check", "measurement", "follow_up", "none"}
+        and payload["suggested_resolution"] in {"keep_open", "resolved"}
+        and _positive_int(payload["attention_sequence"])
+        and payload["source_ref_count"] == len(refs)
+    )
+
+
+def _companion_input_refs_are_valid(
+    refs: list[str],
+    *,
+    plant_id: uuid.UUID,
+) -> bool:
+    if not 3 <= len(refs) <= 6 or refs[0] != f"plant:{plant_id}":
+        return False
+    message_id = _canonical_typed_uuid_ref(refs[-2], "message_envelope")
+    classification_id = _canonical_typed_uuid_ref(
+        refs[-1],
+        "safety_classification",
+    )
+    if message_id is None or message_id != classification_id:
+        return False
+    issue_count = 0
+    for ref in refs[1:-2]:
+        kind = ref.split(":", 1)[0]
+        if kind not in {
+            "daily_checkin",
+            "manual_measurement",
+            "companion_issue",
+        } or _canonical_typed_uuid_ref(ref, kind) is None:
+            return False
+        issue_count += kind == "companion_issue"
+    return issue_count <= 1
+
+
+def _canonical_typed_uuid_ref(value: object, kind: str) -> uuid.UUID | None:
+    if not isinstance(value, str) or not value.startswith(f"{kind}:"):
+        return None
+    identifier = value.split(":", 1)[1]
+    if not _canonical_uuid_text(identifier):
+        return None
+    parsed = uuid.UUID(identifier)
+    return parsed if parsed.version == 4 else None
+
+
+def _positive_int(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
 
 def _task_loop_event_is_valid(event: TimelineEvent) -> bool:

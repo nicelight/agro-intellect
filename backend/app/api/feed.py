@@ -7,7 +7,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from ..access_admin.actor_context import ActorContext
 from ..access_admin.dependencies import require_actor_context
@@ -16,6 +16,27 @@ from ..agent_chat.feed import PlantFeedError, PlantFeedErrorCode, PlantFeedServi
 
 
 router = APIRouter(prefix="/api", tags=["plant-feed"])
+
+_UUID_FRAGMENT = (
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+)
+CompanionIssueRef = Annotated[
+    str,
+    Field(pattern=rf"^companion_issue:{_UUID_FRAGMENT}$"),
+]
+CompanionAttentionRef = Annotated[
+    str,
+    Field(pattern=rf"^companion_attention:{_UUID_FRAGMENT}$"),
+]
+CompanionProposalRef = Annotated[
+    str,
+    Field(pattern=rf"^companion_proposal:{_UUID_FRAGMENT}$"),
+]
+DecisionRecordRef = Annotated[
+    str,
+    Field(pattern=rf"^decision_record:{_UUID_FRAGMENT}$"),
+]
+CompanionCompactText = Annotated[str, Field(min_length=1, max_length=500)]
 
 
 class ErrorDetail(BaseModel): code: str; message: str; request_id: str
@@ -42,11 +63,32 @@ class SafetyStatusPayload(BaseModel):
     summary_text: str; evidence_refs: list[str]
     approval_input_freshness: SafetyApprovalInputFreshness | None
     expires_at: datetime | None
-DisplayPayload = Annotated[Union[AgentIntroductionPayload, AgentMessagePayload, BlockNoticePayload, SafetyStatusPayload], "payload_kind"]
+class CompanionAttentionPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    payload_kind: Literal["companion_attention"]
+    attention_ref: CompanionAttentionRef
+    issue_ref: CompanionIssueRef
+    summary_text: CompanionCompactText
+class CompanionProposalPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    payload_kind: Literal["companion_proposal"]
+    proposal_ref: CompanionProposalRef
+    issue_ref: CompanionIssueRef
+    proposal_state: Literal["pending", "approved", "rejected", "superseded"]
+    summary_text: CompanionCompactText
+class CompanionDecisionPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    payload_kind: Literal["companion_decision"]
+    decision_record_ref: DecisionRecordRef
+    issue_ref: CompanionIssueRef
+    proposal_ref: CompanionProposalRef
+    decision_summary: CompanionCompactText
+    safety_gate_authority: Literal["not_granted"]
+DisplayPayload = Annotated[Union[AgentIntroductionPayload, AgentMessagePayload, BlockNoticePayload, SafetyStatusPayload, CompanionAttentionPayload, CompanionProposalPayload, CompanionDecisionPayload], "payload_kind"]
 class UIFeedItemResponse(BaseModel):
     schema_version: Literal[1]; ui_event_id: uuid.UUID; created_at: datetime; farm_id: uuid.UUID; plant_id: uuid.UUID
-    source_type: Literal["system", "agent_message", "safety"]; source_id: str; source_refs: list[str]
-    display_kind: Literal["agent_introduction", "agent_message", "block_notice", "safety_status"]; display_payload: DisplayPayload
+    source_type: Literal["system", "agent_message", "safety", "companion_governance"]; source_id: str; source_refs: list[str]
+    display_kind: Literal["agent_introduction", "agent_message", "block_notice", "safety_status", "companion_governance"]; display_payload: DisplayPayload
     visible_to_roles: list[Literal["boss", "engineer", "consultant"]]; visible_to_agents: Literal[False]; consumable_by_agents: Literal[False]
 class PlantFeedResponse(BaseModel): items: list[UIFeedItemResponse]; next_cursor: str | None
 

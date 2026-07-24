@@ -184,18 +184,15 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
   pattern and shared provider files.
-- TASK-039 and TASK-040 are `done`. TASK-041 is therefore dependency-ready at
-  point of use; TASK-042 and TASK-043 remain blocked by their preceding FT-013
-  waves. All three cards remain `planned` because `/feature-to-tasks` does not
-  start execution: `/exe` owns current dependency preflight, full task-protocol
-  and neutral Execution Attempt setup, then `planned -> ready -> in_progress`.
-  TASK-041/TASK-042 build and verify the Companion router in isolated test apps
-  without touching `main.py`; TASK-043 is the only FT-013 production-
-  registration owner, so the executable DAG serializes both the earlier Task
-  Follow-Up frontier and later shared `main.py`/provider composition surface.
-- Current reconciliation does not authorize TASK-041, TASK-042, or TASK-043
-  execution. All remain `planned` and execution-excluded until a fresh
-  `/review-tasks-plan FT-013` and explicit later owner selection.
+- TASK-039, TASK-040, and TASK-041 are `done`. TASK-041 closed on owner-accepted
+  Attempt 05 functional PASS with its latest semantic-fail preserved as
+  accepted residual risk and no semantic-pass claim. TASK-042 and TASK-043
+  remain `planned`; selecting TASK-042 is a separate explicit owner/workflow
+  decision.
+- TASK-041/TASK-042 build and verify the Companion router in isolated test apps
+  without touching `main.py`; TASK-043 remains the only FT-013 production-
+  registration owner, so the remaining executable DAG preserves the later
+  shared `main.py`/provider composition boundary.
 
 ## Expected touched files
 

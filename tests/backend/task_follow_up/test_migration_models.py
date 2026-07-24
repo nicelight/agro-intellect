@@ -65,9 +65,12 @@ def test_ft012_runtime_disposition_is_exact_additive_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft012_runtime_dispositions"
-    assert head.down_revision == "ft012_task_approval_outcomes"
-    source = Path(head.path).read_text(encoding="utf-8")
+    assert head.revision == "ft013_governance_aggregate"
+    assert head.down_revision == "ft012_runtime_dispositions"
+    runtime_dispositions = script.get_revision("ft012_runtime_dispositions")
+    assert runtime_dispositions is not None
+    assert runtime_dispositions.down_revision == "ft012_task_approval_outcomes"
+    source = Path(runtime_dispositions.path).read_text(encoding="utf-8")
     assert "ON DELETE CASCADE" not in source.upper()
     assert "ft012_task_approval_outcomes" in source
     assert "downgrade refused" in source
@@ -305,7 +308,7 @@ def test_alembic_current_head_upgrade_is_idempotent(ft012_database):
         command.upgrade(config, "head")
         with scoped_database.engine().connect() as connection:
             assert MigrationContext.configure(connection).get_current_revision() == (
-                "ft012_runtime_dispositions"
+                "ft013_governance_aggregate"
             )
             assert _write_once_object_counts(connection) == (1, 1)
     finally:
