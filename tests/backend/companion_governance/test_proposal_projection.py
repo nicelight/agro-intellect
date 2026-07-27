@@ -4,7 +4,8 @@ from datetime import timedelta
 import uuid
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import event, func, select
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.agent_chat import (
     AgentChatContractError,
@@ -282,7 +283,7 @@ def test_timeline_cardinality_refs_and_redaction_cover_create_and_supersede(
         assert forbidden not in serialized
 
 
-def test_audit_and_projection_conflicts_roll_back_complete_governance_uow(
+def test_audit_and_projection_write_failures_roll_back_complete_governance_uow(
     ft013_database,
     ft013_seed,
 ):
@@ -319,9 +320,6 @@ def test_audit_and_projection_conflicts_roll_back_complete_governance_uow(
         marker="projection-first",
     )
     first = _persist(ft013_database, first_command, TimelineRecorder())
-    with ft013_database.session() as session, session.begin():
-        projection = session.get(UIFeedEvent, first.proposal_id)
-        projection.source_refs = [f"companion_proposal:{uuid.uuid4()}"]
     before = _governance_counts(ft013_database)
 
     second_message = seed_companion_classification(
@@ -337,21 +335,38 @@ def test_audit_and_projection_conflicts_roll_back_complete_governance_uow(
         expected_issue_version=1,
         marker="projection-second",
     )
-    with pytest.raises(CompanionGovernanceError) as conflict:
-        _persist(ft013_database, second_command, TimelineRecorder())
+    engine = ft013_database.engine()
+
+    def fail_projection_write(
+        _connection,
+        _cursor,
+        statement,
+        _parameters,
+        _context,
+        _executemany,
+    ):
+        if "update ui_feed_events" in " ".join(statement.lower().split()):
+            raise SQLAlchemyError("injected projection persistence failure")
+
+    event.listen(engine, "before_cursor_execute", fail_projection_write)
+    try:
+        with pytest.raises(CompanionGovernanceError) as conflict:
+            _persist(ft013_database, second_command, TimelineRecorder())
+    finally:
+        event.remove(engine, "before_cursor_execute", fail_projection_write)
     assert conflict.value.code is CompanionGovernanceErrorCode.PERSISTENCE_FAILED
     assert _governance_counts(ft013_database) == before
     with ft013_database.session() as session:
         proposal = session.get(CompanionProposal, first.proposal_id)
         attention = session.get(CompanionHumanAttention, first.attention_id)
         assert (proposal.state, proposal.record_version) == ("pending", 1)
-        assert attention.current_proposal_id == first.proposal_id
         assert attention.record_version == 1
 
 
 @pytest.mark.parametrize(
     "conflict",
     (
+        "missing",
         "proposal_state",
         "plant_id",
         "created_at",
@@ -359,7 +374,7 @@ def test_audit_and_projection_conflicts_roll_back_complete_governance_uow(
         "visible_to_roles",
     ),
 )
-def test_pending_proposal_projection_requires_complete_canonical_match_before_audit(
+def test_stale_or_missing_proposal_projection_is_rebuilt_from_authority(
     ft013_database,
     ft013_seed,
     conflict,
@@ -389,7 +404,13 @@ def test_pending_proposal_projection_requires_complete_canonical_match_before_au
 
     with ft013_database.session() as session, session.begin():
         projection = session.get(UIFeedEvent, first.proposal_id)
-        if conflict == "proposal_state":
+        authoritative_created_at = session.get(
+            CompanionProposal,
+            first.proposal_id,
+        ).created_at
+        if conflict == "missing":
+            session.delete(projection)
+        elif conflict == "proposal_state":
             projection.display_payload = {
                 **projection.display_payload,
                 "proposal_state": "approved",
@@ -419,18 +440,42 @@ def test_pending_proposal_projection_requires_complete_canonical_match_before_au
         expected_issue_version=1,
         marker=f"canonical-projection-{conflict}-second",
     )
-    before = _governance_counts(ft013_database)
     timeline = TimelineRecorder()
 
-    with pytest.raises(CompanionGovernanceError) as caught:
-        _persist(ft013_database, second_command, timeline)
+    second = _persist(ft013_database, second_command, timeline)
 
-    assert caught.value.code is CompanionGovernanceErrorCode.PERSISTENCE_FAILED
-    assert timeline.events == []
-    assert _governance_counts(ft013_database) == before
+    assert second.result == "created"
+    assert [event.event_type for event in timeline.events] == [
+        "companion_proposal_superseded",
+        "companion_proposal_created",
+    ]
     with ft013_database.session() as session:
         proposal = session.get(CompanionProposal, first.proposal_id)
         attention = session.get(CompanionHumanAttention, first.attention_id)
-        assert (proposal.state, proposal.record_version) == ("pending", 1)
-        assert attention.current_proposal_id == first.proposal_id
+        projection = session.get(UIFeedEvent, first.proposal_id)
+        assert (proposal.state, proposal.record_version) == ("superseded", 2)
         assert attention.record_version == 1
+        assert projection.ui_event_id == first.proposal_id
+        assert projection.created_at == authoritative_created_at
+        assert projection.farm_id == farm.farm_id
+        assert projection.plant_id == plant.plant_id
+        assert projection.source_refs == [
+            f"companion_issue:{first.issue_id}",
+            f"companion_attention:{first.attention_id}",
+            f"companion_proposal:{first.proposal_id}",
+            f"safety_classification:{first_message}",
+        ]
+        assert projection.display_payload == {
+            "payload_kind": "companion_proposal",
+            "proposal_ref": f"companion_proposal:{first.proposal_id}",
+            "issue_ref": f"companion_issue:{first.issue_id}",
+            "proposal_state": "superseded",
+            "summary_text": first_command.proposal_summary,
+        }
+        assert projection.visible_to_roles == [
+            "boss",
+            "engineer",
+            "consultant",
+        ]
+        assert projection.visible_to_agents is False
+        assert projection.consumable_by_agents is False

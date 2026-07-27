@@ -179,18 +179,6 @@ class CompanionHumanAttention(Base):
     attention_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     summary_text: Mapped[str] = mapped_column(Text, nullable=False)
-    current_proposal_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey(
-            "companion_proposals.proposal_id",
-            name="fk_companion_attention_current_proposal",
-            ondelete="RESTRICT",
-            deferrable=True,
-            initially="DEFERRED",
-            use_alter=True,
-        ),
-        nullable=False,
-    )
     record_version: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

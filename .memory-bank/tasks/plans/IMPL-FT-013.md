@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-013 Companion IssueStack governance, atomic DecisionRecord effects, and explicit provider-neutral Companion invocation.
 status: active
-last_updated: 2026-07-23
+last_updated: 2026-07-27
 ---
 # IMPL-FT-013 — Companion IssueStack Proposals And DecisionRecords
 
@@ -84,9 +84,32 @@ neutral `companion` invocation over current PostgreSQL evidence.
    projection rollback, archive/restore, and absence of run/decision/Task/Bus/
    provider/physical-action authority.
 
-### 2. Binding DecisionRecords and atomic workflow effects
+### 2. Simplify the implemented proposal aggregate
 
-1. Add the second ordered FT-013 migration for the narrow TASK-039
+1. Add forward revision `ft013_simplify_companion` after
+   `ft012_simplify_follow_up_runtime`; do not rewrite the applied aggregate
+   migration. Drop only
+   `companion_human_attention.current_proposal_id` and its cyclic FK while
+   preserving all authority and projection rows.
+2. Resolve the active current proposal through the existing unique pending
+   proposal index plus `proposal.attention_id`. Reuse active attention without
+   mutating its version during supersede; later satisfaction remains the only
+   attention-version transition.
+3. Replace retained full-graph equivalence validation with scope-filtered reads
+   and strict public response serialization for supported application paths.
+4. Rebuild and overwrite a proposal's derived UI projection from authoritative
+   proposal state during supersede. Missing or stale presentation no longer
+   blocks the authority transition; real projection persistence or Timeline
+   failure still rolls the transaction back.
+5. Preserve public issue/detail/OpenAPI shapes, authorization, archive/grant
+   guards, proposal uniqueness, same-run idempotency, distinct-run
+   serialization, Timeline redaction, and all Safety/Task authority boundaries.
+6. Complete this repair before the DecisionRecord wave so TASK-042 implements
+   only the simplified current-proposal semantics.
+
+### 3. Binding DecisionRecords and atomic workflow effects
+
+1. Add the next ordered FT-013 migration for the narrow TASK-039
    `governance_decision` Task source, DecisionRecord Bus domain-ref constraints,
    and nullable authorization scope only for backend domain adapters.
 2. Implement approve/reject with the Plant/current-focus/target lock order,
@@ -119,7 +142,7 @@ neutral `companion` invocation over current PostgreSQL evidence.
    Decision/close route tests use an isolated test app; this wave also does not
    edit production `main.py`.
 
-### 3. Explicit provider-neutral Companion invocation
+### 4. Explicit provider-neutral Companion invocation
 
 1. Add competence-specific command, authorized PostgreSQL input assembler,
    provider request, strict model result, pending MessageEnvelope mapping,
@@ -173,23 +196,28 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 - `TASK-041-T3-FT-013-W1` depends directly on
   `TASK-039-T3-FT-012-W1` for the implemented classifier persistence chain.
   TASK-041 implemented its aggregate migration after the historical
-  `ft012_runtime_dispositions` head. The reopened TASK-040 must now add its
-  forward cleanup after the executor-confirmed current head and advance every
-  current exact-head assertion without rewriting either applied revision.
-- `TASK-042-T3-FT-013-W2` depends on TASK-041 and TASK-040. It consumes
-  TASK-041 proposal authority and the completed FT-012 runtime/package surface,
-  reaches TASK-039 ordinary-task workflow effects transitively, and cannot run
-  in parallel with TASK-040 against `backend/app/task_follow_up/`.
+  `ft012_runtime_dispositions` head. Completed TASK-040 added
+  `ft012_simplify_follow_up_runtime` after that aggregate migration and
+  advanced the exact-head assertions without rewriting either applied
+  revision.
+- The new Companion aggregate simplification task depends on completed
+  TASK-041 and TASK-040 and must finish before TASK-042.
+- `TASK-042-T3-FT-013-W2` depends on the simplification task, TASK-041, and
+  TASK-040. It consumes the repaired proposal authority and the completed
+  FT-012 runtime/package surface, reaches TASK-039 ordinary-task workflow
+  effects transitively, and cannot run in parallel with TASK-040 against
+  `backend/app/task_follow_up/`.
 - `TASK-043-T3-FT-013-W3` depends on TASK-042 and
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
   pattern and shared provider files.
-- TASK-039 and TASK-041 are `done`; TASK-040 is `planned` after the explicit
-  same-ID operator reopen. TASK-041 closed on owner-accepted Attempt 05
+- TASK-039, TASK-040, and TASK-041 are `done`. TASK-041 closed on
+  owner-accepted Attempt 05
   functional PASS with its latest semantic-fail preserved as accepted residual
-  risk and no semantic-pass claim. TASK-042 and TASK-043 remain `planned` and
-  cannot be selected until their TASK-040 dependency closes and their planning
-  evidence is applicable.
+  risk and no semantic-pass claim. The simplification task, TASK-042, and
+  TASK-043 remain `planned`; TASK-042/TASK-043 cannot be selected until the
+  new repaired-authority dependency closes and their planning evidence is
+  applicable.
 - TASK-041/TASK-042 build and verify the Companion router in isolated test apps
   without touching `main.py`; TASK-043 remains the only FT-013 production-
   registration owner, so the remaining executable DAG preserves the later
@@ -214,6 +242,15 @@ IssueStack/proposal-authority slice:
 - `backend/migrations/versions/*_ft013_companion_governance_aggregate.py`
 - focused proposal lifecycle/migration/projection/read-API tests plus all
   exact-head regressions, including Safety Gate and Task Follow-Up.
+
+Aggregate-simplification slice:
+
+- `backend/app/companion_governance/`
+- `backend/migrations/versions/*_ft013_simplify_companion_aggregate.py`
+- focused proposal lifecycle, projection, migration/model, and read-API tests;
+- current exact-head regression tests across Access/Admin, Plant Operations,
+  Photo Intake, Plant State, Agent Chat, Safety Gate, Task Follow-Up, and the
+  Foundation database contract.
 
 Decision/effect slice:
 
@@ -264,6 +301,7 @@ public-contract widening need.
 
 ## Normative inputs and direct design links
 
+- `.memory-bank/architecture/system-architecture.md`
 - `.memory-bank/states/companion-governance.md`
 - `.memory-bank/domains/companion-governance.md`
 - `.memory-bank/contracts/companion-governance-http.md`
@@ -294,12 +332,14 @@ public-contract widening need.
 
 - PostgreSQL governance records are mutable authority. Timeline, Bus, UI,
   MessageEnvelope, classification, model output, and derived conclusion cannot
-  independently create, repair, replay, or transition them.
+  independently create, replay, or transition them. Derived proposal UI rows
+  may be rebuilt from the owning proposal authority.
 - Governance authority is Boss or granted Engineer with current
   `can_operate`; there is no extra permission and Consultant never decides.
 - One Plant has at most one focused issue; one issue has at most one pending
-  proposal and one active attention cycle. Superseded/terminal proposals never
-  become current or approvable.
+  proposal and one active attention cycle. Active current proposal identity is
+  derived from the unique pending row and `proposal.attention_id`;
+  superseded/terminal proposals never become current or approvable.
 - Focus is independent for open conclusion reads. Open/unfocused issues remain
   `awaiting_human` with an active/current pair or `decided` after keep-open;
   deciding an unfocused pending issue with `keep_open` transfers focus under
@@ -330,8 +370,9 @@ public-contract widening need.
 - Different run ids are independent commands and may both commit in locked
   serialization order; only same-run identity is single-effect idempotency.
 - FT-013 refs, source-ref arrays, detail ordering, and conclusion nullability
-  use the one exact data/HTTP grammar; projections cannot repair a broken
-  authority graph.
+  use the one exact data/HTTP grammar. Public reads validate ownership and
+  serialization; projections may be repaired only from authoritative proposal
+  rows.
 
 ## Verification targets
 

@@ -198,10 +198,11 @@ governance copy is allowed.
   data spec. The builder never persists that DTO or substitutes
   `CompanionConclusionV1`, UI payloads, mutable focus/attention, or Task state.
 - The authoritative FT-013 write and every required Companion Bus/UI
-  projection commit in the same PostgreSQL transaction. An identical
-  projection retry succeeds without changing the original timestamp; any
-  canonical mismatch is `content_conflict` and aborts the whole owning
-  transaction.
+  projection commit in the same PostgreSQL transaction. Proposal terminal
+  updates rebuild and overwrite the derived projection from authoritative
+  proposal data, including recovery of a missing or stale presentation row.
+  A real projection persistence failure still aborts the owning transaction;
+  presentation mismatch alone does not.
 - The attention UI row is the immutable literal notification created for that
   attention cycle; current proposal/status are read from governance detail,
   not copied into this payload. Derived CompanionConclusion is resolved by the
@@ -226,7 +227,8 @@ governance copy is allowed.
 - Companion integration checks prove existing FT-008 variants remain valid,
   only a valid approved DecisionRecord reference can enter Bus, all Companion
   UI rows remain non-consumable, backend domain records alone permit null
-  authorization scope, exact projection identities are retry-safe, conflicts
-  roll back the owning transaction, exact `ApprovedGovernanceSummaryV1`
+  authorization scope, exact projection identities are retry-safe, proposal
+  terminal projection repair is authority-derived, real write failures roll
+  back the owning transaction, exact `ApprovedGovernanceSummaryV1`
   reconstruction/omission rules hold, and no projection becomes governance or
   Safety authority.

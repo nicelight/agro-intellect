@@ -41,6 +41,7 @@ last_updated: 2026-07-23
 | Companion classification without premature ordinary dispatch | [Safety Action Lifecycle](states/safety-action-lifecycle.md), [Safety Gate Runtime](contracts/safety-gate-runtime.md), [MessageEnvelope](contracts/message-envelope.md), [Bus](contracts/agent-chat-bus.md), [UI Feed](contracts/ui-feed.md) | no | Added the server-derived `ordinary_dispatch|companion_governance_hold` consumer route without persisted schema expansion and closed its negative compatibility matrix. |
 | FT-013 HTTP views/errors, latest evidence selection, different-run concurrency, ref/read grammar | FT-013 registered feature-local contracts/data/testing | no | Closed by the then-current FT-013 task-decomposition run: exact schemas/error mapping, one-row evidence selection, distinct-run serialization, canonical refs/derived reads, and deterministic classifier fake/spy composition are authoritative. |
 | FT-013 post-review Task/conclusion/context closure | [Task And Approval HTTP](contracts/task-approval-http.md), [Companion Governance Data](domains/companion-governance.md), [Companion Governance HTTP](contracts/companion-governance-http.md), [Agent Chat Bus](contracts/agent-chat-bus.md), [Provider Profiles](contracts/agent-model-provider-profiles.md) | no | Closed exact same-UoW approved proposal phase, open/unfocused conclusions, derived approved summary, reachable nested Task errors, and typed non-authoritative governance input. |
+| FT-013 aggregate simplification | [Companion Governance Data](domains/companion-governance.md), [Companion Governance State](states/companion-governance.md), [Companion Governance HTTP](contracts/companion-governance-http.md), [Companion Verification](testing/companion-governance.md) | no | Current proposal is derived from unique pending proposal authority, the reverse attention pointer is removed, read integrity is scoped to supported paths, and proposal projection repair is authority-derived. |
 
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
@@ -146,8 +147,10 @@ last_updated: 2026-07-23
   persisted open-Issue `summary_text` as typed non-authoritative Companion
   `existing_issue` input. TASK-041 is owner-recorded `done` from Attempt 05
   functional PASS with its latest semantic-fail preserved and accepted as
-  residual risk; no semantic-pass is claimed. TASK-042/TASK-043 remain
-  `planned`, and no dependent selection or lifecycle promotion is implied.
+  historical closure evidence; no semantic-pass is claimed. TASK-044 is the
+  planned bounded aggregate simplification after completed TASK-040/TASK-041.
+  TASK-042/TASK-043 remain `planned` behind it, and no dependent selection or
+  lifecycle promotion is implied.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.
@@ -174,14 +177,13 @@ last_updated: 2026-07-23
   TASK-039 are scheduler-recorded `done`; FT-009 and FT-010 feature lifecycle
   values remain `planned` pending explicit owner decisions. FT-011, FT-012,
   and EP-004 remain `planned` pending explicit owner lifecycle decisions;
-  TASK-040 is `planned` after an explicit same-ID operator reopen that
-  preserves its owner-accepted ATTEMPT 06 closure as history. The repository
-  migration chain currently reaches `ft013_governance_aggregate` after the
-  historical `ft012_runtime_dispositions`; TASK-040 must add a forward cleanup
-  revision after the executor-confirmed head rather than rewrite either
-  revision. Historical run-budget evidence does not amend canonical workflow
-  policy. FT-013 W2/W3 remain execution-excluded while their planned
-  dependency TASK-040 is open and require fresh applicable review before any
-  future selection. Dataset Governance now has one lifecycle and one
+  TASK-040 is `done` from ATTEMPT 08 functional PASS, semantic-pass, and
+  `HUMAN_CHECKPOINT: done`. The repository migration chain currently reaches
+  `ft012_simplify_follow_up_runtime` after `ft013_governance_aggregate`.
+  TASK-044 must add forward revision `ft013_simplify_companion` rather than
+  rewrite either applied migration. Historical run-budget evidence does
+  not amend canonical workflow policy. FT-013 W2/W3 remain
+  execution-excluded behind planned TASK-044 and require fresh applicable
+  review before any future selection. Dataset Governance now has one lifecycle and one
   derived trainability authority; FT-014 exact persistence and evidence policy
   remain feature-local.

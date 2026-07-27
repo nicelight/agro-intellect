@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from ..access_admin.actor_context import ActorContext
@@ -212,6 +212,26 @@ class CompanionGovernanceRepository:
             query = query.with_for_update()
         return self.session.scalar(query.execution_options(populate_existing=True))
 
+    def pending_proposal(
+        self,
+        issue_id: uuid.UUID,
+        *,
+        attention_id: uuid.UUID,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+        for_update: bool,
+    ) -> CompanionProposal | None:
+        query = select(CompanionProposal).where(
+            CompanionProposal.issue_id == issue_id,
+            CompanionProposal.attention_id == attention_id,
+            CompanionProposal.farm_id == farm_id,
+            CompanionProposal.plant_id == plant_id,
+            CompanionProposal.state == "pending",
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
     def attention(
         self,
         attention_id: uuid.UUID,
@@ -292,11 +312,21 @@ class CompanionGovernanceRepository:
             )
         )
 
-    def attentions(self, issue_id: uuid.UUID) -> list[CompanionHumanAttention]:
+    def attentions(
+        self,
+        issue_id: uuid.UUID,
+        *,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+    ) -> list[CompanionHumanAttention]:
         return list(
             self.session.scalars(
                 select(CompanionHumanAttention)
-                .where(CompanionHumanAttention.issue_id == issue_id)
+                .where(
+                    CompanionHumanAttention.issue_id == issue_id,
+                    CompanionHumanAttention.farm_id == farm_id,
+                    CompanionHumanAttention.plant_id == plant_id,
+                )
                 .order_by(
                     CompanionHumanAttention.attention_sequence,
                     CompanionHumanAttention.attention_id,
@@ -304,11 +334,21 @@ class CompanionGovernanceRepository:
             )
         )
 
-    def proposals(self, issue_id: uuid.UUID) -> list[CompanionProposal]:
+    def proposals(
+        self,
+        issue_id: uuid.UUID,
+        *,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+    ) -> list[CompanionProposal]:
         return list(
             self.session.scalars(
                 select(CompanionProposal)
-                .where(CompanionProposal.issue_id == issue_id)
+                .where(
+                    CompanionProposal.issue_id == issue_id,
+                    CompanionProposal.farm_id == farm_id,
+                    CompanionProposal.plant_id == plant_id,
+                )
                 .order_by(
                     CompanionProposal.proposal_sequence,
                     CompanionProposal.proposal_id,
@@ -316,41 +356,27 @@ class CompanionGovernanceRepository:
             )
         )
 
-    def decisions(self, issue_id: uuid.UUID) -> list[DecisionRecord]:
-        return list(
-            self.session.scalars(
-                select(DecisionRecord)
-                .where(DecisionRecord.issue_id == issue_id)
-                .order_by(
-                    DecisionRecord.decided_at,
-                    DecisionRecord.decision_record_id,
-                )
-            )
-        )
-
-    def decisions_for_w1_graph(
+    def decisions(
         self,
         issue_id: uuid.UUID,
         *,
-        attention_ids: list[uuid.UUID],
-        proposal_ids: list[uuid.UUID],
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
     ) -> list[DecisionRecord]:
-        predicates = [DecisionRecord.issue_id == issue_id]
-        if attention_ids:
-            predicates.append(DecisionRecord.attention_id.in_(attention_ids))
-        if proposal_ids:
-            predicates.append(DecisionRecord.proposal_id.in_(proposal_ids))
         return list(
             self.session.scalars(
                 select(DecisionRecord)
-                .where(or_(*predicates))
+                .where(
+                    DecisionRecord.issue_id == issue_id,
+                    DecisionRecord.farm_id == farm_id,
+                    DecisionRecord.plant_id == plant_id,
+                )
                 .order_by(
                     DecisionRecord.decided_at,
                     DecisionRecord.decision_record_id,
                 )
             )
         )
-
 
 def _status_rank():
     return case(

@@ -40,9 +40,10 @@ retained IssueStack conclusion.
   keep-open DecisionRecord. Deciding an unfocused pending issue with
   `keep_open` atomically clears another focus and focuses the target; `resolved`
   leaves another issue's focus unchanged.
-- One active HumanAttentionNeeded cycle points to one current pending proposal.
-  A new accepted proposal supersedes the current proposal and reuses/updates
-  active attention. Approve/reject satisfies it; a later explicit run may
+- One active HumanAttentionNeeded cycle has one current pending proposal
+  derived from proposal uniqueness and `proposal.attention_id`. A new accepted
+  proposal supersedes the current proposal and reuses the active attention
+  without mutating it. Approve/reject satisfies it; a later explicit run may
   create a new attention sequence.
 - CompanionConclusion is derived from retained authority on every read; tests
   prove no conclusion table, Bus row, UI row, Timeline event, or second
@@ -51,10 +52,9 @@ retained IssueStack conclusion.
 ## Domain, migration, and concurrency matrix
 
 - PostgreSQL inspection proves exact enums/checks, native UUID/FK parity,
-  restrictive deletes, partial uniqueness, deferrable first attention/proposal
-  relation, request ids/fingerprints, record versions, Timeline refs, and two
-  ordered additive migrations: governance aggregate after the actual FT-012
-  head, then decision-effect Task/Bus compatibility.
+  restrictive deletes, partial uniqueness, the one-way proposal-to-attention
+  relation, request ids/fingerprints, record versions, Timeline refs, and the
+  ordered aggregate, simplification, and decision-effect revisions.
 - Each FT-013 migration test advances every dependency-created exact-head
   assertion, including Safety Gate and Task Follow-Up migration-model tests;
   no required gate may leave them pinned to the preceding revision.
@@ -108,10 +108,12 @@ retained IssueStack conclusion.
   produces no agent fact.
   Existing FT-008 variants remain valid; backend `domain_record` alone permits
   null authorization scope; actor-originated publication still requires it.
-- Attention/proposal/decision UI projections use their exact authoritative ids,
-  remain non-agent-consumable, update terminal state idempotently, and reject a
-  canonical content conflict atomically. All three authorized roles may read
-  them; Consultant still has zero run/decision/close authority.
+- Attention/proposal/decision UI projections use their exact authoritative ids
+  and remain non-agent-consumable. Proposal terminal updates rebuild and
+  overwrite their derived rows from authority; missing or stale presentation
+  does not block a valid governance transition. Real projection persistence
+  failure still rolls the transaction back. All three authorized roles may
+  read them; Consultant still has zero run/decision/close authority.
 - Context builders resolve the allowed DecisionRecord reference through the
   governance repository into exactly `ApprovedGovernanceSummaryV1`, including
   canonical ids/refs, approved proposal version, decision/effect/role/time,
@@ -136,12 +138,15 @@ retained IssueStack conclusion.
   conclusion, while every run/decision/close/Task/provider path is denied.
 - Caller cannot submit prompt, proposal text, effect, Task kind/text, provider,
   model, role, grant, classification, or authorization data.
-- Detail reads prove active-else-latest attention, ascending proposal and
-  DecisionRecord order, deterministic latest DecisionRecord, exact
+- Detail reads prove active-else-latest attention, derived current proposal,
+  ascending proposal and DecisionRecord order, deterministic latest
+  DecisionRecord, exact
   `awaiting_human|decided|closed` nullability for focused and unfocused open
   rows, canonical
   `companion_issue|companion_attention|companion_proposal|decision_record`
-  refs, and no UI/Timeline fallback on an inconsistent authority graph.
+  refs, strict response serialization, and no UI/Timeline fallback. The read
+  matrix covers supported application paths rather than a full retained-graph
+  equivalence proof.
 - Parameterized error tests cover every common runtime, classifier, and domain
   branch in the total HTTP mapping, including distinct runtime-audit and
   governance-audit failures, output-invalid versus provider-failed, and

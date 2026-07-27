@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from ..agent_chat.contracts import (
     AgentChatContractError,
     UIFeedEventV1,
@@ -19,6 +21,7 @@ def attention_ui_event(
     attention: CompanionHumanAttention,
     *,
     issue: CompanionIssue,
+    initial_proposal_id: uuid.UUID,
 ) -> UIFeedEventV1:
     return UIFeedEventV1.from_untrusted(
         {
@@ -32,7 +35,7 @@ def attention_ui_event(
             "source_refs": [
                 f"companion_issue:{issue.issue_id}",
                 f"companion_attention:{attention.attention_id}",
-                f"companion_proposal:{attention.current_proposal_id}",
+                f"companion_proposal:{initial_proposal_id}",
             ],
             "display_kind": "companion_governance",
             "display_payload": {
@@ -101,37 +104,36 @@ def new_ui_model(event: UIFeedEventV1) -> UIFeedEvent:
     )
 
 
-def require_canonical_pending_proposal_projection(
+def repair_canonical_proposal_projection(
     projection: UIFeedEvent | None,
     proposal: CompanionProposal,
-) -> None:
-    """Fail before audit/mutation unless the stored row is the exact projection."""
-
-    if projection is None:
-        _persistence_failed()
-    try:
-        stored = UIFeedEventV1.from_untrusted(_ui_row_value(projection))
-        expected = proposal_ui_event(proposal)
-    except (AgentChatContractError, TypeError, ValueError):
-        _persistence_failed()
-    if stored != expected:
-        _persistence_failed()
-
-
-def apply_canonical_proposal_projection(
-    projection: UIFeedEvent,
-    proposal: CompanionProposal,
-) -> None:
-    """Apply only the terminal payload after the pending row was verified."""
+) -> UIFeedEvent:
+    """Overwrite or rebuild one derived proposal row from proposal authority."""
 
     try:
         expected = proposal_ui_event(proposal)
-        projection.display_payload = dict(expected.display_payload)
+        if projection is None:
+            projection = new_ui_model(expected)
+        else:
+            projection.created_at = expected.created_at
+            projection.farm_id = expected.farm_id
+            projection.plant_id = expected.plant_id
+            projection.source_type = expected.source_type
+            projection.source_id = expected.source_id
+            projection.source_refs = list(expected.source_refs)
+            projection.display_kind = expected.display_kind
+            projection.display_payload = dict(expected.display_payload)
+            projection.visible_to_roles = list(expected.visible_to_roles)
+            projection.visible_to_agents = False
+            projection.consumable_by_agents = False
+            projection.agent_id = None
+            projection.roster_version = None
         stored = UIFeedEventV1.from_untrusted(_ui_row_value(projection))
     except (AgentChatContractError, TypeError, ValueError):
         _persistence_failed()
     if stored != expected:
         _persistence_failed()
+    return projection
 
 
 def _ui_row_value(row: UIFeedEvent) -> dict[str, object]:
@@ -157,9 +159,8 @@ def _persistence_failed() -> None:
 
 
 __all__ = [
-    "apply_canonical_proposal_projection",
     "attention_ui_event",
     "new_ui_model",
     "proposal_ui_event",
-    "require_canonical_pending_proposal_projection",
+    "repair_canonical_proposal_projection",
 ]

@@ -54,6 +54,12 @@ def ft013_database():
 
 
 @pytest.fixture
+def ft013_pre_simplification_database():
+    with _postgres_database(include_companion_simplification=False) as database:
+        yield database
+
+
+@pytest.fixture
 def ft013_seed(ft013_database):
     farm = seed_farm(ft013_database)
     boss, membership = create_actor(ft013_database, farm, "boss")
@@ -154,7 +160,7 @@ def make_proposal_command(
 
 
 @contextmanager
-def _postgres_database():
+def _postgres_database(*, include_companion_simplification: bool = True):
     settings = AppSettings.from_env()
     base = build_database(settings)
     schema = f"task041_ft013_{uuid.uuid4().hex}"
@@ -173,7 +179,7 @@ def _postgres_database():
             )
         )
         script = ScriptDirectory.from_config(build_alembic_config(settings))
-        revision_ids = (
+        revision_ids = [
             "ft001_access_sessions",
             "ft002_farm_plant_access",
             "ft004_plant_operations",
@@ -185,7 +191,10 @@ def _postgres_database():
             "ft012_task_approval_outcomes",
             "ft012_runtime_dispositions",
             "ft013_governance_aggregate",
-        )
+            "ft012_simplify_follow_up_runtime",
+        ]
+        if include_companion_simplification:
+            revision_ids.append("ft013_simplify_companion")
         with scoped.engine().connect() as connection:
             context = MigrationContext.configure(connection)
             with Operations.context(context):
@@ -206,6 +215,7 @@ __all__ = [
     "FT013_NOW",
     "TimelineRecorder",
     "ft013_database",
+    "ft013_pre_simplification_database",
     "ft013_seed",
     "make_proposal_command",
     "seed_companion_classification",

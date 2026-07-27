@@ -142,11 +142,13 @@ source_of_truth:
   `summary_text`.
 - `TASK-041-T3-FT-013-W1` is owner-recorded `done` from Attempt 05 independent
   functional PASS with the latest semantic-fail preserved and explicitly
-  accepted as residual risk; no semantic-pass is claimed. TASK-042 and
-  TASK-043 remain indexed `planned`, with TASK-043 still behind TASK-042.
-  Global/feature design and the W1 governance aggregate are implemented, but
-  no real-provider result or FT-013/RTM lifecycle promotion is claimed while
-  W2/W3 remain open.
+  retained as history; no semantic-pass is claimed. Read integrity now targets
+  supported application paths, ownership, and strict serialization.
+  `TASK-044-T3-FT-013-W1` is the planned aggregate simplification before
+  TASK-042; TASK-042 and TASK-043 remain indexed `planned`, with TASK-043 still
+  behind TASK-042. Global/feature design and the W1 governance aggregate are
+  implemented, but no real-provider result or FT-013/RTM lifecycle promotion
+  is claimed while the repair and W2/W3 remain open.
 
 ## Current FT-001 Evidence Note
 

@@ -101,10 +101,14 @@ def test_alembic_baseline_discovers_product_head_without_running_it_on_sqlite(
         assert "alembic_version" in tables
         assert {"accounts", "farms", "plants"}.isdisjoint(tables)
         assert current_revision is None
-        assert script.get_heads() == [
-            "ft012_simplify_follow_up_runtime"
-        ]
+        assert script.get_heads() == ["ft013_simplify_companion"]
 
+        companion_simplification = script.get_revision("ft013_simplify_companion")
+        assert companion_simplification is not None
+        assert (
+            companion_simplification.down_revision
+            == "ft012_simplify_follow_up_runtime"
+        )
         cleanup = script.get_revision(
             "ft012_simplify_follow_up_runtime"
         )

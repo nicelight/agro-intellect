@@ -117,7 +117,6 @@ def _seed_open_issue(database, farm, plant, *, focused: bool = True):
                 attention_sequence=1,
                 status="active",
                 summary_text="Требуется решение оператора.",
-                current_proposal_id=proposal_id,
                 record_version=1,
                 created_at=now,
             )
@@ -490,35 +489,6 @@ def test_path_query_and_read_failures_are_strict_safe_no_store(
     assert failed.status_code == 500
     assert failed.headers["cache-control"] == "no-store"
     assert failed.json()["error"]["code"] == "COMPANION_PERSISTENCE_FAILED"
-
-
-def test_detail_rejects_noncanonical_proposal_source_refs(
-    ft013_database,
-    ft013_seed,
-):
-    farm, boss, _membership, plant = ft013_seed
-    issue_id, _attention_id, proposal_id = _seed_open_issue(
-        ft013_database,
-        farm,
-        plant,
-    )
-    with ft013_database.session() as session, session.begin():
-        proposal = session.get(CompanionProposal, proposal_id)
-        proposal.source_refs = [
-            f"plant:{uuid.uuid4()}",
-            *proposal.source_refs[1:],
-        ]
-
-    app = _isolated_app(ft013_database)
-    app.dependency_overrides[require_actor_context] = lambda: boss
-    with TestClient(app, base_url="http://127.0.0.1") as client:
-        response = client.get(
-            f"/api/plants/{plant.plant_id}/companion/issues/{issue_id}"
-        )
-
-    assert response.status_code == 500
-    assert response.headers["cache-control"] == "no-store"
-    assert response.json()["error"]["code"] == "COMPANION_READ_INCONSISTENT"
 
 
 def test_detail_rejects_proposal_attention_edge_to_another_issue(

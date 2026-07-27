@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-07-23
+last_updated: 2026-07-27
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -54,6 +54,9 @@ spec_design_links:
 - Only an explicit protected user command invokes the Companion model; page
   reads, refresh, domain events, Task completion, and startup are not triggers.
 - No parallel pending proposals exist for the same Plant-scoped issue; a new proposal supersedes the previous pending proposal.
+- HumanAttentionNeeded stores no reverse current-proposal pointer. The current
+  proposal is derived from the unique pending proposal linked to the active
+  attention, while the public `current_proposal_ref` remains unchanged.
 - DecisionRecord may direct Plant-scoped discussion/workflow and safe check/measurement/follow-up task requests through backend rules.
 - DecisionRecord cannot mutate Plant state, create action_task, authorize physical action, replace Safety Gate approval, or turn raw chat into a fact.
 - Agent Chat Bus and general agent working context may consume only compact
@@ -153,3 +156,8 @@ spec_design_links:
   TASK-043 remain `planned`; neither was promoted or selected by the W1
   closure. Their `touched_files` are advisory; hard semantics remain in their
   canonical specs, `forbidden_scope`, and `stop_conditions`.
+- Simplification decision: the new bounded T3 repair task removes the redundant
+  attention-to-proposal pointer, scopes read integrity to supported paths,
+  ownership, and response serialization, and makes proposal projection repair
+  authority-derived. TASK-042 must consume that repaired authority before
+  DecisionRecord implementation begins.

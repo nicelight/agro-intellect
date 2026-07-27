@@ -141,11 +141,11 @@ is not a separate mutable authority or a model-owned memory store.
 
 - `HumanAttentionNeeded.status` is exactly `active|satisfied`.
 - A successful non-silent Companion run creates the first active attention and
-  current pending proposal for its issue in one transaction.
+  first pending proposal for its issue in one transaction.
 - While attention remains active, a later explicit run for the same open issue
-  may supersede the pending proposal and replace its current proposal without
-  creating a second attention row. This preserves the proposal-supersede rule
-  without duplicating the human request.
+  may supersede the unique pending proposal and create its replacement without
+  mutating or duplicating the attention row. The current proposal is derived
+  from the unique pending proposal linked by `proposal.attention_id`.
 - Approving or rejecting the current proposal satisfies the active attention
   in the same transaction as DecisionRecord creation.
 - A later explicit run may create a new attention only after the prior one is
@@ -156,15 +156,16 @@ is not a separate mutable authority or a model-owned memory store.
 - State is exactly `pending|approved|rejected|superseded`.
 - New proposals use a monotonic per-issue `proposal_sequence`.
 - At most one proposal is pending per issue. Creating a newer proposal locks
-  the issue/current proposal, transitions the previous pending proposal to
+  the issue, active attention, and unique pending proposal, transitions it to
   `superseded`, and creates the replacement atomically.
 - Different explicit `run_id` values are independent commands. If their
   current guards remain valid, row locks serialize them and both may commit;
   for one issue the later governance writer supersedes the earlier writer's
   pending proposal. Same-run retries remain idempotent. Overlap alone is not a
   conflict, and provider finish time does not define proposal order.
-- Only the current pending proposal at its expected version may be approved or
-  rejected. Terminal proposals are retained and immutable.
+- Only the unique pending proposal linked to the active attention at its
+  expected version may be approved or rejected. Terminal proposals are
+  retained and immutable.
 - There is no time expiry. Elapsed time alone changes neither proposal nor
   attention state.
 
@@ -244,6 +245,10 @@ catalog remain feature-local design.
 - No parallel pending proposals may exist for the same Plant-scoped issue.
 - A new proposal for the same Plant issue supersedes the previous pending
   proposal.
+- `HumanAttentionNeeded` stores no reverse current-proposal pointer. Current
+  proposal identity is derived from the unique pending proposal for the active
+  attention; after satisfaction, the deciding `DecisionRecord` identifies the
+  terminal proposal.
 - Proposal state has no time-based expiry in MVP. Elapsed time alone never
   transitions a `pending` proposal; it remains pending until an authorized
   decision or a later same-issue proposal supersedes it.

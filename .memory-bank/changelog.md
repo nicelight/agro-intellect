@@ -4,6 +4,21 @@ status: active
 ---
 # Changelog
 
+## [2026-07-27] FT-013 Companion aggregate simplification planned
+
+- Scoped Companion read integrity to supported application paths, ownership,
+  and strict serialization without a full retained-graph proof.
+- Reconciled Companion state/data/HTTP/testing/projection specs around one-way
+  proposal authority: the unique pending proposal plus
+  `proposal.attention_id` defines current proposal, while public
+  `current_proposal_ref` remains derived.
+- Added planned `TASK-044-T3-FT-013-W1` after completed TASK-040/TASK-041 and
+  before TASK-042; TASK-041 history remains immutable.
+- Planned forward migration `ft013_simplify_companion` after
+  `ft012_simplify_follow_up_runtime`,
+  authority-derived proposal projection overwrite/repair, unchanged public
+  contracts, and fresh FT-013 task-plan review before execution.
+
 ## [2026-07-27] Wave W2 — TASK-040 closed
 
 - Closed `TASK-040-T3-FT-012-W2` after ATTEMPT 08 functional `PASS`,

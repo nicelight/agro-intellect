@@ -5,7 +5,7 @@
   "given": {
     "plant": "active and authorized for a granted Engineer with can_operate=true",
     "issue": "open, focused, and version-matched",
-    "attention": "active and pointing to one pending proposal"
+    "attention": "active and linked from one uniquely pending proposal"
   },
   "when": {
     "command": "the Engineer explicitly invokes Companion for that issue",
@@ -13,7 +13,7 @@
   },
   "then": {
     "proposal": "the previous proposal becomes superseded and the new proposal becomes the only pending proposal",
-    "attention": "the same attention row points to the new proposal and remains active",
+    "attention": "the same attention row remains unchanged and active; the new current proposal is derived from the unique pending row",
     "authority": "neither proposal enters Agent Chat Bus or creates a DecisionRecord or Task"
   }
 }

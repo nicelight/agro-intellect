@@ -104,8 +104,8 @@ def test_ft002_revision_is_in_ordered_product_history_and_contains_no_destructiv
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     product_head = script.get_revision("head")
     assert product_head is not None
-    assert product_head.revision == "ft012_simplify_follow_up_runtime"
-    assert product_head.down_revision == "ft013_governance_aggregate"
+    assert product_head.revision == "ft013_simplify_companion"
+    assert product_head.down_revision == "ft012_simplify_follow_up_runtime"
     companion_governance = script.get_revision("ft013_governance_aggregate")
     assert companion_governance is not None
     assert companion_governance.down_revision == "ft012_runtime_dispositions"

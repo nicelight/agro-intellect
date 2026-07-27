@@ -31,11 +31,10 @@ from .integrity import (
 )
 from .models import CompanionHumanAttention, CompanionIssue, CompanionProposal
 from .projections import (
-    apply_canonical_proposal_projection,
     attention_ui_event,
     new_ui_model,
     proposal_ui_event,
-    require_canonical_pending_proposal_projection,
+    repair_canonical_proposal_projection,
 )
 from .repository import CompanionGovernanceRepository, CurrentGovernanceScope
 
@@ -140,7 +139,6 @@ class CompanionGovernanceService:
                         ),
                         status="active",
                         summary_text=command.attention_summary_text,
-                        current_proposal_id=proposal_id,
                         record_version=1,
                         created_at=now,
                     )
@@ -148,11 +146,15 @@ class CompanionGovernanceService:
                     self._add_attention_projection(
                         attention,
                         issue=issue,
+                        initial_proposal_id=proposal_id,
                     )
                 else:
                     attention = active_attention
-                    current = self._repository.proposal(
-                        attention.current_proposal_id,
+                    current = self._repository.pending_proposal(
+                        issue.issue_id,
+                        attention_id=attention.attention_id,
+                        farm_id=scope.farm_id,
+                        plant_id=scope.plant_id,
                         for_update=True,
                     )
                     if current is None:
@@ -163,10 +165,6 @@ class CompanionGovernanceService:
                     projection = self._repository.ui_projection(
                         current.proposal_id,
                         for_update=True,
-                    )
-                    require_canonical_pending_proposal_projection(
-                        projection,
-                        current,
                     )
                 if command.target_issue_id is not None:
                     self._focus_existing_issue(issue, focused=focused)
@@ -192,9 +190,12 @@ class CompanionGovernanceService:
                     current.record_version = 2
                     current.terminal_at = now
                     current.superseded_event_ref = superseded_ref
-                    apply_canonical_proposal_projection(projection, current)
-                    attention.current_proposal_id = proposal_id
-                    attention.record_version += 1
+                    repaired = repair_canonical_proposal_projection(
+                        projection,
+                        current,
+                    )
+                    if projection is None:
+                        self._session.add(repaired)
 
                 created_ref = self._append(
                     scope,
@@ -337,12 +338,20 @@ class CompanionGovernanceService:
             raise CompanionGovernanceError(
                 CompanionGovernanceErrorCode.COMMAND_FORBIDDEN
             )
-        attentions = self._repository.attentions(issue_id)
-        proposals = self._repository.proposals(issue_id)
-        decisions = self._repository.decisions_for_w1_graph(
+        attentions = self._repository.attentions(
             issue_id,
-            attention_ids=[item.attention_id for item in attentions],
-            proposal_ids=[item.proposal_id for item in proposals],
+            farm_id=scope.farm_id,
+            plant_id=plant_id,
+        )
+        proposals = self._repository.proposals(
+            issue_id,
+            farm_id=scope.farm_id,
+            plant_id=plant_id,
+        )
+        decisions = self._repository.decisions(
+            issue_id,
+            farm_id=scope.farm_id,
+            plant_id=plant_id,
         )
         graph = validate_w1_issue_graph(
             issue,
@@ -361,7 +370,10 @@ class CompanionGovernanceService:
         return CompanionIssueDetailV1(
             issue=_issue_value(issue),
             attention=(
-                _attention_value(graph.selected_attention)
+                _attention_value(
+                    graph.selected_attention,
+                    current_proposal=graph.current_proposal,
+                )
                 if graph.selected_attention is not None
                 else None
             ),
@@ -504,8 +516,17 @@ class CompanionGovernanceService:
         attention: CompanionHumanAttention,
         *,
         issue: CompanionIssue,
+        initial_proposal_id: uuid.UUID,
     ) -> None:
-        self._session.add(new_ui_model(attention_ui_event(attention, issue=issue)))
+        self._session.add(
+            new_ui_model(
+                attention_ui_event(
+                    attention,
+                    issue=issue,
+                    initial_proposal_id=initial_proposal_id,
+                )
+            )
+        )
 
     def _add_proposal_projection(
         self,
@@ -585,7 +606,24 @@ def _issue_value(issue: CompanionIssue) -> Mapping[str, object]:
     }
 
 
-def _attention_value(attention: CompanionHumanAttention) -> Mapping[str, object]:
+def _attention_value(
+    attention: CompanionHumanAttention,
+    *,
+    current_proposal: CompanionProposal | None,
+) -> Mapping[str, object]:
+    if attention.status == "active":
+        if (
+            current_proposal is None
+            or current_proposal.attention_id != attention.attention_id
+        ):
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.READ_INCONSISTENT
+            )
+        current_proposal_id = current_proposal.proposal_id
+    else:
+        raise CompanionGovernanceError(
+            CompanionGovernanceErrorCode.READ_INCONSISTENT
+        )
     return {
         "attention_id": str(attention.attention_id),
         "attention_ref": f"companion_attention:{attention.attention_id}",
@@ -593,9 +631,7 @@ def _attention_value(attention: CompanionHumanAttention) -> Mapping[str, object]
         "attention_sequence": attention.attention_sequence,
         "status": attention.status,
         "summary_text": attention.summary_text,
-        "current_proposal_ref": (
-            f"companion_proposal:{attention.current_proposal_id}"
-        ),
+        "current_proposal_ref": f"companion_proposal:{current_proposal_id}",
         "record_version": attention.record_version,
         "created_at": timestamp_text(attention.created_at),
         "satisfied_at": (

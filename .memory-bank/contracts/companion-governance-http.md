@@ -118,9 +118,11 @@ decision, close, Task, or agent-context capability.
 - `created_at`, nullable `satisfied_at`, and nullable
   `satisfied_by_decision_record_ref`.
 
-`current_proposal_ref` is always non-null. For `active`, both satisfaction
-fields are null; for `satisfied`, both are non-null. `attention` is null only
-when the issue has no attention rows.
+`current_proposal_ref` is always non-null but is not stored on the attention
+row. For `active`, it is derived from the unique pending proposal linked to
+that attention and both satisfaction fields are null. For `satisfied`, it is
+derived through the satisfying DecisionRecord and both satisfaction fields are
+non-null. `attention` is null only when the issue has no attention rows.
 
 `CompanionProposalViewV1` contains exactly:
 
@@ -327,10 +329,12 @@ internal branch and assert the redacted 500 fallback plus full rollback.
 - Decision tests prove caller cannot select effect/Task kind, unknown or
   mismatched persisted effect rejects atomically, and every response keeps
   `safety_gate_authority=not_granted`.
-- Detail/read tests prove active-else-latest attention selection, ascending
-  proposal/DecisionRecord arrays, deterministic latest DecisionRecord,
-  complete CompanionConclusion groups, strict event/source refs, and
-  `COMPANION_READ_INCONSISTENT` without projection fallback.
+- Detail/read tests prove active-else-latest attention selection, derived
+  current-proposal identity, ascending proposal/DecisionRecord arrays,
+  deterministic latest DecisionRecord, complete CompanionConclusion groups,
+  strict response serialization, and `COMPANION_READ_INCONSISTENT` without
+  projection fallback. Read integrity is scoped to supported application
+  paths, ownership, and public serialization.
 - Invocation tests prove GET/refresh/events never call a model, only the
   explicit POST reaches the Companion runtime, and an early committed
   duplicate returns persisted refs with null `model_ref` and zero provider or

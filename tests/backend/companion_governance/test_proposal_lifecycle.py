@@ -150,9 +150,8 @@ def test_new_issue_proposal_is_one_atomic_governance_effect_with_no_forbidden_au
         assert (
             attention.status,
             attention.attention_sequence,
-            attention.current_proposal_id,
             attention.record_version,
-        ) == ("active", 1, proposal.proposal_id, 1)
+        ) == ("active", 1, 1)
         assert (
             proposal.state,
             proposal.proposal_sequence,
@@ -254,8 +253,7 @@ def test_existing_issue_reuses_attention_supersedes_once_and_retries_idempotentl
         attention_ui = session.get(UIFeedEvent, first.attention_id)
         assert [item.state for item in proposals] == ["superseded", "pending"]
         assert [item.record_version for item in proposals] == [2, 1]
-        assert attention.current_proposal_id == second.proposal_id
-        assert attention.record_version == 2
+        assert attention.record_version == 1
         assert first_ui.created_at == first_ui_created_at
         assert first_ui.display_payload["proposal_state"] == "superseded"
         assert attention_ui.source_refs[-1] == f"companion_proposal:{first.proposal_id}"
@@ -578,8 +576,7 @@ def test_concurrent_distinct_runs_serialize_new_issue_focus_and_existing_superse
             "superseded",
             "pending",
         ]
-        assert attention.current_proposal_id == proposals[-1].proposal_id
-        assert attention.record_version == 3
+        assert attention.record_version == 1
 
 
 def test_archive_race_rechecks_locked_plant_and_writes_nothing_on_denial(

@@ -16,7 +16,8 @@
   ],
   "depends_on": [
     "TASK-041-T3-FT-013-W1",
-    "TASK-040-T3-FT-012-W2"
+    "TASK-040-T3-FT-012-W2",
+    "TASK-044-T3-FT-013-W1"
   ],
   "touched_files": [
     "backend/app/companion_governance/",
@@ -99,24 +100,24 @@
     "HTTP/OpenAPI/no-store evidence for the exact DecisionRecord/close/result/conclusion fields, refs, nullability, ordering, and complete reachable Task/runtime/domain error mapping, plus advanced Safety Gate, Task Follow-Up, and older exact-head regressions proving FT-008 strict variants and FT-012 ordinary-task/Safety boundaries remain valid.",
     "Current-attempt T3 protocol evidence with fresh functional verification, /verify VERDICT: PASS, per-task /red-verify SEMANTIC_VERDICT: semantic-pass, and the exact HUMAN_CHECKPOINT: done marker before explicit-owner or scheduler closure."
   ],
-  "purpose": "Complete the binding human-governance outcome over TASK-041 authority after TASK-040 has finished the shared Task Follow-Up package: authorized approve/reject and close commands, immutable DecisionRecords, exact atomic safe workflow effects, and guarded human/agent/audit projections without provider or physical-action authority.",
+  "purpose": "Complete the binding human-governance outcome over the TASK-044-simplified proposal authority after TASK-040 has finished the shared Task Follow-Up package: authorized approve/reject and close commands, immutable DecisionRecords, exact atomic safe workflow effects, and guarded human/agent/audit projections without provider or physical-action authority.",
   "success_outcome": "Boss or a currently granted Engineer can approve or reject only the current pending proposal, choose keep_open or resolved, and later close only a resolved issue; approval atomically records the exact discussion_only, check, measurement, follow_up, or none effect and creates one same-kind governance_decision ordinary Task only when operative, rejection records none and publishes no Bus fact, and every stale, invalid, unauthorized, archived, Task, projection, audit, or persistence failure leaves the proposal/attention/issue unchanged with no partial DecisionRecord or effect.",
   "anti_goals": [
     "Do not invoke a model, expose the explicit run command, compose providers, or perform credentialed UAT; TASK-043 owns that outcome.",
     "Do not register the Companion router in backend/app/main.py; TASK-043 owns the single production registration after TASK-040, while this wave verifies decision/close routes through an isolated test app.",
-    "Do not redesign TASK-041 IssueStack/focus/attention/proposal identity or add another proposal persistence path.",
+    "Do not redesign the TASK-044-simplified IssueStack/focus/attention/proposal identity or add another proposal persistence path.",
     "Do not add a governance permission, reuse plant_approve_actions, forbid self-approval, add expiry/reopen/hard delete, or persist CompanionConclusion.",
     "Do not create action Tasks, approve physical action, mutate Plant state, complete Tasks, record Outcomes, perform device work, or add frontend/PWA/scheduler/worker/outbox behavior."
   ],
   "runtime_context": {
     "forbidden_scope": [
       "TASK-043 Companion request/result, provider composition, external egress, explicit run endpoint, or credentialed smoke.",
-      "A second IssueStack/proposal store, public proposal-create command, or changes to TASK-041 focus/attention/supersede identity except a narrowly proven compatibility repair.",
+      "A second IssueStack/proposal store, public proposal-create command, or changes to the TASK-044-simplified focus/attention/supersede identity except a narrowly proven compatibility repair.",
       "New permission flags, plant_approve_actions governance semantics, self-approval restrictions, Farm-level governance, expiry, reopen, or hard delete.",
       "Safety approval, action Task, Plant-state confirmation, Task completion, Outcome, target values, device commands, automated actuation, frontend/PWA, scheduler, worker, or outbox."
     ],
     "stop_conditions": [
-      "TASK-041 aggregate/proposal implementation differs materially from the linked lifecycle, record-version, or current-proposal contract.",
+      "TASK-044 simplified aggregate/proposal implementation differs materially from the linked lifecycle, record-version, or derived current-proposal contract.",
       "The implemented TASK-039 ordinary-task service cannot accept governance_decision inside the caller's SQLAlchemy Session/UoW without widening Safety or action authority.",
       "DecisionRecord, operative ordinary Task, proposal/attention/issue transition, required UI/Bus projections, and Timeline refs cannot be one PostgreSQL transaction.",
       "Approved-only DecisionRecord context cannot be resolved from PostgreSQL without raw proposal/rationale/UI content or mutable replay authority.",
@@ -152,11 +153,11 @@
   ],
   "constraints": [
     "Decision and close commands allow only Boss or currently granted Engineer with can_operate=true; Consultant and archived/unauthorized scope fail closed with no new permission or self-approval rule.",
-    "Only the current pending proposal at expected_version=1 and its active attention may decide, whether its open issue is focused or unfocused; keep_open focuses the target and atomically clears a different focus, resolved leaves another issue's focus unchanged, close is a separate resolved-to-closed command, and terminal records are immutable.",
+    "Only the unique pending proposal at expected_version=1 linked to the active attention may decide, whether its open issue is focused or unfocused; keep_open focuses the target and atomically clears a different focus, resolved leaves another issue's focus unchanged, close is a separate resolved-to-closed command, and terminal records are immutable.",
     "Effects are exactly discussion_only, check, measurement, follow_up, and none; approval copies the proposal effect, rejection forces none, and action/unknown/mismatch rejects the whole decision.",
     "Operative DecisionRecord, the proposal locked pending-v1 then flushed approved-v2 for that same record, same-kind governance_decision ordinary Task, state transitions, required Timeline refs, decision/proposal UI, and approved-only Bus row commit together or all roll back; no intermediate commit or failed/no_effect DecisionRecord is retained.",
     "Approved discussion_only/none may publish a compact DecisionRecord Bus fact without a Task; rejection creates human history only and no Bus fact; all agent context is the exact non-persisted ApprovedGovernanceSummaryV1 and safety_gate_authority remains not_granted.",
-    "The second FT-013 migration adds only decision-effect Task/Bus compatibility after the TASK-041 aggregate head and preserves every earlier row/variant.",
+    "The DecisionRecord migration adds only decision-effect Task/Bus compatibility after the TASK-044 head ft013_simplify_companion and preserves every earlier row/variant.",
     "Every exact-head assertion present after TASK-041, including Safety Gate and Task Follow-Up migration-model tests, advances to the decision-effect revision in this task.",
     "The decision/close router is verified through an isolated FastAPI test app and remains unregistered in backend/app/main.py until TASK-043 performs the single production registration after TASK-040.",
     "TASK-042 starts only after TASK-040 because both may edit backend/app/task_follow_up/; this explicit edge serializes the shared package even though their feature-local wave labels are both W2."
@@ -166,10 +167,10 @@
     "DecisionRecord never grants Safety approval, action Task, Plant-state mutation, device effect, Task completion, or Outcome authority.",
     "Agent Chat Bus resolves only exact ApprovedGovernanceSummaryV1 facts from committed approved DecisionRecords; UI projections and mutable CompanionConclusion/focus/attention are not Bus context. TASK-043 may separately assemble strict typed governance provider input.",
     "Archive retains all governance rows and authorized reads but blocks decisions, close, workflow effects, and Bus publication; restore never replays denied work.",
-    "Identical decision/close retries return the first canonical result; stale versions, reused identities with different fingerprints, superseded/terminal proposals, and projection conflicts have no effect."
+    "Identical decision/close retries return the first canonical result; stale versions, reused identities with different fingerprints, superseded/terminal proposals, and required projection persistence failures have no effect."
   ],
   "verification_targets": [
-    "Migration/model tests prove the decision-effect revision follows TASK-041, adds exact Task source/Bus constraints and nullable backend-domain scope, and advances Safety Gate, Task Follow-Up, and every older exact-head assertion without changing earlier rows.",
+    "Migration/model tests prove the decision-effect revision follows TASK-044, adds exact Task source/Bus constraints and nullable backend-domain scope, and advances Safety Gate, Task Follow-Up, and every older exact-head assertion without changing earlier rows.",
     "PostgreSQL service/concurrency tests prove approve/reject, attention satisfaction, focused/unfocused open conclusion reads, keep_open focus transfer, resolved/close, identical duplicate versus conflict, current authority, and archive/grant/stale races.",
     "Effect tests cover all five allowed values, action/unknown/mismatch rejection, one same-kind governance_decision Task from the flushed approved-v2/same-DecisionRecord graph without intermediate commit, committed duplicate, wrong proposal phase/link rejection, discussion_only/none no Task, rejection none/no Bus, and zero Safety/action/Plant/device authority.",
     "Failure injection proves Task insert, Timeline append, UI/Bus projection, and database errors roll back DecisionRecord plus every state/effect mutation while non-authoritative appended audit noise cannot replay state.",

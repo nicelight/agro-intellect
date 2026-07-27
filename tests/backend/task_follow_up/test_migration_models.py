@@ -94,19 +94,20 @@ def _active_schema_shape(database) -> tuple[set[str], set[str], set[str]]:
     return tables, columns, checks
 
 
-def test_cleanup_revision_is_exact_head_after_retained_ft013():
+def test_cleanup_revision_precedes_companion_simplification_head():
     script = _script()
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft012_simplify_follow_up_runtime"
-    assert head.down_revision == "ft013_governance_aggregate"
+    assert head.revision == "ft013_simplify_companion"
+    assert head.down_revision == "ft012_simplify_follow_up_runtime"
 
+    cleanup = script.get_revision("ft012_simplify_follow_up_runtime")
     retained = script.get_revision("ft013_governance_aggregate")
     historical = script.get_revision("ft012_runtime_dispositions")
     assert retained.down_revision == "ft012_runtime_dispositions"
     assert historical.down_revision == "ft012_task_approval_outcomes"
 
-    cleanup_source = Path(head.path).read_text(encoding="utf-8")
+    cleanup_source = Path(cleanup.path).read_text(encoding="utf-8")
     assert "SELECT EXISTS" in cleanup_source
     assert _RUNTIME_TABLE in cleanup_source
     assert _COMMITMENT_COLUMN in cleanup_source
@@ -301,7 +302,7 @@ def test_alembic_current_head_upgrade_is_idempotent(ft012_database):
         command.upgrade(config, "head")
         with scoped_database.engine().connect() as connection:
             assert MigrationContext.configure(connection).get_current_revision() == (
-                "ft012_simplify_follow_up_runtime"
+                "ft013_simplify_companion"
             )
             inspector = inspect(connection)
             assert _RUNTIME_TABLE not in inspector.get_table_names()

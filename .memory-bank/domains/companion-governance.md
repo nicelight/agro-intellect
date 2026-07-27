@@ -103,17 +103,17 @@ One row is one human-attention cycle for an issue:
 - `attention_sequence`: positive per-issue sequence;
 - `status`: `active|satisfied`;
 - `summary_text`: compact literal attention summary;
-- `current_proposal_id`: restrictive UUID FK to the current proposal;
-- `record_version`: positive integer, initially `1`, incremented when the
-  current proposal is replaced or attention is satisfied;
+- `record_version`: positive integer, initially `1`, incremented only when the
+  attention is satisfied;
 - `created_at`, nullable `satisfied_at`, nullable
   `satisfied_by_decision_record_id`.
 
 `(issue_id,attention_sequence)` is unique and a partial unique index permits
 at most one active attention per issue. Active rows have no satisfaction
-fields; satisfied rows have both. The attention/current-proposal relation uses
-deferrable restrictive FKs so the first attention and proposal can be inserted
-atomically without a nullable committed state.
+fields; satisfied rows have both. Current proposal identity is not duplicated
+on this row: an active attention resolves it from the unique pending proposal
+whose `attention_id` matches, while a satisfied attention resolves its final
+proposal through `satisfied_by_decision_record_id`.
 
 ## `companion_proposals`
 
@@ -282,13 +282,14 @@ ineligible.
    `open`, expected version, same Plant, and current authorization. If another
    issue was focused, clear its focus and increment its version; set the target
    focused and increment its version only when that flag actually changes.
-3. Lock the active attention/current pending proposal. If attention is active,
-   reuse it, supersede the current pending proposal, and advance its current
-   proposal/version. Otherwise create a new attention sequence.
+3. Lock the active attention and the unique pending proposal linked to it. If
+   attention is active, reuse it unchanged and supersede that proposal.
+   Otherwise create a new attention sequence.
 4. Insert the new pending proposal with the next issue sequence.
 5. Insert/update the strict non-consumable attention/proposal UI rows. Proposal
-   `ui_event_id` equals `proposal_id`; an existing proposal projection is
-   updated in place when its authoritative state becomes terminal.
+   `ui_event_id` equals `proposal_id`; when its authoritative state becomes
+   terminal, its derived projection is rebuilt and overwritten from authority
+   rather than compared as an authority precondition.
 6. Append the required opened/created/superseded Timeline events and persist
    their refs, then commit all PostgreSQL rows together.
 
@@ -371,9 +372,10 @@ only possible workflow-effect authority.
    `companion_issue_resolved` when applicable, persists refs, and commits.
 
 Every DB mutation/effect/projection is all-or-nothing. Invalid/unknown effect,
-Task failure, projection conflict, Timeline append failure, or DB failure rolls
-back the PostgreSQL transaction and returns no DecisionRecord. A Timeline line
-already appended before a later commit failure remains non-authoritative noise.
+Task failure, projection persistence failure, Timeline append failure, or DB
+failure rolls back the PostgreSQL transaction and returns no DecisionRecord.
+A Timeline line already appended before a later commit failure remains
+non-authoritative noise.
 
 `proposal_id` and `request_id` are idempotency keys. Identical retry returns the
 first result. Opposite decision, stale version, reused request id with different
@@ -458,9 +460,8 @@ registered.
 
 ## Migration sequence
 
-Two ordered additive FT-013 revisions keep the proposal-authority and binding
-decision-effect outcomes independently executable without weakening the final
-schema:
+The FT-013 migration chain keeps proposal authority, its bounded
+simplification, and binding decision effects independently executable:
 
 1. The governance-aggregate revision runs after the actual implemented FT-012
    head. It creates all four governance tables, including the otherwise-unused
@@ -468,7 +469,12 @@ schema:
    checks, partial/natural unique indexes, restrictive/deferrable relations,
    no cascades, and the strict Companion UI variants. This revision exposes no
    decision command and creates no DecisionRecord row by itself.
-2. The decision-effect compatibility revision runs after the aggregate
+2. Forward revision `ft013_simplify_companion` runs after the completed FT-012
+   runtime cleanup. It removes only the redundant
+   `companion_human_attention.current_proposal_id` column and its cyclic
+   foreign key. Existing proposal, attention, issue, projection, and audit rows
+   remain in place; the original applied aggregate revision is not rewritten.
+3. The decision-effect compatibility revision runs after the simplification
    revision. It adds the narrow FT-012 DecisionRecord Task source extension,
    enables the DecisionRecord Bus domain-ref constraints, makes domain-adapter
    authorization scope nullable without weakening actor-originated validation,

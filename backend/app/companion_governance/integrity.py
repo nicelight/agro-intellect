@@ -40,39 +40,6 @@ def validate_w1_issue_graph(
     if decisions or issue.farm_id != farm_id or issue.plant_id != plant_id:
         _read_inconsistent()
 
-    scope = (farm_id, plant_id, issue.issue_id)
-    attention_by_id: dict[uuid.UUID, CompanionHumanAttention] = {}
-    for attention in attentions:
-        if (
-            (attention.farm_id, attention.plant_id, attention.issue_id) != scope
-            or attention.satisfied_by_decision_record_id is not None
-        ):
-            _read_inconsistent()
-        attention_by_id[attention.attention_id] = attention
-
-    proposal_by_id: dict[uuid.UUID, CompanionProposal] = {}
-    for proposal in proposals:
-        attention = attention_by_id.get(proposal.attention_id)
-        if attention is None:
-            _read_inconsistent()
-        validate_w1_proposal_edge(issue, attention, proposal)
-        proposal_by_id[proposal.proposal_id] = proposal
-
-    for attention in attentions:
-        current = proposal_by_id.get(attention.current_proposal_id)
-        if current is None or current.attention_id != attention.attention_id:
-            _read_inconsistent()
-        if attention.status == "active" and current.state != "pending":
-            _read_inconsistent()
-
-    for proposal in proposals:
-        attention = attention_by_id[proposal.attention_id]
-        if proposal.state == "pending" and (
-            attention.status != "active"
-            or attention.current_proposal_id != proposal.proposal_id
-        ):
-            _read_inconsistent()
-
     active_attention = next(
         (attention for attention in attentions if attention.status == "active"),
         None,
@@ -82,11 +49,17 @@ def validate_w1_issue_graph(
         if active_attention is not None
         else (attentions[-1] if attentions else None)
     )
-    current_proposal = (
-        proposal_by_id.get(active_attention.current_proposal_id)
-        if active_attention is not None
-        else None
-    )
+    current_proposal = None
+    if active_attention is not None:
+        matches = [
+            proposal
+            for proposal in proposals
+            if proposal.state == "pending"
+            if proposal.attention_id == active_attention.attention_id
+        ]
+        if len(matches) != 1:
+            _read_inconsistent()
+        current_proposal = matches[0]
     return ValidatedW1IssueGraph(
         selected_attention=selected_attention,
         active_attention=active_attention,
@@ -103,8 +76,7 @@ def validate_w1_current_pair(
 
     validate_w1_proposal_edge(issue, attention, proposal)
     if (
-        attention.current_proposal_id != proposal.proposal_id
-        or attention.status != "active"
+        attention.status != "active"
         or proposal.state != "pending"
         or proposal.record_version != 1
     ):

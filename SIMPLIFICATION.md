@@ -36,6 +36,8 @@ ownership reference, а не разрешение повторно открыт�
 
 ## 1. Упростить весь Task Follow-Up runtime/replay package
 
+**Статус:** закрыт 2026-07-27 в рамках
+[TASK-040-T3-FT-012-W2](.memory-bank/tasks/TASK-040-T3-FT-012-W2.task.json).
 **Приоритет:** максимальный.  
 **Confidence:** high.
 **Исходный task scope:** [TASK-040-T3-FT-012-W2](.memory-bank/tasks/TASK-040-T3-FT-012-W2.task.json).
