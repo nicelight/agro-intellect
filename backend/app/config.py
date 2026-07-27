@@ -23,8 +23,6 @@ class AppSettings(BaseModel):
     local_temp_root: Path = Field(default=Path("data/tmp"))
     local_smoke_root: Path = Field(default=Path("data/smoke"))
     sync_status: str = Field(default="local_only")
-    agent_model_bindings_json: str = Field(default="{}")
-    agent_external_egress_enabled: bool = Field(default=False)
 
     @classmethod
     def from_env(
@@ -47,10 +45,6 @@ class AppSettings(BaseModel):
             local_temp_root=source.get("LOCAL_TEMP_ROOT", "data/tmp"),
             local_smoke_root=source.get("LOCAL_SMOKE_ROOT", "data/smoke"),
             sync_status=source.get("SYNC_STATUS", "local_only"),
-            agent_model_bindings_json=source.get("AGENT_MODEL_BINDINGS_JSON", "{}"),
-            agent_external_egress_enabled=source.get(
-                "AGENT_EXTERNAL_EGRESS_ENABLED", "false"
-            ),
         )
 
     def redacted_for_log(self) -> dict[str, str]:
@@ -66,10 +60,4 @@ class AppSettings(BaseModel):
             "local_temp_root": str(self.local_temp_root),
             "local_smoke_root": str(self.local_smoke_root),
             "sync_status": self.sync_status,
-            "agent_model_bindings": "configured"
-            if self.agent_model_bindings_json != "{}"
-            else "empty",
-            "agent_external_egress_enabled": str(
-                self.agent_external_egress_enabled
-            ).lower(),
         }

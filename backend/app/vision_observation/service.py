@@ -42,7 +42,7 @@ from .contracts import (
 )
 
 
-_MODEL_REF_RE = re.compile(r"gemini:[A-Za-z0-9._-]{1,127}\Z")
+_MODEL_REF_RE = re.compile(r"[a-z][a-z0-9_]{0,63}:[A-Za-z0-9._-]{1,127}\Z")
 
 
 class VisionInputDenied(RuntimeError):
@@ -742,4 +742,3 @@ __all__ = [
     "VisionObservationCommand",
     "VisionObservationService",
 ]
-

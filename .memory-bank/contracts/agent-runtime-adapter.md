@@ -87,9 +87,10 @@ project-owned seams:
   into the typed provider payload; callers cannot submit candidate records.
 - `ModelExecutor`: narrow execution protocol returning provider output only to
   the project adapter.
-- `ProviderBindingResolver` and the production executor factory: resolve
-  exactly one future deployment binding and construct its executor with no
-  fallback. With no selected endpoint, resolution fails closed before I/O.
+- Production composition supplies no executor in the current code phase.
+  Each service fails closed before I/O when its executor is absent. A future
+  selected-endpoint milestone may add one deployment adapter without changing
+  this project-owned boundary.
 - `RuntimeAuthorizationGuard`: reloads current session/account/membership,
   Plant, and grant authority after model execution and before an envelope may
   leave Agent Runtime.

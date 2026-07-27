@@ -1,0 +1,201 @@
+{
+  "id": "TASK-045-T3-FT-007-W3",
+  "title": "Return production model composition to the unbound provider-neutral state",
+  "status": "done",
+  "wave": "W3",
+  "feature": "FT-007",
+  "reqs": [
+    "REQ-011"
+  ],
+  "depends_on": [
+    "TASK-031-T3-FT-007-W2",
+    "TASK-034-T3-FT-009-W1"
+  ],
+  "touched_files": [
+    "pyproject.toml",
+    ".env.example",
+    "backend/app/config.py",
+    "backend/app/agent_runtime/providers.py",
+    "backend/app/agent_runtime/__init__.py",
+    "backend/app/vision_observation/service.py",
+    "tests/backend/agent_runtime/test_ft007_roster_providers.py",
+    "tests/backend/agent_runtime/test_real_model_smoke.py",
+    "tests/backend/vision_observation/test_provider.py",
+    "tests/backend/vision_observation/test_real_vision_smoke.py",
+    "tests/backend/vision_observation/test_service.py",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/vision-observation-runtime.md",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".memory-bank/behavior-specs/FT-007-BHV-001-real-model-envelope.behavior.json",
+    ".protocols/FT-007/decision-log.md",
+    "SIMPLIFICATION.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "provider-neutral-runtime",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_runtime tests/backend/vision_observation -q",
+      "required": true
+    },
+    {
+      "name": "full-regression",
+      "command": ".venv/bin/python -m pytest tests -q",
+      "required": false
+    },
+    {
+      "name": "memory-bank-lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "01",
+      "verdict": "PASS",
+      "verified_at": "2026-07-28T00:33:45+05:00",
+      "basis": "Independent T3 verification proved provider-neutral unbound production composition, stable no-executor failure before model/network I/O, absence of provider factory/SDK/config/credential/egress/live-smoke surface, retained strict Agent Runtime/Vision contracts, exact media identity, authorization/audit/MessageEnvelope behavior, roster/bootstrap compatibility, no fallback/fake production behavior, and hard-scope compliance.",
+      "evidence": [
+        ".tasks/TASK-045-T3-FT-007-W3/TASK-045-T3-FT-007-W3-S-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-045-T3-FT-007-W3/verification.md"
+      ],
+      "gate_summary": {
+        "focused_provider_neutral_runtime": "PASS: 48 passed",
+        "provider_neutral_structural_probe": "PASS",
+        "full_regression_replacement": "PASS: 523 passed, 207 existing deprecation warnings",
+        "memory_bank_lint": "PASS: 218 files",
+        "diff_and_hard_scope": "PASS"
+      },
+      "unrelated_issue": "The optional default-import full command exits 2 before tests on a pre-existing duplicate test_migration_models.py basename collision outside TASK-045; the same complete suite passes with --import-mode=importlib.",
+      "findings": [],
+      "next_owner": "Top-level ORCHESTRATOR for /red-verify TASK-045-T3-FT-007-W3; task remains in_progress and HUMAN_CHECKPOINT is still required before closure."
+    },
+    {
+      "stage": "owner_lifecycle_closure",
+      "mode": "manual_explicit_owner",
+      "decision": "done",
+      "attempt": "01",
+      "decided_at": "2026-07-28T00:45:50+05:00",
+      "basis": "After the independent functional PASS and task-level semantic-pass were reported with the outstanding T3 checkpoint request, the explicit manual owner responded `окей, закрывай`; the top-level ORCHESTRATOR accepted that response as the human checkpoint and ordered TASK-045 closed from in_progress to done.",
+      "accepted_evidence": [
+        ".tasks/TASK-045-T3-FT-007-W3/TASK-045-T3-FT-007-W3-S-IMPL-final-report-code-01.md",
+        ".tasks/TASK-045-T3-FT-007-W3/TASK-045-T3-FT-007-W3-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-045-T3-FT-007-W3/TASK-045-T3-FT-007-W3-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-045-T3-FT-007-W3/administrative-closure.md"
+      ],
+      "gate_summary": {
+        "implementation": "PASS: Execution Attempt 01 complete",
+        "functional_verification": "VERDICT: PASS",
+        "red_verification": "SEMANTIC_VERDICT: semantic-pass",
+        "human_checkpoint": "PASS: explicit manual owner accepted the checkpoint request and ordered closure; canonical marker recorded in administrative closure evidence"
+      },
+      "findings": [],
+      "scope": "This decision records only the T3 human checkpoint and TASK-045 lifecycle closure. Finding 3 closure and broader Memory Bank feature/plan/changelog reconciliation remain for the subsequent wave-boundary /mb-sync.",
+      "next_gate": "Run wave-boundary /mb-sync for finding 3 and feature/plan/changelog reconciliation; do not reinterpret this closure as dependent-task promotion or selection."
+    }
+  ],
+  "docs": [
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/vision-observation-runtime.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/runbooks/agent-runtime-providers.md",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    "SIMPLIFICATION.md"
+  ],
+  "evidence_required": [
+    "Static proof that production code contains no current provider factory, provider-specific SDK import, binding environment variable, credential lookup, endpoint selection, or real-model smoke path.",
+    "Focused deterministic tests proving generic test-only executor injection and fail-closed unbound Agent Runtime and Vision behavior before network I/O.",
+    "Regression evidence for exact outbound request/media identity, strict result validation, no fallback/fake production output, and unchanged roster/bootstrap behavior.",
+    "Task-level independent verify, red-verify, and exact HUMAN_CHECKPOINT: done before closure."
+  ],
+  "purpose": "Make the implementation match the accepted provider-neutral code-phase contract by removing premature provider selection and retaining only narrow executor seams plus fail-closed production behavior.",
+  "success_outcome": "Production has no selected provider, model, endpoint, credentials, egress switch, provider SDK composition, or live smoke; Agent Runtime and Vision still accept explicit test-only executors and otherwise return their stable not-configured outcome before I/O.",
+  "anti_goals": [
+    "Do not select or design a replacement provider, endpoint, model, authentication mode, credential source, egress field, timeout policy, or cost budget.",
+    "Do not add an unbound executor class, replacement provider registry/factory, compatibility shim, or new lifecycle/state.",
+    "Do not change public HTTP contracts, database schema, roster/bootstrap behavior, model request/result schemas, MessageEnvelope semantics, or downstream authority.",
+    "Do not rewrite terminal TASK-028 through TASK-034 protocols or evidence."
+  ],
+  "runtime_context": {
+    "write_boundary": [
+      "pyproject.toml",
+      ".env.example",
+      "backend/app/config.py",
+      "backend/app/agent_runtime/providers.py",
+      "backend/app/agent_runtime/__init__.py",
+      "backend/app/vision_observation/service.py",
+      "tests/backend/agent_runtime/test_ft007_roster_providers.py",
+      "tests/backend/agent_runtime/test_real_model_smoke.py",
+      "tests/backend/vision_observation/test_provider.py",
+      "tests/backend/vision_observation/test_real_vision_smoke.py",
+      "tests/backend/vision_observation/test_service.py",
+      ".memory-bank/contracts/agent-runtime-adapter.md",
+      ".memory-bank/contracts/vision-observation-runtime.md",
+      ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+      ".memory-bank/tasks/plans/IMPL-FT-007.md",
+      ".memory-bank/behavior-specs/FT-007-BHV-001-real-model-envelope.behavior.json",
+      ".protocols/FT-007/decision-log.md",
+      "SIMPLIFICATION.md"
+    ],
+    "forbidden_scope": [
+      "Any provider, model, base URL, authentication, credential, egress, timeout, budget, or live-network selection.",
+      "Public API, database migration/storage, Agent Runtime request/result/envelope shape, roster/bootstrap, Safety, Task, Companion, Bus, UI, or Plant-state behavior changes.",
+      "New production fake/canned/fallback executor or a replacement abstraction for the deleted provider composition.",
+      "Historical task lifecycle, protocol, verification, red-verification, or closure evidence."
+    ],
+    "stop_conditions": [
+      "A current production caller is found to require the provider factory or provider-specific configuration.",
+      "Removing provider-specific code requires changing a public API, database state, accepted model request/result contract, or downstream authority.",
+      "A provider/model/endpoint/auth/config choice is required to complete deterministic code-phase behavior.",
+      "Work outside the explicit write boundary is required for the task outcome."
+    ]
+  },
+  "source_artifacts": [
+    "SIMPLIFICATION.md",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/behavior-specs/FT-007-BHV-001-real-model-envelope.behavior.json",
+    ".memory-bank/tasks/TASK-031-T3-FT-007-W2.task.json",
+    ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json",
+    ".memory-bank/tasks/plans/IMPL-FT-007.md",
+    ".protocols/FT-007/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/vision-observation-runtime.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/runbooks/agent-runtime-providers.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "Production composition expresses the accepted unbound state by omitting an executor; services return the existing stable not-configured result before I/O.",
+    "Keep provider-neutral ModelExecutor and VisionModelExecutor protocols, strict request/result validation, test-only fake/spy dependency injection, timeout/error normalization, redaction, and no-fallback behavior.",
+    "Vision executor model_ref validation may enforce only the generic safe provider:model grammar; it must not select or privilege Gemini or another provider.",
+    "Remove only dependencies, configuration, tests, and documentation whose sole current purpose is the unselected provider composition or live smoke."
+  ],
+  "invariants": [
+    "No production path selects a fake, provider, model, endpoint, credential, egress permission, or fallback.",
+    "No model output gains direct Plant-state, Safety, Task, governance, publication, or actuation authority.",
+    "Typed outbound request/media allowlists, authorization guards, result schemas, MessageEnvelope semantics, audit redaction, and roster/bootstrap behavior remain unchanged.",
+    "A future selected-endpoint milestone remains the sole owner of provider-specific configuration and integration evidence."
+  ],
+  "verification_targets": [
+    "Focused Agent Runtime and Vision suites pass without a real_model marker or network prerequisites.",
+    "Static scans find no production import of provider-specific SDKs, no provider binding/egress environment fields, and no DeepSeek/Gemini/ChatGPT OAuth composition.",
+    "Unbound service tests prove the stable not-configured result and zero executor/network calls.",
+    "Vision spy tests retain exact accepted-photo bytes/content-type/source-ref/sha256 identity with a generic test-scoped model_ref.",
+    "Roster/bootstrap tests remain after provider-specific portions are removed.",
+    "Memory Bank changes state only the accepted unbound contract, W3 plan/evidence, deferred behavior example, and finding closure."
+  ]
+}

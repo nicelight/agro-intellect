@@ -1,15 +1,15 @@
 {
   "id": "FT-007-BHV-001",
   "feature_id": "FT-007",
-  "title": "Real provider transport produces an audited envelope or declared silence",
+  "title": "Future selected endpoint produces an audited envelope or declared silence",
   "given": {
     "actor": "authorized active-Plant actor",
     "context": "actual persisted Plant records filtered into AuthorizedPlantContext",
-    "executor": "configured production DeepSeek or Gemini Agno model executor with valid credentials and explicit model id",
-    "definition": "isolated test-only runtime_contract_smoke definition using the production assembler and executor; absent from production definition resolution"
+    "executor": "future explicitly selected production endpoint with accepted provider, model, base URL, authentication, egress, timeout, and cost decisions",
+    "definition": "canonical competence definition using the project-owned assembler and executor boundary"
   },
   "when": {
-    "action": "the project-owned AgentRuntimeService invokes the real provider once and receives either a strict valid non-silent candidate or a strict model-declared silent candidate"
+    "action": "the future integration milestone invokes the selected endpoint once and receives either a strict valid non-silent candidate or a strict model-declared silent candidate"
   },
   "then": {
     "envelope_ready_outcome": "outcome_kind envelope_ready, status envelope_ready, final_decision speak, clarify, or escalate, a valid pending_classification MessageEnvelope schema version 1, safe model_ref, and audit ref",
@@ -17,6 +17,6 @@
     "accepted_smoke_outcomes": "exactly the envelope_ready_outcome or model_silent_outcome above",
     "audit": "one sanitized agent_runtime_decided timeline ref",
     "forbidden_success": "context_denied, runtime_not_configured, provider_failed, output_invalid, publication_guard_denied, audit_failed, skipped, xfailed, fake, fallback, or unaudited result",
-    "forbidden_content": "no downstream product-agent completion claim, production registration of the smoke definition, raw provider response, prompt history, reasoning, credentials, fake output, Bus event, or UI event"
+    "forbidden_content": "no raw provider response, prompt history, reasoning, credentials, fake output, fallback, Bus event, UI event, or direct downstream authority"
   }
 }

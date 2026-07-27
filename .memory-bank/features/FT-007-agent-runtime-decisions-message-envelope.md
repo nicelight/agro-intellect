@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-007
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-07-12
+last_updated: 2026-07-27
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/architecture/system-architecture.md
@@ -50,8 +50,11 @@ source_of_truth:
 
 ## Acceptance Criteria
 
-- MVP runtime/demo product-agent outputs use real LLM/model-backed agents or real model-backed adapters.
-- Fake, mock, hardcoded, or stubbed outputs are allowed only in automated tests, not as MVP runtime/demo behavior.
+- Current code-phase product-agent behavior is provider-neutral and
+  deterministic; a real endpoint is verified only after the owner selects the
+  future integration milestone.
+- Fake, mock, hardcoded, or stubbed outputs are allowed only through explicit
+  automated-test injection and are never production behavior.
 - Agno/model execution is execution layer only and not source of truth.
 - Agent output must pass adapter/runtime-decision validation before a
   MessageEnvelope is created.
@@ -66,12 +69,9 @@ source_of_truth:
   handoff and fresh owning guards again before each downstream write; archive
   at either boundary leaves no operative
   Bus/UI/task result.
-- Runtime recognizes explicit `deepseek`, `gemini`, and `chatgpt_oauth`
-  profiles, uses deployment-selected per-agent model ids, and never selects a
-  default or cross-provider fallback.
-- External provider egress is permitted only for the authorized typed input
-  contract and requires explicit runtime opt-in; auth material, raw chat, UI
-  content, and unapproved data remain forbidden.
+- Current production composition selects no provider, model, endpoint,
+  credential, or egress permission and returns the stable not-configured
+  outcome before network I/O.
 - After a new Plant commits, the system activates the exact eight-agent roster
   and sends one strict deterministic batch containing eight
   non-agent-consumable introduction handoffs without invoking a model.
@@ -86,8 +86,8 @@ source_of_truth:
 - Agent cannot bypass PlantAccessGrant or ActorContext.
 - Silent behavior leaves audit evidence without creating Bus/UI events.
 - Restore does not replay output blocked by archive.
-- Missing model binding, credential, provider dependency, explicit egress, or
-  approved ChatGPT OAuth broker fails closed without fake output or fallback.
+- Missing production executor fails closed before I/O without fake output or
+  fallback.
 - A post-commit bootstrap failure cannot roll back or falsely report failure of
   an already committed Plant.
 
@@ -96,16 +96,18 @@ source_of_truth:
 - Unit: exact ProviderRequest/input/model-result/outcome/envelope contracts and
   rejection matrices, including acceptance of representative schema-valid
   Markdown/HTML/prompt-like candidate data.
-- Deferred manual UAT: real model-backed adapter path over actual scoped Plant
-  data. Its absence does not block TASK-031/code-phase closure and does not
-  satisfy BHV-001 or the live-provider portion of REQ-011.
+- Deferred future integration: real endpoint behavior is verified only after
+  provider, model, base URL, authentication, egress, timeout, and cost
+  decisions are accepted.
 - Integration: archive during model execution blocks MessageEnvelope/Bus/UI
   publication without replay after restore.
-- Anti-cheat: runtime demo path cannot be satisfied by fake/stubbed agent output.
+- Anti-cheat: production cannot select a fake/stubbed executor or infer a
+  binding from installed SDKs or environment variables.
 - Integration: Plant creation commits before the exact roster/introduction
   handoff and performs no provider call.
-- Configuration: DeepSeek/Gemini native composition, reserved fail-closed
-  ChatGPT OAuth profile, strict model bindings, redaction, and no fallback.
+- Composition: production remains unbound; tests inject explicit provider-
+  neutral fakes/spies; no default, provider SDK, credential lookup, or fallback
+  exists.
 
 ## Normative Backbone Links
 
@@ -151,15 +153,14 @@ source_of_truth:
 - FT-008 owns Bus/UI publication and durable introduction reconciliation;
   FT-011/FT-012 own Safety/task effects. FT-007 implements only their strict
   handoff contracts.
-- Provider/model selection is deployment configuration. The credentialed
-  smoke is retained as optional/manual UAT; when explicitly invoked, its strict
-  acceptance is defined by Agent Runtime testing and the provider runbook.
+- Provider/model selection belongs only to the deferred selected-endpoint
+  milestone. Current production composition supplies no executor.
 
 ## Feature-Local Design Pressure
 
 - Exact runtime decision model, adapter contract, MessageEnvelope schema,
-  roster/bootstrap, provider configuration, audit behavior, and anti-cheat
-  tests.
+  roster/bootstrap, unbound production behavior, audit behavior, and
+  anti-cheat tests.
 
 ## SDD Design Gate
 
@@ -168,10 +169,8 @@ source_of_truth:
 - Historical TASK-028 verification/semantic failures and BUG-001 were correct
   under the superseded syntax-rejection contract. They remain historical and
   their lifecycle is not changed by this design pass.
-- Manual-UAT inputs, only when that UAT is explicitly invoked: explicit
-  DeepSeek/Gemini model id, matching credential, and egress opt-in. Their
-  absence does not block TASK-031/code-phase closure. `chatgpt_oauth` remains
-  fail-closed without an approved broker.
+- Provider/model/base-URL/auth/credential/egress choices remain intentionally
+  open and are not current task inputs.
 - TASK-028 (`failed`) and TASK-029 (`blocked`) remain lifecycle/history
   artifacts only and must never be re-executed or rewritten.
 - Current `backend/app/agent_runtime/contracts.py` and its FT-007 tests still
@@ -179,7 +178,7 @@ source_of_truth:
   implementation delta is routed to planned TASK-030 without rewriting the
   historical failed/blocked lifecycle records.
 
-## /feature-to-tasks FT-007 Reconciled Handoff
+## Historical W1/W2 Reconciled Handoff
 
 Bounded reconciliation preserves the historical records and creates this
 active replacement queue without executing any task:
@@ -191,13 +190,23 @@ active replacement queue without executing any task:
 | TASK-031 | Planned W2 replacement depending on TASK-030. Preserves the legitimate TASK-029 roster/provider/bootstrap/Plant-create/real-provider-smoke scope under its own protocol/evidence identity. |
 | IMPL-FT-007 | Active dependency graph and scopes now match TASK-030 -> TASK-031; no canonical or behavior spec was added. |
 
-The only allowed next gate is a fresh `/review-tasks-plan FT-007`. No active
-replacement task may execute unless that review returns exact
-`VERDICT: APPROVE`. Explicit DeepSeek/Gemini model id, matching credential, and
-egress opt-in are later manual-UAT inputs, not planning or TASK-031/code-phase
-closure blockers.
+This section records the completed 2026-07-12 replacement handoff. Its provider
+composition and smoke assumptions are superseded for current work by the W3
+simplification below.
 
-## Owner-Directed Smoke Deferral
+## /feature-to-tasks FT-007 W3 Simplification
+
+`TASK-045-T3-FT-007-W3` depends on completed TASK-031 and TASK-034. It removes
+the premature provider factories, bindings, configuration, SDK dependencies,
+and live smoke tests; retains the narrow executor protocols and explicit
+test-only fakes/spies; and restores fail-closed unbound production composition.
+No provider, endpoint, model, authentication, credential, egress, API, or
+storage decision is added.
+
+## Historical Owner-Directed Smoke Deferral
+
+The following records the TASK-031 closure basis and is not current provider
+selection guidance.
 
 - As of 2026-07-12, credentialed DeepSeek/Gemini smoke is strict
   optional/manual UAT and is not TASK-031/code-phase closure evidence.
@@ -222,13 +231,12 @@ SEMANTIC_VERDICT: semantic-pass
   preserved; their current administrative `done` records point explicitly to
   independently verified TASK-030/TASK-031 replacements and do not claim the
   original implementations passed.
-- `FT-007-BHV-001`, the live-provider portion of REQ-011, and real
-  DeepSeek/Gemini transport remain deferred/unverified and are not satisfied by
-  deterministic evidence. FT-008 retains durable introduction reconciliation,
+- `FT-007-BHV-001` is deferred to the future selected-endpoint milestone and
+  is not satisfied by deterministic evidence. FT-008 retains durable introduction reconciliation,
   Bus/UI publication, and downstream current-guard ownership.
 - Report: [FT-007 feature semantic review](../../.tasks/FT-007/FT-007-S-RED-VERIFY-final-report-docs-01.md).
 
 ## Implementation
 
-- [Implementation plan](../tasks/plans/IMPL-FT-007.md): historical TASK-028/029
-  plus active ordered T3 replacements TASK-030 -> TASK-031.
+- [Implementation plan](../tasks/plans/IMPL-FT-007.md): completed historical
+  W1/W2 work plus planned W3 provider-neutral alignment TASK-045.

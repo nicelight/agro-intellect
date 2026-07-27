@@ -29,8 +29,8 @@ physical action, or treat a provider response as confirmed evidence.
 ## Module boundary
 
 Implementation lives under `backend/app/vision_observation/` and reuses the
-provider binding, current authorization guard, timeline append, outcome, and
-MessageEnvelope types under `backend/app/agent_runtime/`.
+current authorization guard, timeline append, outcome, and MessageEnvelope
+types under `backend/app/agent_runtime/`.
 
 Project-owned seams:
 
@@ -159,10 +159,12 @@ spec. `clarify|silent` returns no state candidate.
 ## Invocation flow and failures
 
 The flow follows Agent Runtime ordering: resolve definition and current input,
-resolve exactly one binding, read/verify bytes, call outside DB transactions,
-validate result, reload current session/membership/Plant/grant authority,
-append one sanitized runtime event for every executor-I/O branch, and return a
-closed outcome. Archive/revoke after model I/O blocks the envelope/candidate;
+require an explicitly injected executor, read/verify bytes, call outside DB
+transactions, validate result, reload current session/membership/Plant/grant
+authority, append one sanitized runtime event for every executor-I/O branch,
+and return a closed outcome. Production supplies no executor in the current
+code phase and returns `AGENT_RUNTIME_NOT_CONFIGURED` before executor/network
+I/O. Archive/revoke after model I/O blocks the envelope/candidate;
 restore never replays it.
 
 Provider request/response bodies and photo bytes are never logged, stored in

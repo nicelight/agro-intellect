@@ -30,7 +30,7 @@ FIXTURE = Path("tests/fixtures/vision/tomato_001_leaf.jpg")
 
 
 class _Executor:
-    model_ref = "gemini:gemini-2.5-flash"
+    model_ref = "test_provider:model_1"
 
     def __init__(self, result_factory, *, before_return=None):
         self.result_factory = result_factory
@@ -48,7 +48,7 @@ class _Executor:
 
 
 class _FailingExecutor:
-    model_ref = "gemini:gemini-2.5-flash"
+    model_ref = "test_provider:model_1"
 
     def __init__(self):
         self.calls = []
@@ -467,8 +467,11 @@ def test_provider_output_and_audit_fail_closed_without_artifacts(
     assert audit_failed.state_candidate is None
 
 
-@pytest.mark.parametrize("executor", [None, type("DeepSeek", (), {"model_ref": "deepseek:x"})()])
-def test_missing_or_non_gemini_executor_is_not_configured_without_io(
+@pytest.mark.parametrize(
+    "executor",
+    [None, type("MalformedExecutor", (), {"model_ref": "unsafe model ref"})()],
+)
+def test_missing_or_invalid_executor_is_not_configured_without_io(
     executor,
     ft005_database,
     vision_artifact_store,
