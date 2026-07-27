@@ -32,10 +32,9 @@ from .contracts import (
     ClassifiedMessageTaskCommandV1,
     TaskKind,
     canonical_fingerprint,
-    normalized_display_text,
     timestamp_text,
 )
-from .models import Outcome, Task, TaskFollowUpRuntimeDisposition
+from .models import Outcome, Task
 from .repository import (
     CurrentTaskScope,
     TaskFollowUpRepository,
@@ -44,7 +43,6 @@ from .repository import (
 from .runtime_contracts import (
     ORDINARY_TASK_KINDS,
     TaskFollowUpCommandV1,
-    TaskFollowUpDispositionResultV1,
     TaskFollowUpInputRecordV1,
     TaskFollowUpInvocationResultV1,
     TaskFollowUpModelResultV1,
@@ -181,9 +179,7 @@ class DatabaseTaskFollowUpInputAssembler:
                     records.append(evidence)
             allowed = list(ORDINARY_TASK_KINDS)
             if task.kind == "action":
-                follow_up = self._repository.follow_up_for_action(task.task_id)
-                if follow_up is not None and follow_up.status == "open":
-                    allowed.remove("follow_up")
+                allowed.remove("follow_up")
             request = TaskFollowUpProviderRequestV1(
                 trigger_kind=trigger_kind,
                 allowed_task_kinds=tuple(allowed),
@@ -260,12 +256,6 @@ class _CommittedHandoff:
     model_result: TaskFollowUpModelResultV1
 
 
-class _RuntimeAuditFailed(RuntimeError):
-    def __init__(self, outcome: AgentRuntimeOutcomeV1) -> None:
-        self.outcome = outcome
-        super().__init__("Task Follow-Up runtime audit failed.")
-
-
 TimelineAppender = Callable[[TimelineEvent], Mapping[str, object]]
 Clock = Callable[[], datetime]
 
@@ -317,13 +307,6 @@ class TaskFollowUpRuntimeService:
     def run(self, command: TaskFollowUpCommandV1) -> TaskFollowUpInvocationResultV1:
         if not isinstance(command, TaskFollowUpCommandV1):
             raise TaskFollowUpRuntimeValidationError()
-        command_sha256 = task_follow_up_command_fingerprint(command)
-        preflight = self._runtime_preflight(
-            command,
-            command_sha256=command_sha256,
-        )
-        if preflight is not None:
-            return preflight
         stage = self._invoke_model(command)
         if stage.outcome is not None:
             return _result_for_runtime_outcome(command.run_id, stage.outcome)
@@ -332,7 +315,6 @@ class TaskFollowUpRuntimeService:
         assert stage.model_ref is not None
         finalized = self._finalize_model_result(
             command,
-            command_sha256=command_sha256,
             request=stage.request,
             result=stage.model_result,
             model_ref=stage.model_ref,
@@ -421,501 +403,93 @@ class TaskFollowUpRuntimeService:
     ) -> TaskFollowUpInvocationResultV1:
         return self.run(command)
 
-    def _runtime_preflight(
-        self,
-        command: TaskFollowUpCommandV1,
-        *,
-        command_sha256: str,
-    ) -> TaskFollowUpInvocationResultV1 | None:
-        self._rollback_active()
-        try:
-            with self._session.begin():
-                self._acquire_run_lock(command.run_id)
-                runtime_disposition = self._repository.runtime_disposition_for_run(
-                    command.run_id,
-                    for_update=True,
-                )
-                dispatch_disposition = self._repository.dispatch_disposition_for_run(
-                    command.run_id,
-                    for_update=True,
-                )
-                if runtime_disposition is None and dispatch_disposition is None:
-                    return None
-                if runtime_disposition is None:
-                    return _disposition_failed(command.run_id)
-                return self._resolve_runtime_disposition(
-                    command,
-                    command_sha256=command_sha256,
-                    runtime_disposition=runtime_disposition,
-                    dispatch_disposition=dispatch_disposition,
-                )
-        except Exception:
-            self._rollback_active()
-            return _disposition_failed(command.run_id)
-
     def _finalize_model_result(
         self,
         command: TaskFollowUpCommandV1,
         *,
-        command_sha256: str,
         request: TaskFollowUpProviderRequestV1,
         result: TaskFollowUpModelResultV1,
         model_ref: str,
     ) -> TaskFollowUpInvocationResultV1 | _CommittedHandoff:
+        """Recheck current authority, audit, and prepare one transient handoff."""
+
         self._rollback_active()
-        finalized: TaskFollowUpInvocationResultV1 | _CommittedHandoff
         try:
             with self._session.begin():
-                self._acquire_run_lock(command.run_id)
-                runtime_disposition = self._repository.runtime_disposition_for_run(
-                    command.run_id,
-                    for_update=True,
-                )
-                dispatch_disposition = self._repository.dispatch_disposition_for_run(
-                    command.run_id,
-                    for_update=True,
-                )
-                if runtime_disposition is not None:
-                    finalized = self._resolve_runtime_disposition(
-                        command,
-                        command_sha256=command_sha256,
-                        runtime_disposition=runtime_disposition,
-                        dispatch_disposition=dispatch_disposition,
-                    )
-                elif dispatch_disposition is not None:
-                    finalized = _disposition_failed(command.run_id)
-                else:
-                    scope = self._locked_current_scope(command)
-                    if scope is None:
-                        outcome = self._audit(
-                            command=command,
-                            request=request,
-                            model_ref=model_ref,
-                            outcome_kind="publication_guard_denied",
-                            status="blocked",
-                            final_decision=None,
-                            reason_code="publication_guard_denied",
-                            error_code="AGENT_PUBLICATION_BLOCKED",
-                            provider_call_status="completed",
-                            result=result,
-                            envelope=None,
-                        )
-                        self._require_audited(outcome)
-                        self._session.add(
-                            TaskFollowUpRuntimeDisposition(
-                                run_id=command.run_id,
-                                farm_id=command.actor_context.farm_id,
-                                plant_id=command.plant_id,
-                                command_sha256=command_sha256,
-                                outcome="publication_denied",
-                                message_id=None,
-                                input_sha256=None,
-                                denial_code="AGENT_PUBLICATION_BLOCKED",
-                                model_ref=model_ref,
-                                runtime_event_ref=dict(outcome.event_ref or {}),
-                                recorded_at=_as_utc(self._clock()),
-                            )
-                        )
-                        self._session.flush()
-                        finalized = _failed_run(
-                            command.run_id,
-                            outcome,
-                            stage="runtime",
-                        )
-                    elif result.runtime_decision == "silent":
-                        common_silence_reason = (
-                            "insufficient_evidence"
-                            if result.reason_code == "no_new_task"
-                            else result.reason_code or "insufficient_evidence"
-                        )
-                        outcome = self._audit(
-                            command=command,
-                            request=request,
-                            model_ref=model_ref,
-                            outcome_kind="model_silent",
-                            status="silent",
-                            final_decision="silent",
-                            reason_code=common_silence_reason,
-                            error_code=None,
-                            provider_call_status="completed",
-                            result=result,
-                            envelope=None,
-                        )
-                        self._require_audited(outcome)
-                        finalized = TaskFollowUpRunResultV1(
-                            run_id=command.run_id,
-                            runtime_outcome=outcome,
-                            route_status="silent",
-                            proposed_task_kind=None,
-                            classification_ref=None,
-                            task_ref=None,
-                            failure_stage=None,
-                        )
-                    else:
-                        envelope = _message_envelope(
-                            command=command,
-                            scope=scope,
-                            result=result,
-                            created_at=_as_utc(self._clock()),
-                        )
-                        input_sha256 = canonical_fingerprint(envelope.as_value())
-                        outcome = self._audit(
-                            command=command,
-                            request=request,
-                            model_ref=model_ref,
-                            outcome_kind="envelope_ready",
-                            status="envelope_ready",
-                            final_decision="speak",
-                            reason_code="envelope_ready",
-                            error_code=None,
-                            provider_call_status="completed",
-                            result=result,
-                            envelope=envelope,
-                        )
-                        self._require_audited(outcome)
-                        self._session.add(
-                            TaskFollowUpRuntimeDisposition(
-                                run_id=command.run_id,
-                                farm_id=envelope.farm_id,
-                                plant_id=envelope.plant_id,
-                                command_sha256=command_sha256,
-                                outcome="envelope_handed_off",
-                                message_id=envelope.message_id,
-                                input_sha256=input_sha256,
-                                denial_code=None,
-                                model_ref=model_ref,
-                                runtime_event_ref=dict(outcome.event_ref or {}),
-                                recorded_at=_as_utc(self._clock()),
-                            )
-                        )
-                        self._session.flush()
-                        finalized = _CommittedHandoff(outcome, result)
-            return finalized
-        except _RuntimeAuditFailed as failed:
-            self._rollback_active()
-            return _failed_run(command.run_id, failed.outcome, stage="runtime")
+                scope = self._locked_current_scope(command)
         except Exception:
             self._rollback_active()
-            return _disposition_failed(command.run_id)
+            scope = None
 
-    def _resolve_runtime_disposition(
-        self,
-        command: TaskFollowUpCommandV1,
-        *,
-        command_sha256: str,
-        runtime_disposition: TaskFollowUpRuntimeDisposition,
-        dispatch_disposition: object | None,
-    ) -> TaskFollowUpInvocationResultV1:
-        row = runtime_disposition
-        if row.command_sha256 != command_sha256:
-            return _disposition_conflict(command.run_id)
-        if (
-            row.run_id != command.run_id
-            or row.farm_id != command.actor_context.farm_id
-            or row.plant_id != command.plant_id
-            or _MODEL_REF_RE.fullmatch(row.model_ref) is None
-            or not _event_ref_valid(row.runtime_event_ref)
-        ):
-            return _disposition_failed(command.run_id)
-        if row.outcome == "publication_denied":
-            if (
-                dispatch_disposition is not None
-                or self._repository.task_for_create_request(command.run_id)
-                is not None
-                or row.message_id is not None
-                or row.input_sha256 is not None
-                or row.denial_code != "AGENT_PUBLICATION_BLOCKED"
-            ):
-                return _disposition_failed(command.run_id)
-            outcome = AgentRuntimeOutcomeV1(
-                run_id=command.run_id,
+        if scope is None:
+            outcome = self._audit(
+                command=command,
+                request=request,
+                model_ref=model_ref,
                 outcome_kind="publication_guard_denied",
                 status="blocked",
                 final_decision=None,
                 reason_code="publication_guard_denied",
                 error_code="AGENT_PUBLICATION_BLOCKED",
-                message_envelope=None,
-                event_ref=dict(row.runtime_event_ref),
-                model_ref=row.model_ref,
                 provider_call_status="completed",
-                audit_status="appended",
+                result=result,
+                envelope=None,
             )
             return _failed_run(command.run_id, outcome, stage="runtime")
-        if (
-            row.outcome != "envelope_handed_off"
-            or not _uuid4(row.message_id)
-            or not isinstance(row.input_sha256, str)
-            or re.fullmatch(r"[0-9a-f]{64}", row.input_sha256) is None
-            or row.denial_code is not None
-        ):
-            return _disposition_failed(command.run_id)
-        return self._resolve_handed_off(
-            command,
-            row=row,
-            dispatch_disposition=dispatch_disposition,
-        )
 
-    def _resolve_handed_off(
-        self,
-        command: TaskFollowUpCommandV1,
-        *,
-        row: TaskFollowUpRuntimeDisposition,
-        dispatch_disposition: object | None,
-    ) -> TaskFollowUpDispositionResultV1:
-        assert row.message_id is not None
-        message_disposition = self._repository.dispatch_disposition_for_message(
-            row.message_id,
-            for_update=True,
-        )
-        if (
-            dispatch_disposition is not None
-            and message_disposition is not None
-            and getattr(dispatch_disposition, "classification_message_id", None)
-            != message_disposition.classification_message_id
-        ):
-            return _disposition_failed(command.run_id)
-        dispatch = dispatch_disposition or message_disposition
-        classification = self._repository.safety_classification(
-            row.message_id,
-            for_update=True,
-        )
-        if classification is None:
-            if dispatch is not None:
-                return _disposition_failed(command.run_id)
-            return _disposition_incomplete(command.run_id, None)
-        if (
-            classification.message_id != row.message_id
-            or classification.farm_id != row.farm_id
-            or classification.plant_id != row.plant_id
-            or classification.origin_agent_id != "task_follow_up"
-            or classification.input_sha256 != row.input_sha256
-        ):
-            return _disposition_failed(command.run_id)
-        classification_ref = f"safety_classification:{classification.message_id}"
-        taskable = (
-            classification.classification == "safe_task_request"
-            and classification.safe_task_kind in ORDINARY_TASK_KINDS
-        )
-        if dispatch is None:
-            if taskable:
-                return _disposition_incomplete(command.run_id, classification_ref)
-            return TaskFollowUpDispositionResultV1(
-                run_id=command.run_id,
-                result_status="not_taskable",
-                result_code="TASK_FOLLOW_UP_ALREADY_NOT_TASKABLE",
-                classification_ref=classification_ref,
-                task_ref=None,
+        if result.runtime_decision == "silent":
+            common_silence_reason = (
+                "insufficient_evidence"
+                if result.reason_code == "no_new_task"
+                else result.reason_code or "insufficient_evidence"
             )
-        if (
-            getattr(dispatch, "classification_message_id", None) != row.message_id
-            or getattr(dispatch, "run_id", None) != row.run_id
-            or getattr(dispatch, "farm_id", None) != row.farm_id
-            or getattr(dispatch, "plant_id", None) != row.plant_id
-            or getattr(dispatch, "input_sha256", None) != row.input_sha256
-        ):
-            return _disposition_failed(command.run_id)
-        if dispatch.outcome == "denied":
-            if (
-                getattr(dispatch, "expected_task_create_fingerprint", None)
-                is not None
-                or dispatch.denial_code not in {
-                "TASK_SCOPE_NOT_FOUND",
-                "TASK_COMMAND_FORBIDDEN",
-                "TASK_PLANT_NOT_ACTIVE",
-                }
-            ):
-                return _disposition_failed(command.run_id)
-            if (
-                self._repository.task_for_create_request(row.run_id) is not None
-                or self._repository.task_for_classification(
-                    row.message_id,
-                    for_update=True,
-                )
-                is not None
-            ):
-                return _disposition_failed(command.run_id)
-            return TaskFollowUpDispositionResultV1(
-                run_id=command.run_id,
-                result_status="denied",
-                result_code="TASK_FOLLOW_UP_DISPATCH_DENIED",
-                classification_ref=classification_ref,
-                task_ref=None,
+            outcome = self._audit(
+                command=command,
+                request=request,
+                model_ref=model_ref,
+                outcome_kind="model_silent",
+                status="silent",
+                final_decision="silent",
+                reason_code=common_silence_reason,
+                error_code=None,
+                provider_call_status="completed",
+                result=result,
+                envelope=None,
             )
-        if dispatch.outcome != "consumed" or dispatch.denial_code is not None:
-            return _disposition_failed(command.run_id)
-        scope = self._locked_current_scope(command)
-        if scope is None:
-            return TaskFollowUpDispositionResultV1(
+            if outcome.outcome_kind == "audit_failed":
+                return _failed_run(command.run_id, outcome, stage="runtime")
+            return TaskFollowUpRunResultV1(
                 run_id=command.run_id,
-                result_status="blocked",
-                result_code="TASK_FOLLOW_UP_REPLAY_BLOCKED",
+                runtime_outcome=outcome,
+                route_status="silent",
+                proposed_task_kind=None,
                 classification_ref=None,
                 task_ref=None,
+                failure_stage=None,
             )
-        task = self._repository.task_for_classification(
-            row.message_id,
-            for_update=True,
-        )
-        if (
-            task is None
-            or not taskable
-            or not self._exact_consumed_task(
-                command,
-                task,
-                row=row,
-                classification=classification,
-                dispatch=dispatch,
-            )
-        ):
-            return _disposition_failed(command.run_id)
-        return TaskFollowUpDispositionResultV1(
-            run_id=command.run_id,
-            result_status="duplicate",
-            result_code="TASK_FOLLOW_UP_ALREADY_CONSUMED",
-            classification_ref=classification_ref,
-            task_ref=f"task:{task.task_id}",
-        )
 
-    def _exact_consumed_task(
-        self,
-        command: TaskFollowUpCommandV1,
-        task: Task,
-        *,
-        row: TaskFollowUpRuntimeDisposition,
-        classification: object,
-        dispatch: object,
-    ) -> bool:
-        task_kind = getattr(classification, "safe_task_kind", None)
-        reason_code = {
-            "check": "safe_check_request",
-            "measurement": "safe_measurement_request",
-            "follow_up": "safe_follow_up_request",
-        }.get(task_kind)
-        if (
-            reason_code is None
-            or getattr(classification, "classifier_version", None)
-            != "safety_gate_v1"
-            or getattr(classification, "classification", None)
-            != "safe_task_request"
-            or getattr(classification, "reason_code", None) != reason_code
-            or getattr(classification, "physical_action_kind", None) is not None
-            or getattr(classification, "provider_status", None) != "completed"
-            or getattr(classification, "input_sha256", None) != row.input_sha256
-        ):
-            return False
-
-        available_source_refs = self._expected_request_source_refs(command)
-        refs = task.source_refs
-        expected_prefix = [
-            f"message_envelope:{row.message_id}",
-            f"safety_classification:{row.message_id}",
-        ]
-        if (
-            available_source_refs is None
-            or row.run_id != command.run_id
-            or row.farm_id != command.actor_context.farm_id
-            or row.plant_id != command.plant_id
-            or task.farm_id != row.farm_id
-            or task.plant_id != row.plant_id
-            or task.kind != task_kind
-            or task.source_type != "safe_task_request"
-            or task.classification_message_id != row.message_id
-            or task.create_request_id != row.run_id
-            or task.created_by_account_id != command.actor_context.account_id
-            or task.created_by_membership_id != command.actor_context.membership_id
-            or task.created_by_role_preset
-            != command.actor_context.role_preset.value
-            or task.created_by_agent_id != "task_follow_up"
-            or not isinstance(refs, list)
-            or not 3 <= len(refs) <= 6
-            or refs[:2] != expected_prefix
-            or len(refs) != len(set(refs))
-        ):
-            return False
-        source_refs = tuple(refs[2:])
-        if (
-            not 1 <= len(source_refs) <= 4
-            or source_refs
-            != tuple(ref for ref in available_source_refs if ref in source_refs)
-            or any(not _envelope_ref(ref) for ref in source_refs)
-        ):
-            return False
-        if any(
-            not self._repository.lock_task_follow_up_source_ref(
-                ref,
-                farm_id=row.farm_id,
-                plant_id=row.plant_id,
-            )
-            for ref in source_refs
-        ):
-            return False
-        try:
-            expected_display_text = normalized_display_text(task.display_text)
-        except Exception:
-            return False
-        if (
-            task.display_text != expected_display_text
-            or not 1 <= len(expected_display_text) <= 1000
-        ):
-            return False
-        expected_refs = [*expected_prefix, *source_refs]
-        expected_fingerprint = canonical_fingerprint(
-            {
-                "schema_version": 1,
-                "source_branch": "classified_message",
-                "request_id": str(command.run_id),
-                "message_id": str(getattr(classification, "message_id", "")),
-                "task_kind": task_kind,
-                "display_text": expected_display_text,
-                "source_refs": expected_refs,
-            }
+        envelope = _message_envelope(
+            command=command,
+            scope=scope,
+            result=result,
+            created_at=_as_utc(self._clock()),
         )
-        commitment = getattr(
-            dispatch,
-            "expected_task_create_fingerprint",
-            None,
+        outcome = self._audit(
+            command=command,
+            request=request,
+            model_ref=model_ref,
+            outcome_kind="envelope_ready",
+            status="envelope_ready",
+            final_decision="speak",
+            reason_code="envelope_ready",
+            error_code=None,
+            provider_call_status="completed",
+            result=result,
+            envelope=envelope,
         )
-        return (
-            isinstance(commitment, str)
-            and re.fullmatch(r"[0-9a-f]{64}", commitment) is not None
-            and commitment == task.create_request_fingerprint
-            and commitment == expected_fingerprint
-        )
-
-    def _expected_request_source_refs(
-        self,
-        command: TaskFollowUpCommandV1,
-    ) -> tuple[str, ...] | None:
-        """Rebuild the writer's canonical source universe without Task fields."""
-
-        try:
-            assembled = DatabaseTaskFollowUpInputAssembler(
-                self._session,
-                repository=self._repository,
-            ).assemble(
-                command.actor_context,
-                plant_id=command.plant_id,
-                trigger_kind=command.trigger_kind,
-                trigger_task_id=command.trigger_task_id,
-                selected_at=_as_utc(self._clock()),
-            )
-        except Exception:
-            return None
-        refs = assembled.request.source_refs
-        if not 1 <= len(refs) <= 4 or any(not _envelope_ref(ref) for ref in refs):
-            return None
-        return refs
-
-    def _acquire_run_lock(self, run_id: uuid.UUID) -> None:
-        self._repository.acquire_task_follow_up_run_lock(
-            run_id,
-            lock_key=self._run_lock_key(run_id),
-        )
-
-    @staticmethod
-    def _require_audited(outcome: AgentRuntimeOutcomeV1) -> None:
         if outcome.outcome_kind == "audit_failed":
-            raise _RuntimeAuditFailed(outcome)
+            return _failed_run(command.run_id, outcome, stage="runtime")
+        return _CommittedHandoff(outcome, result)
 
     def _invoke_model(self, command: TaskFollowUpCommandV1) -> _ModelStageResult:
         selected_at = _as_utc(self._clock())
@@ -1154,39 +728,6 @@ def _result_for_runtime_outcome(
             failure_stage=None,
         )
     return _failed_run(run_id, outcome, stage="runtime")
-
-
-def _disposition_conflict(run_id: uuid.UUID) -> TaskFollowUpDispositionResultV1:
-    return TaskFollowUpDispositionResultV1(
-        run_id=run_id,
-        result_status="conflict",
-        result_code="TASK_FOLLOW_UP_RUN_CONFLICT",
-        classification_ref=None,
-        task_ref=None,
-    )
-
-
-def _disposition_failed(run_id: uuid.UUID) -> TaskFollowUpDispositionResultV1:
-    return TaskFollowUpDispositionResultV1(
-        run_id=run_id,
-        result_status="failed",
-        result_code="TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED",
-        classification_ref=None,
-        task_ref=None,
-    )
-
-
-def _disposition_incomplete(
-    run_id: uuid.UUID,
-    classification_ref: str | None,
-) -> TaskFollowUpDispositionResultV1:
-    return TaskFollowUpDispositionResultV1(
-        run_id=run_id,
-        result_status="incomplete",
-        result_code="TASK_FOLLOW_UP_HANDOFF_INCOMPLETE",
-        classification_ref=classification_ref,
-        task_ref=None,
-    )
 
 
 def _task_record(task: Task) -> TaskFollowUpInputRecordV1:

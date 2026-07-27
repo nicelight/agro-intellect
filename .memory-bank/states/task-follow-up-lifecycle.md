@@ -2,7 +2,7 @@
 description: Human approval, task completion, automatic follow-up, and outcome lifecycle for the Safety and Task Loop.
 status: active
 type: state_spec
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/safety-action-lifecycle.md
@@ -215,6 +215,11 @@ completion retry returns the existing completed action/follow-up pair. A
 different retry conflicts; it never creates a second follow-up. `due_at` is a
 persisted query/UI field only. No scheduler, worker, reminder execution, or
 automatic transition is implied.
+
+Action completion exclusively owns that action's `follow_up` transition. A
+provider-neutral `task_follow_up` invocation whose trigger Task is `action`
+may propose `check|measurement`, but never an ordinary `follow_up`; this rule
+does not depend on a mutable pre-I/O snapshot of completion state.
 
 ## Outcome transition
 

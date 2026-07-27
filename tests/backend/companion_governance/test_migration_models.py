@@ -124,9 +124,12 @@ def test_ft013_aggregate_is_exact_guarded_product_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft013_governance_aggregate"
-    assert head.down_revision == "ft012_runtime_dispositions"
-    source = Path(head.path).read_text(encoding="utf-8")
+    assert head.revision == "ft012_simplify_follow_up_runtime"
+    assert head.down_revision == "ft013_governance_aggregate"
+    governance = script.get_revision("ft013_governance_aggregate")
+    assert governance is not None
+    assert governance.down_revision == "ft012_runtime_dispositions"
+    source = Path(governance.path).read_text(encoding="utf-8")
     assert "ON DELETE CASCADE" not in source.upper()
     assert "downgrade refused" in source
     assert all(table in source for table in _TABLES)

@@ -27,7 +27,6 @@ from .models import (
     OrdinaryTaskDispatchDisposition,
     Outcome,
     Task,
-    TaskFollowUpRuntimeDisposition,
 )
 
 
@@ -155,19 +154,6 @@ class TaskFollowUpRepository:
         ):
             raise ValueError("A signed PostgreSQL advisory key is required.")
         self.session.execute(select(func.pg_advisory_xact_lock(key))).one()
-
-    def runtime_disposition_for_run(
-        self,
-        run_id: uuid.UUID,
-        *,
-        for_update: bool = False,
-    ) -> TaskFollowUpRuntimeDisposition | None:
-        query = select(TaskFollowUpRuntimeDisposition).where(
-            TaskFollowUpRuntimeDisposition.run_id == run_id
-        )
-        if for_update:
-            query = query.with_for_update()
-        return self.session.scalar(query.execution_options(populate_existing=True))
 
     def safety_classification(
         self, message_id: uuid.UUID, *, for_update: bool = False

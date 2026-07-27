@@ -4,6 +4,12 @@ status: active
 ---
 # Changelog
 
+## [2026-07-27] Wave W2 — TASK-040 closed
+
+- Closed `TASK-040-T3-FT-012-W2` after ATTEMPT 08 functional `PASS`,
+  `semantic-pass`, and `HUMAN_CHECKPOINT: done`.
+- FT-012, EP-004, RTM, and dependent-task lifecycles remain unchanged.
+
 ## 2026-07-24 — TASK-040 same-ID runtime simplification reconciliation
 
 - Reopened only `TASK-040-T3-FT-012-W2` from `done` to `planned` on explicit

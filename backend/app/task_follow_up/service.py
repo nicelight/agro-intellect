@@ -4,13 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
-import re
 import uuid
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from ..agent_runtime.contracts import MessageEnvelopeV1
 from ..safety_gate.models import SafetyActionDecision, SafetyClassification
 from ..timeline.writer import TimelineAppendError, TimelineEvent, TimelineJsonlAppender
 from .contracts import (
@@ -37,7 +35,6 @@ from .models import (
     OrdinaryTaskDispatchDisposition,
     Outcome,
     Task,
-    TaskFollowUpRuntimeDisposition,
 )
 from .repository import (
     CurrentTaskScope,
@@ -106,62 +103,32 @@ class TaskFollowUpService:
         denial_code: TaskFollowUpErrorCode | None = None
         try:
             with self._session.begin():
-                runtime_disposition = None
                 if envelope.agent_id == "task_follow_up":
                     self._repository.acquire_task_follow_up_run_lock(
                         envelope.run_id,
                         lock_key=self._run_lock_key(envelope.run_id),
                     )
-                    runtime_disposition = (
-                        self._repository.runtime_disposition_for_run(
-                            envelope.run_id,
-                            for_update=True,
-                        )
-                    )
-                    message_disposition = (
-                        self._repository.dispatch_disposition_for_message(
-                            envelope.message_id,
-                            for_update=True,
-                        )
-                    )
-                    run_disposition = self._repository.dispatch_disposition_for_run(
-                        envelope.run_id,
+                message_disposition = (
+                    self._repository.dispatch_disposition_for_message(
+                        envelope.message_id,
                         for_update=True,
                     )
-                else:
-                    message_disposition = None
-                    run_disposition = None
+                )
+                run_disposition = self._repository.dispatch_disposition_for_run(
+                    envelope.run_id,
+                    for_update=True,
+                )
                 classification = self._repository.safety_classification(
                     envelope.message_id, for_update=True
                 )
                 self._validate_classified_source(command, classification)
                 assert classification is not None
-                if runtime_disposition is not None or envelope.agent_id == "task_follow_up":
-                    self._validate_runtime_handoff(
-                        envelope,
-                        runtime_disposition,
-                        input_sha256=input_sha256,
-                    )
-                if envelope.agent_id != "task_follow_up":
-                    message_disposition = (
-                        self._repository.dispatch_disposition_for_message(
-                            envelope.message_id,
-                            for_update=True,
-                        )
-                    )
-                    run_disposition = self._repository.dispatch_disposition_for_run(
-                        envelope.run_id,
-                        for_update=True,
-                    )
                 if message_disposition is not None or run_disposition is not None:
                     return self._resolve_dispatch_disposition(
                         command,
                         message_disposition=message_disposition,
                         run_disposition=run_disposition,
-                        refs=refs,
-                        display_text=display_text,
                         input_sha256=input_sha256,
-                        fingerprint=fingerprint,
                         now=now,
                     )
 
@@ -179,9 +146,6 @@ class TaskFollowUpService:
                     plant_id=envelope.plant_id,
                     input_sha256=input_sha256,
                     outcome="denied" if denial_code is not None else "consumed",
-                    expected_task_create_fingerprint=(
-                        None if denial_code is not None else fingerprint
-                    ),
                     denial_code=denial_code.value if denial_code is not None else None,
                     recorded_at=now,
                 )
@@ -257,10 +221,7 @@ class TaskFollowUpService:
             return self._recover_ordinary_request_loss(
                 command,
                 error=error,
-                refs=refs,
-                display_text=display_text,
                 input_sha256=input_sha256,
-                fingerprint=fingerprint,
                 now=now,
             )
         except SQLAlchemyError:
@@ -624,25 +585,6 @@ class TaskFollowUpService:
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
 
     @staticmethod
-    def _validate_runtime_handoff(
-        envelope: MessageEnvelopeV1,
-        disposition: TaskFollowUpRuntimeDisposition | None,
-        *,
-        input_sha256: str,
-    ) -> None:
-        if (
-            disposition is None
-            or disposition.run_id != envelope.run_id
-            or disposition.farm_id != envelope.farm_id
-            or disposition.plant_id != envelope.plant_id
-            or disposition.outcome != "envelope_handed_off"
-            or disposition.message_id != envelope.message_id
-            or disposition.input_sha256 != input_sha256
-            or disposition.denial_code is not None
-        ):
-            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
-
-    @staticmethod
     def _scope_denial_code(
         scope: CurrentTaskScope | None,
     ) -> TaskFollowUpErrorCode | None:
@@ -660,10 +602,7 @@ class TaskFollowUpService:
         *,
         message_disposition: OrdinaryTaskDispatchDisposition | None,
         run_disposition: OrdinaryTaskDispatchDisposition | None,
-        refs: tuple[str, ...],
-        display_text: str,
         input_sha256: str,
-        fingerprint: str,
         now: datetime,
         repository: TaskFollowUpRepository | None = None,
     ) -> OrdinaryTaskCreateResultV1:
@@ -688,10 +627,6 @@ class TaskFollowUpService:
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
 
         if disposition.outcome == "denied":
-            if disposition.expected_task_create_fingerprint is not None:
-                raise TaskFollowUpError(
-                    TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
-                )
             task = repository.task_for_classification(
                 envelope.message_id, for_update=True
             )
@@ -717,16 +652,6 @@ class TaskFollowUpService:
         if (
             disposition.outcome != "consumed"
             or disposition.denial_code is not None
-            or not isinstance(
-                disposition.expected_task_create_fingerprint,
-                str,
-            )
-            or re.fullmatch(
-                r"[0-9a-f]{64}",
-                disposition.expected_task_create_fingerprint,
-            )
-            is None
-            or disposition.expected_task_create_fingerprint != fingerprint
         ):
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED)
 
@@ -736,15 +661,14 @@ class TaskFollowUpService:
         task = repository.task_for_classification(
             envelope.message_id, for_update=True
         )
-        if scope.farm_id != envelope.farm_id or task is None:
+        if (
+            scope.farm_id != envelope.farm_id
+            or task is None
+            or task.classification_message_id != envelope.message_id
+            or task.farm_id != disposition.farm_id
+            or task.plant_id != disposition.plant_id
+        ):
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED)
-        self._require_identical_ordinary(
-            task,
-            command,
-            refs=refs,
-            display_text=display_text,
-            fingerprint=fingerprint,
-        )
         return OrdinaryTaskCreateResultV1("duplicate", task)
 
     def _recover_ordinary_request_loss(
@@ -752,10 +676,7 @@ class TaskFollowUpService:
         command: ClassifiedMessageTaskCommandV1,
         *,
         error: IntegrityError,
-        refs: tuple[str, ...],
-        display_text: str,
         input_sha256: str,
-        fingerprint: str,
         now: datetime,
     ) -> OrdinaryTaskCreateResultV1:
         if _constraint_name(error) not in _ORDINARY_REQUEST_CONSTRAINTS:
@@ -772,40 +693,20 @@ class TaskFollowUpService:
                             command.message_envelope.run_id
                         ),
                     )
-                    runtime_disposition = clean_repository.runtime_disposition_for_run(
-                        command.message_envelope.run_id,
+                message_disposition = (
+                    clean_repository.dispatch_disposition_for_message(
+                        command.message_envelope.message_id,
                         for_update=True,
                     )
-                    message_disposition = (
-                        clean_repository.dispatch_disposition_for_message(
-                            command.message_envelope.message_id,
-                            for_update=True,
-                        )
-                    )
-                    run_disposition = clean_repository.dispatch_disposition_for_run(
-                        command.message_envelope.run_id,
-                        for_update=True,
-                    )
-                    self._validate_runtime_handoff(
-                        command.message_envelope,
-                        runtime_disposition,
-                        input_sha256=input_sha256,
-                    )
+                )
+                run_disposition = clean_repository.dispatch_disposition_for_run(
+                    command.message_envelope.run_id,
+                    for_update=True,
+                )
                 classification = clean_repository.safety_classification(
                     command.message_envelope.message_id, for_update=True
                 )
                 self._validate_classified_source(command, classification)
-                if command.message_envelope.agent_id != "task_follow_up":
-                    message_disposition = (
-                        clean_repository.dispatch_disposition_for_message(
-                            command.message_envelope.message_id,
-                            for_update=True,
-                        )
-                    )
-                    run_disposition = clean_repository.dispatch_disposition_for_run(
-                        command.message_envelope.run_id,
-                        for_update=True,
-                    )
                 if message_disposition is None and run_disposition is None:
                     raise TaskFollowUpError(
                         TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
@@ -814,10 +715,7 @@ class TaskFollowUpService:
                     command,
                     message_disposition=message_disposition,
                     run_disposition=run_disposition,
-                    refs=refs,
-                    display_text=display_text,
                     input_sha256=input_sha256,
-                    fingerprint=fingerprint,
                     now=now,
                     repository=clean_repository,
                 )
@@ -1051,22 +949,6 @@ class TaskFollowUpService:
             or not now - timedelta(hours=2) <= _utc(ec.measured_at) <= now
         ):
             raise TaskFollowUpError(TaskFollowUpErrorCode.APPROVAL_NOT_CURRENT)
-
-    def _require_identical_ordinary(
-        self, task, command, *, refs, display_text, fingerprint
-    ) -> None:
-        envelope = command.message_envelope
-        if not (
-            task.farm_id == envelope.farm_id
-            and task.plant_id == envelope.plant_id
-            and task.kind == command.task_kind.value
-            and task.source_type == "safe_task_request"
-            and task.source_refs == list(refs)
-            and task.display_text == display_text
-            and task.create_request_id == envelope.run_id
-            and task.create_request_fingerprint == fingerprint
-        ):
-            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_VERSION_CONFLICT)
 
     def _new_action_task(self, approval, command, *, scope, now) -> Task:
         return Task(

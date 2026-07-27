@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-012 human approval, task/follow-up outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
-last_updated: 2026-07-24
+last_updated: 2026-07-27
 ---
 # IMPL-FT-012 — Human Approval Tasks And Follow-Up Outcomes
 
@@ -114,9 +114,10 @@ only a matched ordinary Task.
    descriptors in deterministic order. Preserve Task text only in a typed
    untrusted quotation and exclude UI/Bus/Timeline replay, raw chat, auth
    objects, caller refs, prompts, and arbitrary evidence payloads.
-3. Compute the allowed proposal set as `check|measurement|follow_up`, removing
-   follow-up when the triggering action already has its unique automatic
-   follow-up. Reject every action/approval/completion/Outcome/Plant/device
+3. Compute the allowed proposal set as `check|measurement|follow_up`. For an
+   `action` trigger, always remove `follow_up`: action completion exclusively
+   owns its deterministic +48-hour follow-up, while `check|measurement` remain
+   available. Reject every action/approval/completion/Outcome/Plant/device
    field.
 4. Reuse the provider-neutral executor seam, no fallback, post-I/O current
    authorization, sanitized common audit, and pending
@@ -183,14 +184,8 @@ only a matched ordinary Task.
   repository head. The reopened repair therefore adds one forward cleanup
   revision after the executor-confirmed current head and does not rewrite
   either existing revision.
-- W2 `TASK-040-T3-FT-012-W2` preserves its complete ATTEMPT 01-06 history and
-  the owner-accepted ATTEMPT 06 implementation/functional closure with the
-  explicit semantic-stage waiver. The final 2026-07-24 operator decision
-  supersedes both coordinated direct-PostgreSQL-corruption hardening and the
-  pre-classification runtime ledger/replay/crash matrix, and keeps the same
-  task `planned`. Its ID, T3 tier, W2 wave, dependency, provider-neutral product
-  outcome, public contracts, and real classified write-side
-  concurrency/idempotency requirements remain unchanged.
+- W2 `TASK-040-T3-FT-012-W2` is explicit-owner `done` from ATTEMPT 08
+  functional `PASS`, `semantic-pass`, and `HUMAN_CHECKPOINT: done`.
 
 ## Expected touched files
 

@@ -2,7 +2,7 @@
 description: Verification contract for FT-012 approvals, tasks, follow-ups, outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
 type: testing_spec
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/task-follow-up-lifecycle.md
@@ -193,10 +193,12 @@ immutable pending Safety decision through human task completion and Outcome.
   the registered Task Follow-Up request allowlist are absent.
 - Persisted Task text remains an explicit quoted untrusted-data field and
   cannot alter instructions, tools, schema, route, or authority.
-- Allowed proposal kinds are only `check|measurement|follow_up`; an existing
-  automatic follow-up removes `follow_up` from that invocation's allowed set.
-  Action, approve/reject, complete, Outcome, Plant-state, and device fields are
-  schema-invalid.
+- Allowed proposal kinds are only `check|measurement|follow_up`; an `action`
+  trigger always removes `follow_up` from that invocation's allowed set because
+  action completion exclusively owns its deterministic +48-hour follow-up.
+  Provider-I/O completion races and the reverse ordinary-first/completion-later
+  ordering leave exactly one automatic follow-up. Action, approve/reject,
+  complete, Outcome, Plant-state, and device fields are schema-invalid.
 - Valid non-silent proposal creates only a pending `task_request` envelope.
   Exactly matching persisted classification plus current ordinary-task guard
   is required for one Task. Class/kind mismatch or any physical/blocked branch

@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-012
 epic: EP-004
 lifecycle: planned
-last_updated: 2026-07-24
+last_updated: 2026-07-27
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -59,6 +59,10 @@ spec_design_links:
   A denied or interrupted invocation may be called again and may repeat model,
   audit, or classification work; it cannot bypass the current guards or create
   a second ordinary Task for an already consumed run/message identity.
+- Action completion exclusively owns the action's deterministic +48-hour
+  follow-up. A `task_follow_up` invocation triggered by an `action` may propose
+  `check|measurement`, but never an ordinary `follow_up`, regardless of whether
+  completion occurs before, during, or after provider I/O.
 - Runtime command fingerprints remain deterministic inputs and the classified
   ordinary-task writer retains its transaction, natural keys, run-key
   serialization, Task FK, and `consumed|denied` disposition. No runtime-stage
@@ -132,7 +136,7 @@ spec_design_links:
 - `.memory-bank/behavior-specs/FT-012-BHV-002-retry-conflict-archive.behavior.json`
 - `.memory-bank/behavior-specs/FT-012-BHV-003-real-agent-ordinary-task.behavior.json`
 
-## Current W1 Boundary Evidence
+## Current W1/W2 Boundary Evidence
 
 - `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` using only current
   ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
@@ -151,17 +155,10 @@ spec_design_links:
   `ft012_runtime_dispositions`; later feature work may already own the current
   repository head. The reopened repair adds only a forward cleanup revision
   after the executor-confirmed head and rewrites neither history.
-- `TASK-040-T3-FT-012-W2` retains its complete ATTEMPT 01-06 history,
-  including the owner-accepted ATTEMPT 06 implementation/functional closure
-  and its explicit semantic-stage waiver. On 2026-07-24 the operator first
-  superseded coordinated direct-PostgreSQL-corruption hardening and then also
-  superseded the pre-classification runtime ledger, zero-call replay, and its
-  seven crash/race groups. The same task remains `planned`; T3, W2, dependency,
-  provider-neutral product behavior, classified write-side concurrency/
-  idempotency, and all public/access boundaries remain unchanged.
-- No provider/model/base URL/Gemini/credential/egress/network/live-smoke
-  result was required, checked, or claimed for W1. The absent human checkpoint
-  was accepted by the scheduler as an advisory T3 process gap.
+- `TASK-040-T3-FT-012-W2` is explicit-owner `done` from ATTEMPT 08
+  functional `PASS`, `semantic-pass`, and `HUMAN_CHECKPOINT: done`; prior
+  attempt history remains preserved.
+- No live-provider result is claimed.
 
 ## SDD Design Gate
 

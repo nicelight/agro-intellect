@@ -2,7 +2,7 @@
 description: PostgreSQL authority for ordinary and action tasks, human approvals, automatic follow-ups, outcomes, and their audit refs.
 status: active
 type: data_spec
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/domains/safety-action-routing.md
@@ -261,6 +261,10 @@ For automatic follow-up, `parent_action_task_id` is the natural uniqueness
 key. Action completion and the follow-up insert are one transaction. The
 follow-up `display_text` is a project-owned non-imperative request to record
 the result after the approved action; it never copies model candidate text.
+Action completion exclusively owns this action-linked follow-up. The
+`task_follow_up` competence may derive `check|measurement` from an action
+trigger, but it cannot create an ordinary `follow_up` whose independent
+classification/request uniqueness would coexist with the automatic row.
 
 ## `outcomes`
 

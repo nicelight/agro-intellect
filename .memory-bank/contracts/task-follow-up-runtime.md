@@ -2,7 +2,7 @@
 description: Strict provider-neutral Task and Follow-up Agent input, proposal, classification, and ordinary-task handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-24
+last_updated: 2026-07-25
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -133,10 +133,11 @@ raw chat, MessageEnvelope, or provider output.
 
 ### Allowed proposal kinds
 
-Backend policy always excludes `action`. It also excludes `follow_up` when the
-trigger action already has its unique open automatic follow-up. This prevents
-the agent from duplicating the deterministic +48-hour follow-up while keeping
-`check|measurement` available.
+Backend policy always excludes `action`. When the trigger Task is `action`, it
+also excludes `follow_up` in every action state; action completion exclusively
+owns that action's deterministic +48-hour follow-up. This immutable-kind policy
+prevents both completion-during-provider-I/O and ordinary-first/completion-later
+duplication while keeping `check|measurement` available.
 
 ## Model result version 1
 

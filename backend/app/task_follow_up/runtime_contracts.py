@@ -374,88 +374,7 @@ class TaskFollowUpRunResultV1:
         }
 
 
-@dataclass(frozen=True, slots=True)
-class TaskFollowUpDispositionResultV1:
-    run_id: uuid.UUID
-    result_status: str
-    result_code: str
-    classification_ref: str | None
-    task_ref: str | None
-    retry_requires_new_run: bool = True
-    schema_version: int = 1
-
-    def __post_init__(self) -> None:
-        if (
-            self.schema_version != 1
-            or not _uuid4(self.run_id)
-            or self.retry_requires_new_run is not True
-            or (
-                self.classification_ref is not None
-                and not _record_ref(
-                    self.classification_ref,
-                    "safety_classification",
-                )
-            )
-            or (self.task_ref is not None and not _record_ref(self.task_ref, "task"))
-        ):
-            raise TaskFollowUpRuntimeValidationError()
-        exact_matrix = {
-            (
-                "conflict",
-                "TASK_FOLLOW_UP_RUN_CONFLICT",
-            ): (False, False),
-            (
-                "failed",
-                "TASK_FOLLOW_UP_RUNTIME_DISPOSITION_FAILED",
-            ): (False, False),
-            (
-                "incomplete",
-                "TASK_FOLLOW_UP_HANDOFF_INCOMPLETE",
-            ): (None, False),
-            (
-                "not_taskable",
-                "TASK_FOLLOW_UP_ALREADY_NOT_TASKABLE",
-            ): (True, False),
-            (
-                "denied",
-                "TASK_FOLLOW_UP_DISPATCH_DENIED",
-            ): (True, False),
-            (
-                "duplicate",
-                "TASK_FOLLOW_UP_ALREADY_CONSUMED",
-            ): (True, True),
-            (
-                "blocked",
-                "TASK_FOLLOW_UP_REPLAY_BLOCKED",
-            ): (False, False),
-        }
-        expected = exact_matrix.get((self.result_status, self.result_code))
-        if expected is None:
-            raise TaskFollowUpRuntimeValidationError()
-        has_classification = self.classification_ref is not None
-        has_task = self.task_ref is not None
-        classification_rule, task_rule = expected
-        if (
-            (classification_rule is not None and has_classification is not classification_rule)
-            or has_task is not task_rule
-        ):
-            raise TaskFollowUpRuntimeValidationError()
-
-    def as_value(self) -> dict[str, object]:
-        return {
-            "schema_version": 1,
-            "run_id": str(self.run_id),
-            "result_status": self.result_status,
-            "result_code": self.result_code,
-            "classification_ref": self.classification_ref,
-            "task_ref": self.task_ref,
-            "retry_requires_new_run": True,
-        }
-
-
-TaskFollowUpInvocationResultV1 = (
-    TaskFollowUpRunResultV1 | TaskFollowUpDispositionResultV1
-)
+TaskFollowUpInvocationResultV1 = TaskFollowUpRunResultV1
 
 
 def _validate_task_record(source_ref: str, payload: dict[str, object]) -> None:
@@ -665,7 +584,6 @@ __all__ = [
     "TRIGGER_KINDS",
     "TaskFollowUpAgentDefinitionV1",
     "TaskFollowUpCommandV1",
-    "TaskFollowUpDispositionResultV1",
     "TaskFollowUpInputRecordV1",
     "TaskFollowUpInvocationResultV1",
     "TaskFollowUpModelResultV1",

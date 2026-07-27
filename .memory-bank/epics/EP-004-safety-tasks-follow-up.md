@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-004
 lifecycle: planned
-last_updated: 2026-07-20
+last_updated: 2026-07-27
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -64,17 +64,16 @@ Make physical-action advice safe and accountable by requiring freshness, Safety 
   `pending_human_approval` decision and inert UI projection. FT-012 W1 is now
   scheduler-recorded complete and owns the implemented PostgreSQL human
   decision, action/ordinary Task, automatic follow-up, and Outcome
-  transitions. FT-012 W2 remains planned for the provider-neutral
-  `task_follow_up` runtime composition.
+  transitions. FT-012 W2 provider-neutral `task_follow_up` runtime is
+  explicit-owner `done`.
 - Current W1 evidence records `ft012_task_approval_outcomes` as the product
   migration head directly after `ft011_safety_action_decisions`, with
   immutable classified-message dispositions, current authority/evidence
   guards, atomic Approval/Task/follow-up/Outcome writes, archive/no-replay,
   strict HTTP and Timeline contracts, concurrency/rollback, and zero automated
   actuation or Plant-state authority.
-- FT-011 and EP-004 lifecycle values remain `planned` pending explicit owner
-  lifecycle decisions; this boundary sync makes no feature, epic, requirement,
-  task-promotion, or dependent-selection decision. TASK-040 remains
-  scheduler-owned `planned` and is not selected here.
+- FT-011, FT-012, and EP-004 lifecycle values remain `planned` pending
+  explicit feature/epic decisions; no requirement or dependent task is
+  promoted by this sync.
 - Current code-phase evidence selects no provider/model and claims no
   credential, egress, network, or live-provider result.

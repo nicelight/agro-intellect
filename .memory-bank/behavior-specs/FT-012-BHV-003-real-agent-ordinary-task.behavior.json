@@ -18,6 +18,7 @@
     "same_run_retry": "a repeated internal invocation may repeat model, audit, and classifier work because no durable runtime replay contract exists; canonical ordinary-dispatch run/message uniqueness and Task request idempotency still prevent a second Task",
     "consumed_retry": "the classified disposition and Task unique classification link preserve write-side one-shot idempotency; an exact classified retry repeats current ActorContext/Farm/Plant read authority and returns the existing Task without another Task write",
     "restore_and_concurrency": "a pre-classification denial is re-evaluated under current authority if explicitly invoked again; real concurrent classified writers serialize and commit at most one consumed-or-denied disposition and one Task, while runtime-ledger crash windows and zero-call replay are not current acceptance",
+    "action_trigger_policy": "an action trigger allows only check|measurement because action completion exclusively owns its deterministic +48-hour follow_up; completion during provider I/O or after the invocation cannot leave a second ordinary follow_up",
     "action_task_created": false,
     "approval_or_completion_effect": false,
     "fake_fallback_or_silent_acceptance": false

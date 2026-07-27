@@ -44,8 +44,11 @@ def test_ft009_revision_is_direct_guarded_ancestor_of_current_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft013_governance_aggregate"
-    assert head.down_revision == "ft012_runtime_dispositions"
+    assert head.revision == "ft012_simplify_follow_up_runtime"
+    assert head.down_revision == "ft013_governance_aggregate"
+    companion_governance = script.get_revision("ft013_governance_aggregate")
+    assert companion_governance is not None
+    assert companion_governance.down_revision == "ft012_runtime_dispositions"
     runtime_dispositions = script.get_revision("ft012_runtime_dispositions")
     assert runtime_dispositions is not None
     assert runtime_dispositions.down_revision == "ft012_task_approval_outcomes"

@@ -1,7 +1,7 @@
 {
   "id": "TASK-040-T3-FT-012-W2",
   "title": "Run provider-neutral Task and Follow-Up Agent through ordinary-task authority",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-012",
   "reqs": [
@@ -671,6 +671,87 @@
         ]
       },
       "next_gate": "Fresh independent /review-tasks-plan FT-012; no execution or status promotion before APPROVE and applicable readiness gates."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "07",
+      "verdict": "PASS",
+      "verified_at": "2026-07-24T23:32:33+05:00",
+      "basis": "Fresh independent local-PostgreSQL verification proved the simplified linear runtime, strict provider boundary, current guards, sole ordinary Task writer, classified retry/denial/rollback behavior, identical and conflicting write-side concurrency, migration data-preservation preflight, resolver isolation, and zero action/device authority without a task-scoped finding.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-07.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-07.md",
+        ".tasks/TASK-040-T3-FT-012-W2/verify_attempt07_linear_runtime.py"
+      ],
+      "gate_summary": {
+        "runtime_agent": "PASS: 61 passed, 1 deselected",
+        "linear_runtime_domain_migration": "PASS: 39 passed",
+        "scoped_authority": "PASS: 184 passed, 1 deselected",
+        "exact_head_required_command": "COLLECTION ERROR before tests: existing duplicate-basename non-package test modules",
+        "exact_head_replacement": "PASS: same exact nine files, 51 passed with --import-mode=importlib",
+        "full_deterministic_replacement": "PASS: 541 passed, 2 deselected, 207 warnings",
+        "targeted_risk_matrix": "PASS: 23 passed, 16 deselected",
+        "new_conflicting_writer_probe": "PASS: 1 passed",
+        "lint_compile_diff_scope": "PASS"
+      },
+      "report_hashes": {
+        "implementation": "31cd47b1e5150b38696d4024f66b5b4390cc75b5841dfceffe3d4c28eb07c849",
+        "functional_verification": "08b35e9b332c9235d7fd831de470a1341b293ecc3250122e10ac424505fe8320",
+        "targeted_probe": "ff54f2d130df3a06a5738e04f3babe12699276b1013565a25c0931fead42ce76"
+      },
+      "reused_execute_evidence": "none",
+      "provider_acceptance": "Provider-neutral deterministic local PostgreSQL evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Run separate /red-verify TASK-040-T3-FT-012-W2. Lifecycle remains in_progress; HUMAN checkpoint and closure remain scheduler/explicit-owner actions."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "08",
+      "verdict": "PASS",
+      "verified_at": "2026-07-25T10:53:08+05:00",
+      "basis": "Fresh independent local-PostgreSQL verification proved immutable action-kind proposal confinement, exclusive automatic +48-hour follow-up ownership across both provider-I/O race orderings, strict provider rejection before classifier/Task authority, current guards, sole ordinary Task writer, classified idempotency/rollback/migration compatibility, and zero action/device authority without a task-scoped finding.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-IMPL-final-report-code-08.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-08.md",
+        ".tasks/TASK-040-T3-FT-012-W2/verify_attempt08_follow_up_ownership.py",
+        ".protocols/TASK-040-T3-FT-012-W2/verification.md"
+      ],
+      "gate_summary": {
+        "new_action_ownership_probe": "PASS: 3 passed",
+        "runtime_agent": "PASS: 63 passed, 1 deselected",
+        "linear_runtime_domain_migration": "PASS: 41 passed",
+        "scoped_authority": "PASS: 186 passed, 1 deselected",
+        "exact_head_required_command": "COLLECTION ERROR before tests: existing duplicate-basename non-package test modules",
+        "exact_head_replacement": "PASS: same exact nine files, 51 passed with --import-mode=importlib",
+        "full_deterministic_replacement": "PASS: 543 passed, 2 deselected, 207 warnings",
+        "lint_compile_json_diff_preflight_scope": "PASS"
+      },
+      "report_hashes": {
+        "implementation": "635897a694e8450a7162bbabbff7a58d6da3228775118fb0e0e13a6c261ab951",
+        "functional_verification": "5475e0e2b04ced6517c6cce1a4cfcf0aded8736abbb4adba118e31484094585e",
+        "targeted_probe": "cd1060c851db3b1cd25f7bbbcd419ab92d747797af9b5e8f0b07352b6a5b4f39"
+      },
+      "reused_execute_evidence": "none",
+      "findings": "NONE",
+      "provider_acceptance": "Provider-neutral deterministic local PostgreSQL evidence only; no provider/model/base URL/Gemini/credential/egress/network/live smoke was selected, run, or claimed.",
+      "next_owner": "Run separate /red-verify TASK-040-T3-FT-012-W2. Lifecycle remains in_progress; HUMAN checkpoint and closure remain scheduler/explicit-owner actions."
+    },
+    {
+      "stage": "manual_closure",
+      "mode": "manual",
+      "attempt": "08",
+      "decision": "done",
+      "decided_at": "2026-07-27T15:52:46+05:00",
+      "basis": "Explicit owner closure after ATTEMPT 08 VERDICT: PASS, SEMANTIC_VERDICT: semantic-pass, and human checkpoint.",
+      "evidence": [
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-VERIFY-final-report-docs-08.md",
+        ".tasks/TASK-040-T3-FT-012-W2/TASK-040-T3-FT-012-W2-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-040-T3-FT-012-W2/handoff.md"
+      ],
+      "markers": [
+        "HUMAN_CHECKPOINT: done"
+      ]
     }
   ],
   "docs": [
@@ -804,6 +885,7 @@
     "TaskFollowUpProviderRequestV1 contains only the canonical definition, trigger, backend-allowed ordinary kinds, and one to four authorized PostgreSQL task/outcome/evidence records with matching ordered refs.",
     "Task text is an explicit typed untrusted quotation and never an instruction, prompt, tool, command, authorization, evidence fact, or route selector.",
     "The model result may speak only one allowed check, measurement, or follow_up proposal or produce strict model-declared silence; action and every mutation field are schema-invalid.",
+    "When the trigger Task is action, the allowed proposal set is always check|measurement: action completion exclusively owns that action's deterministic +48-hour follow_up, independent of provider-I/O timing.",
     "A non-silent result creates only a pending task_request MessageEnvelope; the existing project classifier must persist the exact same safe_task_kind before TASK-039 may create a Task.",
     "The strict provider-neutral seam has no selected provider/model/base URL; production remains unbound and fail-closed, test fakes/spies are explicit, I/O is outside transactions, and every owning writer repeats current guards.",
     "The task_follow_up runtime is one linear best-effort invocation and writes no pre-classification disposition; repeated explicit invocation may repeat model/audit/classifier work, while provider and Safety I/O remain outside the ordinary Task write transaction.",
@@ -832,6 +914,7 @@
     "Regression tests prove task:/outcome: are accepted only by the competence source resolver and remain rejected by W1 record_follow_up_outcome evidence validation.",
     "Schema simplification tests prove the forward migration removes the independent commitment objects and an empty historical runtime table after the executor-confirmed current head, refuses before DDL when runtime rows exist, leaves Task/classified authority unchanged, keeps downgrade reproducible, and advances exact-head consumers without rewriting FT-013.",
     "Write-side race tests prove concurrent identical classified writers resolve one Task, conflicting writers preserve the winner, denial commits no Task, and provider/Safety spies run outside the Task transaction. Runtime-ledger advisory collision, handoff crash, zero-call replay, and barrier-order matrices are intentionally absent.",
-    "Provider-neutral tests prove explicit test fake/spy construction, exact call counts and allowlists, timeout/provider-error/invalid-output handling, unbound-production failure, no default/fallback/fake production output, redacted logs/audit/evidence, and compatibility with the existing Agent Runtime outcome matrix."
+    "Provider-neutral tests prove explicit test fake/spy construction, exact call counts and allowlists, timeout/provider-error/invalid-output handling, unbound-production failure, no default/fallback/fake production output, redacted logs/audit/evidence, and compatibility with the existing Agent Runtime outcome matrix.",
+    "Action-trigger tests prove both completion-during-provider-I/O and ordinary-first/completion-later orderings leave exactly one automatic +48-hour follow_up and no ordinary follow_up."
   ]
 }

@@ -21,7 +21,6 @@ from .models import (
     OrdinaryTaskDispatchDisposition,
     Outcome,
     Task,
-    TaskFollowUpRuntimeDisposition,
 )
 from .repository import (
     CurrentTaskScope,
@@ -43,7 +42,6 @@ from .runtime_contracts import (
     TRIGGER_KINDS,
     TaskFollowUpAgentDefinitionV1,
     TaskFollowUpCommandV1,
-    TaskFollowUpDispositionResultV1,
     TaskFollowUpInputRecordV1,
     TaskFollowUpInvocationResultV1,
     TaskFollowUpModelResultV1,
@@ -76,7 +74,6 @@ __all__ = [
     "TRIGGER_KINDS",
     "TaskFollowUpAgentDefinitionV1",
     "TaskFollowUpCommandV1",
-    "TaskFollowUpDispositionResultV1",
     "TaskFollowUpError",
     "TaskFollowUpErrorCode",
     "TaskFollowUpInputAssembler",
@@ -89,7 +86,6 @@ __all__ = [
     "TaskFollowUpRepository",
     "TaskFollowUpRunResultV1",
     "TaskFollowUpRuntimeService",
-    "TaskFollowUpRuntimeDisposition",
     "TaskFollowUpRuntimeValidationError",
     "TaskFollowUpService",
     "TaskKind",

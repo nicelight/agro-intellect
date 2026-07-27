@@ -51,7 +51,7 @@ NOW = datetime(2026, 7, 20, 8, 0, tzinfo=timezone.utc)
 
 
 @pytest.fixture(autouse=True)
-def _apply_runtime_disposition_revision(ft012_database):
+def _apply_task_follow_up_cleanup_revision(ft012_database):
     script = ScriptDirectory.from_config(
         build_alembic_config(AppSettings.from_env())
     )
@@ -59,6 +59,9 @@ def _apply_runtime_disposition_revision(ft012_database):
         context = MigrationContext.configure(connection)
         with Operations.context(context):
             script.get_revision("ft012_runtime_dispositions").module.upgrade()
+            script.get_revision(
+                "ft012_simplify_follow_up_runtime"
+            ).module.upgrade()
         connection.commit()
 
 
@@ -228,6 +231,44 @@ def test_matched_ordinary_task_is_authoritative_literal_and_idempotent(
     assert conflict.value.code is TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
 
 
+def test_consumed_retry_requires_current_task_authority_without_exposing_task(
+    ft012_database,
+    ft012_seed,
+    task_timeline,
+):
+    farm, boss, _membership, plant = ft012_seed
+    command = _ordinary_command(ft012_database, farm, boss, plant)
+    with ft012_database.session() as session:
+        created = TaskFollowUpService(
+            session,
+            timeline_appender=task_timeline,
+            clock=lambda: NOW,
+        ).create_ordinary_task(command)
+
+    archive_plant(ft012_database, boss, plant_id=plant.plant_id)
+    with ft012_database.session() as session:
+        with pytest.raises(TaskFollowUpError) as denied:
+            TaskFollowUpService(
+                session,
+                timeline_appender=task_timeline,
+                clock=lambda: NOW,
+            ).create_ordinary_task(command)
+    assert denied.value.code is TaskFollowUpErrorCode.TASK_PLANT_NOT_ACTIVE
+    assert str(denied.value) == "TASK_PLANT_NOT_ACTIVE"
+    with ft012_database.session() as session:
+        disposition = session.get(
+            OrdinaryTaskDispatchDisposition,
+            command.message_envelope.message_id,
+        )
+        assert disposition is not None
+        assert disposition.outcome == "consumed"
+        assert session.scalar(
+            select(func.count(Task.task_id)).where(
+                Task.task_id == created.task.task_id
+            )
+        ) == 1
+
+
 def test_archived_ordinary_denial_is_terminal_and_both_new_identities_are_required(
     ft012_database, ft012_seed, task_timeline,
 ):
@@ -249,7 +290,6 @@ def test_archived_ordinary_denial_is_terminal_and_both_new_identities_are_requir
         assert disposition is not None
         assert disposition.run_id == command.message_envelope.run_id
         assert disposition.outcome == "denied"
-        assert disposition.expected_task_create_fingerprint is None
         assert disposition.denial_code == "TASK_PLANT_NOT_ACTIVE"
         assert session.scalar(select(func.count(Task.task_id))) == 0
 
@@ -351,10 +391,6 @@ def test_disposition_rolls_back_with_audit_failure_then_concurrent_retry_consume
             )
         )
         assert task is not None
-        assert (
-            disposition.expected_task_create_fingerprint
-            == task.create_request_fingerprint
-        )
         assert session.scalar(select(func.count(Task.task_id))) == 1
     assert [event.event_type for event in task_timeline.events] == ["task_created"]
 
@@ -689,7 +725,7 @@ def test_ownerless_or_unrelated_integrity_error_stays_persistence_failure(
         )) == 0
 
 
-def test_commitment_guard_persistence_error_uses_existing_redacted_mapping(
+def test_consumed_retry_missing_task_link_uses_existing_redacted_mapping(
     ft012_database,
     ft012_seed,
     task_timeline,
@@ -697,23 +733,18 @@ def test_commitment_guard_persistence_error_uses_existing_redacted_mapping(
     farm, boss, _membership, plant = ft012_seed
     command = _ordinary_command(ft012_database, farm, boss, plant)
 
-    class Diagnostic:
-        constraint_name = "ck_ordinary_task_dispatch_commitment_write_once"
-
-    class DriverError(Exception):
-        def __init__(self):
-            super().__init__("raw database detail must not leak")
-            self.diag = Diagnostic()
+    with ft012_database.session() as session:
+        created = TaskFollowUpService(
+            session,
+            timeline_appender=task_timeline,
+            clock=lambda: NOW,
+        ).create_ordinary_task(command)
+    with ft012_database.session() as session, session.begin():
+        stored = session.get(Task, created.task.task_id)
+        assert stored is not None
+        session.delete(stored)
 
     with ft012_database.session() as session:
-        def fail_flush(*_args, **_kwargs):
-            raise IntegrityError(
-                "raw database detail must not leak",
-                {},
-                DriverError(),
-            )
-
-        session.flush = fail_flush
         with pytest.raises(TaskFollowUpError) as failed:
             TaskFollowUpService(
                 session,
@@ -725,11 +756,13 @@ def test_commitment_guard_persistence_error_uses_existing_redacted_mapping(
     assert str(failed.value) == "TASK_PERSISTENCE_FAILED"
     assert failed.value.__cause__ is None
     with ft012_database.session() as session:
-        assert session.scalar(
-            select(func.count(Task.task_id)).where(
-                Task.create_request_id == command.message_envelope.run_id
-            )
-        ) == 0
+        disposition = session.get(
+            OrdinaryTaskDispatchDisposition,
+            command.message_envelope.message_id,
+        )
+        assert disposition is not None
+        assert disposition.outcome == "consumed"
+        assert session.scalar(select(func.count(Task.task_id))) == 0
 
 
 @pytest.mark.parametrize("ref_kind", ["task", "outcome"])

@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-23
+last_updated: 2026-07-27
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -344,7 +344,7 @@ source_of_truth:
   is claimed. The absent task checkpoint markers remain owner-accepted
   advisory process gaps and do not amend canonical policy.
 
-## Current FT-012 W1 Boundary Evidence Note
+## Current FT-012 W1/W2 Boundary Evidence Note
 
 - `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` using only current
   ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
@@ -368,13 +368,8 @@ source_of_truth:
   provider-runtime, governance, Consultant, or deferred E2E outcomes remain
   open. REQ-010 and the FT-007/FT-008-owned REQ-013 outcome remain `verified`;
   FT-012 W1 consumes those authority/publication seams without re-owning them.
-- FT-012 and EP-004 lifecycle values remain `planned` pending the open W2 and
-  explicit owner feature/epic decisions. TASK-040 historically closed after
-  ATTEMPT 06 and retains that complete closure/evidence record, but the
-  operator reopened the same task as `planned` on 2026-07-24 for bounded
-  runtime-ledger and direct-corruption simplification. This planning
-  reconciliation creates no new task, implementation PASS, execution attempt,
-  or RTM lifecycle transition; dependent TASK-042/TASK-043 remain `planned`.
-- No provider/model/base URL/Gemini/credential/egress/network/live-smoke result
-  was required, checked, or claimed. The absent human checkpoint remains a
-  scheduler-accepted advisory T3 process gap.
+- `TASK-040-T3-FT-012-W2` is explicit-owner `done` from ATTEMPT 08 functional
+  `PASS`, `semantic-pass`, and `HUMAN_CHECKPOINT: done`.
+- FT-012 and EP-004 lifecycle values remain `planned`; RTM lifecycles and
+  dependent TASK-042/TASK-043 remain unchanged.
+- No live-provider result is claimed.

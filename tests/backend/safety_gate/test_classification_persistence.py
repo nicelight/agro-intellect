@@ -1061,8 +1061,11 @@ def test_ft011_revision_is_ordered_head_and_guarded():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     revision = script.get_revision("head")
     assert revision is not None
-    assert revision.revision == "ft013_governance_aggregate"
-    assert revision.down_revision == "ft012_runtime_dispositions"
+    assert revision.revision == "ft012_simplify_follow_up_runtime"
+    assert revision.down_revision == "ft013_governance_aggregate"
+    companion_governance = script.get_revision("ft013_governance_aggregate")
+    assert companion_governance is not None
+    assert companion_governance.down_revision == "ft012_runtime_dispositions"
     runtime_dispositions = script.get_revision("ft012_runtime_dispositions")
     assert runtime_dispositions is not None
     assert runtime_dispositions.down_revision == "ft012_task_approval_outcomes"
