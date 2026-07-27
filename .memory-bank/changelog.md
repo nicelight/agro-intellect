@@ -4,6 +4,30 @@ status: active
 ---
 # Changelog
 
+## [2026-07-27] Memory Bank execution-log cleanup
+
+- Removed task attempts, verdicts, checkpoints, closure narration, retry
+  history, evidence inventories, and temporary snapshots from the global
+  backbone, requirements, FT-009 through FT-013 feature documents,
+  implementation plans, feature planning protocols, and feature index.
+- Preserved normative product/design decisions, RTM values, current feature
+  lifecycles, task dependency plans, and canonical links.
+- Kept detailed execution history in indexed task records, `.tasks/`,
+  task-specific `.protocols/`, and this changelog; product code and task
+  lifecycle records were unchanged by the cleanup.
+
+## [2026-07-27] Wave W1 — TASK-044 closed
+
+- Closed `TASK-044-T3-FT-013-W1` after independent functional `PASS`,
+  per-task `semantic-pass`, repository-wide impact analysis, exact
+  `HUMAN_CHECKPOINT: done`, and explicit manual owner instruction.
+- Recorded `ft013_simplify_companion` as the current migration head and
+  reconciled the completed one-way current-proposal authority, unchanged
+  attention on supersede, and authority-derived projection repair.
+- Marked simplification candidate 2 complete in `SIMPLIFICATION.md`.
+- Kept FT-013 and mapped requirement lifecycles `planned`; TASK-042 and
+  TASK-043 remain `planned` and were not promoted or selected.
+
 ## [2026-07-27] FT-013 Companion aggregate simplification planned
 
 - Scoped Companion read integrity to supported application paths, ownership,

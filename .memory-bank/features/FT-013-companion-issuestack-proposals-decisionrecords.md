@@ -101,14 +101,11 @@ spec_design_links:
 - Shared blockers are resolved by the one canonical ordinary-task source union
   and the server-derived Companion governance hold in the linked Task/Safety/
   MessageEnvelope/Bus/UI specs.
-- Feature-local R4 B3-B6 are closed in the registered subject specs: exact
+- Registered subject specs define exact
   Companion HTTP views and total runtime/classifier/domain error mapping;
   deterministic latest completed check-in plus exactly one manual-measurement
   row without cross-row pH/EC synthesis; serialized multi-effect semantics for
   distinct run ids; and one canonical ref/read ordering/nullability grammar.
-- TASK-040 and TASK-042 are explicitly serialized because both may write the
-  Task Follow-Up package. TASK-043 directly composes the Safety classifier
-  runtime/storage/testing contracts and the two-executor provider-neutral path.
 
 ## Behavior specs
 
@@ -116,48 +113,37 @@ spec_design_links:
 - `.memory-bank/behavior-specs/FT-013-BHV-002-decision-task-atomicity.behavior.json`
 - `.memory-bank/behavior-specs/FT-013-BHV-003-real-companion-explicit-run.behavior.json`
 
-## SDD Design Gate
+## Current Feature State
 
-- Global/shared status is complete. The provider profile has no blanket
-  approval-status ban on governance input; registered agent-specific requests
-  own exact typed allowlists. The current authorized explicit Companion
-  `existing_issue` request includes persisted open-Issue `summary_text` as
-  non-authoritative context.
-  `AD-007`, repaired `AD-008`, Plant lifecycle, the
-  one closed ordinary-task command, evidence-only classification with
-  `companion_governance_hold`, Companion Governance, Agent Chat Bus, UI Feed,
-  shared Bus/UI storage, and Plant Feed HTTP define shared authority and
-  archive/no-replay behavior.
-- Shared projection decision: only a valid approved DecisionRecord reference
-  may enter Bus; human attention/proposal/decision use the non-agent-consumable
-  `companion_governance` UI route. No parallel Companion Bus/UI contract is
-  allowed.
-- Feature-local deterministic design is closed for accepted authority,
-  lifecycle, effect, atomicity, derived-conclusion, HTTP, evidence selection,
-  concurrency, ref/read, and provider-neutral classifier composition. Safety/action/Plant/
-  device authority remains excluded; final feature status is complete.
-- The post-repair deterministic findings are also closed: open/unfocused issues
-  have valid awaiting/decided conclusions and focus-transition semantics; the
-  ordinary-task seam accepts the exact flushed approved proposal phase in the
-  caller UoW; `ApprovedGovernanceSummaryV1` is exact and derived-only; nested
-  Task failures have a total reachable translation; and TASK-042 links the
-  canonical Task command directly.
-- Provider-input decision: `CompanionProviderRequestV1` includes persisted
-  open-Issue `summary_text` from current authorized PostgreSQL scope as
-  untrusted, non-authoritative context. The reconciled next step is
-  `/review-tasks-plan FT-013`.
-- Provider-integration decision: current code-phase closure uses explicit
-  Companion and Safety fake/spy executors and does not require credentials,
-  egress, network, or live smoke. Production remains unbound and fail closed;
-  real response/classifier evidence belongs to the shared future milestone.
-- Execution note: TASK-041 is owner-recorded `done` from Attempt 05
-  independent functional PASS. Its latest semantic-fail remains unchanged and
-  is accepted as residual risk without a semantic-pass claim. TASK-042 and
-  TASK-043 remain `planned`; neither was promoted or selected by the W1
-  closure. Their `touched_files` are advisory; hard semantics remain in their
-  canonical specs, `forbidden_scope`, and `stop_conditions`.
-- Simplification decision: the new bounded T3 repair task removes the redundant
-  attention-to-proposal pointer, scopes read integrity to supported paths,
-  ownership, and response serialization, and makes proposal projection repair
-  authority-derived. TASK-042 must consume that repaired authority before
-  DecisionRecord implementation begins.
+- SDD design is complete. The IssueStack/proposal aggregate and one-way current
+  proposal authority are implemented.
+- DecisionRecord/effect and explicit Companion runtime slices remain planned,
+  so feature `lifecycle` remains `planned`.
+
+## Accepted Design Decisions
+
+- PostgreSQL Issue, HumanAttentionNeeded, CompanionProposal, and
+  DecisionRecord rows are the governance authority. UI, Timeline, Bus,
+  MessageEnvelope, classification, and model output are projections or inputs
+  and cannot independently transition that authority.
+- The current proposal is derived one-way from the unique pending proposal for
+  the active attention. Supported reads enforce Plant/issue ownership and
+  strict response serialization; derived proposal UI may be rebuilt from the
+  authoritative proposal row.
+- Only a valid approved DecisionRecord reference may enter Bus. Human
+  attention, proposal, and decision projections use the non-agent-consumable
+  `companion_governance` UI route.
+- DecisionRecord effects remain limited to the closed ordinary-task boundary.
+  Safety approval, action Task, Plant-state mutation, device authority, Task
+  completion, and Outcome remain outside Companion governance.
+- `CompanionProviderRequestV1.existing_issue.summary_text` is typed persisted
+  open-Issue context from the current authorized PostgreSQL scope. It remains
+  untrusted and non-authoritative and does not admit attention, proposal,
+  rationale, decision, history, caller, or UI content.
+- Companion execution remains provider-neutral, explicit, and fail closed.
+  Deterministic verification uses explicit Companion and Safety fake/spy
+  executors; production has no implicit fallback or fake output.
+- Archive retains governance records and authorized reads but grants no
+  transition, publication, replay, or workflow-effect authority. Current
+  authorization, version, idempotency, lock ordering, and same-run versus
+  distinct-run concurrency rules remain defined by the linked canonical specs.

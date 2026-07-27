@@ -11,38 +11,38 @@ source_of_truth:
 
 ## Foundation
 
-- [FT-000 Foundation Dev Path](FT-000-foundation.md): executable Foundation baseline.
+- [FT-000 Foundation Dev Path](FT-000-foundation.md) — `verified`: executable Foundation baseline.
 
 ## EP-001 Local Farm Access And Admin
 
-- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md): verified local identity, session, and ActorContext boundary.
-- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md): verified Farm/Plant lifecycle and access-grant boundary; downstream retained-history/UI/Safety/agent scopes remain with later features.
-- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md): implemented backend Boss administration and durable audit boundary; PWA/admin UI and downstream demo scopes remain with later features.
+- [FT-001 Local Accounts Sessions And ActorContext](FT-001-local-accounts-sessions-actor-context.md) — `verified`: identity, session, and ActorContext.
+- [FT-002 Farm Plant Lifecycle And Access Grants](FT-002-farm-plant-lifecycle-access-grants.md) — `verified`: Farm/Plant lifecycle and access grants.
+- [FT-003 Boss Admin Surface And Admin Audit](FT-003-boss-admin-surface-admin-audit.md) — `implemented`: Boss administration and durable audit.
 
 ## EP-002 Plant Operations Evidence Authority
 
-- [FT-004 Authorized Plant Operations And Daily Check-In](FT-004-authorized-plant-operations-daily-check-in.md): verified backend/API daily operations, check-ins, canonical measurements, freshness, and timeline refs.
-- [FT-005 Photo Intake Catalog And Capture Manifests](FT-005-photo-intake-catalog-capture-manifests.md): verified backend/API local photo intake, catalog pagination, manifests, checksum, and evidence refs.
-- [FT-006 Runtime State Timeline And Plant History](FT-006-runtime-state-timeline-plant-history.md): verified backend/API runtime-authority history projections, retained history, strict cursors, and URL-first/KISS response handling.
+- [FT-004 Authorized Plant Operations And Daily Check-In](FT-004-authorized-plant-operations-daily-check-in.md) — `verified`: daily operations, check-ins, and measurements.
+- [FT-005 Photo Intake Catalog And Capture Manifests](FT-005-photo-intake-catalog-capture-manifests.md) — `verified`: local photo catalog and capture manifests.
+- [FT-006 Runtime State Timeline And Plant History](FT-006-runtime-state-timeline-plant-history.md) — `verified`: runtime state, Timeline, and Plant history.
 
 ## EP-003 Agent Runtime And Context Hygiene
 
-- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md): SDD design complete; TASK-028/TASK-029 remain planned and non-executable until `/feature-to-tasks FT-007` reconciliation and fresh review approval.
-- [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md): verified durable introductions, guarded typed Bus/literal UI publication, current-authority agent-context isolation, and protected Plant feed API; FT-016 retains frontend rendering ownership.
-- [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md): W1/W2 task boundary complete with accepted deterministic Vision and Plant-state trust evidence; lifecycle remains planned pending an explicit owner feature decision, and live-provider image behavior remains deferred.
-- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md): W1 task boundary complete with current ATTEMPT 02 deterministic implementation, functional PASS, and semantic-pass evidence; lifecycle remains planned pending an explicit owner feature decision.
+- [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md) — `planned`: agent runtime decisions and MessageEnvelope.
+- [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md) — `verified`: guarded Bus/UI publication and context hygiene.
+- [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md) — `planned`: Vision observations and Plant-state trust.
+- [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md) — `planned`: cautious advice under missing/stale data.
 
 ## EP-004 Safety Tasks And Follow-Up
 
-- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md): W1/W2 deterministic classification and Safety decision/projection task boundary complete through immutable `pending_human_approval`; lifecycle remains planned pending an explicit owner feature decision.
-- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md): W1/W2 task boundary is complete; lifecycle remains planned pending an explicit feature decision.
+- [FT-011 Safety Gate Physical-Action Routing](FT-011-safety-gate-physical-action-routing.md) — `planned`: physical-action classification and Safety routing.
+- [FT-012 Human Approval Tasks And Follow-Up Outcomes](FT-012-human-approval-tasks-follow-up-outcomes.md) — `planned`: approvals, human tasks, follow-up, and outcomes.
 
 ## EP-005 Companion Governance
 
-- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md): design includes the operator-approved one-way current-proposal simplification; new TASK-044 precedes the planned DecisionRecord/runtime cards and the rebuilt four-card queue awaits fresh task-plan review.
+- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md) — `planned`: IssueStack, proposals, DecisionRecords, and Companion runtime.
 
 ## EP-006 Local Privacy And Operator Surface
 
-- [FT-014 Dataset Governance And Trainability](FT-014-dataset-governance-trainability.md): evidence-gated trainability.
-- [FT-015 Local Security Privacy And Storage Prompt](FT-015-local-security-privacy-storage-prompt.md): local privacy/exposure/storage behavior.
-- [FT-016 Web App PWA Operator Surface And First Demo](FT-016-web-app-pwa-operator-surface-first-demo.md): role-aware first-demo UI.
+- [FT-014 Dataset Governance And Trainability](FT-014-dataset-governance-trainability.md) — `planned`: evidence-gated trainability.
+- [FT-015 Local Security Privacy And Storage Prompt](FT-015-local-security-privacy-storage-prompt.md) — `planned`: local privacy, exposure, and storage policy.
+- [FT-016 Web App PWA Operator Surface And First Demo](FT-016-web-app-pwa-operator-surface-first-demo.md) — `planned`: role-aware first-demo PWA.

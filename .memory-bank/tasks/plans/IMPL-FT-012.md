@@ -167,25 +167,18 @@ only a matched ordinary Task.
 - Shared package/composition/provider files are therefore changed
   sequentially, not by parallel execution.
 
-## Current Wave State
+## Current Task State
 
-- W1 `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` from current
-  ATTEMPT 03 implementation `PASS`, independent functional `PASS`, separate
-  `semantic-pass`, and immutable closure evidence. ATTEMPT 01/02 remain failed
-  history and are not selected as current evidence.
-- W1 implemented the authoritative Approval, ordinary/action Task, automatic
-  +48-hour follow-up, Outcome, and immutable classified-message disposition
-  boundary. It also implements current authority/evidence/archive guards,
-  exact retry/conflict/concurrency/rollback behavior, protected raw-path HTTP,
-  branch-exact Timeline summaries, and no-actuation/no-Plant-state limits.
-- The accepted W1 boundary is `ft012_task_approval_outcomes` directly after
-  `ft011_safety_action_decisions`. Historical TASK-040 added
-  `ft012_runtime_dispositions`; subsequent FT-013 work may already be the
-  repository head. The reopened repair therefore adds one forward cleanup
-  revision after the executor-confirmed current head and does not rewrite
-  either existing revision.
-- W2 `TASK-040-T3-FT-012-W2` is explicit-owner `done` from ATTEMPT 08
-  functional `PASS`, `semantic-pass`, and `HUMAN_CHECKPOINT: done`.
+- `TASK-039-T3-FT-012-W1`: `done`.
+- `TASK-040-T3-FT-012-W2`: `done`.
+- Feature `lifecycle` remains `planned`.
+- The authoritative slice owns Approval, ordinary/action Task, automatic
+  +48-hour follow-up, Outcome, terminal classified-message disposition,
+  current authority/evidence/archive guards, protected HTTP, and Timeline refs.
+- `ft012_task_approval_outcomes` follows
+  `ft011_safety_action_decisions`. Runtime-ledger and independent commitment
+  objects are removed only by a forward cleanup revision after the actual
+  repository head; existing migration history is not rewritten.
 
 ## Expected touched files
 
@@ -225,9 +218,8 @@ Operations, Access/Admin, and the future Safety package are touched only if
 the implemented upstream seam proves a narrow compatibility edit necessary;
 execution must stop rather than silently widening their public contracts.
 
-The reopened TASK-040 advances the executor-confirmed current head to its
-forward cleanup revision and updates every repository exact-head assertion
-below in the same execution:
+The runtime cleanup slice advances the executor-confirmed current head to its
+forward cleanup revision and keeps repository exact-head assertions aligned:
 
 - `tests/backend/access_admin/test_ft002_schema_migration.py`
 - `tests/backend/photo_intake/test_ft005_migration_models.py`
@@ -357,7 +349,7 @@ below in the same execution:
 - Run all current exact-head compatibility tests after the TASK-040 cleanup
   migration:
   `.venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q`.
-- Run the bounded W2 repair matrix:
+- Run the bounded W2 runtime matrix:
   `.venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py tests/backend/task_follow_up/test_domain_loop.py tests/backend/task_follow_up/test_migration_models.py -m "not real_model" -q`.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` for both waves.
 - Run the full deterministic suite before handoff when the environment permits.
@@ -366,8 +358,8 @@ below in the same execution:
   production. It does not require a provider, model, base URL, credential,
   egress, network call, or non-skipped live smoke.
 - Real request/response, error, timeout, redaction, and cost verification is
-  deferred to the shared future selected-endpoint milestone and is not current
-  closure evidence.
+  deferred to the shared future selected-endpoint milestone and is outside the
+  current acceptance scope.
 - Browser task/approval cards remain FT-016; backend JSON/OpenAPI behavior is
   verified here.
 

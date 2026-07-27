@@ -84,45 +84,22 @@ source_of_truth:
 
 ## Provider integration status
 
-- Current code phase: deterministic and closure-eligible without provider,
+- Current code phase is deterministically verifiable without provider,
   credentials, egress, network, or live smoke.
 - Future real image/response: centralized in the deferred selected-endpoint
   milestone in `.memory-bank/runbooks/agent-runtime-providers.md`.
 
-## Current Boundary Evidence
+## Current Feature State
 
-- `TASK-034-T3-FT-009-W1` is recorded `done` through the scheduler's
-  evidence-preserving administrative closure after the owner replaced the old
-  live-Gemini gate with provider-neutral deterministic code-phase acceptance.
-  Its accepted evidence covers strict Vision schemas, current authorization,
-  integrity-checked photo bytes through the outbound spy, timeout/error/invalid
-  output, redaction, unbound production, and no direct model authority. The old
-  live-provider blocker remains immutable historical evidence.
-- `TASK-035-T3-FT-009-W2` is recorded `done` from current ATTEMPT 04 evidence:
-  implementation `PASS`, independent functional `VERDICT: PASS`, and separate
-  `SEMANTIC_VERDICT: semantic-pass`. The retained-session PostgreSQL regression
-  proves the locked catalog read refreshes authoritative photo ownership before
-  provenance comparison and rejects a stale Plant A binding with
-  `PLANT_STATE_CANDIDATE_INVALID` and zero Plant-state rows.
-- Current evidence also retains the exact classified-only trust mapping,
-  explicit conflict/human review boundary, strict cursor failures, pending-only
-  provider-neutral runtime, and zero Safety/task/action/Bus/UI authority.
-- The exact `HUMAN_CHECKPOINT: done` marker was not selected for ATTEMPT 04.
-  This remains an advisory T3 confidence warning, not a scheduler-rejected
-  correctness result. Provider/model/base URL/credentials/egress/network/live
-  smoke remains deferred and unverified.
-- The FT-009 boundary sync recorded evidence only and left the feature
-  `lifecycle: planned` unchanged pending an explicit owner feature-lifecycle
-  decision. The scheduler subsequently completed direct dependent
-  `TASK-036-T3-FT-010-W1`; the current FT-010 boundary sync records that later
-  evidence without changing FT-009 lifecycle.
-
-Evidence:
-[W1 administrative closure](../../.tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-ADMIN-CLOSURE-final-report-docs-02.md),
-[W2 implementation](../../.tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-IMPL-final-report-code-04.md),
-[W2 functional verification](../../.tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-VERIFY-final-report-docs-04.md),
-[W2 semantic verification](../../.tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-RED-VERIFY-final-report-docs-04.md),
-and [W2 scheduler closure](../../.tasks/TASK-035-T3-FT-009-W2/TASK-035-T3-FT-009-W2-S-CLOSURE-final-report-docs-04.md).
+- Feature `lifecycle` remains `planned`; its Vision and Plant-state backend
+  slices are implemented.
+- The boundary is provider-neutral and pending-only: PostgreSQL
+  owns classified trust records, conflicts remain explicit, human review owns
+  promotion, and FT-009 grants no Safety, task, action, Bus, or UI authority.
+- Authoritative photo ownership is refreshed at the locked persistence boundary
+  before provenance comparison; stale or cross-Plant binding fails closed.
+- Real provider/model selection and live image-response verification remain
+  deferred to the selected-endpoint milestone.
 
 ## Feature-Local Not Applicable
 

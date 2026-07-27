@@ -136,29 +136,20 @@ spec_design_links:
 - `.memory-bank/behavior-specs/FT-012-BHV-002-retry-conflict-archive.behavior.json`
 - `.memory-bank/behavior-specs/FT-012-BHV-003-real-agent-ordinary-task.behavior.json`
 
-## Current W1/W2 Boundary Evidence
+## Current Feature State
 
-- `TASK-039-T3-FT-012-W1` is scheduler-recorded `done` using only current
-  ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
-  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
-  ATTEMPT 01 and ATTEMPT 02 remain preserved failed history.
-- The implemented W1 boundary owns the authoritative PostgreSQL Approval,
-  ordinary/action Task, automatic +48-hour follow-up, and Outcome loop; the
-  immutable `ordinary_task_dispatch_dispositions` table records each
-  classified ordinary handoff as terminal `consumed|denied`. Current
-  ActorContext/Plant/evidence guards, archive/no-replay, idempotency,
-  concurrency, rollback, strict HTTP/raw-path validation, branch-exact
-  Timeline refs, and zero device or Plant-state effects are independently
-  verified.
-- The accepted W1 boundary remains `ft012_task_approval_outcomes` directly
-  after `ft011_safety_action_decisions`. Historical TASK-040 added
-  `ft012_runtime_dispositions`; later feature work may already own the current
-  repository head. The reopened repair adds only a forward cleanup revision
-  after the executor-confirmed head and rewrites neither history.
-- `TASK-040-T3-FT-012-W2` is explicit-owner `done` from ATTEMPT 08
-  functional `PASS`, `semantic-pass`, and `HUMAN_CHECKPOINT: done`; prior
-  attempt history remains preserved.
-- No live-provider result is claimed.
+- Feature `lifecycle` remains `planned`; its approval/task/outcome and
+  simplified Task Follow-Up runtime backend slices are implemented.
+- PostgreSQL owns Approval, ordinary/action Task, automatic +48-hour
+  follow-up, Outcome, and terminal classified ordinary-message
+  `consumed|denied` dispositions.
+- The `task_follow_up` runtime is linear and best-effort with no
+  pre-classification runtime ledger; current guards and the canonical
+  classified Task writer remain authoritative.
+- Human decisions and task transitions remain current-authority guarded, and
+  the feature creates no device or direct Plant-state effect.
+- Real provider/model selection and live response verification remain deferred
+  to the selected-endpoint milestone.
 
 ## SDD Design Gate
 
@@ -174,6 +165,6 @@ spec_design_links:
   classified disposition remains the sole one-shot Task-write authority. No
   scheduler, worker, outbox, device effect, runtime ledger, or second proposal
   state machine is introduced.
-- Current code-phase closure uses test-only fake/spy Task Follow-Up and Safety
+- Deterministic acceptance uses test-only fake/spy Task Follow-Up and Safety
   classifier executors; production has no fake fallback and fails closed while
   unbound. Real endpoint calls are deferred to the shared future milestone.

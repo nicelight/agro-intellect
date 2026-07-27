@@ -103,40 +103,18 @@ spec_design_links:
 - `.memory-bank/behavior-specs/FT-011-BHV-002-device-action-blocked.behavior.json`
 - `.memory-bank/behavior-specs/FT-011-BHV-003-stale-approval-input.behavior.json`
 
-## Current W1/W2 Boundary Evidence
+## Current Feature State
 
-- `TASK-037-T3-FT-011-W1` is scheduler-recorded `done` using only current
-  ATTEMPT 03 implementation `PASS`, independent functional `VERDICT: PASS`,
-  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
-- ATTEMPT 01 remains the failed archive/revoke guard-to-insert history and
-  ATTEMPT 02 remains the failed cross-service lock-order/deadlock history. They
-  are preserved and are not mixed into current closure evidence.
-- `TASK-038-T3-FT-011-W2` is scheduler-recorded `done` using only current
-  ATTEMPT 01 implementation `PASS`, independent functional `VERDICT: PASS`,
-  separate `SEMANTIC_VERDICT: semantic-pass`, and immutable closure evidence.
-- Current deterministic PostgreSQL evidence covers immutable provider-neutral
-  classification, exact supported/unsupported action and current-authority
-  routing, independent closed two-hour pH/EC evidence, atomic immutable
-  decision plus inert `safety_status` UI projection, idempotency/concurrency,
-  archive/revoke/restore guards, redaction, and zero downstream authority.
-  The product migration head is `ft011_safety_action_decisions` directly after
-  `ft011_safety_classifications` and `ft009_plant_state`.
-- No provider, model, base URL, Gemini integration, credential, egress,
-  network call, or live smoke was required or claimed. The absent human
-  checkpoint for both task closures remains an owner-accepted advisory process
-  gap.
-- The FT-011 task boundary is complete, but feature `lifecycle` remains
-  `planned` pending an explicit owner feature-lifecycle decision. EP-004 also
-  remains `planned` because FT-012 human approval/task/follow-up work is open.
-  `TASK-039-T3-FT-012-W1` remains authoritative `planned`; this reconciliation
-  does not promote or select it.
-
-Evidence:
-[W1 scheduler closure](../../.tasks/TASK-037-T3-FT-011-W1/TASK-037-T3-FT-011-W1-S-CLOSURE-final-report-docs-03.md),
-[W2 implementation](../../.tasks/TASK-038-T3-FT-011-W2/TASK-038-T3-FT-011-W2-S-IMPL-final-report-code-01.md),
-[W2 functional verification](../../.tasks/TASK-038-T3-FT-011-W2/TASK-038-T3-FT-011-W2-S-VERIFY-final-report-docs-01.md),
-[W2 semantic verification](../../.tasks/TASK-038-T3-FT-011-W2/TASK-038-T3-FT-011-W2-S-RED-VERIFY-final-report-docs-01.md),
-and [W2 scheduler closure](../../.tasks/TASK-038-T3-FT-011-W2/TASK-038-T3-FT-011-W2-S-CLOSURE-final-report-docs-01.md).
+- Feature `lifecycle` remains `planned`; its classification and Safety-routing
+  backend slices are implemented.
+- The boundary provides immutable provider-neutral
+  classification, the closed supported/unsupported action route, independent
+  two-hour pH/EC approval inputs, atomic immutable Safety decision plus inert
+  `safety_status` projection, and current authority/archive guards.
+- FT-011 stops at `pending_human_approval` and grants no human-decision, task,
+  Bus, Timeline, device, or provider authority.
+- Real provider/model selection and live classifier verification remain
+  deferred to the selected-endpoint milestone.
 
 ## SDD Design Gate
 
@@ -150,6 +128,6 @@ and [W2 scheduler closure](../../.tasks/TASK-038-T3-FT-011-W2/TASK-038-T3-FT-011
   immutable decision/proposal rows, safe feed projection, replay/concurrency
   behavior, and executable verification. FT-011 stops at
   `pending_human_approval`; FT-012 owns every later human decision and task.
-- Current code-phase closure uses explicit fake/spy success, timeout, error,
+- Deterministic acceptance uses explicit fake/spy success, timeout, error,
   invalid-output, redaction, and current-guard evidence. Production remains
   unbound and fail closed; a real classifier response is future milestone UAT.

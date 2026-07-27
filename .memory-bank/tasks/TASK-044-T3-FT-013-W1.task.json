@@ -1,7 +1,7 @@
 {
   "id": "TASK-044-T3-FT-013-W1",
   "title": "Simplify Companion current-proposal authority and projection repair",
-  "status": "in_progress",
+  "status": "done",
   "wave": "W1",
   "feature": "FT-013",
   "reqs": [
@@ -87,6 +87,29 @@
       },
       "findings": [],
       "next_owner": "Run per-task /red-verify, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "owner_lifecycle_closure",
+      "mode": "manual_explicit_owner",
+      "decision": "done",
+      "attempt": "01",
+      "decided_at": "2026-07-27T18:31:45+05:00",
+      "basis": "The explicit manual owner supplied the exact HUMAN_CHECKPOINT marker and directly ordered TASK-044 closed after independent functional PASS, independent semantic-pass, and a read-only blast-radius review found no supported-path runtime, public-contract, or repository-consumer defect.",
+      "accepted_evidence": [
+        ".tasks/TASK-044-T3-FT-013-W1/TASK-044-T3-FT-013-W1-S-IMPL-final-report-code-01.md",
+        ".tasks/TASK-044-T3-FT-013-W1/TASK-044-T3-FT-013-W1-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-044-T3-FT-013-W1/TASK-044-T3-FT-013-W1-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-044-T3-FT-013-W1/administrative-closure.md"
+      ],
+      "gate_summary": {
+        "functional_verification": "PASS: required focused, access/feed, exact-head, harm-driving, lint, diff, and scope evidence",
+        "red_verification": "SEMANTIC_VERDICT: semantic-pass",
+        "human_checkpoint": "HUMAN_CHECKPOINT: done",
+        "impact_analysis": "PASS for supported runtime/public-contract/repository-consumer paths; active planning-state drift routes through this closure's wave-boundary /mb-sync"
+      },
+      "findings": [],
+      "scope": "No product code, test, public contract, dependent task promotion, or FT-013 lifecycle promotion is authorized by this closure. TASK-042 and TASK-043 remain planned.",
+      "next_gate": "W1 /mb-sync completed. TASK-044 is terminal done; any TASK-042 selection remains a separate explicit owner/workflow action."
     }
   ],
   "docs": [

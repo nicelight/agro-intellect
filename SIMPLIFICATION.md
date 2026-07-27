@@ -128,6 +128,8 @@ preflight докажет безопасность для deployment data; ина
 
 ## 2. Упростить Companion aggregate, projection и read integrity
 
+**Статус:** закрыт 2026-07-27 в рамках
+[TASK-044-T3-FT-013-W1](.memory-bank/tasks/TASK-044-T3-FT-013-W1.task.json).
 **Приоритет:** очень высокий.  
 **Confidence:** high.
 **Исходный task scope:** [TASK-041-T3-FT-013-W1](.memory-bank/tasks/TASK-041-T3-FT-013-W1.task.json).

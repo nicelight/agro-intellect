@@ -191,6 +191,7 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 
 ## Dependencies and waves
 
+- The current FT-013 task-plan review is `APPROVE` for Planning Revision 1.
 - Foundation gate `TASK-004-T2-FT-000-W0` is satisfied transitively through
   the existing dependency chain.
 - `TASK-041-T3-FT-013-W1` depends directly on
@@ -200,24 +201,18 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   `ft012_simplify_follow_up_runtime` after that aggregate migration and
   advanced the exact-head assertions without rewriting either applied
   revision.
-- The new Companion aggregate simplification task depends on completed
-  TASK-041 and TASK-040 and must finish before TASK-042.
-- `TASK-042-T3-FT-013-W2` depends on the simplification task, TASK-041, and
-  TASK-040. It consumes the repaired proposal authority and the completed
-  FT-012 runtime/package surface, reaches TASK-039 ordinary-task workflow
-  effects transitively, and cannot run in parallel with TASK-040 against
-  `backend/app/task_follow_up/`.
+- `TASK-044-T3-FT-013-W1` depends on TASK-041 and TASK-040. TASK-041 and
+  TASK-044 are `done`; together they establish the simplified W1 proposal
+  authority at migration head `ft013_simplify_companion`.
+- `TASK-042-T3-FT-013-W2` is `planned` and unselected. It depends on TASK-044,
+  TASK-041, and TASK-040, consumes the repaired proposal authority and the
+  completed FT-012 runtime/package surface, and reaches TASK-039 ordinary-task
+  workflow effects transitively.
 - `TASK-043-T3-FT-013-W3` depends on TASK-042 and
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
-  pattern and shared provider files.
-- TASK-039, TASK-040, and TASK-041 are `done`. TASK-041 closed on
-  owner-accepted Attempt 05
-  functional PASS with its latest semantic-fail preserved as accepted residual
-  risk and no semantic-pass claim. The simplification task, TASK-042, and
-  TASK-043 remain `planned`; TASK-042/TASK-043 cannot be selected until the
-  new repaired-authority dependency closes and their planning evidence is
-  applicable.
+  pattern and shared provider files. TASK-043 is `planned` and unselected.
+- The feature lifecycle remains `planned` while TASK-042 and TASK-043 are open.
 - TASK-041/TASK-042 build and verify the Companion router in isolated test apps
   without touching `main.py`; TASK-043 remains the only FT-013 production-
   registration owner, so the remaining executable DAG preserves the later
@@ -401,7 +396,8 @@ public-contract widening need.
   `.memory-bank/testing/companion-governance.md`.
 - Run exact-head compatibility tests after each ordered FT-013 migration,
   including dependency-created Safety Gate and Task Follow-Up assertions.
-- Run `node scripts/mb-lint.mjs` and `git diff --check` for all three waves.
+- Run `node scripts/mb-lint.mjs` and `git diff --check` at applicable planning
+  and wave boundaries.
 - Run the full deterministic suite before handoff when the environment permits.
 - Current acceptance uses deterministic Companion and Safety fake/spy evidence,
   including timeout, provider error, invalid output, post-I/O denial,
@@ -409,40 +405,15 @@ public-contract widening need.
   base URL, credential, egress, network call, or non-skipped live smoke.
 - Real image/request/response, error, timeout, redaction, and cost verification
   is deferred to the shared future selected-endpoint milestone and is not
-  current closure evidence.
+  required by current deterministic acceptance.
 - Browser Companion cards remain FT-016; backend JSON/OpenAPI behavior is
   verified here.
 
-## Execution protocol and closure
+## Execution handoff
 
-- Planning leaves every card `planned` and does not pre-create
-  `.protocols/<TASK>/` state or an Execution Attempt.
-- `/exe` rechecks current dependencies and scope, initializes or reconciles the
-  full T3 protocol, creates one neutral current Execution Attempt, then owns
-  `planned -> ready -> in_progress` immediately before implementation writes.
-- Every wave requires fresh functional evidence for the current attempt plus
-  `/verify` `VERDICT: PASS`, per-task `/red-verify`
-  `SEMANTIC_VERDICT: semantic-pass`, and exact
-  `HUMAN_CHECKPOINT: done` before closure eligibility.
-- Only the scheduler or explicit manual owner records the final lifecycle
-  decision. Full `/mb-sync` runs at the current wave boundary unless an earlier
-  reconciled-state dependency or explicit owner request requires it.
+- Planning does not select or promote the remaining `planned` cards.
+- Execution and lifecycle handling follow each indexed task card and the
+  canonical tier policy; task-specific evidence remains outside this plan.
+- Durable state is reconciled at the applicable wave boundary.
 - The cards intentionally omit a hard `write_boundary`: `touched_files` is
   advisory, while `forbidden_scope` and `stop_conditions` remain hard.
-
-## Constitution Check
-
-- Principle I/IV: the handoff is derived from the current feature, accepted
-  product decisions, exact canonical specs, and complete schema-backed cards.
-- Principle II/VIII: three cohesive outcome waves reuse the modular monolith,
-  PostgreSQL, ActorContext, Timeline, task/classifier, Bus/UI, and provider
-  seams; no scheduler, worker, outbox, permission framework, or device stack is
-  added.
-- Principle VI/VII: the model can only propose; a current human decision and
-  backend rules own binding workflow effects, while physical action remains
-  outside governance authority.
-- Principle IX: unknown effects, stale state, archive/revoke races, projection/
-  audit/provider failures, and forbidden outputs fail closed without fallback
-  or speculative state.
-
-No Constitution blocker remains.

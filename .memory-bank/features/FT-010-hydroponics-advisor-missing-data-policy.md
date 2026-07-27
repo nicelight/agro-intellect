@@ -81,32 +81,17 @@ source_of_truth:
 - Safety classification, ordinary task persistence, action approval, and
   browser composition remain owned by FT-011, FT-012, and FT-016 respectively.
 - No provider, credential, egress, network, or live smoke is a current
-  code-phase closure condition; real response verification is deferred to the
+  deterministic acceptance requirement; real response verification is deferred to the
   selected-endpoint milestone.
 
-## Current W1 Boundary Evidence
+## Current Feature State
 
-- `TASK-036-T3-FT-010-W1` is scheduler-recorded `done` using only current
-  ATTEMPT 02 evidence: bounded implementation `PASS`, independent functional
-  `VERDICT: PASS`, separate `SEMANTIC_VERDICT: semantic-pass`, and immutable
-  scheduler closure. ATTEMPT 01 remains history and is not combined with the
-  current attempt to manufacture closure.
-- Current evidence covers exact `CANONICAL_ROSTER_V1` Advisor composition,
-  strict provider-neutral schemas, authorized PostgreSQL evidence assembly,
-  independent 24-hour pH/EC freshness, deterministic missing-data wording,
-  pending-only handoff, post-I/O authorization, redaction, fail-closed provider
-  errors, and zero Safety/task/Bus/UI/state/action authority.
-- The exact `HUMAN_CHECKPOINT: done` marker was not selected and remains an
-  accepted advisory T3 confidence gap. No provider, model, base URL,
-  credential, egress, network call, or live smoke was required, checked, or
-  claimed for this code-phase boundary.
-- This boundary recorded evidence only and left `lifecycle: planned` unchanged
-  pending an explicit owner feature-lifecycle decision. TASK-037 was still
-  scheduler-owned `planned` at that boundary and was subsequently completed
-  under its own FT-011/W1 ATTEMPT 03 scheduler evidence.
-
-Evidence:
-[implementation](../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-IMPL-final-report-code-02.md),
-[functional verification](../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-VERIFY-final-report-docs-02.md),
-[semantic verification](../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-RED-VERIFY-final-report-docs-02.md),
-and [scheduler closure](../../.tasks/TASK-036-T3-FT-010-W1/TASK-036-T3-FT-010-W1-S-CLOSURE-final-report-docs-02.md).
+- Feature `lifecycle` remains `planned`; its deterministic Advisor backend
+  slice is implemented.
+- The boundary uses the canonical Advisor identity, authorized
+  PostgreSQL evidence, independent 24-hour pH/EC freshness, project-owned
+  missing-data wording, and a pending-only provider-neutral handoff.
+- FT-010 grants no Safety, task, Bus, UI, Plant-state, approval, or action
+  authority.
+- Real provider/model selection and live response verification remain deferred
+  to the selected-endpoint milestone.
