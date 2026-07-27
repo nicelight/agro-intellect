@@ -3,7 +3,7 @@ description: Implementation plan for the provider-neutral Agent Runtime and Mess
 status: active
 type: implementation_plan
 feature_id: FT-007
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -65,19 +65,20 @@ missing executors fail closed before I/O.
 - TASK-034 is the completed source of the Gemini-only Vision composition drift
   removed by W3.
 
-## W3 implementation
+## W3 implementation result
 
-`TASK-045-T3-FT-007-W3` depends on completed TASK-031 and TASK-034.
+`TASK-045-T3-FT-007-W3` is `done` after completed TASK-031 and TASK-034.
 
-1. Delete provider factories and their exports.
-2. Delete provider-specific settings, environment examples, direct SDK
+1. Deleted provider factories and their exports.
+2. Deleted provider-specific settings, environment examples, direct SDK
    dependencies, live smoke tests, and factory/transport-only tests.
-3. Retain service-level fake/spy coverage, unbound not-configured coverage,
+3. Retained service-level fake/spy coverage, unbound not-configured coverage,
    roster/bootstrap coverage, strict validation, and outbound media identity.
-4. Use `None` as the production unbound executor state; add no replacement
+4. Kept `None` as the production unbound executor state and added no replacement
    abstraction.
-5. Mark finding 3 closed only after independent verify, red-verify, and the
-   T3 human checkpoint succeed.
+5. Independent `VERDICT: PASS`, task-level `semantic-pass`, and
+   `HUMAN_CHECKPOINT: done` are recorded in the indexed task evidence; finding
+   3 is closed.
 
 ## Verification
 
@@ -92,9 +93,9 @@ Acceptance requires unchanged strict runtime/media behavior, explicit
 test-only executor injection, and stable not-configured production outcomes
 before I/O. Deterministic evidence must not claim a real endpoint.
 
-## Queue handoff
+## W3 boundary handoff
 
-- Active task: `TASK-045-T3-FT-007-W3` (`planned`).
-- Next gate: fresh `/review-tasks-plan FT-007`.
-- Execution starts only after `VERDICT: APPROVE`; T3 closure requires
-  `/verify`, task-level `/red-verify`, and `HUMAN_CHECKPOINT: done`.
+- Completed task: `TASK-045-T3-FT-007-W3` (`done`).
+- W3 has no remaining review or execution gate.
+- FT-007, EP-003, and REQ-011 remain `planned`; the future selected-endpoint
+  milestone and the other REQ-011 feature work remain open.

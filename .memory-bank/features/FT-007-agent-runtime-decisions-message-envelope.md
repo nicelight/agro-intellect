@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-007
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/architecture/system-architecture.md
@@ -194,14 +194,20 @@ This section records the completed 2026-07-12 replacement handoff. Its provider
 composition and smoke assumptions are superseded for current work by the W3
 simplification below.
 
-## /feature-to-tasks FT-007 W3 Simplification
+## FT-007 W3 Simplification Result
 
-`TASK-045-T3-FT-007-W3` depends on completed TASK-031 and TASK-034. It removes
-the premature provider factories, bindings, configuration, SDK dependencies,
-and live smoke tests; retains the narrow executor protocols and explicit
-test-only fakes/spies; and restores fail-closed unbound production composition.
-No provider, endpoint, model, authentication, credential, egress, API, or
-storage decision is added.
+`TASK-045-T3-FT-007-W3` is `done` after completed TASK-031 and TASK-034. It
+removed the premature provider factories, bindings, configuration, SDK
+dependencies, and live smoke tests; retained the narrow executor protocols and
+explicit test-only fakes/spies; and restored fail-closed unbound production
+composition. Independent functional verification passed, task-level
+red-verification returned `semantic-pass`, and the T3 human checkpoint is
+recorded in the indexed task evidence. No provider, endpoint, model,
+authentication, credential, egress, API, or storage decision was added.
+
+This completed W3 task closes finding 3 in `SIMPLIFICATION.md` but does not
+promote FT-007. The feature remains `planned` because the future
+selected-endpoint milestone remains deferred.
 
 ## Historical Owner-Directed Smoke Deferral
 
@@ -239,4 +245,4 @@ SEMANTIC_VERDICT: semantic-pass
 ## Implementation
 
 - [Implementation plan](../tasks/plans/IMPL-FT-007.md): completed historical
-  W1/W2 work plus planned W3 provider-neutral alignment TASK-045.
+  W1/W2 work plus completed W3 provider-neutral alignment TASK-045.

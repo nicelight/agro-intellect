@@ -214,6 +214,8 @@ projection и integrity tests. Публичный response contract можно �
 
 ## 3. Вернуть production model composition в нормативно unbound состояние
 
+**Статус:** закрыт 2026-07-28 в рамках
+[TASK-045-T3-FT-007-W3](.memory-bank/tasks/TASK-045-T3-FT-007-W3.task.json).
 **Приоритет:** высокий.  
 **Confidence:** high.
 **Исходный task scope:** [TASK-031-T3-FT-007-W2](.memory-bank/tasks/TASK-031-T3-FT-007-W2.task.json).

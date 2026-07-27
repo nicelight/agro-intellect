@@ -4,6 +4,18 @@ status: active
 ---
 # Changelog
 
+## [2026-07-28] Wave W3 — TASK-045 closed
+
+- Reconciled the owner-recorded closure of `TASK-045-T3-FT-007-W3` after
+  independent functional `PASS`, task-level `semantic-pass`, and
+  `HUMAN_CHECKPOINT: done`.
+- Recorded the provider-neutral unbound production result and marked
+  simplification finding 3 complete in `SIMPLIFICATION.md`.
+- Kept FT-007, EP-003, and REQ-011 lifecycles `planned`; the future
+  selected-endpoint milestone and the other REQ-011 feature work remain open.
+- Made no provider selection, canonical-spec change, dependent-task promotion,
+  or rewrite of historical task evidence.
+
 ## [2026-07-27] Memory Bank execution-log cleanup
 
 - Removed task attempts, verdicts, checkpoints, closure narration, retry
