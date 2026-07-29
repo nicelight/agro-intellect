@@ -544,9 +544,8 @@ Failure реалистичен, однако ценность многократ
    refactoring tasks.
 3. Кандидат 3 выполняется отдельной task как alignment implementation с уже
    активным unbound provider contract.
-4. Оператор отдельно решает, менять ли introduction outcome из кандидата 4;
-   при принятии весь bootstrap/persistence/reconciliation package меняется
-   одной task.
+4. Кандидат 4 закрыт в `TASK-046-T3-FT-008-W3`: durable batch и startup
+   reconciliation заменены lazy materialization при открытии Feed.
 5. Кандидат 5 выполняется одной cross-runtime provider-contract task с
    сохранением Photo integrity и model-content validation.
 6. Кандидаты 6 и 7 выполняются как две независимые low-coupling cleanup tasks.
