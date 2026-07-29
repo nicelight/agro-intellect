@@ -4,6 +4,14 @@ status: active
 ---
 # Changelog
 
+## [2026-07-29] Timeline writer simplification
+
+- Removed Agent Runtime, Task Follow-Up, and Companion domain state matrices
+  from the shared Timeline writer.
+- Kept the generic event/source registry, envelope identifiers, secret/auth
+  redaction, append/error handling, and producer-owned domain verification.
+- Marked simplification finding 7 complete.
+
 ## [2026-07-29] Wave W3 — TASK-046 closed
 
 - Reconciled the owner-recorded closure of `TASK-046-T3-FT-008-W3` after

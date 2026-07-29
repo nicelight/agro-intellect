@@ -495,7 +495,7 @@ def test_audit_failure_discards_pending_envelope_and_event_ref(
     assert outcome.audit_status == "failed"
 
 
-def test_timeline_writer_accepts_only_the_sanitized_runtime_event_matrix(tmp_path):
+def test_timeline_writer_keeps_domain_payload_opaque_and_redacts_secrets(tmp_path):
     farm_id = uuid.uuid4()
     plant_id = uuid.uuid4()
     account_id = uuid.uuid4()
@@ -526,6 +526,8 @@ def test_timeline_writer_accepts_only_the_sanitized_runtime_event_matrix(tmp_pat
             "message_id": None,
             "candidate_claim_type": None,
             "source_ref_count": 1,
+            "producer_owned_detail": "safe",
+            "api_token": "plain-secret",
         },
     )
     ref = append_timeline_event(
@@ -536,16 +538,22 @@ def test_timeline_writer_accepts_only_the_sanitized_runtime_event_matrix(tmp_pat
     body = json.loads((tmp_path / "timeline.jsonl").read_text(encoding="utf-8"))
     assert body["source_refs"] == {"input_refs": source_refs}
     assert "candidate_output" not in body["payload_summary"]
+    assert body["payload_summary"]["producer_owned_detail"] == "safe"
+    assert body["payload_summary"]["api_token"] == "***"
+    assert body["redaction_status"] == "redacted"
 
-    unsafe = TimelineEvent(
+    unregistered = TimelineEvent(
         farm_id=farm_id,
         plant_id=plant_id,
         actor_ref=event.actor_ref,
-        event_type="agent_runtime_decided",
+        event_type="unregistered_event",
         source_type="agent_runtime_attempt",
         source_id=uuid.uuid4(),
         source_refs={"input_refs": source_refs},
-        payload_summary={**event.payload_summary, "candidate_output": "leak"},
+        payload_summary={},
     )
     with pytest.raises(TimelineAppendError):
-        append_timeline_event(unsafe, settings=AppSettings(local_timeline_root=tmp_path))
+        append_timeline_event(
+            unregistered,
+            settings=AppSettings(local_timeline_root=tmp_path),
+        )

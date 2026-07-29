@@ -435,6 +435,9 @@ Exact-head assertions также распределены по feature migration
 
 ## 7. Убрать domain-specific state matrices из общего Timeline writer
 
+**Статус:** закрыт 2026-07-29: общий writer оставляет generic envelope,
+event/source registry, redaction и append/error handling; domain payload
+семантика остаётся в producers и их тестах.
 **Приоритет:** средний.  
 **Confidence:** high.
 
@@ -550,6 +553,7 @@ Failure реалистичен, однако ценность многократ
    reconciliation заменены lazy materialization при открытии Feed.
 5. Кандидат 5 выполняется одной cross-runtime provider-contract task с
    сохранением Photo integrity и model-content validation.
-6. Кандидаты 6 и 7 выполняются как две независимые low-coupling cleanup tasks.
+6. Кандидат 6 остаётся отдельной low-coupling cleanup task; кандидат 7 закрыт
+   удалением domain-specific matrices из общего Timeline writer.
 7. Кандидат 8 остаётся отдельным workflow-policy change и не смешивается с
    product/runtime refactoring.
