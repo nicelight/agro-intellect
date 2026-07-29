@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields as dataclass_fields
 from datetime import datetime, timezone
 import uuid
 
@@ -90,7 +91,6 @@ def _request(*, missing_ph: bool = False) -> HydroponicsAdvisorProviderRequestV1
             missing_or_stale=("ph", "ec") if missing_ph else (),
         ),
         records=tuple(records),
-        source_refs=tuple(record.source_ref for record in records),
     )
 
 
@@ -129,6 +129,7 @@ def test_provider_definition_composes_exact_canonical_roster_metadata():
 def test_definition_and_request_are_exact_and_exclude_caller_runtime_fields():
     request = _request()
     payload = request.as_provider_payload()
+    assert "source_refs" not in {field.name for field in dataclass_fields(request)}
     assert list(payload) == [
         "schema_version",
         "agent_definition",

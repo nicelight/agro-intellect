@@ -193,10 +193,7 @@ class PlantStateTrustService:
                 raise PlantStateError(PlantStateErrorCode.AUTH_PLANT_FORBIDDEN)
 
             if isinstance(candidate, VisionStateCandidateV1):
-                photo_id = _vision_photo_id(
-                    candidate.source_refs,
-                    plant_id=envelope.plant_id,
-                )
+                photo_id = _vision_photo_id(candidate.source_refs)
                 photo = self._session.scalar(
                     select(PhotoCatalogItem)
                     .where(PhotoCatalogItem.photo_id == photo_id)
@@ -632,17 +629,10 @@ def _require_current_access(
     )
 
 
-def _vision_photo_id(
-    source_refs: tuple[str, ...],
-    *,
-    plant_id: uuid.UUID,
-) -> uuid.UUID:
-    if len(source_refs) == 1:
-        photo_ref = source_refs[0]
-    elif len(source_refs) == 2 and source_refs[0] == f"plant:{plant_id}":
-        photo_ref = source_refs[1]
-    else:
+def _vision_photo_id(source_refs: tuple[str, ...]) -> uuid.UUID:
+    if len(source_refs) != 1:
         raise PlantStateError(PlantStateErrorCode.PLANT_STATE_CANDIDATE_INVALID)
+    photo_ref = source_refs[0]
     if not isinstance(photo_ref, str) or not photo_ref.startswith("photo:"):
         raise PlantStateError(PlantStateErrorCode.PLANT_STATE_CANDIDATE_INVALID)
     try:

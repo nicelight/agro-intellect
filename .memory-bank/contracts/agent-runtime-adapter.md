@@ -2,7 +2,7 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -149,16 +149,17 @@ the service-side safe authorization snapshot plus exactly one strict
 request and is not reused as the final envelope scope; the post-model guard
 builds a fresh current scope.
 
-`ProviderRequestV1` has exactly these fields; unknown fields at every nested
-level are rejected:
+`ProviderRequestV1` is constructed from exactly these caller-supplied fields;
+unknown fields at every nested level are rejected:
 
 - `schema_version=1`;
 - `agent_definition`: strict object with `agent_id`, `competence`,
   `instructions`, ordered unique `allowed_candidate_claim_types`, and
   `output_schema={name=AgentModelResultV1,schema_version=1,strict=true}`;
 - `records`: ordered array of 1 through 4 strict `AgentInputRecordV1` objects;
-- `source_refs`: ordered unique array exactly equal, item for item, to the
-  records' `source_ref` values.
+- read-only `source_refs` is derived in record order and cannot be supplied
+  independently. The outbound compatibility payload may include that derived
+  array beside `records`.
 
 No `run_id`, ActorContext, account/membership/role/grant field, authorization
 scope, session provenance, model/provider selection, credential, arbitrary
@@ -228,9 +229,10 @@ Rules:
 - Photo binary/metadata is not in FT-007 input v1. FT-009 now defines its
   vision-specific typed boundary in `vision-observation-runtime.md`; generic
   `ProviderRequestV1` remains text/domain-record only.
-- `ProviderRequestV1.source_refs` is derived internally in record order and is
-  exactly equal to the typed-record refs. A non-silent model result uses a
-  non-empty unique subset in the same relative order as the request;
+- `ProviderRequestV1.source_refs` is a deterministic read-only view derived
+  from the typed records in order; request construction has no second refs
+  input or equality branch. A non-silent model result uses a non-empty unique
+  subset in the same relative order as those authoritative derived refs;
   model-declared silence uses an empty list.
 
 ## Model execution result

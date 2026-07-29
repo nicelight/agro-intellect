@@ -163,24 +163,25 @@ class PlantStateInputRecordV1:
 @dataclass(frozen=True, slots=True)
 class PlantStateProviderRequestV1:
     records: tuple[PlantStateInputRecordV1, ...]
-    source_refs: tuple[str, ...]
     agent_definition: PlantStateDefinitionV1 = PLANT_STATE_DEFINITION_V1
     schema_version: int = 1
 
     def __post_init__(self) -> None:
         records = tuple(self.records)
-        refs = tuple(self.source_refs)
+        refs = tuple(item.source_ref for item in records)
         if (
             self.schema_version != 1
             or self.agent_definition != PLANT_STATE_DEFINITION_V1
             or not 1 <= len(records) <= 4
             or any(not isinstance(item, PlantStateInputRecordV1) for item in records)
-            or refs != tuple(item.source_ref for item in records)
             or len(refs) != len(set(refs))
         ):
             raise PlantStateValidationError()
         object.__setattr__(self, "records", records)
-        object.__setattr__(self, "source_refs", refs)
+
+    @property
+    def source_refs(self) -> tuple[str, ...]:
+        return tuple(item.source_ref for item in self.records)
 
     def as_provider_payload(self) -> dict[str, object]:
         return {

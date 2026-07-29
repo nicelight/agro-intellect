@@ -2,7 +2,7 @@
 description: Verification contract for provider-neutral Agent Runtime, MessageEnvelope, executor anti-cheat, and archive-race behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -41,7 +41,7 @@ post-invocation archive/authorization guard.
 
 | Area | Required assertions |
 |---|---|
-| Provider request | Exact closed `ProviderRequestV1`; ordered records/refs; no authorization, session, role/grant, provider selection, or arbitrary metadata. |
+| Provider request | Exact closed `ProviderRequestV1`; ordered records with read-only refs derived from them and no independent refs constructor input; no authorization, session, role/grant, provider selection, or arbitrary metadata. |
 | Typed input | Exact record union and payloads; PostgreSQL sources; Plant/check-in/pH/EC order; pH+EC row dedup; canonical UUID/time/decimal values; maximum four records. |
 | Observation bound | Lengths 1/2000 accepted; 2001 rejected before provider I/O; no truncation, chunking, or implicit summary. |
 | Model/envelope | Exact decision/candidate matrix; unknown/malformed/type/normalization/length-invalid content rejected; representative Markdown/HTML/prompt-/instruction-/URL-looking strings accepted unchanged as opaque candidate data when schema-valid; silence has no envelope; non-silent envelope is pending and non-consumable; model supplies no safety authority. |

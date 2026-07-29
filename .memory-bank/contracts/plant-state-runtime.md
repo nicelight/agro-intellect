@@ -2,7 +2,7 @@
 description: Authorized model input and structured assessment contract for Plant State Agent.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-009-vision-observation-plant-state-trust.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -31,14 +31,16 @@ assessment, output schema, or authorization snapshot.
 
 ## Provider request version 1
 
-`PlantStateProviderRequestV1` contains exactly:
+`PlantStateProviderRequestV1` is constructed from exactly:
 
 - `schema_version=1`;
 - canonical `agent_definition` for `agent_id=plant_state`, with allowed
   decisions `speak|clarify|silent` and output schema
   `PlantStateModelResultV1` version 1;
 - `records`: 1..4 strict `PlantStateInputRecordV1` objects;
-- `source_refs`: exactly the record refs in order.
+- read-only `source_refs` derived exactly from the records in order. Callers
+  cannot supply it independently; the outbound compatibility payload may
+  include the derived array.
 
 The assembler selects the latest 1..4 non-rejected PostgreSQL records for the
 same currently readable active Plant, then orders them oldest to newest. Each
@@ -81,8 +83,8 @@ Matrix:
 | `silent` | all assessment fields null | `[]` | `no_material_output|insufficient_evidence` |
 
 Unknown fields, recommendation/action/diagnosis values, confirmation or Safety
-fields, refs outside the request, and invalid combinations reject the entire
-result.
+fields, refs outside the authoritative request refs derived from records, and
+invalid combinations reject the entire result.
 
 ## Structural validation and handoff
 

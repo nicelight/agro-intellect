@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields as dataclass_fields
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -40,10 +41,7 @@ def _request():
             "local_only": True,
         },
     )
-    return VisionProviderRequestV1(
-        records=(plant, photo),
-        source_refs=(plant.source_ref, photo.source_ref),
-    )
+    return VisionProviderRequestV1(records=(plant, photo))
 
 
 def test_request_and_media_are_exact_ordered_and_bytes_are_not_json():
@@ -52,6 +50,7 @@ def test_request_and_media_are_exact_ordered_and_bytes_are_not_json():
     assert list(payload) == ["schema_version", "agent_definition", "records", "source_refs"]
     assert [item["record_type"] for item in payload["records"]] == ["plant", "photo"]
     assert payload["source_refs"] == [item["source_ref"] for item in payload["records"]]
+    assert "source_refs" not in {field.name for field in dataclass_fields(request)}
     assert payload["agent_definition"] == {
         "agent_id": "vision_observation",
         "competence": VISION_OBSERVATION_DEFINITION_V1.competence,
@@ -113,19 +112,15 @@ def test_request_and_media_are_exact_ordered_and_bytes_are_not_json():
     ],
 )
 def test_result_matrix_accepts_only_closed_decisions(decision, fields):
-    request = _request()
-    refs = [] if decision == "silent" else [request.source_refs[1]]
     result = VisionObservationModelResultV1.from_untrusted(
         {
             "schema_version": 1,
             "runtime_decision": decision,
             **fields,
-            "source_refs": refs,
         },
-        request_source_refs=request.source_refs,
     )
     assert result.runtime_decision == decision
-    assert result.source_refs == tuple(refs)
+    assert "source_refs" not in result.as_value()
 
 
 @pytest.mark.parametrize(
@@ -138,7 +133,6 @@ def test_result_matrix_accepts_only_closed_decisions(decision, fields):
     ],
 )
 def test_result_rejects_unknown_action_fields_and_incompatible_values(mutation):
-    request = _request()
     value = {
         "schema_version": 1,
         "runtime_decision": "speak",
@@ -147,15 +141,11 @@ def test_result_rejects_unknown_action_fields_and_incompatible_values(mutation):
         "severity": "mild",
         "summary": "Small spots are visible.",
         "confidence": 0.8,
-        "source_refs": [request.source_refs[1]],
         "reason_code": None,
     }
     value.update(mutation)
     with pytest.raises(VisionObservationValidationError):
-        VisionObservationModelResultV1.from_untrusted(
-            value,
-            request_source_refs=request.source_refs,
-        )
+        VisionObservationModelResultV1.from_untrusted(value)
 
 
 def test_state_candidate_is_non_authoritative_closed_value():

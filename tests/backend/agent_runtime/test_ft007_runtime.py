@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields as dataclass_fields
 from datetime import datetime, timezone
 import json
 import uuid
@@ -168,7 +169,11 @@ def test_runtime_assembles_closed_ordered_request_and_emits_pending_envelope(
     assert outcome.message_envelope is not None
     assert outcome.message_envelope.publication_state == "pending_classification"
     assert outcome.message_envelope.consumable_by_agents is False
-    request = executor.requests[0].as_provider_payload()
+    provider_request = executor.requests[0]
+    request = provider_request.as_provider_payload()
+    assert "source_refs" not in {
+        field.name for field in dataclass_fields(provider_request)
+    }
     assert list(request) == ["schema_version", "agent_definition", "records", "source_refs"]
     assert [record["record_type"] for record in request["records"]] == [
         "plant",

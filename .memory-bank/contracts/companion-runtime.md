@@ -2,7 +2,7 @@
 description: Explicit provider-neutral Companion request, result, orchestration, trigger, and proposal handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md
   - .memory-bank/states/companion-governance.md
@@ -79,7 +79,7 @@ write order does.
 
 ## `CompanionProviderRequestV1`
 
-The provider receives one strict object with exactly:
+The future provider request is constructed from exactly:
 
 - `schema_version=1`;
 - canonical project-owned `agent_definition` for `agent_id=companion`, allowed
@@ -88,7 +88,9 @@ The provider receives one strict object with exactly:
 - `trigger_kind=explicit_user_command`;
 - `target_mode=new_issue|existing_issue`;
 - `records`: one through four strict records;
-- `source_refs`: ordered unique refs exactly equal to record refs.
+- read-only `source_refs` derived as the ordered unique record refs. Callers
+  cannot supply it independently; an outbound compatibility payload may include
+  the derived array.
 
 Each record is exactly `{record_type,source_ref,payload}`. The closed ordered
 union is:
@@ -164,7 +166,8 @@ The strict result contains exactly:
 - nullable `task_display_text`;
 - nullable `suggested_resolution`;
 - nullable finite `confidence` in `[0,1]`;
-- ordered unique `source_refs` subset of request refs in request order;
+- ordered unique `source_refs` subset of the authoritative request refs derived
+  from records, preserving record order;
 - nullable `reason_code`.
 
 Exact matrix:

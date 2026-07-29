@@ -200,7 +200,6 @@ class DatabaseHydroponicsAdvisorInputAssembler:
                 computed_at=computed_text,
                 analysis_freshness=freshness,
                 records=tuple(records),
-                source_refs=tuple(record.source_ref for record in records),
             )
         except (HydroponicsAdvisorValidationError, TypeError, ValueError):
             raise HydroponicsAdvisorInputDenied("input_contract_violation") from None

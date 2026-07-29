@@ -2,7 +2,7 @@
 description: Authorized Hydroponics Advisor input, missing-data policy, structured result, and pending handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-010-hydroponics-advisor-missing-data-policy.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -80,7 +80,8 @@ schema, or authorization snapshots. There is no caller text field in version
 
 ## Provider request version 1
 
-`HydroponicsAdvisorProviderRequestV1` is one strict object with exactly:
+`HydroponicsAdvisorProviderRequestV1` is one strict object constructed from
+exactly:
 
 - `schema_version=1`;
 - canonical project-owned `agent_definition` for
@@ -90,7 +91,9 @@ schema, or authorization snapshots. There is no caller text field in version
 - timezone-aware UTC `computed_at`;
 - exact `analysis_freshness` value defined below;
 - `records`: 1 through 4 strict records in the order below;
-- `source_refs`: ordered unique refs exactly equal to the records' refs.
+- read-only `source_refs` derived as the ordered unique record refs. Callers
+  cannot supply it independently; the outbound compatibility payload may
+  include the derived array.
 
 Unknown fields at every level are rejected. UUIDs are lowercase canonical
 strings, timestamps are UTC RFC 3339 strings, and pH/EC use the canonical
@@ -165,7 +168,8 @@ fields require a new canonical contract version rather than silent extension.
   points;
 - nullable finite `confidence` in `[0,1]`;
 - `requested_measurements`, an ordered unique subset of `ph|ec`;
-- `source_refs`, an ordered unique subset of request refs;
+- `source_refs`, an ordered unique subset of the authoritative request refs
+  derived from records;
 - nullable `reason_code`.
 
 The exact matrix is:

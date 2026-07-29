@@ -2,7 +2,7 @@
 description: Authorized real-photo bytes and provider-neutral model-output contract for Vision Observation Agent.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-009-vision-observation-plant-state-trust.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -46,14 +46,16 @@ finding, source ref, authorization snapshot, or output schema.
 
 ## Input shape
 
-`VisionProviderRequestV1` is a strict object:
+`VisionProviderRequestV1` is a strict object constructed from:
 
 - `schema_version=1`;
 - `agent_definition`: canonical `agent_id=vision_observation`, competence and
   instructions, allowed decisions `speak|clarify|silent`, and output schema
   `VisionObservationModelResultV1` version 1;
 - `records`: exactly two ordered records: `plant`, then `photo`;
-- `source_refs`: exactly `[plant:<plant_id>, photo:<photo_id>]`.
+- read-only `source_refs` is derived exactly as
+  `[plant:<plant_id>, photo:<photo_id>]`; callers cannot supply it separately.
+  The outbound compatibility payload may include this derived array.
 
 The strict photo record is
 `{record_type=photo, source_ref, payload}`. Its payload contains exactly:
@@ -120,23 +122,28 @@ back to a fake/canned/alternate executor.
 - nullable `severity=none|mild|moderate|strong|unknown`;
 - nullable normalized `summary` of 1..1000 Unicode code points;
 - nullable finite `confidence` from 0 through 1;
-- `source_refs`;
 - nullable `reason_code`.
 
 Matrix:
 
-| Decision | Finding fields | Refs | Reason |
+| Decision | Finding fields | Trusted provenance | Reason |
 |---|---|---|---|
-| `speak` | key, polarity, severity, summary, and confidence required | exact `[photo:<photo_id>]` or both request refs in request order | null |
-| `clarify` | key=`image_quality`, polarity=`not_assessable`, severity=`unknown`, summary required, confidence null | must include photo ref | null |
-| `silent` | key, polarity, severity, summary, confidence all null | `[]` | `no_material_output` |
+| `speak` | key, polarity, severity, summary, and confidence required | application binds exact `[photo:<photo_id>]` after strict result validation | null |
+| `clarify` | key=`image_quality`, polarity=`not_assessable`, severity=`unknown`, summary required, confidence null | application binds exact `[photo:<photo_id>]` after strict result validation | null |
+| `silent` | key, polarity, severity, summary, confidence all null | no refs | `no_material_output` |
 
 For `speak`, `absent` requires `severity=none`, `present` requires
 `mild|moderate|strong`, and `uncertain|not_assessable` requires `unknown`.
+`source_refs` is not a member of the raw untrusted
+`VisionObservationModelResultV1`; an extra field is invalid. The provider
+cannot select, omit, duplicate, reorder, or foreign-bind Vision provenance.
+After the content matrix passes, trusted application code derives the singleton
+photo ref from the same authorized, catalog-checked, byte-verified invocation
+context used for the media attachment.
 
-Unknown fields, diagnosis/disease labels, recommendation/action fields,
-provider refs, arbitrary metadata, invalid combinations, and refs outside the
-request reject the whole result as `AGENT_OUTPUT_INVALID`.
+Unknown fields (including any provenance/ref field), diagnosis/disease labels,
+recommendation/action fields, arbitrary metadata, and invalid combinations
+reject the whole result as `AGENT_OUTPUT_INVALID`.
 
 For `speak`, the adapter creates one standard pending, non-consumable
 MessageEnvelope. Its candidate claim is `observation` only when polarity is
@@ -150,11 +157,13 @@ The Plant State data boundary deterministically stores a lower-confidence or
 its pending envelope claim is `hypothesis`.
 
 For `speak`, the companion `VisionStateCandidateV1` contains only the validated key,
-polarity, severity, summary, confidence, ordered source refs, run/message ids, and
-observed time. It has no trust, confirmation, safety, publication, or task
-authority. It may be persisted only with the same envelope and a successful
-project-owned `safe_information` classification under the Plant State data
-spec. `clarify|silent` returns no state candidate.
+polarity, severity, summary, confidence, exact singleton
+`[photo:<photo_id>]`, run/message ids, and observed time. The `speak` envelope
+and candidate refs must be equal; the `clarify` envelope carries the same
+singleton and `silent` has none. The candidate has no trust, confirmation,
+safety, publication, or task authority. It may be persisted only with the same
+envelope and a successful project-owned `safe_information` classification under
+the Plant State data spec. `clarify|silent` returns no state candidate.
 
 ## Invocation flow and failures
 

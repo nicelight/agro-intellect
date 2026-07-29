@@ -150,20 +150,18 @@ class VisionInputRecordV1:
 @dataclass(frozen=True, slots=True)
 class VisionProviderRequestV1:
     records: tuple[VisionInputRecordV1, ...]
-    source_refs: tuple[str, ...]
     agent_definition: VisionObservationDefinitionV1 = VISION_OBSERVATION_DEFINITION_V1
     schema_version: int = 1
 
     def __post_init__(self) -> None:
         records = tuple(self.records)
-        refs = tuple(self.source_refs)
+        refs = tuple(record.source_ref for record in records)
         if (
             self.schema_version != 1
             or self.agent_definition != VISION_OBSERVATION_DEFINITION_V1
             or len(records) != 2
             or tuple(record.record_type for record in records) != ("plant", "photo")
             or any(not isinstance(record, VisionInputRecordV1) for record in records)
-            or refs != tuple(record.source_ref for record in records)
             or len(refs) != len(set(refs))
         ):
             raise VisionObservationValidationError()
@@ -171,7 +169,10 @@ class VisionProviderRequestV1:
         if records[1].payload["plant_id"] != plant_id:
             raise VisionObservationValidationError()
         object.__setattr__(self, "records", records)
-        object.__setattr__(self, "source_refs", refs)
+
+    @property
+    def source_refs(self) -> tuple[str, ...]:
+        return tuple(record.source_ref for record in self.records)
 
     def as_provider_payload(self) -> dict[str, object]:
         return {
@@ -210,7 +211,6 @@ class VisionObservationModelResultV1:
     severity: str | None
     summary: str | None
     confidence: float | None
-    source_refs: tuple[str, ...]
     reason_code: str | None
     schema_version: int = 1
 
@@ -218,8 +218,6 @@ class VisionObservationModelResultV1:
     def from_untrusted(
         cls,
         value: object,
-        *,
-        request_source_refs: tuple[str, ...],
     ) -> "VisionObservationModelResultV1":
         if not isinstance(value, Mapping):
             raise VisionObservationValidationError()
@@ -234,7 +232,6 @@ class VisionObservationModelResultV1:
                 "severity",
                 "summary",
                 "confidence",
-                "source_refs",
                 "reason_code",
             },
         )
@@ -246,13 +243,11 @@ class VisionObservationModelResultV1:
         severity = fields["severity"]
         summary = fields["summary"]
         confidence = fields["confidence"]
-        refs = _ordered_model_refs(fields["source_refs"], request_source_refs)
         reason = fields["reason_code"]
 
         if decision == "silent":
             if (
                 any(item is not None for item in (key, polarity, severity, summary, confidence))
-                or refs
                 or reason != "no_material_output"
             ):
                 raise VisionObservationValidationError()
@@ -263,8 +258,6 @@ class VisionObservationModelResultV1:
                 or severity != "unknown"
                 or not _normalized_text(summary, 1, 1000)
                 or confidence is not None
-                or not refs
-                or request_source_refs[1] not in refs
                 or reason is not None
             ):
                 raise VisionObservationValidationError()
@@ -275,7 +268,6 @@ class VisionObservationModelResultV1:
                 or polarity not in _POLARITIES
                 or severity not in _SEVERITIES
                 or not _normalized_text(summary, 1, 1000)
-                or refs not in {(request_source_refs[1],), request_source_refs}
                 or reason is not None
                 or (polarity == "absent" and severity != "none")
                 or (polarity == "present" and severity not in {"mild", "moderate", "strong"})
@@ -292,7 +284,6 @@ class VisionObservationModelResultV1:
             severity=severity if isinstance(severity, str) else None,
             summary=summary if isinstance(summary, str) else None,
             confidence=confidence if isinstance(confidence, float) else None,
-            source_refs=refs,
             reason_code=reason if isinstance(reason, str) else None,
         )
 
@@ -305,7 +296,6 @@ class VisionObservationModelResultV1:
             "severity": self.severity,
             "summary": self.summary,
             "confidence": self.confidence,
-            "source_refs": list(self.source_refs),
             "reason_code": self.reason_code,
         }
 
@@ -333,8 +323,8 @@ class VisionStateCandidateV1:
             or self.severity not in _SEVERITIES
             or not _normalized_text(self.summary, 1, 1000)
             or _confidence(self.confidence) != self.confidence
-            or not 1 <= len(self.source_refs) <= 2
-            or any(not _source_ref(item) for item in self.source_refs)
+            or len(self.source_refs) != 1
+            or not _source_ref(self.source_refs[0], "photo")
             or not _utc_datetime(self.observed_at)
             or (self.polarity == "absent" and self.severity != "none")
             or (
@@ -379,6 +369,7 @@ class VisionObservationOutcomeV1:
             or outcome.message_envelope is None
             or candidate.run_id != outcome.run_id
             or candidate.message_id != outcome.message_envelope.message_id
+            or candidate.source_refs != outcome.message_envelope.source_refs
         ):
             raise VisionObservationValidationError()
         if (outcome.final_decision == "speak") != (candidate is not None):
@@ -428,17 +419,6 @@ def _source_ref(value: object, expected_kind: str | None = None) -> bool:
         return str(uuid.UUID(identifier)) == identifier
     except (ValueError, TypeError, AttributeError):
         return False
-
-
-def _ordered_model_refs(value: object, request_refs: tuple[str, ...]) -> tuple[str, ...]:
-    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
-        raise VisionObservationValidationError()
-    refs = tuple(value)
-    if len(refs) != len(set(refs)) or refs != tuple(
-        item for item in request_refs if item in refs
-    ):
-        raise VisionObservationValidationError()
-    return refs
 
 
 def _normalized_text(value: object, minimum: int, maximum: int) -> bool:

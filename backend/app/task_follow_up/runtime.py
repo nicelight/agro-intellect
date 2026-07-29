@@ -184,7 +184,6 @@ class DatabaseTaskFollowUpInputAssembler:
                 trigger_kind=trigger_kind,
                 allowed_task_kinds=tuple(allowed),
                 records=tuple(records),
-                source_refs=tuple(record.source_ref for record in records),
             )
         except (TaskFollowUpRuntimeValidationError, TypeError, ValueError):
             raise TaskFollowUpInputDenied("input_contract_violation") from None

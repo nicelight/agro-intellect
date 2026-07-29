@@ -2,7 +2,7 @@
 description: Verification contract for Hydroponics Advisor freshness policy, provider-neutral execution, and pending Safety/task handoff.
 status: active
 type: testing_spec
-last_updated: 2026-07-19
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/contracts/hydroponics-advisor-runtime.md
   - .memory-bank/domains/plant-operations.md
@@ -15,8 +15,9 @@ source_of_truth:
 ## Deterministic matrix
 
 - Exact command/request/result shapes, unknown-field rejection, canonical
-  `hydroponics_advisor` definition, record order, maximum four input/envelope
-  refs, and compatibility with the shared runtime audit bound.
+  `hydroponics_advisor` definition, record order, request refs derived read-only
+  from records, result-citation subset/order against those refs, maximum four
+  input/envelope refs, and compatibility with the shared runtime audit bound.
 - Current authorized active-Plant input from PostgreSQL only: Plant, latest
   latest independent pH/EC rows with deduplication, plus remaining bounded
   context slots filled from the latest completed check-in and latest non-

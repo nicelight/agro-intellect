@@ -120,7 +120,6 @@ class DatabasePlantStateInputAssembler:
             records = tuple(_input_record(item) for item in rows)
             request = PlantStateProviderRequestV1(
                 records=records,
-                source_refs=tuple(item.source_ref for item in records),
             )
         except (PlantStateValidationError, TypeError, ValueError):
             raise PlantStateInputDenied("input_contract_violation") from None

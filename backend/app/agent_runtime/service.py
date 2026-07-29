@@ -238,7 +238,6 @@ class DatabaseAgentInputAssembler:
             return ProviderRequestV1(
                 agent_definition=definition,
                 records=tuple(records),
-                source_refs=tuple(record.source_ref for record in records),
             )
         except AgentRuntimeValidationError:
             raise InputAssemblyDenied("input_contract_violation") from None

@@ -175,7 +175,6 @@ class DatabaseVisionInputAssembler:
             )
             request = VisionProviderRequestV1(
                 records=(plant_record, photo_record),
-                source_refs=(plant_record.source_ref, photo_record.source_ref),
             )
             media = VisionMediaV1(
                 source_ref=photo_record.source_ref,
@@ -251,9 +250,8 @@ class _VisionMessageEnvelopeV1(MessageEnvelopeV1):
             or not isinstance(self.candidate_output, str)
             or self.candidate_output != self.candidate_output.strip()
             or not 1 <= len(self.candidate_output) <= 2000
-            or not 1 <= len(self.source_refs) <= 2
-            or len(self.source_refs) != len(set(self.source_refs))
-            or any(not _vision_ref(item) for item in self.source_refs)
+            or len(self.source_refs) != 1
+            or not _vision_photo_ref(self.source_refs[0])
             or self.publication_state != "pending_classification"
             or self.consumable_by_agents is not False
             or not isinstance(self.authorization_scope, CurrentAuthorizationScope)
@@ -345,11 +343,12 @@ class VisionObservationService:
             )
         raw_result = _execution_result(execution, expected_model_ref=model_ref)
         try:
-            result = VisionObservationModelResultV1.from_untrusted(
-                raw_result,
-                request_source_refs=assembled.request.source_refs,
+            result = VisionObservationModelResultV1.from_untrusted(raw_result)
+            trusted_source_refs = (assembled.media.source_ref,)
+            envelope_result = _as_envelope_result(
+                result,
+                source_refs=trusted_source_refs,
             )
-            envelope_result = _as_envelope_result(result)
         except (VisionObservationValidationError, AgentRuntimeValidationError):
             return self._audit(
                 command=command,
@@ -430,7 +429,7 @@ class VisionObservationService:
                 severity=result.severity,
                 summary=result.summary,
                 confidence=result.confidence,
-                source_refs=result.source_refs,
+                source_refs=trusted_source_refs,
                 observed_at=assembled.observed_at,
             )
         return self._audit(
@@ -518,7 +517,11 @@ class VisionObservationService:
         return VisionObservationOutcomeV1(runtime_outcome=runtime, state_candidate=candidate)
 
 
-def _as_envelope_result(result: VisionObservationModelResultV1) -> AgentModelResultV1:
+def _as_envelope_result(
+    result: VisionObservationModelResultV1,
+    *,
+    source_refs: tuple[str, ...],
+) -> AgentModelResultV1:
     if result.runtime_decision == "speak":
         claim = (
             "observation"
@@ -533,7 +536,7 @@ def _as_envelope_result(result: VisionObservationModelResultV1) -> AgentModelRes
             "candidate_claim_type": claim,
             "candidate_output": result.summary,
             "confidence": result.confidence,
-            "source_refs": list(result.source_refs),
+            "source_refs": list(source_refs),
             "reason_code": None,
         }
     elif result.runtime_decision == "clarify":
@@ -543,7 +546,7 @@ def _as_envelope_result(result: VisionObservationModelResultV1) -> AgentModelRes
             "candidate_claim_type": "clarification",
             "candidate_output": result.summary,
             "confidence": None,
-            "source_refs": list(result.source_refs),
+            "source_refs": list(source_refs),
             "reason_code": None,
         }
     else:
@@ -558,11 +561,7 @@ def _as_envelope_result(result: VisionObservationModelResultV1) -> AgentModelRes
         }
     return AgentModelResultV1.from_untrusted(
         payload,
-        request_source_refs=(
-            # Generic parsing checks subset/order but does not narrow registered
-            # competence-specific source kinds.
-            *result.source_refs,
-        ),
+        request_source_refs=source_refs,
     )
 
 
@@ -695,11 +694,11 @@ def _event_ref_valid(value: object) -> bool:
     )
 
 
-def _vision_ref(value: object) -> bool:
+def _vision_photo_ref(value: object) -> bool:
     if not isinstance(value, str) or ":" not in value:
         return False
     kind, identifier = value.split(":", 1)
-    if kind not in {"plant", "photo"}:
+    if kind != "photo":
         return False
     try:
         return str(uuid.UUID(identifier)) == identifier

@@ -228,7 +228,6 @@ class HydroponicsAdvisorProviderRequestV1:
     computed_at: str
     analysis_freshness: AnalysisFreshnessV1
     records: tuple[HydroponicsAdvisorInputRecordV1, ...]
-    source_refs: tuple[str, ...]
     agent_definition: HydroponicsAdvisorDefinitionV1 = (
         HYDROPONICS_ADVISOR_DEFINITION_V1
     )
@@ -236,7 +235,7 @@ class HydroponicsAdvisorProviderRequestV1:
 
     def __post_init__(self) -> None:
         records = tuple(self.records)
-        refs = tuple(self.source_refs)
+        refs = tuple(record.source_ref for record in records)
         if (
             self.schema_version != 1
             or self.agent_definition != HYDROPONICS_ADVISOR_DEFINITION_V1
@@ -250,7 +249,6 @@ class HydroponicsAdvisorProviderRequestV1:
                 not isinstance(record, HydroponicsAdvisorInputRecordV1)
                 for record in records
             )
-            or refs != tuple(record.source_ref for record in records)
             or len(refs) != len(set(refs))
             or records[0].record_type != "plant"
         ):
@@ -258,7 +256,10 @@ class HydroponicsAdvisorProviderRequestV1:
         _validate_record_order(records)
         _validate_freshness_sources(records, self.analysis_freshness)
         object.__setattr__(self, "records", records)
-        object.__setattr__(self, "source_refs", refs)
+
+    @property
+    def source_refs(self) -> tuple[str, ...]:
+        return tuple(record.source_ref for record in self.records)
 
     def as_provider_payload(self) -> dict[str, object]:
         return {

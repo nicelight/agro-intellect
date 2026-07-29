@@ -2,7 +2,7 @@
 description: Verification contract for FT-012 approvals, tasks, follow-ups, outcomes, and provider-neutral Task and Follow-up Agent.
 status: active
 type: testing_spec
-last_updated: 2026-07-25
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/states/task-follow-up-lifecycle.md
@@ -184,8 +184,9 @@ immutable pending Safety decision through human task completion and Outcome.
 ## Task and Follow-up Agent matrix
 
 - Exact strict `TaskFollowUpCommandV1`, provider request, record union/order,
-  result matrix, pending-envelope mapping, and orchestration result; unknown
-  fields and invalid enums/matrices reject.
+  read-only request refs derived from records, result citations validated as an
+  ordered subset of those refs, pending-envelope mapping, and orchestration
+  result; unknown fields and invalid enums/matrices reject.
 - Provider input contains only authorized PostgreSQL task/outcome/evidence
   records. UI Feed, Bus history, raw chat, Timeline replay,
   ActorContext/session/account/membership/role/grant, prompts, caller refs,

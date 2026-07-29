@@ -147,24 +147,24 @@ class AgentInputRecordV1:
 class ProviderRequestV1:
     agent_definition: AgentDefinition
     records: tuple[AgentInputRecordV1, ...]
-    source_refs: tuple[str, ...]
     schema_version: int = 1
 
     def __post_init__(self) -> None:
         records = tuple(self.records)
-        refs = tuple(self.source_refs)
+        refs = tuple(record.source_ref for record in records)
         if (
             self.schema_version != 1
             or not isinstance(self.agent_definition, AgentDefinition)
             or not 1 <= len(records) <= 4
-            or len(refs) != len(records)
             or len(refs) != len(set(refs))
             or any(not isinstance(record, AgentInputRecordV1) for record in records)
-            or refs != tuple(record.source_ref for record in records)
         ):
             raise AgentRuntimeValidationError()
         object.__setattr__(self, "records", records)
-        object.__setattr__(self, "source_refs", refs)
+
+    @property
+    def source_refs(self) -> tuple[str, ...]:
+        return tuple(record.source_ref for record in self.records)
 
     def as_provider_payload(self) -> dict[str, object]:
         """Return the sole outbound provider payload with no service metadata."""

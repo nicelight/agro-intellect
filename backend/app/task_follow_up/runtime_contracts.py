@@ -168,14 +168,13 @@ class TaskFollowUpProviderRequestV1:
     trigger_kind: str
     allowed_task_kinds: tuple[str, ...]
     records: tuple[TaskFollowUpInputRecordV1, ...]
-    source_refs: tuple[str, ...]
     agent_definition: TaskFollowUpAgentDefinitionV1 = TASK_FOLLOW_UP_DEFINITION_V1
     schema_version: int = 1
 
     def __post_init__(self) -> None:
         allowed = tuple(self.allowed_task_kinds)
         records = tuple(self.records)
-        refs = tuple(self.source_refs)
+        refs = tuple(item.source_ref for item in records)
         if (
             self.schema_version != 1
             or self.agent_definition != TASK_FOLLOW_UP_DEFINITION_V1
@@ -187,14 +186,16 @@ class TaskFollowUpProviderRequestV1:
             or not 1 <= len(records) <= 4
             or any(not isinstance(item, TaskFollowUpInputRecordV1) for item in records)
             or records[0].record_type != "task"
-            or refs != tuple(item.source_ref for item in records)
             or len(refs) != len(set(refs))
         ):
             raise TaskFollowUpRuntimeValidationError()
         _validate_record_order(records)
         object.__setattr__(self, "allowed_task_kinds", allowed)
         object.__setattr__(self, "records", records)
-        object.__setattr__(self, "source_refs", refs)
+
+    @property
+    def source_refs(self) -> tuple[str, ...]:
+        return tuple(item.source_ref for item in self.records)
 
     def as_provider_payload(self) -> dict[str, object]:
         return {

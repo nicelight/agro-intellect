@@ -320,6 +320,8 @@ all-eight-or-nothing семантику. Запрет agent consumption долж
 
 ## 5. Упростить provider provenance и `source_refs` contracts
 
+**Статус:** закрыт 2026-07-29 в рамках post-closure amendment 01
+[TASK-034-T3-FT-009-W1](.memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json).
 **Приоритет:** средне-высокий.
 **Confidence:** very high.
 

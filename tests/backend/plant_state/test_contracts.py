@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dataclass_fields
 from datetime import datetime, timezone
 import uuid
 
@@ -37,13 +37,11 @@ def _record(*, trust="observed", polarity="present", severity="mild"):
 
 def test_provider_request_is_exact_and_excludes_internal_authority():
     records = (_record(), _record(polarity="absent", severity="none"))
-    request = PlantStateProviderRequestV1(
-        records=records,
-        source_refs=tuple(item.source_ref for item in records),
-    )
+    request = PlantStateProviderRequestV1(records=records)
     payload = request.as_provider_payload()
     assert list(payload) == ["schema_version", "agent_definition", "records", "source_refs"]
     assert payload["source_refs"] == [item["source_ref"] for item in payload["records"]]
+    assert "source_refs" not in {field.name for field in dataclass_fields(request)}
     serialized = str(payload)
     for forbidden in (
         "confirmed_by_account_id",
@@ -58,14 +56,7 @@ def test_provider_request_is_exact_and_excludes_internal_authority():
 
 def test_result_schema_rejects_unknown_fields_refs_and_invalid_matrix():
     record = _record()
-    # The source-ref equality is itself strict.
-    with pytest.raises(PlantStateValidationError):
-        PlantStateProviderRequestV1(records=(record,), source_refs=())
-
-    request = PlantStateProviderRequestV1(
-        records=(record,),
-        source_refs=(record.source_ref,),
-    )
+    request = PlantStateProviderRequestV1(records=(record,))
     refs = request.source_refs
     base = {
         "schema_version": 1,

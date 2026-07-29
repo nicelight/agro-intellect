@@ -8,7 +8,6 @@ import pytest
 from sqlalchemy import func, select
 
 from backend.app.agent_runtime import (
-    AgentRuntimeValidationError,
     CurrentAuthorizationScope,
     RuntimeDecision,
     SafetyClassificationResultV1,
@@ -158,7 +157,7 @@ def _persist(database, actor, handoff):
     candidate = handoff[1]
     envelope = handoff[0]
     if isinstance(candidate, VisionStateCandidateV1):
-        photo_id = _valid_vision_photo_id(candidate.source_refs, envelope.plant_id)
+        photo_id = _valid_vision_photo_id(candidate.source_refs)
         if photo_id is not None:
             _seed_photo_catalog(
                 database,
@@ -216,13 +215,10 @@ def _seed_photo_catalog(
         )
 
 
-def _valid_vision_photo_id(source_refs, plant_id):
-    if len(source_refs) == 1:
-        photo_ref = source_refs[0]
-    elif len(source_refs) == 2 and source_refs[0] == f"plant:{plant_id}":
-        photo_ref = source_refs[1]
-    else:
+def _valid_vision_photo_id(source_refs):
+    if len(source_refs) != 1:
         return None
+    photo_ref = source_refs[0]
     if not photo_ref.startswith("photo:"):
         return None
     try:
@@ -344,35 +340,18 @@ def test_wrong_farm_envelope_and_scope_fail_closed_before_insert(
         assert session.scalar(select(func.count(PlantStateRecord.state_record_id))) == 0
 
 
-def test_valid_photo_only_and_ordered_plant_photo_provenance_persist(
+def test_valid_singleton_photo_provenance_persists(
     ft009_database,
     ft009_seed,
 ):
     _farm, boss, plant = ft009_seed
-    photo_only = _persist(ft009_database, boss, _vision_handoff(boss, plant))
-    ordered_photo_id = uuid.uuid4()
-    ordered = _persist(
-        ft009_database,
-        boss,
-        _vision_handoff(
-            boss,
-            plant,
-            source_refs=(
-                f"plant:{plant.plant_id}",
-                f"photo:{ordered_photo_id}",
-            ),
-        ),
-    )
-    assert photo_only.plant_id == plant.plant_id
-    assert ordered.source_refs == (
-        f"plant:{plant.plant_id}",
-        f"photo:{ordered_photo_id}",
-    )
+    persisted = _persist(ft009_database, boss, _vision_handoff(boss, plant))
+    assert persisted.plant_id == plant.plant_id
+    assert len(persisted.source_refs) == 1
+    assert persisted.source_refs[0].startswith("photo:")
 
 
-@pytest.mark.parametrize("provenance_case", ["explicit_a", "photo_a", "target_b"])
-def test_cross_plant_provenance_fails_closed_with_dual_authorization(
-    provenance_case,
+def test_cross_plant_photo_provenance_fails_closed_with_dual_authorization(
     ft009_database,
     ft009_seed,
 ):
@@ -390,15 +369,10 @@ def test_cross_plant_provenance_fails_closed_with_dual_authorization(
         plant_id=plant_a.plant_id,
         photo_id=photo_a,
     )
-    refs = {
-        "explicit_a": (f"plant:{plant_a.plant_id}", f"photo:{photo_a}"),
-        "photo_a": (f"photo:{photo_a}",),
-        "target_b": (f"plant:{plant_b.plant_id}", f"photo:{photo_a}"),
-    }[provenance_case]
     envelope, candidate, classification = _vision_handoff(
         boss,
         plant_b,
-        source_refs=refs,
+        source_refs=(f"photo:{photo_a}",),
     )
 
     with ft009_database.session() as session, pytest.raises(PlantStateError) as denied:
@@ -510,53 +484,19 @@ def test_unknown_photo_and_mismatched_authorization_scope_fail_closed(
         assert session.scalar(select(func.count(PlantStateRecord.state_record_id))) == 0
 
 
-@pytest.mark.parametrize(
-    "source_refs_factory",
-    [
-        lambda plant_id: (f"plant:{plant_id}",),
-        lambda _plant_id: (f"photo:{uuid.uuid4()}", f"photo:{uuid.uuid4()}"),
-        lambda plant_id: (f"photo:{uuid.uuid4()}", f"plant:{plant_id}"),
-    ],
-    ids=["plant-only", "two-photo", "reversed"],
-)
-def test_invalid_vision_ref_shapes_fail_at_persistence_boundary(
-    source_refs_factory,
-    ft009_database,
-    ft009_seed,
-):
-    _farm, boss, plant = ft009_seed
-    handoff = _vision_handoff(
-        boss,
-        plant,
-        source_refs=source_refs_factory(plant.plant_id),
-    )
-    with ft009_database.session() as session, pytest.raises(PlantStateError) as denied:
-        PlantStateTrustService(session).persist_classified(
-            boss,
-            envelope=handoff[0],
-            candidate=handoff[1],
-            classification=handoff[2],
-        )
-    assert denied.value.code is PlantStateErrorCode.PLANT_STATE_CANDIDATE_INVALID
-    with ft009_database.session() as session:
-        assert session.scalar(select(func.count(PlantStateRecord.state_record_id))) == 0
-
-
 def test_missing_and_malformed_vision_refs_fail_at_strict_value_boundary(
     ft009_seed,
 ):
     _farm, boss, plant = ft009_seed
     candidate = _vision_handoff(boss, plant)[1]
-    for refs in ((), ("photo:not-a-canonical-uuid",)):
+    for refs in (
+        (),
+        (f"plant:{plant.plant_id}",),
+        (f"photo:{uuid.uuid4()}", f"photo:{uuid.uuid4()}"),
+        ("photo:not-a-canonical-uuid",),
+    ):
         with pytest.raises(VisionObservationValidationError):
             replace(candidate, source_refs=refs)
-    photo_id = uuid.uuid4()
-    with pytest.raises(AgentRuntimeValidationError):
-        _vision_handoff(
-            boss,
-            plant,
-            source_refs=(f"photo:{photo_id}", f"photo:{photo_id}"),
-        )
 
 
 def test_message_and_classification_mismatch_write_nothing(

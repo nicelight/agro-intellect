@@ -2,7 +2,7 @@
 description: Strict provider-neutral Task and Follow-up Agent input, proposal, classification, and ordinary-task handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-25
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/features/FT-012-human-approval-tasks-follow-up-outcomes.md
   - .memory-bank/contracts/agent-runtime-adapter.md
@@ -77,7 +77,7 @@ not fingerprint inputs; their owning guards remain current authority.
 
 ## Provider request version 1
 
-`TaskFollowUpProviderRequestV1` is one strict object with exactly:
+`TaskFollowUpProviderRequestV1` is one strict object constructed from exactly:
 
 - `schema_version=1`;
 - canonical project-owned `agent_definition` for `agent_id=task_follow_up`,
@@ -87,7 +87,9 @@ not fingerprint inputs; their owning guards remain current authority.
 - `allowed_task_kinds`: ordered non-empty subset of
   `check|measurement|follow_up` computed by backend policy;
 - `records`: one through four strict records;
-- `source_refs`: ordered unique refs exactly equal to record refs.
+- read-only `source_refs` derived as the ordered unique record refs. Callers
+  cannot supply it independently; the outbound compatibility payload may
+  include the derived array.
 
 Unknown fields at every nesting level are rejected. The request contains no
 Farm/Plant id, ActorContext, session/account/membership/role/grant, permission
@@ -148,7 +150,8 @@ duplication while keeping `check|measurement` available.
 - nullable `proposed_task_kind=check|measurement|follow_up`;
 - nullable normalized `candidate_output`, 1..1000 Unicode code points;
 - nullable finite `confidence` in `[0,1]`;
-- ordered unique `source_refs` subset of request refs;
+- ordered unique `source_refs` subset of the authoritative request refs derived
+  from records;
 - nullable `reason_code`.
 
 The exact matrix is:

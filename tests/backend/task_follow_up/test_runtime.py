@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields as dataclass_fields
 from datetime import datetime, timedelta, timezone
 import uuid
 
@@ -330,6 +331,9 @@ def test_exact_provider_snapshot_matching_classification_creates_one_ordinary_ta
     request = model.requests[0]
     assert [record.record_type for record in request.records] == ["task"]
     assert request.source_refs == (f"task:{trigger_task_id}",)
+    assert "source_refs" not in {
+        field.name for field in dataclass_fields(request)
+    }
     assert request.allowed_task_kinds == ("check", "measurement", "follow_up")
     assert request.records[0].payload["quoted_task_text"] == (
         "Проверить исходное состояние растения."

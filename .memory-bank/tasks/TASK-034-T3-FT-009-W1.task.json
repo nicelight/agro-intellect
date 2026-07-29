@@ -20,7 +20,26 @@
     "backend/app/agent_runtime/providers.py",
     "tests/backend/vision_observation/",
     "tests/fixtures/vision/tomato_001_leaf.jpg",
-    ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json"
+    ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json",
+    "backend/app/agent_runtime/",
+    "backend/app/plant_state/",
+    "backend/app/hydroponics_advisor/",
+    "backend/app/task_follow_up/",
+    "tests/backend/agent_runtime/",
+    "tests/backend/plant_state/",
+    "tests/backend/hydroponics_advisor/",
+    "tests/backend/task_follow_up/",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/vision-observation-runtime.md",
+    ".memory-bank/contracts/plant-state-runtime.md",
+    ".memory-bank/contracts/hydroponics-advisor-runtime.md",
+    ".memory-bank/contracts/task-follow-up-runtime.md",
+    ".memory-bank/contracts/companion-runtime.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/testing/vision-observation-plant-state.md",
+    ".memory-bank/testing/hydroponics-advisor.md",
+    ".memory-bank/testing/task-follow-up.md",
+    "SIMPLIFICATION.md"
   ],
   "tier": "T3",
   "gates": [
@@ -100,13 +119,98 @@
       "basis": "The explicit owner revised current code-phase acceptance to provider-neutral deterministic evidence. ATTEMPT 02 independently passed all seven deterministic acceptance groups with zero reproduced deterministic product/spec defects, resolved the only scope finding, and passed focused, scoped-regression, full deterministic, lint, and diff checks. The prior overall BLOCKED verdict depended only on a superseded live-Gemini acceptance group.",
       "accepted_residual_risk": "No real provider, network transport, or real image interpretation has been verified. The current Gemini-oriented executor is temporary technical debt and must be replaced or generalized only after an OpenAI-compatible provider is explicitly selected and the deferred integration milestone is planned and run.",
       "process_notes": "No attempt budget was reset and no historical report was rewritten. Per-task red-verification and human checkpoint were waived as advisory because current deterministic evidence plus fresh FT-009 planning APPROVE were accepted as sufficient by the explicit owner."
+    },
+    {
+      "stage": "post_closure_amendment_authorization",
+      "mode": "explicit_owner_amendment",
+      "amendment": "01",
+      "authorized_at": "2026-07-29",
+      "decision": "implementation_authorized",
+      "basis": "The operator explicitly authorized SIMPLIFICATION.md Finding 5 as one coherent cross-runtime amendment under existing TASK-034 without a new task. This current amendment removes independently supplied duplicate request source_refs across implemented generic, Vision, Plant State, Hydroponics Advisor, and Task Follow-Up requests; makes Vision result provenance application-bound to its one authorized verified photo; and updates the unimplemented Companion contract consistently.",
+      "scope": "Canonical contracts and testing specs first, then only the matching request/result/assembler/service code and focused tests. Generic and non-Vision result citations remain ordered subsets of request refs derived from records. Vision MessageEnvelope and VisionStateCandidate carry exactly one canonical photo ref; Plant State preserves all existing same-Plant, catalog, authorization, classification, refresh, equality, and human-promotion guards. Safety Gate and Companion implementation are excluded.",
+      "history": "Task status remains historical done. This amendment does not reopen an execution attempt, reset a budget, change TASK-028/TASK-035 lifecycle or evidence, synthesize a prior PASS/red-verification/human checkpoint marker, or revise any prior closure/verification entry.",
+      "supersession": "For amendment 01 only, this explicit owner decision supersedes the original anti-goal against changing generic ProviderRequestV1 and expands the hard write boundary below. All other anti-goals, constraints, invariants, and forbidden scopes remain in force.",
+      "evidence": "pending implementation and independent verification"
+    },
+    {
+      "stage": "post_closure_amendment_implementation",
+      "mode": "explicit_owner_amendment",
+      "amendment": "01",
+      "implemented_at": "2026-07-29",
+      "decision": "ready_for_independent_verification",
+      "evidence": [
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-IMPL-final-report-code-03.md",
+        ".protocols/TASK-034-T3-FT-009-W1/progress.md",
+        ".protocols/TASK-034-T3-FT-009-W1/handoff.md"
+      ],
+      "checks": "Focused contract slice 50 passed; affected runtime/service regression 121 passed; full deterministic suite 522 passed with 207 warnings; Memory Bank lint passed over 218 files; git diff --check passed.",
+      "scope": "All implementation/spec/test writes stayed inside amendment 01 hard scope. Safety Gate, Companion implementation, TASK-028 lifecycle/evidence, and TASK-035 lifecycle/evidence were untouched.",
+      "history": "TASK-034 remains historical done. This evidence is not a new closure verdict, does not alter prior verification, and does not synthesize red-verification or human-checkpoint evidence."
+    },
+    {
+      "stage": "post_closure_amendment_verification",
+      "mode": "independent_reverification",
+      "amendment": "01",
+      "verified_at": "2026-07-29",
+      "decision": "request_changes",
+      "verdict": "FAIL",
+      "evidence": [
+        ".tasks/TASK-034-T3-FT-009-W1/finding5_verifier_probe.py",
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-VERIFY-final-report-code-03.md",
+        ".protocols/TASK-034-T3-FT-009-W1/verification.md"
+      ],
+      "checks": "Fresh verifier probe passed all five derived-request-ref types, raw Vision provenance rejection, and four non-Vision citation validators; focused runtime/persistence matrix 88 passed; full deterministic suite 522 passed with 207 warnings; Memory Bank lint passed over 218 files; git diff --check passed before evidence append.",
+      "finding": "Functional claims 1-5 passed, but claim 6 failed: amendment scope authorizes narrow Plant State provenance persistence validation and Companion contract-only alignment while its supersession keeps the original Companion anti-goal and literal Plant State persistence forbidden scope in force.",
+      "correction": "The same Implementer must add only explicit narrow amendment exceptions for existing Plant State singleton Vision provenance validation and Companion contract-only alignment, retain every other anti-goal/forbidden scope, and rerun the probe/lint/diff checks.",
+      "history": "Task status remained historical done. No lifecycle, retry budget, prior evidence, red-verification, dependent task, or human-checkpoint marker was changed or synthesized."
+    },
+    {
+      "stage": "post_closure_amendment_reverification",
+      "mode": "independent_reverification",
+      "amendment": "01",
+      "verified_at": "2026-07-29",
+      "decision": "verified_pass",
+      "verdict": "PASS",
+      "evidence": [
+        ".tasks/TASK-034-T3-FT-009-W1/finding5_verifier_probe.py",
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-VERIFY-final-report-code-04.md",
+        ".protocols/TASK-034-T3-FT-009-W1/verification.md"
+      ],
+      "state_basis": "Only two narrow task-card constraints were added after verify-03; inherited anti-goals and forbidden scope are unchanged, and no implementation/spec/test diff changed. Current non-task patch sha256 is 4136b8ccf635c3d5f3bc2e9447f9ea58b5e35e25a6f2fd51176317443fdafcdb.",
+      "checks": "Fresh verifier probe passed all five request types, raw Vision provenance rejection, and four citation validators; focused runtime/persistence matrix 88 passed; immediately prior verifier-owned full deterministic 522-pass result remains current; task JSON parse, Memory Bank lint over 218 files, diff check, and scope preflight passed.",
+      "result": "Claims 1-6 pass. The prior hard-scope/docs finding is resolved with exactly the authorized Plant State singleton-provenance and Companion contract-only carve-outs; no new scope or blocker remains.",
+      "history": "Task status remains historical done. The prior FAIL is preserved; no lifecycle, retry budget, prior evidence, red-verification, dependent task, or human-checkpoint marker was changed or synthesized."
+    },
+    {
+      "stage": "post_closure_amendment_semantic_verification",
+      "mode": "independent_semantic_verification",
+      "amendment": "01",
+      "verified_at": "2026-07-29",
+      "decision": "semantic_verified",
+      "semantic_verdict": "semantic-pass",
+      "functional_verification": ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-VERIFY-final-report-code-04.md",
+      "evidence": [
+        ".tasks/TASK-034-T3-FT-009-W1/TASK-034-T3-FT-009-W1-S-RED-VERIFY-final-report-docs-03.md",
+        ".protocols/TASK-034-T3-FT-009-W1/red-verification.md"
+      ],
+      "result": "Independent adversarial review admitted no findings or operator questions. Amendment 01 preserves derived request provenance, trusted singleton Vision photo binding, non-Vision citation validation, authorization and Plant State promotion guards, and the accepted hard scope.",
+      "closure_bookkeeping": "SIMPLIFICATION.md is added to touched_files and the hard write scope only to record Finding 5 closed under amendment 01; its recommendation body and every other finding remain unchanged.",
+      "history": "TASK-034 remains historical done. No lifecycle, retry budget, prior evidence, dependent task, or HUMAN_CHECKPOINT marker was changed or synthesized."
     }
   ],
   "docs": [
     ".memory-bank/features/FT-009-vision-observation-plant-state-trust.md",
     ".memory-bank/contracts/vision-observation-runtime.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/plant-state-runtime.md",
+    ".memory-bank/contracts/hydroponics-advisor-runtime.md",
+    ".memory-bank/contracts/task-follow-up-runtime.md",
+    ".memory-bank/contracts/companion-runtime.md",
     ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/testing/agent-runtime.md",
     ".memory-bank/testing/vision-observation-plant-state.md",
+    ".memory-bank/testing/hydroponics-advisor.md",
+    ".memory-bank/testing/task-follow-up.md",
     ".memory-bank/tasks/plans/IMPL-FT-009.md"
   ],
   "evidence_required": [
@@ -134,7 +238,26 @@
       "tests/fixtures/vision/tomato_001_leaf.jpg",
       ".protocols/TASK-034-T3-FT-009-W1/",
       ".tasks/TASK-034-T3-FT-009-W1/",
-      ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json"
+      ".memory-bank/tasks/TASK-034-T3-FT-009-W1.task.json",
+      "backend/app/agent_runtime/",
+      "backend/app/plant_state/",
+      "backend/app/hydroponics_advisor/",
+      "backend/app/task_follow_up/",
+      "tests/backend/agent_runtime/",
+      "tests/backend/plant_state/",
+      "tests/backend/hydroponics_advisor/",
+      "tests/backend/task_follow_up/",
+      ".memory-bank/contracts/agent-runtime-adapter.md",
+      ".memory-bank/contracts/vision-observation-runtime.md",
+      ".memory-bank/contracts/plant-state-runtime.md",
+      ".memory-bank/contracts/hydroponics-advisor-runtime.md",
+      ".memory-bank/contracts/task-follow-up-runtime.md",
+      ".memory-bank/contracts/companion-runtime.md",
+      ".memory-bank/testing/agent-runtime.md",
+      ".memory-bank/testing/vision-observation-plant-state.md",
+      ".memory-bank/testing/hydroponics-advisor.md",
+      ".memory-bank/testing/task-follow-up.md",
+      "SIMPLIFICATION.md"
     ],
     "forbidden_scope": [
       "FT-005 photo storage/catalog/API semantics or FT-007 task lifecycle/evidence",
@@ -170,7 +293,9 @@
   "constraints": [
     "Use exactly one internally assembled active-Plant plus accepted-photo request and one freshly verified in-memory media attachment; callers cannot submit context, refs, bytes, path, prompt, model, or schema.",
     "Version-1 vision uses a strict provider-neutral executor seam: production remains unbound/fail-closed, tests inject explicit fakes/spies, and neither default provider selection nor fallback is allowed.",
-    "Preserve the exact result matrix: speak returns pending MessageEnvelope plus non-authoritative VisionStateCandidateV1, clarify returns only its pending envelope, and silent returns neither; persist or publish nothing from this task."
+    "Preserve the exact result matrix: speak returns pending MessageEnvelope plus non-authoritative VisionStateCandidateV1, clarify returns only its pending envelope, and silent returns neither; persist or publish nothing from this task.",
+    "Amendment 01 Plant State carve-out: notwithstanding inherited anti_goals[0] and runtime_context.forbidden_scope[1], changes are allowed only to backend/app/plant_state/contracts.py, backend/app/plant_state/runtime.py, backend/app/plant_state/service.py, and matching tests solely to require and consume singleton canonical Vision photo provenance while regression-checking existing envelope/candidate equality, locked PhotoCatalogItem ownership, Farm/Plant authorization, retained-session refresh, classification, and human-promotion guards. No other Plant State persistence, review, API, lifecycle, trust, promotion, or authority behavior is authorized.",
+    "Amendment 01 Companion carve-out: notwithstanding inherited anti_goals[0] and the governance prohibition in runtime_context.forbidden_scope[1], only canonical contract/testing wording in .memory-bank/contracts/companion-runtime.md, including its Verification section, may state that a future Companion request derives read-only source_refs from ordered records while result citation validation is preserved. No Companion implementation, lifecycle, persistence, orchestration, or governance behavior change is authorized."
   ],
   "invariants": [
     "Photo/catalog/runtime authority remains local and authorized; provider input omits local paths, identity/session/grant state, secrets, UI/chat, timeline replay, and hidden reasoning.",

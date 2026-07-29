@@ -2,7 +2,7 @@
 description: Verification contract for photo-byte integrity, provider-neutral Vision, and Plant state trust behavior.
 status: active
 type: testing_spec
-last_updated: 2026-07-20
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/contracts/vision-observation-runtime.md
   - .memory-bank/contracts/plant-state-runtime.md
@@ -16,7 +16,9 @@ source_of_truth:
 ## Deterministic matrix
 
 - Exact Vision request/record/media/result shapes, order, unknown-field
-  rejection, source-ref subset, and finding-to-envelope mapping.
+  rejection, request refs derived from records, raw-result rejection of
+  `source_refs`, and finding-to-envelope mapping with one application-bound
+  canonical photo ref for `speak|clarify`.
 - Accepted catalog lookup, path containment, content type, fresh size/hash
   equality, real byte attachment, and zero provider calls for invalid input.
 - Missing/unavailable photo returns exact
@@ -33,13 +35,12 @@ source_of_truth:
   classified-only atomic insert requiring the canonical
   `classification=safe_information` plus matching `message_id`, idempotency,
   and content-conflict rollback.
-- Real-PostgreSQL Vision persistence proves valid photo-only Plant A to A and
-  valid ordered Plant A/photo A provenance, and rejects with zero rows:
-  explicit source Plant A rebound to destination B, photo A rebound to B even
-  when the actor is authorized for both, explicit target B plus photo A,
+- Real-PostgreSQL Vision persistence proves canonical singleton photo
+  provenance for Plant A to A and rejects with zero rows:
+  photo A rebound to destination B even when the actor is authorized for both,
   unknown photo, wrong Farm/scope, and message/classification mismatch.
-- Strict source-ref boundary tests reject plant-only, two-photo, reversed-order,
-  duplicated, and malformed refs. Provenance mismatch is
+- Strict source-ref boundary tests require exactly one canonical photo ref and
+  reject plant refs, two-photo, and malformed refs. Provenance mismatch is
   `PLANT_STATE_CANDIDATE_INVALID`; current authorization mismatch is
   `AUTH_PLANT_FORBIDDEN`; neither exposes a raw `IntegrityError`.
 - An identical valid classified duplicate remains idempotent after catalog

@@ -67,7 +67,6 @@ def _speak(request, *, confidence=0.78, polarity="present"):
         "severity": "mild" if polarity == "present" else "unknown",
         "summary": "Visible pale mottling appears across the tomato leaf.",
         "confidence": confidence,
-        "source_refs": [request.source_refs[1]],
         "reason_code": None,
     }
 
@@ -81,7 +80,6 @@ def _clarify(request):
         "severity": "unknown",
         "summary": "The leaf is not visible clearly enough.",
         "confidence": None,
-        "source_refs": [request.source_refs[1]],
         "reason_code": None,
     }
 
@@ -95,7 +93,6 @@ def _silent(_request):
         "severity": None,
         "summary": None,
         "confidence": None,
-        "source_refs": [],
         "reason_code": "no_material_output",
     }
 
@@ -237,6 +234,7 @@ def test_closed_result_matrix_and_low_confidence_transport_claim(
     assert (outcome.state_candidate is not None) is has_candidate
     if has_envelope:
         assert outcome.message_envelope.candidate_claim_type == claim
+        assert outcome.message_envelope.source_refs == (f"photo:{photo.photo_id}",)
     if decision == "silent":
         assert outcome.outcome_kind == "model_silent"
     if outcome.state_candidate is not None:
