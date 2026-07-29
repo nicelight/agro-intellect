@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-07-19
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -41,6 +41,10 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   prompt-looking sequences have no markup, instruction, command, or authority
   semantics at any boundary.
 - UI Feed, raw chat, raw model reasoning, and admin notices never become agent working context. Authorized typed governance content may enter only an owning agent-specific provider request and remains untrusted, non-authoritative input.
+- Canonical roster introductions are presentation only. Plant creation,
+  startup, restore, and archived retained-history reads write none; only an
+  authorized active-Plant Feed access may materialize missing rows while
+  rechecking current authorization and active state in the write transaction.
 - Current code-phase runtime is provider-neutral. Deterministic fake/spy
   executors prove request/response schemas, media integrity, timeout/error
   handling, redaction, and pre/post-I/O authorization; production fails closed
@@ -100,11 +104,12 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   output, or presentation summaries becoming runtime truth or agent working
   context.
 - Rule: UI Feed is human presentation only, `timeline.jsonl` is append-only
-  audit/export only, and neither layer may publish directly to Agent Chat Bus or
-  mutate PostgreSQL/read-model state. Authorized candidate text is rendered
-  literally through escaped/text-node semantics; it is never interpreted as
-  HTML/Markdown, activated as a URL/action, or reused as runtime/agent
-  authority.
+  audit/export only, and neither layer may publish directly to Agent Chat Bus
+  or mutate authoritative domain state. UI Feed may persist only its registered
+  presentation rows through an owning guarded contract. Authorized candidate
+  text is rendered literally through escaped/text-node semantics; it is never
+  interpreted as HTML/Markdown, activated as a URL/action, or reused as
+  runtime/agent authority.
 - Verification: tests prove UI Feed/timeline content is excluded from agent
   context, candidate text renders literally without active markup/link/action
   behavior, cannot mutate runtime state, and remains filtered by ActorContext
@@ -216,6 +221,32 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   [Svelte 5 project rules](../../.agents/rules/svelte5.md), and
   [.memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md](../features/FT-016-web-app-pwa-operator-surface-first-demo.md).
 
+#### AD-010 - Roster introductions materialize only at active Feed access
+- Binds: Plant creation, Agent Runtime roster metadata, Agent Chat Bus & UI
+  Feed storage, protected Plant Feed reads, application startup, archive, and
+  restore.
+- Prevents: presentation delivery from adding a batch/sink/pending/reconciliation
+  lifecycle, changing the committed Plant `201`, writing during startup or
+  retained-history reads, or bypassing a concurrent authorization/archive
+  change.
+- Rule: the canonical ordered roster and deterministic per-introduction ids
+  remain static metadata. Only an authorized `GET` Feed boundary for a
+  currently active Plant may insert missing `UIFeedEvent` introduction rows,
+  after locking/rechecking current identity, applicable grant, and Plant state
+  in the same transaction. Existing introduction rows remain unchanged;
+  repeat/concurrent/retry opens are idempotent. Plant create, startup, restore,
+  archived reads, Agent Chat Bus, and agent-context paths write none.
+- Verification: Plant/Feed integration and migration tests prove the sole
+  trigger, same-transaction current guards, missing-only idempotency,
+  `FEED_PERSISTENCE_FAILED` retry, unchanged public Feed order/cursor/response,
+  retained existing rows, and absence from Bus/context.
+- Source: accepted Finding 4 decision in
+  [.memory-bank/prd.md](../prd.md),
+  [.memory-bank/contracts/agent-roster-bootstrap.md](../contracts/agent-roster-bootstrap.md),
+  [.memory-bank/contracts/plant-feed-http.md](../contracts/plant-feed-http.md),
+  and
+  [.memory-bank/domains/agent-chat-ui-feed-storage.md](../domains/agent-chat-ui-feed-storage.md).
+
 ## Architecture Style
 
 Use a local modular monolith:
@@ -262,11 +293,11 @@ Runtime authority:
 | Module | Owns | Must not own |
 |---|---|---|
 | Access & Admin | Account, Farm, FarmMembership, sessions, role presets, PlantAccessGrant, ActorContext, AdminAuditRecord. | Plant evidence semantics, agent conclusions, physical-action approval policy. |
-| Plant Operations | Daily check-in, observations, manual pH/EC, Plant selection, Plant card/history entry points. | Photo binary authority, model reasoning, Safety Gate bypass. |
+| Plant Operations | Daily check-in, observations, manual pH/EC, Plant selection, Plant card/history entry points. | Photo binary authority, model reasoning, Safety Gate bypass, roster-introduction persistence during Plant creation. |
 | Photo & Artifact Intake | Local photo files, accepted photo catalog metadata, sha256, capture manifests, artifact refs. | Mutable Plant state, agent facts, trainability decisions. |
 | Runtime State & Audit | PostgreSQL/read model, timeline audit/export refs, retained Plant history. | UI presentation, raw model output, physical actuation. |
-| Agent Runtime | Model invocation adapters, runtime decision, pending non-consumable MessageEnvelope preparation. | Domain source of truth, direct DB mutation of Plant facts, safety classification authority, UI Feed context. |
-| Agent Chat Bus & UI Feed | Bus working events and UI presentation projections. | Raw provider history, hidden reasoning, unauthorized context, Safety Gate approval. |
+| Agent Runtime | Model invocation adapters, runtime decision, pending non-consumable MessageEnvelope preparation, canonical roster metadata. | Domain source of truth, direct DB mutation of Plant facts, safety classification authority, UI Feed context or introduction persistence. |
+| Agent Chat Bus & UI Feed | Bus working events, UI presentation projections, and missing canonical introduction materialization inside authorized active-Plant Feed access. | Raw provider history, hidden reasoning, unauthorized context, Safety Gate approval, startup/restore reconciliation. |
 | Safety & Task Loop | Project-owned output classification evidence, server-owned consumer routing, the single ordinary-task creation command, Safety Gate routing, physical-action approval authority, human-performed action tasks, follow-up outcomes. | Automated device execution, model-selected safety authority, governance approval semantics, or a second Task creation service. |
 | Companion Governance | IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, DecisionRecord, approved governance summary. | Plant-state confirmation, Safety Gate approval, action_task creation by itself. |
 | Dataset Governance | Dataset fields, evidence refs, trainability default false, future trainability gates. | Full dataset registry, model fine-tuning, UI Feed-derived trainability. |
@@ -304,6 +335,12 @@ flowchart LR
   OrdinaryTasks --> State
   ActionTasks --> State
 ```
+
+The roster-introduction path is deliberately separate from agent output:
+`authorized active Plant Feed GET -> same-transaction current guard -> insert
+only missing UIFeedEvent rows -> unchanged ordered Feed page`. It has no
+Plant-create, startup, Agent Chat Bus, provider, timeline, or agent-context
+edge.
 
 ## External Integrations
 
@@ -419,6 +456,9 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 - A stale UI or worker could advance an already-open Plant workflow after
   archive unless every state-changing service checks current Plant status at
   the commit boundary.
+- A Feed request could race grant revocation or Plant archive unless lazy
+  introduction writes reuse the current locked authorization/Plant transaction;
+  failure remains recoverable by a later authorized active-Plant retry.
 
 ## Open Questions
 

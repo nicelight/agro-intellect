@@ -1,0 +1,217 @@
+{
+  "id": "TASK-046-T3-FT-008-W3",
+  "title": "Replace roster introduction batches with lazy active-Feed materialization",
+  "status": "done",
+  "wave": "W3",
+  "feature": "FT-008",
+  "reqs": [
+    "REQ-003",
+    "REQ-013",
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-033-T3-FT-008-W2",
+    "TASK-045-T3-FT-007-W3"
+  ],
+  "touched_files": [
+    "backend/app/agent_runtime/bootstrap.py",
+    "backend/app/agent_runtime/__init__.py",
+    "backend/app/agent_chat/",
+    "backend/app/api/plants.py",
+    "backend/app/api/feed.py",
+    "backend/app/main.py",
+    "backend/migrations/versions/*_ft008_lazy_introductions.py",
+    "tests/backend/agent_runtime/",
+    "tests/backend/agent_chat/",
+    "tests/backend/api/test_ft007_plant_bootstrap.py",
+    "tests/backend/api/test_ft008_feed_routes.py",
+    "tests/backend/access_admin/test_ft002_schema_migration.py",
+    "tests/backend/photo_intake/test_ft005_migration_models.py",
+    "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/plant_state/test_migration_models.py",
+    "tests/backend/safety_gate/test_migration_models.py",
+    "tests/backend/safety_gate/test_classification_persistence.py",
+    "tests/backend/task_follow_up/test_migration_models.py",
+    "tests/backend/companion_governance/test_migration_models.py",
+    "tests/backend/test_foundation_database_contract.py",
+    "SIMPLIFICATION.md"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "lazy_introduction_materialization",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_runtime tests/backend/agent_chat tests/backend/api/test_ft007_plant_bootstrap.py tests/backend/api/test_ft008_feed_routes.py -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "authorization_feed_regression",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/api/test_ft007_plant_bootstrap.py tests/backend/api/test_ft008_feed_routes.py -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "migration_head_compatibility",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+      "required": true
+    },
+    {
+      "name": "full_deterministic_regression",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": false
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    {
+      "stage": "functional_verification",
+      "mode": "delegated_reviewer",
+      "attempt": "01",
+      "verdict": "PASS",
+      "verified_at": "2026-07-29T11:49:31+05:00",
+      "basis": "Independent T3 verification proved same-transaction current Account/FarmMembership, Plant, and applicable grant locks; authorized active-only missing introduction inserts; repeat/concurrent/failure/retry convergence; rollback and FEED_PERSISTENCE_FAILED mapping; preservation of existing UI rows and migration constraints; write-free create/startup/archive/restore/archived reads; Bus/context isolation; removal of the batch lifecycle; and unchanged roster, Plant-create, Feed response/order/cursor/OpenAPI behavior.",
+      "evidence": [
+        ".tasks/TASK-046-T3-FT-008-W3/TASK-046-T3-FT-008-W3-S-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-046-T3-FT-008-W3/verification.md"
+      ],
+      "gate_summary": {
+        "focused_lazy_runtime_chat_api": "PASS: 67 passed",
+        "authorization_feed_regression": "PASS: 127 passed",
+        "migration_head_compatibility": "PASS: 60 passed",
+        "full_deterministic_regression": "PASS: 527 passed, 207 existing deprecation warnings",
+        "memory_bank_lint": "PASS: 218 files",
+        "diff_and_static_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Top-level ORCHESTRATOR for /red-verify TASK-046-T3-FT-008-W3; task remains in_progress and the human checkpoint is still required before closure."
+    },
+    {
+      "stage": "owner_lifecycle_closure",
+      "mode": "manual_explicit_owner",
+      "decision": "done",
+      "attempt": "01",
+      "decided_at": "2026-07-29T12:28:58+05:00",
+      "basis": "After current-attempt independent functional PASS and task-level semantic-pass, the human user supplied the exact HUMAN_CHECKPOINT: done confirmation and directly instructed closure; the explicit top-level ORCHESTRATOR owns the lifecycle decision.",
+      "accepted_evidence": [
+        ".tasks/TASK-046-T3-FT-008-W3/TASK-046-T3-FT-008-W3-S-EXECUTE-final-report-code-01.md",
+        ".tasks/TASK-046-T3-FT-008-W3/TASK-046-T3-FT-008-W3-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-046-T3-FT-008-W3/TASK-046-T3-FT-008-W3-S-RED-VERIFY-final-report-docs-01.md",
+        ".protocols/TASK-046-T3-FT-008-W3/administrative-closure.md"
+      ],
+      "gate_summary": {
+        "implementation": "PASS: Execution Attempt 01 complete",
+        "functional_verification": "VERDICT: PASS; all required task gates passed",
+        "red_verification": "SEMANTIC_VERDICT: semantic-pass",
+        "human_checkpoint": "HUMAN_CHECKPOINT: done"
+      },
+      "findings": [],
+      "scope": "This decision records only the TASK-046 T3 human checkpoint and lifecycle closure. No production code, tests, canonical specs, feature lifecycle, dependent-task promotion, or unrelated task state is changed.",
+      "next_gate": "Run wave-boundary /mb-sync; TASK-046 is terminal done and no feature lifecycle or dependent task is promoted by this closure."
+    }
+  ],
+  "docs": [
+    "SIMPLIFICATION.md",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/features/FT-008-agent-chat-bus-ui-feed-context-hygiene.md",
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/agent-roster-bootstrap.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md"
+  ],
+  "evidence_required": [
+    "Forward-migration and ORM inspection proving that only agent_introduction_batches is removed while every existing UIFeedEvent row, identity, payload, created_at, restricted FK, introduction uniqueness rule, order index, and consumability constraint is preserved.",
+    "Real-PostgreSQL evidence proving that one authorized active-Plant Feed transaction locks/rechecks current Account, FarmMembership, applicable PlantAccessGrant, and Plant state, inserts only missing canonical introductions, and returns the unchanged ordered page.",
+    "Repeat, concurrent, partial-existing, injected insert/read/flush/commit failure, rollback, and later client-retry evidence proving idempotent convergence without updating existing rows.",
+    "Negative-path evidence proving Plant create and 201, process startup, archived retained-history reads, archive/restore, Agent Chat Bus, and agent-context paths write no introduction row.",
+    "Static and test evidence proving batch command/value/result, content digest, sink, reconciliation service, startup scan/composition state, obsolete logging, and their lifecycle-specific tests are removed without adding replacement state or a repair mechanism.",
+    "Public-contract and regression evidence proving exact roster order/item ids/content, unchanged Plant-create behavior, unchanged Feed response/order/cursor/OpenAPI/errors, FEED_PERSISTENCE_FAILED retry, and zero introduction copies in Bus or agent context.",
+    "Current-attempt T3 protocol evidence with fresh functional verification, /verify VERDICT: PASS, per-task /red-verify SEMANTIC_VERDICT: semantic-pass, and the exact HUMAN_CHECKPOINT: done marker before explicit-owner or scheduler closure."
+  ],
+  "purpose": "Remove the high-maintenance presentation-only introduction batch lifecycle and make the existing protected active-Plant Feed transaction the sole idempotent owner of missing roster-introduction rows without weakening authorization, data preservation, or context isolation.",
+  "success_outcome": "The canonical eight roster introductions remain visible as the same non-agent-consumable UIFeedEvent rows, but no Plant-create, startup, batch, sink, digest, pending, or reconciliation path remains; an authorized active-Plant Feed open inserts only missing rows under current locks, repeat/concurrent/retry opens converge, archived reads and restore write nothing, existing rows remain unchanged, and the public Plant-create and Feed contracts are identical.",
+  "anti_goals": [
+    "Do not change canonical roster membership/order/text, the UUIDv5 namespace/name grammar, introduction payload mapping, existing UIFeedEvent identity/timestamp/content, or agent-consumability flags.",
+    "Do not add a replacement batch table, materialization marker, pending state, repair status, worker, scheduler, outbox, startup/background scan, lifecycle, endpoint, response field, or cursor version.",
+    "Do not change classified Bus/UI publication, MessageEnvelope, agent context, Safety, Task, Companion, Plant-state, archive/grant policy, frontend/PWA, provider/model, or device behavior.",
+    "Do not rewrite the applied FT-008 migration or mutate historical TASK-031, TASK-032, TASK-033, TASK-045 lifecycle, protocols, verification, semantic review, checkpoint, or closure evidence.",
+    "Do not perform unrelated Agent Runtime, Agent Chat, migration, API, test, or documentation cleanup."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Canonical roster content/order/competence, provider/runtime request-result contracts, MessageEnvelope, classified publication semantics, or agent-context payload rules.",
+      "Safety Gate, ordinary/action Task, Companion Governance, Plant-state authority, dataset governance, frontend/PWA, external provider, or device-actuation behavior.",
+      "Public Plant-create or Feed request/response/error/order/cursor changes, new introduction persistence state, or background recovery operations.",
+      "Rewriting applied migration revisions or historical task/protocol/evidence artifacts for TASK-031, TASK-032, TASK-033, or TASK-045."
+    ],
+    "stop_conditions": [
+      "The executor-confirmed Alembic head is not ft013_simplify_companion or a concurrent migration change cannot be reconciled by appending one forward revision without changing task dependencies or rewriting an applied migration.",
+      "Existing UIFeedEvent introduction rows cannot be preserved byte-for-byte in their stored identity, payload, created_at, uniqueness, FK, ordering, and consumability semantics.",
+      "Current Account, FarmMembership, applicable PlantAccessGrant, and active Plant cannot be locked/rechecked in the same transaction as missing-row insertion and Feed read.",
+      "The accepted outcome would require a new API/state/lifecycle/background repair mechanism, changing public Plant/Feed behavior, or widening another feature's authority.",
+      "Existing uncommitted work overlaps the required code, migration, or focused test surface in a way that cannot be reconciled without overwriting user-owned changes."
+    ]
+  },
+  "source_artifacts": [
+    "SIMPLIFICATION.md",
+    ".memory-bank/features/FT-007-agent-runtime-decisions-message-envelope.md",
+    ".memory-bank/features/FT-008-agent-chat-bus-ui-feed-context-hygiene.md",
+    ".memory-bank/epics/EP-003-agent-runtime-context-hygiene.md",
+    ".memory-bank/requirements.md",
+    ".memory-bank/behavior-specs/FT-007-BHV-002-agent-roster-bootstrap.behavior.json",
+    ".memory-bank/behavior-specs/FT-008-BHV-001-introduction-reconciliation.behavior.json",
+    ".memory-bank/behavior-specs/FT-008-BHV-002-archive-reconciliation-guard.behavior.json",
+    ".memory-bank/tasks/TASK-033-T3-FT-008-W2.task.json",
+    ".memory-bank/tasks/TASK-045-T3-FT-007-W3.task.json",
+    ".memory-bank/tasks/plans/IMPL-FT-008.md",
+    ".protocols/FT-008/decision-log.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
+    ".memory-bank/contracts/agent-roster-bootstrap.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/domains/agent-chat-ui-feed-storage.md",
+    ".memory-bank/contracts/plant-feed-http.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/agent-runtime.md",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/workflows/tier-policy.md"
+  ],
+  "constraints": [
+    "The primary owning capability and code root are Agent Chat Bus & UI Feed under backend/app/agent_chat; its application service owns lazy materialization, while API handlers only validate/translate and the composition root only wires the app.",
+    "Agent Runtime retains only the canonical roster and deterministic per-item introduction metadata builder; remove PlantAgentBootstrap command/service, batch/result/sink contracts, batch digest, and persistence/retry semantics.",
+    "Append one forward migration after the executor-confirmed current head, expected ft013_simplify_companion, that drops only agent_introduction_batches and advances every current exact-head consumer without editing an applied revision.",
+    "Preserve the existing no-leak query-validation and authorization precedence, then lock/recheck current Account, FarmMembership, Plant, and applicable grant in the same transaction as missing-row insertion and the subsequent Feed page read.",
+    "Insert only absent canonical roster-version-1 rows; deterministic ui_event_id plus existing plant_id/agent_id/roster_version uniqueness are the duplicate guards, and existing rows are never updated, replaced, or deleted.",
+    "Any insert/read/flush/commit failure rolls back the request and maps to FEED_PERSISTENCE_FAILED; a later authorized active Feed retry is the sole recovery path.",
+    "Remove Plant-create and startup composition calls/state plus obsolete batch/sink/reconciliation tests, and replace them with sole-trigger, data-preservation, authorization-race, concurrency, rollback/retry, and compatibility evidence."
+  ],
+  "invariants": [
+    "Plant creation commits and returns the exact existing 201 PlantSummary without introduction, Feed, Bus, provider, or post-commit sink work.",
+    "Archived retained-history reads and restore are write-free; after restore, only a later currently authorized active-Plant Feed open may fill missing rows.",
+    "Introductions are immutable system presentation, never model output, MessageEnvelope, Agent Chat Bus events, agent context, Plant authority, Safety evidence, or REQ-011 provider evidence.",
+    "Existing Bus/UI publication, context isolation, literal-text behavior, retained-history access, response/order/cursor grammar, and no-store/error contracts remain compatible.",
+    "No secret, auth/session, provider payload, hidden reasoning, raw chat, or unapproved governance content enters rows, logs, responses, or evidence."
+  ],
+  "verification_targets": [
+    "Migration/model tests prove the new single head, batch-table absence, retained UIFeedEvent rows and timestamps, unchanged constraints/indexes/FKs, and no new introduction lifecycle table.",
+    "PostgreSQL service tests prove zero/partial/all-existing materialization, deterministic missing-only inserts, repeat/concurrent/retry convergence, preservation of existing rows, and complete rollback on injected persistence failures.",
+    "HTTP/access tests prove Boss and granted Engineer/Consultant active Feed behavior, missing/revoked grant and archive races, read-only archived retained history, restore with zero writes, FEED_PERSISTENCE_FAILED then retry, and unchanged OpenAPI/response/order/cursor/no-store behavior.",
+    "Plant-create/startup tests and static scans prove zero introduction writes/calls plus absence of PlantAgentBootstrap, AgentIntroductionBatch/Result/Sink, content digest, PostgreSQLAgentIntroductionSink, reconcile_active_plants, startup reconciliation, and obsolete composition state.",
+    "Agent Runtime, Agent Chat, access, Safety, Task Follow-Up, Companion, Foundation database, exact-head, and full deterministic regressions prove no authority, context, data, or public-contract regression."
+  ]
+}

@@ -4,6 +4,20 @@ status: active
 ---
 # Changelog
 
+## [2026-07-29] Wave W3 — TASK-046 closed
+
+- Reconciled the owner-recorded closure of `TASK-046-T3-FT-008-W3` after
+  independent functional `PASS`, task-level `semantic-pass`, and
+  `HUMAN_CHECKPOINT: done`.
+- Recorded the implemented Finding 4 outcome: the batch/sink/startup
+  reconciliation lifecycle is removed, and only an authorized active-Plant
+  Feed transaction materializes missing canonical introduction rows.
+- Marked simplification finding 4 complete and reconciled FT-008 plus REQ-013
+  to `verified`; FT-007, EP-003, REQ-003, and REQ-020 remain `planned`.
+- Reconciled current-state backbone, feature/epic routers, and the FT-008 plan.
+  No task promotion, dependent status, new task, canonical design, or
+  historical evidence change was made.
+
 ## [2026-07-28] Wave W3 — TASK-045 closed
 
 - Reconciled the owner-recorded closure of `TASK-045-T3-FT-007-W3` after

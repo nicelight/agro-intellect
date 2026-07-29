@@ -3,7 +3,7 @@ description: Product brief (C4 L1): что это, для кого, core value, 
 status: active
 type: product
 owner: product
-last_updated: 2026-07-19
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -47,15 +47,15 @@ The system is also an AI-first agentic development training ground: product agen
 9. Companion may coordinate Plant-scoped discussion through IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord, without replacing backend rules or Safety Gate approval.
 10. Follow-up outcomes and dataset evidence remain traceable and non-trainable by default.
 
-Whenever a Plant creation commits, the system registers the canonical roster
-and sends one deterministic eight-item introduction batch to the downstream
-sink. FT-008 eventually writes one `UIFeedEvent` per introduction for every
-active Plant; the Plant chat/feed UI renders the same event and Agent Chat Bus
-does not consume it. Reconciliation recovers failure/restart, pauses while
-archived, and revalidates current state after restore. Delivery failure never
-rolls back Plant creation. Introductions identify competence; they are not
-model-generated analysis and do not satisfy provider-neutral runtime
-acceptance by themselves.
+The canonical ordered eight-agent roster remains available for every active
+Plant. When an authorized user opens an active Plant Feed, FT-008 idempotently
+materializes only missing presentation `UIFeedEvent` introductions. Plant
+creation/`201`, process startup, restore, and archived retained-history reads
+perform no introduction batch, sink, scan, or reconciliation work. The public
+Feed response/cursor schema stays unchanged; `FEED_PERSISTENCE_FAILED` plus a
+later authorized Feed retry is sufficient recovery. Introductions identify
+competence, are never consumed by Agent Chat Bus or agent context, and do not
+prove that a model ran.
 
 ## Constraints
 - Tech stack direction: local modular monolith, Python/FastAPI/Pydantic backend,

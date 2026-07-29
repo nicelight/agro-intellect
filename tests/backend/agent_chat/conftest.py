@@ -57,6 +57,7 @@ def _postgres_database():
             "ft004_plant_operations",
             "ft005_photo_intake",
             "ft008_agent_chat_ui_feed",
+            "ft008_lazy_introductions",
         )
         with scoped.engine().connect() as connection:
             context = MigrationContext.configure(connection)

@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-007
 epic: EP-003
 lifecycle: planned
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 spec_design_status: complete
 spec_design_links:
   - .memory-bank/architecture/system-architecture.md
@@ -72,9 +72,10 @@ source_of_truth:
 - Current production composition selects no provider, model, endpoint,
   credential, or egress permission and returns the stable not-configured
   outcome before network I/O.
-- After a new Plant commits, the system activates the exact eight-agent roster
-  and sends one strict deterministic batch containing eight
-  non-agent-consumable introduction handoffs without invoking a model.
+- The exact ordered eight-agent roster and its deterministic introduction
+  metadata remain canonical. FT-007 creates no post-commit introduction batch
+  or sink handoff; FT-008 may read that metadata only to materialize missing
+  presentation rows during an authorized active-Plant Feed open.
 
 ## Edge Cases & Failure Modes
 
@@ -88,8 +89,8 @@ source_of_truth:
 - Restore does not replay output blocked by archive.
 - Missing production executor fails closed before I/O without fake output or
   fallback.
-- A post-commit bootstrap failure cannot roll back or falsely report failure of
-  an already committed Plant.
+- Plant creation does not invoke introduction persistence and retains its
+  existing commit/`201` semantics.
 
 ## Verification Targets
 
@@ -103,8 +104,8 @@ source_of_truth:
   publication without replay after restore.
 - Anti-cheat: production cannot select a fake/stubbed executor or infer a
   binding from installed SDKs or environment variables.
-- Integration: Plant creation commits before the exact roster/introduction
-  handoff and performs no provider call.
+- Unit: canonical roster order, identities, competence boundaries, and
+  introduction metadata remain exact and make no provider call.
 - Composition: production remains unbound; tests inject explicit provider-
   neutral fakes/spies; no default, provider SDK, credential lookup, or fallback
   exists.
@@ -120,7 +121,7 @@ source_of_truth:
   [Account/Membership](../domains/identity/account-membership.md),
   [Session Lifecycle](../states/auth/session-lifecycle.md), and
   [Plant Lifecycle](../states/plants/plant-and-access-lifecycle.md).
-- Plant input and bootstrap: [Plant Operations](../domains/plant-operations.md),
+- Plant input and roster: [Plant Operations](../domains/plant-operations.md),
   [Plant Operations HTTP](../contracts/plant-operations-http.md),
   [Plant Management HTTP](../contracts/farm/plant-management-http.md),
   [Farm/Plant/Access Storage](../domains/farm/farm-plant-access-storage.md), and
@@ -148,9 +149,9 @@ source_of_truth:
 - Candidate text remains opaque data across FT-007. It is never parsed as
   markup/prompt, promoted to instructions, or used to select classification,
   publication, task, Safety, or action authority.
-- Roster Bootstrap owns the post-commit eight-item batch and 8-or-0 sink result.
-  Plant creation never calls a provider or rolls back after commit.
-- FT-008 owns Bus/UI publication and durable introduction reconciliation;
+- The roster contract owns stable identities and presentation metadata; no
+  post-commit batch, sink, or introduction lifecycle remains in FT-007.
+- FT-008 owns Bus/UI publication and lazy missing-introduction materialization;
   FT-011/FT-012 own Safety/task effects. FT-007 implements only their strict
   handoff contracts.
 - Provider/model selection belongs only to the deferred selected-endpoint
@@ -159,13 +160,20 @@ source_of_truth:
 ## Feature-Local Design Pressure
 
 - Exact runtime decision model, adapter contract, MessageEnvelope schema,
-  roster/bootstrap, unbound production behavior, audit behavior, and
-  anti-cheat tests.
+  canonical roster metadata, unbound production behavior, audit behavior, and
+  anti-cheat tests. The linked roster/testing specs now define static
+  introduction metadata without a post-create batch, sink, or persistence
+  lifecycle.
 
 ## SDD Design Gate
 
-- Global/shared and FT-007 design status: complete; exact rules live in the
-  canonical links above.
+- `spec_design_status: complete`: the roster/testing design and
+  `FT-007-BHV-002` now match the accepted static-metadata boundary.
+- The implementation delta was completed by the single cross-boundary
+  `TASK-046-T3-FT-008-W3`, whose primary orchestration owner is Agent Chat Bus
+  & UI Feed. No separate FT-007 task was created because removal of the
+  post-create/composition path and Feed-side replacement were not independently
+  releasable or observable.
 - Historical TASK-028 verification/semantic failures and BUG-001 were correct
   under the superseded syntax-rejection contract. They remain historical and
   their lifecycle is not changed by this design pass.
@@ -173,10 +181,10 @@ source_of_truth:
   open and are not current task inputs.
 - TASK-028 (`failed`) and TASK-029 (`blocked`) remain lifecycle/history
   artifacts only and must never be re-executed or rewritten.
-- Current `backend/app/agent_runtime/contracts.py` and its FT-007 tests still
-  contain the superseded partial markup/prompt regex rejection. The bounded
-  implementation delta is routed to planned TASK-030 without rewriting the
-  historical failed/blocked lifecycle records.
+- `TASK-046-T3-FT-008-W3` is `done` after approved FT-008 Planning Revision 2,
+  independent functional `PASS`, task-level `semantic-pass`, and the exact T3
+  human checkpoint. It removed the batch/bootstrap persistence lifecycle while
+  preserving the canonical roster metadata boundary.
 
 ## Historical W1/W2 Reconciled Handoff
 
@@ -238,8 +246,11 @@ SEMANTIC_VERDICT: semantic-pass
   independently verified TASK-030/TASK-031 replacements and do not claim the
   original implementations passed.
 - `FT-007-BHV-001` is deferred to the future selected-endpoint milestone and
-  is not satisfied by deterministic evidence. FT-008 retains durable introduction reconciliation,
-  Bus/UI publication, and downstream current-guard ownership.
+  is not satisfied by deterministic evidence. Its historical review predates
+  the accepted removal of durable introduction reconciliation; the fresh
+  TASK-046 functional and semantic evidence now verifies the metadata-only
+  FT-007 boundary and FT-008 lazy-introduction outcome without satisfying that
+  deferred provider milestone.
 - Report: [FT-007 feature semantic review](../../.tasks/FT-007/FT-007-S-RED-VERIFY-final-report-docs-01.md).
 
 ## Implementation

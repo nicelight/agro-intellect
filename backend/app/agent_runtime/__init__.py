@@ -22,13 +22,8 @@ from .service import (
     StaticAgentDefinitionResolver,
 )
 from .bootstrap import (
-    AgentIntroductionBatchResultV1,
-    AgentIntroductionBatchV1,
     AgentIntroductionV1,
-    PlantAgentBootstrapCommandV1,
-    PlantAgentBootstrapService,
-    UnavailableAgentIntroductionSink,
-    build_introduction_batch,
+    build_introductions,
     eligible_roster_for_plant,
 )
 from .roster import CANONICAL_ROSTER_V1, ROSTER_VERSION, canonical_roster
@@ -51,13 +46,8 @@ __all__ = [
     "RuntimeDecision",
     "SafetyClassificationResultV1",
     "StaticAgentDefinitionResolver",
-    "AgentIntroductionBatchResultV1",
-    "AgentIntroductionBatchV1",
     "AgentIntroductionV1",
-    "PlantAgentBootstrapCommandV1",
-    "PlantAgentBootstrapService",
-    "UnavailableAgentIntroductionSink",
-    "build_introduction_batch",
+    "build_introductions",
     "eligible_roster_for_plant",
     "CANONICAL_ROSTER_V1",
     "ROSTER_VERSION",

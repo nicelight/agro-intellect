@@ -1,7 +1,7 @@
 ---
 description: Router for active testing strategy and subject verification specifications.
 status: active
-last_updated: 2026-07-20
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/testing/strategy.md
@@ -34,10 +34,11 @@ source_of_truth:
 - [Plant History Verification](plant-history.md): Plant card/history
   projection, retained-history, timeline-ref, and redaction evidence.
 - [Agent Runtime Verification](agent-runtime.md): runtime decisions,
-  MessageEnvelope, roster/bootstrap, provider binding, real-model anti-cheat,
-  audit, and archive-race evidence.
-- [Agent Chat Bus And UI Feed Verification](agent-chat-ui-feed.md): durable
-  introductions, guarded publication, context hygiene, and Plant feed API.
+  MessageEnvelope, static roster metadata, provider binding, real-model
+  anti-cheat, audit, and archive-race evidence.
+- [Agent Chat Bus And UI Feed Verification](agent-chat-ui-feed.md): lazy
+  active-Feed introductions, guarded publication, context hygiene, migration,
+  and Plant Feed API.
 - [Vision Observation And Plant State Verification](vision-observation-plant-state.md):
   real image input, provider anti-cheat, trust persistence, conflict, review,
   and Plant state HTTP evidence.

@@ -123,19 +123,27 @@ def test_companion_ui_rows_are_exact_literal_non_consumable_and_retained_in_feed
         assert marker in serialized
         assert command.proposal_text not in serialized
         assert command.rationale_text not in serialized
-        for actor in (boss, consultant):
-            page = PlantFeedService(session).list_feed(
+    for actor in (boss, consultant):
+        with ft013_database.session() as feed_session:
+            page = PlantFeedService(feed_session).list_feed(
                 actor,
                 plant_id=plant.plant_id,
                 cursor=None,
                 limit=10,
             )
-            assert {item.ui_event_id for item in page.items} == {
+            items_by_id = {item.ui_event_id: item for item in page.items}
+            assert {
                 result.attention_id,
                 result.proposal_id,
-            }
-            assert all(item.visible_to_agents is False for item in page.items)
-            assert all(item.consumable_by_agents is False for item in page.items)
+            } <= items_by_id.keys()
+            assert all(
+                items_by_id[event_id].visible_to_agents is False
+                for event_id in (result.attention_id, result.proposal_id)
+            )
+            assert all(
+                items_by_id[event_id].consumable_by_agents is False
+                for event_id in (result.attention_id, result.proposal_id)
+            )
 
     archive_plant(ft013_database, boss, plant_id=plant.plant_id)
     with ft013_database.session() as session:
@@ -145,7 +153,10 @@ def test_companion_ui_rows_are_exact_literal_non_consumable_and_retained_in_feed
             cursor=None,
             limit=10,
         )
-        assert len(retained.items) == 2
+        assert {
+            result.attention_id,
+            result.proposal_id,
+        } <= {item.ui_event_id for item in retained.items}
 
 
 def test_companion_ui_contract_rejects_unknown_or_authority_bearing_variants(

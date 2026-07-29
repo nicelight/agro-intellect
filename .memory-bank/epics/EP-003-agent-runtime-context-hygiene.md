@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-003
 lifecycle: planned
-last_updated: 2026-07-20
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -28,6 +28,9 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 - Current code-phase agent behavior is provider-neutral and deterministically
   verified over actual scoped Plant data; real endpoint behavior is deferred.
 - UI Feed is never consumed as agent working context; governance content enters only through an owning strict agent-specific provider contract.
+- Missing canonical roster introductions are materialized only by an authorized
+  active-Plant Feed open, without Plant-create/startup/restore reconciliation
+  or Agent Chat Bus/context consumption.
 - Vision outputs remain observations/hypotheses unless human review or follow-up evidence promotes state.
 - Advisor output asks for missing/stale critical data instead of inventing evidence.
 
@@ -38,6 +41,9 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 - Agent Chat Bus and UI Feed are separate boundaries.
 - Fake/spy executors are test-only; production has no fake/canned/fallback
   behavior and fails closed without a selected endpoint.
+- Plant creation, startup, restore, and archived retained-history Feed reads do
+  not materialize roster introductions; an authorized active-Plant Feed open
+  may idempotently create only missing presentation rows.
 
 ## Constraints / Invariants
 
@@ -53,10 +59,12 @@ Allow product agents to help with actual scoped Plant data while preventing raw 
 
 ## Current Lifecycle Evidence
 
-- FT-008 is `verified` for durable roster introductions, guarded typed Bus and
-  literal UI publication, current-authority agent-context isolation, and the
-  protected Plant feed API. REQ-013 is correspondingly `verified` across its
-  FT-007/FT-008 boundary.
+- Historical FT-008 evidence continues to verify guarded Bus/UI publication,
+  current-authority agent-context isolation, and the protected Plant Feed
+  baseline. `TASK-046-T3-FT-008-W3` adds fresh functional `PASS`, task-level
+  `semantic-pass`, and exact T3 checkpoint evidence for the accepted lazy
+  Feed-open materialization outcome. FT-008 and REQ-013 are therefore
+  `verified`.
 - FT-009's W1/W2 task queue is complete: TASK-034 has an owner-accepted
   provider-neutral administrative closure, and TASK-035 is `done` from current
   ATTEMPT 04 implementation, functional `PASS`, and `semantic-pass` evidence.

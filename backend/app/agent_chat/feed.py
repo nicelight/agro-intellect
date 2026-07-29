@@ -11,6 +11,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from ..access_admin.actor_context import ActorContext
+from ..agent_runtime.bootstrap import build_introductions
 from .authorization import lock_current_plant_authorization
 from .contracts import UIFeedEventV1, timestamp_text
 from .models import UIFeedEvent
@@ -40,25 +41,128 @@ class PlantFeedService:
     def list_feed(self, actor: ActorContext, *, plant_id: uuid.UUID, cursor: str | None, limit: int) -> PlantFeedPage:
         if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 100:
             raise PlantFeedError(PlantFeedErrorCode.FEED_LIMIT_INVALID)
-        auth = lock_current_plant_authorization(self._session, actor, plant_id, allow_archived=True)
-        if auth is None: raise PlantFeedError(PlantFeedErrorCode.AUTH_PLANT_FORBIDDEN)
-        after = _decode_cursor(cursor) if cursor is not None else None
-        query = select(UIFeedEvent).where(UIFeedEvent.plant_id == plant_id, UIFeedEvent.farm_id == actor.farm_id)
+        try:
+            with self._session.begin():
+                auth = lock_current_plant_authorization(
+                    self._session, actor, plant_id, allow_archived=True
+                )
+                if auth is None:
+                    raise PlantFeedError(
+                        PlantFeedErrorCode.AUTH_PLANT_FORBIDDEN
+                    )
+                after = _decode_cursor(cursor) if cursor is not None else None
+                if not auth.archived:
+                    self._materialize_missing_introductions(
+                        farm_id=actor.farm_id,
+                        plant_id=plant_id,
+                    )
+                rows = self._read_page_rows(
+                    actor=actor,
+                    plant_id=plant_id,
+                    after=after,
+                )
+                has_more = len(rows) > limit
+                rows = rows[:limit]
+                items = tuple(
+                    UIFeedEventV1.from_untrusted(_row_value(row))
+                    for row in rows
+                )
+                next_cursor = (
+                    _encode_cursor(rows[-1].created_at, rows[-1].ui_event_id)
+                    if has_more and rows
+                    else None
+                )
+                return PlantFeedPage(items, next_cursor)
+        except PlantFeedError:
+            raise
+        except Exception:
+            raise PlantFeedError(
+                PlantFeedErrorCode.FEED_PERSISTENCE_FAILED
+            ) from None
+
+    def _materialize_missing_introductions(
+        self,
+        *,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+    ) -> None:
+        introductions = build_introductions(
+            farm_id=farm_id,
+            plant_id=plant_id,
+        )
+        existing = set(
+            self._session.execute(
+                select(UIFeedEvent.agent_id, UIFeedEvent.roster_version).where(
+                    UIFeedEvent.farm_id == farm_id,
+                    UIFeedEvent.plant_id == plant_id,
+                    UIFeedEvent.display_kind == "agent_introduction",
+                )
+            )
+        )
+        self._session.add_all(
+            _event_from(item)
+            for item in introductions
+            if (item.agent_id, item.roster_version) not in existing
+        )
+        self._session.flush()
+
+    def _read_page_rows(
+        self,
+        *,
+        actor: ActorContext,
+        plant_id: uuid.UUID,
+        after: tuple[datetime, uuid.UUID] | None,
+    ) -> list[UIFeedEvent]:
+        query = select(UIFeedEvent).where(
+            UIFeedEvent.plant_id == plant_id,
+            UIFeedEvent.farm_id == actor.farm_id,
+        )
         if after is not None:
             created_at, event_id = after
-            query = query.where(or_(UIFeedEvent.created_at > created_at, and_(UIFeedEvent.created_at == created_at, UIFeedEvent.ui_event_id > event_id)))
-        rows = [
+            query = query.where(
+                or_(
+                    UIFeedEvent.created_at > created_at,
+                    and_(
+                        UIFeedEvent.created_at == created_at,
+                        UIFeedEvent.ui_event_id > event_id,
+                    ),
+                )
+            )
+        return [
             row
             for row in self._session.scalars(
                 query.order_by(UIFeedEvent.created_at, UIFeedEvent.ui_event_id)
             )
             if actor.role_preset.value in row.visible_to_roles
         ]
-        has_more = len(rows) > limit
-        rows = rows[:limit]
-        items = tuple(UIFeedEventV1.from_untrusted(_row_value(row)) for row in rows)
-        next_cursor = _encode_cursor(rows[-1].created_at, rows[-1].ui_event_id) if has_more and rows else None
-        return PlantFeedPage(items, next_cursor)
+
+
+def _event_from(item) -> UIFeedEvent:
+    return UIFeedEvent(
+        ui_event_id=item.introduction_id,
+        farm_id=item.farm_id,
+        plant_id=item.plant_id,
+        source_type="system",
+        source_id=str(item.introduction_id),
+        source_refs=[
+            f"agent_roster:{item.roster_version}",
+            f"agent_introduction:{item.introduction_id}",
+        ],
+        display_kind="agent_introduction",
+        display_payload={
+            "payload_kind": "agent_introduction",
+            "agent_id": item.agent_id,
+            "display_name": item.display_name,
+            "competence_summary": item.competence_summary,
+            "introduction_text": item.introduction_text,
+            "roster_version": item.roster_version,
+        },
+        visible_to_roles=["boss", "engineer", "consultant"],
+        visible_to_agents=False,
+        consumable_by_agents=False,
+        agent_id=item.agent_id,
+        roster_version=item.roster_version,
+    )
 
 
 def _row_value(row: UIFeedEvent) -> dict[str, object]:

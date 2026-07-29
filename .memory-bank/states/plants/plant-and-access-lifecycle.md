@@ -2,7 +2,7 @@
 description: Plant lifecycle operational guard, PlantAccessGrant status effects, and FT-002 creation authority.
 status: active
 type: state_spec
-last_updated: 2026-07-06
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/domains/farm/farm-plant-access-storage.md
   - .memory-bank/contracts/access/actor-context.md
@@ -65,6 +65,11 @@ machines.
 - Explicit exceptions are Boss archive/restore and grant administration plus
   authorized retained-history read/comment paths. Grant changes made while
   archived are stored and audited but remain non-operative.
+- An archived retained-history Feed read is strictly read-only and cannot
+  materialize a missing roster introduction. Restore also writes no
+  introduction. Only a later authorized active-Plant Feed open may insert
+  missing presentation rows after locking/rechecking current identity,
+  applicable grant, and `Plant.status=active` in that write transaction.
 - Restore changes only `Plant.status`. It does not resume, replay, refresh,
   approve, reject, complete, cancel, or otherwise transition a dependent
   record.

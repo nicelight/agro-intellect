@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-27
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -28,7 +28,7 @@ source_of_truth:
 ## EP-003 Agent Runtime And Context Hygiene
 
 - [FT-007 Agent Runtime Decisions And MessageEnvelope](FT-007-agent-runtime-decisions-message-envelope.md) — `planned`: agent runtime decisions and MessageEnvelope.
-- [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md) — `verified`: guarded Bus/UI publication and context hygiene.
+- [FT-008 Agent Chat Bus And UI Feed Context Hygiene](FT-008-agent-chat-bus-ui-feed-context-hygiene.md) — `verified`: guarded Bus/UI publication, context hygiene, protected Feed reads, and lazy active-Feed introduction materialization.
 - [FT-009 Vision Observation And Plant State Trust](FT-009-vision-observation-plant-state-trust.md) — `planned`: Vision observations and Plant-state trust.
 - [FT-010 Hydroponics Advisor Missing Data Policy](FT-010-hydroponics-advisor-missing-data-policy.md) — `planned`: cautious advice under missing/stale data.
 

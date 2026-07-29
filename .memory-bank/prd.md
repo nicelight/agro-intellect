@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-07-19
+last_updated: 2026-07-28
 ---
 # PRD
 
@@ -14,6 +14,10 @@ last_updated: 2026-07-19
 - [.memory-bank/constitution.md](constitution.md): governing policy for AI-first, low-maintenance, bounded local-first MVP scope.
 - [.memory-bank/invariants.md](invariants.md): cross-cutting MUST/NEVER guardrails.
 - [.memory-bank/glossary.md](glossary.md): agreed MVP v2 vocabulary.
+- Operator decision on 2026-07-28 accepting the KISS outcome for Finding 4
+  from [SIMPLIFICATION.md](../SIMPLIFICATION.md): retain the canonical
+  eight-agent roster while materializing missing presentation-only
+  introductions lazily on authorized active-Plant Feed access.
 
 ## Product Summary
 
@@ -107,14 +111,25 @@ does not replace backend rules, and cannot authorize physical actions.
 - Authorized typed Plant context MAY leave the local runtime for the explicitly
   selected provider. Credentials, auth material, raw UI/chat, provider history,
   and hidden reasoning remain forbidden outbound context.
-- After a Plant creation commits, the system MUST idempotently register the
-  canonical Plant agent roster and send one deterministic eight-item batch to
-  the introduction sink. Introduction text is project metadata, not model
-  output or evidence that a real model ran. FT-008 MUST durably reconcile one
-  `UIFeedEvent` per introduction for every active Plant; the Plant chat/feed UI
-  renders that same event and Agent Chat Bus MUST NOT consume it. Failure MUST
-  NOT roll back or falsely fail Plant creation. Projection stops while archived
-  and resumes only after current-state reconciliation.
+- The canonical Plant agent roster MUST remain the same ordered eight-agent
+  roster. Its deterministic introduction text is presentation metadata, not
+  model output or evidence that a real model ran.
+- Plant creation MUST keep its current commit and `201` response semantics and
+  MUST NOT depend on introduction persistence.
+- On the first authorized Feed open for an active Plant that is missing current
+  roster introductions, the system MUST idempotently materialize only the
+  missing presentation `UIFeedEvent` rows. Repeated Feed opens MUST NOT create
+  duplicates. Introduction rows MUST remain unavailable to Agent Chat Bus and
+  every other agent working-context path.
+- Plant creation, process startup, and restore MUST NOT require an introduction
+  batch, introduction sink, background scan, durable pending state, or
+  reconciliation lifecycle. An archived retained-history Feed read MUST create
+  no introduction rows. After restore, missing rows MAY be materialized only by
+  a later authorized Feed open while the Plant is active.
+- Lazy introduction materialization MUST preserve the current public Feed
+  response and cursor schema. If persistence fails, the existing
+  `FEED_PERSISTENCE_FAILED` response and a later client retry are sufficient
+  recovery; no additional durable recovery mechanism is required.
 - Vision Observation Agent MUST load and integrity-check actual uploaded photo
   bytes through its strict provider-neutral media boundary. Current code-phase
   acceptance uses an outbound spy for byte identity; a real image-capable
@@ -173,8 +188,9 @@ First working flow:
 1. User logs in or opens a local session.
 2. System resolves Account, Farm, role preset, PlantAccessGrant, and ActorContext.
 3. User selects an authorized Plant, initially `tomato_001`.
-   For a newly committed Plant, the system registers its canonical agent roster
-   and hands each agent's deterministic introduction to that Plant's chat/feed.
+   On the first authorized Feed open for an active Plant with missing canonical
+   roster introductions, the system idempotently adds only those missing
+   presentation rows before returning the normal Feed view.
 4. System starts a daily check-in.
 5. User records observations, uploads a photo, and/or enters pH/EC measurements.
 6. Backend stores photo file, catalog row, initial capture manifest, runtime state, and timeline audit.
@@ -227,6 +243,12 @@ from first demo.
 - DecisionRecord MUST NOT be treated as Plant-state evidence or action approval by itself.
 - Sending governance content to a model does not approve it, turn it into a fact, or grant DecisionRecord, Plant-state, Task, Safety, or publication authority.
 - Admin UI notices, UI markdown, UI cards, raw chat, and spoiler notes MUST NOT become agent facts.
+- Archived retained-history Feed reads MUST NOT materialize missing roster
+  introductions. Restore MUST NOT materialize them by itself; only a later
+  authorized active-Plant Feed open may do so.
+- A lazy introduction persistence failure MUST use the existing
+  `FEED_PERSISTENCE_FAILED` response. A later authorized Feed retry MAY complete
+  the idempotent materialization without a background repair lifecycle.
 - Local storage warnings MUST allow acknowledge/dismiss and MUST NOT imply upload/server availability.
 - LAN mode, if enabled, MUST add exposure controls and MUST NOT weaken local auth/authz.
 - Agent output MUST NOT promote hypotheses to confirmed Plant state without human review or follow-up evidence.
@@ -257,6 +279,15 @@ from first demo.
   request that passes all current guards.
 - Photo upload produces a local file, catalog row, `sha256`, initial capture manifest, and audit/export refs.
 - UI Feed is not consumed by agents; authorized typed governance context may be supplied only through an owning agent-specific provider contract and remains non-authoritative.
+- The canonical ordered eight-agent roster remains visible through
+  presentation-only introductions. Missing introduction rows are created
+  idempotently on the first authorized active-Plant Feed open, repeated opens
+  do not duplicate them, archived retained-history reads and restore create
+  none, and a later authorized active Feed open after restore may fill them.
+- Plant create commit/`201` and the public Feed response/cursor schema remain
+  unchanged. Lazy persistence failure uses `FEED_PERSISTENCE_FAILED`, and retry
+  is sufficient recovery without a batch, sink, startup scan, or durable
+  reconciliation lifecycle.
 - Physical-action wording is blocked or routed until fresh data, Safety Gate pass, and authorized human approval exist.
 - Governance DecisionRecord remains separate from Safety Gate approval.
 - DecisionRecord can route Plant-scoped workflow or safe check/measurement/follow-up task requests, but cannot mutate Plant state or unlock physical actions.
@@ -275,6 +306,11 @@ from first demo.
   while archived and no automatic resume after restore.
 - Safety tests later MUST cover stale data, missing approval authority, failed Safety Gate, governance-vs-safety approval separation, and action-task unlock semantics.
 - UI/context hygiene tests later MUST prove UI Feed, spoiler notes, raw chat, and admin notices do not enter agent working context, while any agent-specific governance input matches its strict typed allowlist and remains non-authoritative.
+- Roster-introduction tests later MUST prove lazy missing-row materialization on
+  authorized active-Plant Feed open, idempotent retries, no writes from
+  archived retained-history reads or restore, unchanged Plant-create and public
+  Feed/cursor contracts, `FEED_PERSISTENCE_FAILED` recovery by retry, and no
+  introduction path into agent context.
 - Storage/export tests later MUST cover photo file/catalog/manifest/timeline refs and secret redaction.
 - Agent runtime tests MUST keep fake/spy executors explicitly test-only and
   prove that production composition has no fake/canned/fallback path. A future
@@ -307,12 +343,10 @@ from first demo.
 - Q: May Plant context be sent to external providers? -> A: Yes, but only the
   typed authorized payload for the explicitly selected provider; credentials,
   raw UI/chat, provider history, and hidden reasoning remain excluded.
-- Q: When do Plant agents start and appear in chat? -> A: After Plant creation
-  commits, register the canonical roster and submit one deterministic batch.
-  FT-008 eventually creates one non-agent-consumable `UIFeedEvent` per member;
-  the Plant chat/feed UI renders those events. Retry/restart is idempotent,
-  archive pauses projection, restore revalidates current state, and delivery
-  failure never rolls back Plant creation.
+- Q: When do Plant agents start and appear in chat? -> A: Historical answer
+  superseded on 2026-07-28. The active decision retains the canonical roster
+  but materializes missing presentation-only introduction rows lazily through
+  authorized active-Plant Feed access.
 
 ### Session 2026-07-18
 
@@ -338,6 +372,23 @@ from first demo.
   milestone in the Agent Runtime provider runbook/testing concern covers real
   image, real response, errors, timeouts, redaction, and cost. Until that
   milestone is run, no real-provider integration is claimed.
+
+### Session 2026-07-28
+
+- Q: What is the accepted KISS outcome for roster introductions from
+  `SIMPLIFICATION.md` Finding 4? -> A: Keep the canonical ordered eight-agent
+  roster and its deterministic introduction metadata, but treat introductions
+  solely as non-agent-consumable presentation. Missing `UIFeedEvent` rows are
+  lazily and idempotently materialized only when an authorized user opens the
+  Feed for an active Plant. Archived retained-history reads create nothing;
+  restore creates nothing, and materialization is allowed only on a later
+  authorized active-Plant Feed open.
+- Q: What remains unchanged and how is failure recovered? -> A: Plant create
+  commit and `201` semantics stay unchanged, as do the public Feed response and
+  cursor schema. The product requires no post-create batch/sink, durable pending
+  state, startup scan, or reconciliation lifecycle. Existing
+  `FEED_PERSISTENCE_FAILED` behavior plus a later authorized Feed retry is
+  sufficient recovery.
 
 ## Unresolved Blockers
 

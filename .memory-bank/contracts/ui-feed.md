@@ -2,7 +2,7 @@
 description: Global UI Feed projection contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-18
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -40,7 +40,8 @@ feature when a projection is feature-specific.
     validated pending agent-output boundary before classification and UI
     projection.
   - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
-    defines deterministic introduction batches and FT-007/FT-008 ownership.
+    defines the canonical ordered roster and deterministic introduction
+    metadata.
   - [.memory-bank/contracts/timeline-event.md](timeline-event.md): defines
     append-only audit/export events.
   - [.memory-bank/domains/safety-action-routing.md](../domains/safety-action-routing.md):
@@ -80,6 +81,19 @@ Payload variants:
 - `block_notice`: exactly
   `{payload_kind:"block_notice",notice_code:"classification_uncertain",text:"Сообщение заблокировано до уточнения безопасности."}`;
   it never copies candidate text.
+
+For `agent_introduction`, the unchanged outer mapping is exact:
+
+- `ui_event_id=introduction_id`, `source_type=system`,
+  `source_id=<introduction_id>`;
+- `source_refs=["agent_roster:<roster_version>",
+  "agent_introduction:<introduction_id>"]`;
+- `display_kind=agent_introduction`;
+- `visible_to_roles=["boss","engineer","consultant"]`;
+- both agent flags are false.
+
+`created_at` is assigned only on the first insert. Lazy materialization never
+rewrites this mapping or any existing introduction row.
 
 For `display_kind=safety_status`, `display_payload` is exactly:
 
@@ -143,11 +157,18 @@ authority, task/action authority, URL/action input, or HTML/Markdown source.
   Markup-, prompt-, instruction-, command-, and URL-looking sequences remain
   inert visible text.
 - UI Feed is the visible projection owner for deterministic roster
-  introductions. FT-008 durably reconciles one strict eight-item batch per
-  active Plant and writes exactly one `UIFeedEvent` per
-  `(plant_id, agent_id, roster_version)`. The Plant chat/feed UI renders that
-  same event; no introduction is copied to Agent Chat Bus. Introductions remain
+  introductions. Only an authorized `GET` Feed access for a currently active
+  Plant may materialize missing canonical rows. The current authorization and
+  active Plant state are locked/rechecked in the same transaction as those
+  inserts. Existing rows remain unchanged; deterministic ids and
+  `(plant_id, agent_id, roster_version)` uniqueness make repeat, concurrent,
+  and retried opens idempotent. The Plant chat/feed UI renders those same rows;
+  no introduction is copied to Agent Chat Bus. Introductions remain
   `visible_to_agents=false` and `consumable_by_agents=false`.
+- Plant creation/`201`, process startup, restore, and archived
+  retained-history Feed reads create no introduction rows. There is no
+  introduction batch, sink, pending state, background scan, or reconciliation
+  lifecycle.
 - UI Feed must never publish directly to Agent Chat Bus.
 - UI Feed, UI markdown, cards, spoiler notes, raw chat, and admin notices must
   never enter agent working context. An agent-specific provider assembler may
@@ -199,9 +220,10 @@ text-node/framework interpolation semantics.
   ordinary candidate/block/Safety notice.
 - If a projection references archived Plant history, it must use an explicit
   retained-history authorization path.
-- A pending introduction is retained but not projected while its Plant is
-  archived. A later active-Plant reconciliation after restore may continue
-  delivery only after reloading current Plant state; it is not timeline replay.
+- Existing introduction rows remain retained while their Plant is archived.
+  An archived retained-history read writes nothing. Restore writes nothing; a
+  later authorized active-Plant Feed open may insert only rows still missing
+  after reloading current authorization and Plant state.
 - Companion projection writes require current authorization and
   `Plant.status=active`. Archive preserves existing UI rows for authorized
   retained-history reads but blocks new governance projections; restore does
@@ -241,3 +263,8 @@ Tests must prove:
 - held Companion safe-information/task/physical/blocked/mismatch/failure paths
   write no ordinary candidate/block/Safety UI row, retry/restore does not
   replay one, and non-Companion FT-008 behavior remains compatible.
+- roster-introduction checks prove only an authorized active-Plant Feed open
+  inserts missing rows; Plant create/startup/restore/archived reads write none;
+  retries and concurrent opens do not duplicate rows; existing rows remain
+  unchanged; persistence failure returns through `FEED_PERSISTENCE_FAILED`; and
+  no introduction enters Agent Chat Bus or agent context.

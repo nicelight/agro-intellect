@@ -22,42 +22,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 from ..access_admin.models import Base, JSON_DOCUMENT
 
 
-class AgentIntroductionBatch(Base):
-    __tablename__ = "agent_introduction_batches"
-    __table_args__ = (
-        CheckConstraint(
-            "roster_version > 0",
-            name="ck_agent_introduction_batches_roster_version_positive",
-        ),
-        CheckConstraint(
-            "content_sha256 ~ '^[0-9a-f]{64}$'",
-            name="ck_agent_introduction_batches_content_sha256_lower_hex",
-        ).ddl_if(dialect="postgresql"),
-        UniqueConstraint(
-            "plant_id",
-            "roster_version",
-            name="uq_agent_introduction_batches_plant_roster",
-        ),
-    )
-
-    batch_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
-    farm_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("farms.farm_id", ondelete="RESTRICT"),
-        nullable=False,
-    )
-    plant_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("plants.plant_id", ondelete="RESTRICT"),
-        nullable=False,
-    )
-    roster_version: Mapped[int] = mapped_column(Integer, nullable=False)
-    content_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-
-
 class UIFeedEvent(Base):
     __tablename__ = "ui_feed_events"
     __table_args__ = (
@@ -216,4 +180,4 @@ class AgentBusEvent(Base):
     )
 
 
-__all__ = ["AgentBusEvent", "AgentIntroductionBatch", "UIFeedEvent"]
+__all__ = ["AgentBusEvent", "UIFeedEvent"]

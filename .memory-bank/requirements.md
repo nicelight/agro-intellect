@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-27
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -65,8 +65,10 @@ source_of_truth:
   - UI Feed, raw chat/UI content, and admin notices MUST NOT become agent working context;
   - authorized typed governance content MAY be supplied by an owning agent-specific provider contract, but it remains untrusted context and grants no DecisionRecord, Plant-state, Task, Safety, or publication authority;
   - archived Plants deny state-advancing publication; restore requires current authorization and does not replay denied work;
-  - after Plant commit, the system submits one deterministic eight-item introduction batch without rolling back or falsely failing Plant creation on delivery failure;
-  - FT-008 MUST reconcile exactly one non-agent-consumable `UIFeedEvent` per introduction for every active Plant; the Plant chat/feed UI renders that event, Agent Chat Bus does not consume it, archive pauses projection, and restore requires current-state reconciliation.
+  - the canonical ordered eight-agent roster and deterministic introduction metadata MUST remain available without making Plant creation or its `201` response depend on introduction persistence;
+  - on an authorized Feed open for an active Plant, FT-008 MUST idempotently materialize only missing non-agent-consumable introduction `UIFeedEvent` rows; repeated opens MUST NOT duplicate them, and neither Agent Chat Bus nor any agent-context path may consume them;
+  - Plant creation, process startup, restore, and archived retained-history Feed reads MUST NOT run an introduction batch, sink, background scan, durable pending state, or reconciliation lifecycle;
+  - the public Feed response/cursor schema MUST remain unchanged; `FEED_PERSISTENCE_FAILED` plus a later authorized active-Plant Feed retry is sufficient recovery.
 - `REQ-014` Hydroponics Advisor missing-data behavior: advisory output MUST remain cautious, permission-aware, and request missing/stale critical data instead of bypassing Safety Gate or inventing evidence.
 - `REQ-015` Safety Gate physical-action routing: physical-action wording MUST be blocked or routed until fresh evidence, Safety Gate pass, authorized human approval, and task/action tracking exist.
 - `REQ-016` Human tasks, approval, and follow-up loop: safe check or
@@ -126,7 +128,7 @@ source_of_truth:
 | REQ-010 | EP-002 | FT-006 | verified: PostgreSQL authority vs append-only timeline audit/export, retained history, and strict cursor behavior | verified |
 | REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | deterministic integration: strict provider-neutral schemas, fake/spy timeout/error paths, pre/post-I/O authorization, redaction, no production fake/fallback, and zero direct authority; future milestone: selected OpenAI-compatible endpoint | planned |
 | REQ-012 | EP-003 | FT-009 | integration: actual photo-byte integrity through outbound spy; unit: Plant trust-state promotion gates; future milestone: selected endpoint real-image run | planned |
-| REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification handoff, guarded typed Bus/literal UI publication, archived-Plant deny, restore revalidation, protected feed reads, and anti-cheat agent-context hygiene | verified |
+| REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification, guarded Bus/UI publication, protected Feed reads, context isolation, and TASK-046 lazy missing-introduction materialization on authorized active-Plant Feed open with no create/startup/restore/archived-read writes, unchanged Feed/cursor schema, and retry after `FEED_PERSISTENCE_FAILED` | verified |
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 missing/stale-data policy plus completed FT-011 deterministic classification and Safety routing through pending human approval; lifecycle awaits explicit owner reconciliation | planned |
 | REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |

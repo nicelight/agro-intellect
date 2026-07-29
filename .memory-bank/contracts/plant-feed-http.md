@@ -2,7 +2,7 @@
 description: Protected Plant UI Feed read API for authorized presentation events.
 status: active
 type: api_contract
-last_updated: 2026-07-17
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/ui-feed.md
@@ -16,10 +16,11 @@ source_of_truth:
 
 ## Scope
 
-Defines the protected read boundary by which the current or future Operator PWA
-loads persisted `UIFeedEventV1` rows. It does not define frontend layout,
-message submission, agent invocation, classification, task actions, or
-physical-action approval.
+Defines the protected boundary by which the current or future Operator PWA
+loads persisted `UIFeedEventV1` rows and, only for an authorized active Plant,
+idempotently materializes missing canonical roster introductions in the same
+transaction. It does not define frontend layout, message submission, agent
+invocation, classification, task actions, or physical-action approval.
 
 ## Endpoint
 
@@ -33,7 +34,23 @@ Query parameters:
 Unknown or repeated query parameters fail validation. The route resolves
 ActorContext before business logic. Active Plant reads use `normal_read`;
 archived Plant reads use the explicit `retained_history_read` permission path.
-Neither path grants operational or agent-context authority.
+Neither path grants operational or agent-context authority. The archived path
+is read-only; the active path may insert only missing introduction presentation
+rows.
+
+After preserving the existing query validation and no-leak authorization
+precedence, the application transaction:
+
+- locks/rechecks the current Account/FarmMembership, Plant, and applicable
+  PlantAccessGrant;
+- inserts only missing canonical roster-version-1 introductions when the Plant
+  is still active;
+- inserts none when the Plant is archived;
+- reads the requested page using the unchanged order and cursor;
+- commits before the success response is returned.
+
+Plant creation, process startup, archive/restore, and Agent Chat Bus/context
+paths never invoke this materialization.
 
 ## Response
 
@@ -69,6 +86,10 @@ is unpadded base64url of canonical compact UTF-8 JSON containing exactly
 canonical re-encode identity is required; malformed, padded, non-canonical, or
 unknown-field cursors fail.
 
+Lazy materialization does not add response fields, reorder existing rows,
+replace existing introduction rows, or change cursor semantics. A page may
+include newly persisted rows according to the same existing order.
+
 ## Errors
 
 - `AUTH_PLANT_FORBIDDEN` -> `404`, without existence leakage.
@@ -78,6 +99,10 @@ unknown-field cursors fail.
 - `FEED_PERSISTENCE_FAILED` -> `500`.
 
 All errors use the global safe envelope and `Cache-Control: no-store`.
+Any introduction insert, page read, flush, or commit failure rolls back the
+request transaction and uses `FEED_PERSISTENCE_FAILED`. A later authorized
+active-Plant Feed request is sufficient retry; the API exposes no batch,
+pending, reconciliation, or repair status.
 
 ## Presentation boundary
 
@@ -96,6 +121,13 @@ frontend scaffold.
 
 - Authenticated tests cover Boss, granted Engineer/Consultant, missing/revoked
   grant, active Plant, archived retained history, and no-store responses.
+- Active-Plant tests prove current authorization and active status are locked
+  in the same transaction as missing-row inserts; authorization revocation or
+  archive races write nothing.
+- Introduction tests prove only missing rows are inserted; repeat, concurrent,
+  and retried opens do not duplicate or update existing rows; archived reads
+  and restore write none; and `FEED_PERSISTENCE_FAILED` rolls back before a
+  later successful retry.
 - Pagination tests prove stable order, canonical continuation, and rejection of
   every malformed/non-canonical cursor or invalid limit.
 - Response tests preserve representative markup/prompt/URL-looking strings as

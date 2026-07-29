@@ -1,18 +1,22 @@
 {
   "id": "FT-008-BHV-001",
   "feature_id": "FT-008",
-  "title": "Restart-safe deterministic introduction reconciliation",
+  "title": "Authorized active Feed open materializes only missing introductions",
   "given": {
     "plant": "active",
     "roster_version": 1,
-    "prior_handoff": "missing_or_failed"
+    "authorization": "current authorized Feed read",
+    "existing_introductions": "any canonical subset, including none"
   },
   "when": {
-    "action": "reconcile_active_plants_twice"
+    "action": "open the Feed repeatedly, concurrently, or after a failed request"
   },
   "then": {
-    "ui_feed_events": 8,
+    "inserted": "only missing canonical introduction rows",
+    "eventual_ui_feed_introductions": 8,
     "unique_by": "plant_id_agent_id_roster_version",
-    "agent_bus_copies": 0
+    "existing_rows_rewritten": false,
+    "agent_bus_or_context_copies": 0,
+    "response_order_cursor_schema": "unchanged"
   }
 }

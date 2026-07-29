@@ -2,7 +2,7 @@
 description: Concrete Farm, Plant lifecycle, PlantAccessGrant, authorization, response, and error HTTP contract.
 status: active
 type: api_contract
-last_updated: 2026-07-08
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/contracts/api-guidelines.md
   - .memory-bank/contracts/access/actor-context.md
@@ -94,6 +94,9 @@ timestamps, grant status, and audit fields have no update payload.
 - Engineer creation returns only after the Plant, active creator grant with
   approval false, and both audit records are committed. A failed transaction
   returns no success representation and leaves no partial record.
+- Plant creation and its `201 PlantSummary` perform no roster-introduction,
+  UI Feed, sink, provider, or startup/reconciliation work. Missing presentation
+  rows belong only to a later authorized active-Plant Feed access.
 - Consultant grant creation is allowed only with
   `plant_approve_actions=false`; Boss memberships do not receive grants.
 - An inactive target membership cannot be granted/reactivated/updated. An
@@ -149,6 +152,9 @@ fallback for Farm mutations.
   back without raw exception or credential leakage.
 - Integration tests prove API results use the persisted snapshot provider, not
   an allow-all fixture or frontend filtering.
+- Plant-create compatibility tests prove the request, transaction,
+  authorization, response, no-store, and error contract remains unchanged and
+  no introduction row or provider/Agent Bus work is triggered.
 
 ## Related specs
 

@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-23
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -36,7 +36,7 @@ source_of_truth:
 | data_spec | [.memory-bank/domains/plant-operations.md](domains/plant-operations.md) | active | Daily check-in, observation, manual pH/EC, and freshness persistence | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md) | active | Local photo artifact authority, catalog, layout, and capture manifests | `/spec-design` or `/feature-to-tasks` |
 | data_spec | [.memory-bank/domains/plant-history.md](domains/plant-history.md) | active | Plant card/history projections, retained-history access, and timeline-ref authority boundaries | `/feature-to-tasks` or `/spec-design` |
-| data_spec | [.memory-bank/domains/agent-chat-ui-feed-storage.md](domains/agent-chat-ui-feed-storage.md) | active | Agent Chat Bus/UI Feed PostgreSQL rows, atomic publication, and roster-introduction reconciliation | `/feature-to-tasks` or `/spec-design` |
+| data_spec | [.memory-bank/domains/agent-chat-ui-feed-storage.md](domains/agent-chat-ui-feed-storage.md) | active | Agent Chat Bus/UI Feed PostgreSQL rows, atomic publication, and lazy active-Feed roster-introduction materialization | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/plant-state-observations.md](domains/plant-state-observations.md) | active | Plant-state observations, assessments, conflicts, and human promotion | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/safety-action-routing.md](domains/safety-action-routing.md) | active | Immutable Safety classifications, action decisions, approval-input evidence, and pending proposal persistence | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/task-approval-outcomes.md](domains/task-approval-outcomes.md) | active | Approval, ordinary/action Task, automatic follow-up, Outcome, idempotency, and audit-ref persistence | `/feature-to-tasks` or `/spec-design` |
@@ -51,7 +51,7 @@ source_of_truth:
 | event_contract | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md) | active | Agent-consumable event boundary | `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md) | active | Authorized typed model invocation, runtime decision, failure, audit, and envelope handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md) | active | Provider-neutral binding, typed egress, fail-closed production, and future OpenAI-compatible selection | `/feature-to-tasks` or `/spec-design` |
-| interface_contract | [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md) | active | Canonical agent roster and post-commit Plant introduction handoff | `/feature-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md) | active | Canonical ordered agent roster and deterministic introduction metadata | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/vision-observation-runtime.md](contracts/vision-observation-runtime.md) | active | Authorized real-photo Vision Observation input and pending model handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/plant-state-runtime.md](contracts/plant-state-runtime.md) | active | Authorized Plant State trend/conflict/unknown model assessment handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/hydroponics-advisor-runtime.md](contracts/hydroponics-advisor-runtime.md) | active | Authorized pH/EC and Plant-state input, missing-data policy, and pending advisor handoff | `/feature-to-tasks` or `/spec-design` |
@@ -90,7 +90,7 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/photo-intake.md](testing/photo-intake.md) | active | Photo artifact, manifest, catalog, upload, and timeline-ref verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/plant-history.md](testing/plant-history.md) | active | Plant card/history projection, retained-history, timeline-ref, and redaction verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md) | active | Agent runtime, MessageEnvelope, deterministic executor anti-cheat, audit, archive-race, and future integration milestone verification | `/feature-to-tasks` or `/spec-design` |
-| testing_spec | [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md) | active | Bus/UI persistence, reconciliation, context hygiene, and Plant feed verification | `/feature-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md) | active | Bus/UI persistence, lazy introduction materialization, context hygiene, and Plant Feed verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/vision-observation-plant-state.md](testing/vision-observation-plant-state.md) | active | Photo-byte integrity, provider-neutral vision, trust persistence, conflict, promotion, and API verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/hydroponics-advisor.md](testing/hydroponics-advisor.md) | active | Advisor freshness, missing-data, provider-neutral executor, authorization, and pending-handoff verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/safety-gate.md](testing/safety-gate.md) | active | Provider-neutral classification, durable Safety routing, 2-hour evidence, projection, and concurrency verification | `/feature-to-tasks` or `/spec-design` |

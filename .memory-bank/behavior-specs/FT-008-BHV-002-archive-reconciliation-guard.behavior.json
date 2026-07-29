@@ -1,17 +1,20 @@
 {
   "id": "FT-008-BHV-002",
   "feature_id": "FT-008",
-  "title": "Archive blocks projection and restore requires fresh reconciliation",
+  "title": "Archived reads and restore never materialize introductions",
   "given": {
     "plant": "archived",
-    "introduction_batch": "missing"
+    "introductions": "one or more canonical rows missing",
+    "authorization": "retained-history read allowed"
   },
   "when": {
-    "action": "reconcile_then_restore_without_replay"
+    "action": "read retained history, restore the Plant, then later open its active Feed with current authorization"
   },
   "then": {
-    "writes_while_archived": 0,
-    "automatic_restore_replay": false,
-    "fresh_active_reconciliation_required": true
+    "archived_read_writes": 0,
+    "restore_writes": 0,
+    "background_or_startup_writes": 0,
+    "later_active_feed": "inserts only the still-missing canonical rows",
+    "retry_after_persistence_failure": "FEED_PERSISTENCE_FAILED followed by a later authorized active Feed retry"
   }
 }

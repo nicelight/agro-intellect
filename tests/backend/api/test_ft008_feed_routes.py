@@ -92,7 +92,8 @@ def test_feed_service_pages_literal_rows_and_allows_archived_history(ft008_datab
     assert first.items[0].display_payload["quoted_text"] == text and first.next_cursor
     with ft008_database.session() as session:
         second = PlantFeedService(session).list_feed(boss, plant_id=plant.plant_id, cursor=first.next_cursor, limit=1)
-    assert second.items[0].ui_event_id == ids[1] and second.next_cursor is None
+    assert second.items[0].ui_event_id == ids[1]
+    assert second.next_cursor is not None
 
 
 @pytest.mark.parametrize("cursor", ["=", "e30", "not_base64!"])

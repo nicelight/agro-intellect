@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-20
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -20,8 +20,8 @@ source_of_truth:
 - [Agent Model Provider Profiles](agent-model-provider-profiles.md):
   provider-neutral production binding boundary, typed egress, and fail-closed
   future OpenAI-compatible integration route.
-- [Agent Roster And Plant Bootstrap](agent-roster-bootstrap.md): canonical
-  identities and deterministic post-commit introduction handoff.
+- [Agent Roster And Introduction Metadata](agent-roster-bootstrap.md):
+  canonical ordered identities and deterministic presentation metadata.
 - [Vision Observation Runtime](vision-observation-runtime.md): authorized
   real-photo bytes, provider-neutral media execution, and pending observation handoff.
 - [Plant State Runtime](plant-state-runtime.md): authorized trust-record input
@@ -55,7 +55,8 @@ source_of_truth:
   IssueStack/detail reads, explicit model run, proposal decision, and close.
 - [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
 - [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
-- [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination and archived retained-history reads.
+- [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination, lazy
+  active-Plant introduction materialization, and read-only archived history.
 - [Plant State HTTP](plant-state-http.md): protected Plant trust records and human review.
 
 ## Routing

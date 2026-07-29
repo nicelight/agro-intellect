@@ -270,6 +270,8 @@ implementation slice. До этого реальный product outcome не те
 
 ## 4. Упростить durable introduction batch из восьми roster events
 
+**Статус:** закрыт 2026-07-29 в рамках
+[TASK-046-T3-FT-008-W3](.memory-bank/tasks/TASK-046-T3-FT-008-W3.task.json).
 **Приоритет:** высокий, но зависит от решения оператора.  
 **Confidence:** high.
 

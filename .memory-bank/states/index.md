@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical lifecycle and state specifications.
 status: active
-last_updated: 2026-07-18
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/spec-backbone.md
@@ -19,7 +19,9 @@ source_of_truth:
 - [Companion Governance](companion-governance.md): proposal/decision lifecycle.
 - [Dataset Governance](dataset-governance.md): trainability/evidence lifecycle.
 - [Session Lifecycle](auth/session-lifecycle.md): password login/expiry/revocation.
-- [Plant And Access Lifecycle](plants/plant-and-access-lifecycle.md): Plant/grant status effects and the global archived-Plant operational guard.
+- [Plant And Access Lifecycle](plants/plant-and-access-lifecycle.md): Plant/grant
+  status effects, the global archived-Plant operational guard, and the
+  read-only archived Feed/restore boundary for roster introductions.
 
 ## Routing
 

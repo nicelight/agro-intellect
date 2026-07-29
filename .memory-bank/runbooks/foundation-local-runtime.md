@@ -2,7 +2,7 @@
 description: Local Foundation runtime runbook for bootstrap, database init, migrations, start, and troubleshooting.
 status: active
 type: runbook
-last_updated: 2026-06-30
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/architecture/foundation-runtime-substrate.md
@@ -22,6 +22,9 @@ source_of_truth:
   - [.memory-bank/architecture/foundation-runtime-substrate.md](../architecture/foundation-runtime-substrate.md): defines runtime shape.
   - [.memory-bank/domains/foundation-data-substrate.md](../domains/foundation-data-substrate.md): defines DB/session/migration substrate.
   - [.memory-bank/testing/foundation-test-harness.md](../testing/foundation-test-harness.md): defines test/evidence surface.
+  - [.memory-bank/contracts/plant-feed-http.md](../contracts/plant-feed-http.md):
+    defines the active-Plant Feed retry boundary for missing roster
+    introductions.
 
 ## Command Path
 
@@ -68,6 +71,10 @@ bash scripts/db-migrate-local.sh --dry-run
 - DB init supports only local PostgreSQL hosts for the Foundation path.
 - Migration baseline proves Alembic command path and must not create product tables.
 - Product features must extend this local path through their own tasks/specs rather than changing Foundation commands opportunistically.
+- Application startup performs no roster-introduction scan, sink call, or
+  reconciliation write. Existing introduction rows remain in PostgreSQL; any
+  missing rows are materialized only by a later authorized active-Plant Feed
+  request.
 
 ## Troubleshooting
 
@@ -76,6 +83,10 @@ bash scripts/db-migrate-local.sh --dry-run
 - PostgreSQL not ready: start the local PostgreSQL service and rerun DB init.
 - DB authentication failure: update local `.env` or local PostgreSQL role setup; do not paste credentials into reports.
 - Migration failure: check local PostgreSQL service and `.env` values locally; reports must remain redacted.
+- `FEED_PERSISTENCE_FAILED` while opening an active Plant Feed: correct the
+  local PostgreSQL problem and retry the same authorized Feed request. Do not
+  run a startup/background introduction repair. Archived Feed reads and restore
+  are intentionally read/no-materialization paths.
 
 ## Verification Target
 

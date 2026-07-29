@@ -1,8 +1,8 @@
 ---
-description: PostgreSQL storage and transaction rules for Agent Chat Bus, UI Feed, and roster-introduction reconciliation.
+description: PostgreSQL storage and transaction rules for Agent Chat Bus, UI Feed, and lazy roster-introduction materialization.
 status: active
 type: data_spec
-last_updated: 2026-07-18
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/contracts/agent-chat-bus.md
   - .memory-bank/contracts/ui-feed.md
@@ -17,25 +17,14 @@ source_of_truth:
 ## Scope
 
 Defines the PostgreSQL Bus/UI rows, uniqueness rules, transaction boundaries,
-and FT-008 restart-safe introduction reconciliation. FT-011 and FT-013 reuse
-the same UI table only for derived Safety and Companion projections;
-authoritative Safety/governance records remain in their owning storage. This
+and FT-008 lazy introduction materialization on authorized active-Plant Feed
+access. FT-011 and FT-013 reuse the same UI table only for derived Safety and
+Companion projections; authoritative Safety/governance records remain in their
+owning storage. This
 spec does not define frontend layout, Safety classification policy, ordinary
 tasks, physical-action effects, or provider/model execution.
 
 ## Tables
-
-### `agent_introduction_batches`
-
-- `batch_id`: native UUID primary key supplied by `AgentIntroductionBatchV1`.
-- `farm_id`, `plant_id`: native UUID foreign keys with `ON DELETE RESTRICT`.
-- `roster_version`: positive integer; version 1 is the only current value.
-- `content_sha256`: lowercase 64-character digest of the canonical strict batch.
-- `created_at`: timezone-aware UTC timestamp assigned on first acceptance.
-
-`(plant_id, roster_version)` is unique. The same batch id, uniqueness key, and
-canonical digest is an idempotent duplicate. Any mismatch is
-`content_conflict` and writes nothing.
 
 ### `ui_feed_events`
 
@@ -50,10 +39,10 @@ canonical digest is an idempotent duplicate. Any mismatch is
 - `consumable_by_agents`: non-null boolean fixed to `false`.
 - `agent_id`, `roster_version`: non-null only for `agent_introduction`.
 
-`(plant_id, agent_id, roster_version)` is unique for introductions. Duplicate
-canonical content succeeds without changing `created_at`; conflicting content
-fails closed. UI rows are presentation records and never runtime facts or Bus
-input.
+`(plant_id, agent_id, roster_version)` is unique for introductions. The lazy
+path treats an existing key as already materialized and never rewrites its
+payload or `created_at`. UI rows are presentation records and never runtime
+facts or Bus input.
 
 ### `agent_bus_events`
 
@@ -74,42 +63,52 @@ is idempotent; a conflicting retry fails closed. No UI payload, raw chat,
 provider history, hidden reasoning, credential, session/token material, or
 unapproved proposal may be stored.
 
-## Introduction sink transaction
+## Lazy introduction materialization transaction
 
-The concrete `AgentIntroductionSink.store_batch(batch)`:
+The protected Plant Feed application boundary owns one transaction for current
+authorization, active-state validation, missing-row insertion, and the
+subsequent ordered page read:
 
-1. validates the complete strict eight-item batch and canonical digest;
-2. reloads the Plant inside the write transaction and requires the same Farm
-   plus `status=active`;
-3. inserts one batch row and exactly eight `agent_introduction` UI rows in one
-   transaction, or inserts nothing;
-4. returns `accepted(true,8,null)` only after commit;
-5. returns `duplicate(true,8,null)` only when the existing batch and all eight
-   UI rows have identical canonical content;
-6. maps inactive/missing/wrong-Farm to `plant_not_publishable`, malformed input
-   to `batch_invalid`, canonical mismatch to `content_conflict`, and storage
-   failure to `persistence_failed`, always with zero accepted on rejection or
-   failure.
+1. resolve and lock the current active Account/FarmMembership identity;
+2. lock the Plant in the ActorContext Farm and, for Engineer/Consultant, the
+   current active PlantAccessGrant;
+3. preserve the existing no-leak denial if current read authorization fails;
+4. if the Plant is archived and the actor has retained-history permission,
+   perform the read only and insert nothing;
+5. if the Plant is active, derive canonical roster version 1 introduction
+   metadata, load the existing introduction keys, and insert only missing
+   `UIFeedEvent` rows;
+6. read the page using the unchanged `(created_at ASC, ui_event_id ASC)` order
+   and cursor grammar, then commit.
 
-There is no partial batch, per-item result, fake durable sink, in-memory
-delivery authority, or provider call.
+Cursor/limit validation and every documented authorization/error precedence
+remain compatible. A failing validation or persistence operation rolls back all
+new rows from that request. A storage failure maps through the existing
+`FEED_PERSISTENCE_FAILED` boundary; a later authorized active-Plant Feed open
+retries from durable rows.
 
-## Active-Plant reconciliation
+The current Plant lock serializes concurrent materializers for one Plant.
+Deterministic `ui_event_id` plus
+`(plant_id, agent_id, roster_version)` uniqueness is the final duplicate guard.
+Existing introduction rows retain their identity, payload, and `created_at`;
+the materializer never updates, replaces, or deletes them. There is no batch
+row, digest, sink/result matrix, pending intent, worker, startup scan,
+maintenance reconciliation, Agent Chat Bus write, provider call, or
+agent-context effect.
 
-One idempotent `reconcile_active_plants()` service scans current active Plants,
-builds the deterministic current roster batch through the FT-007 builder, and
-passes each missing/incomplete key through the same concrete sink transaction.
-It may run at local app startup and through an internal test/maintenance entry
-point; no distributed worker, broker, or outbox is required.
+Plant creation and its `201` transaction perform no introduction work. Archive
+and restore mutate only Plant lifecycle state. Archived retained-history reads
+and restore insert nothing; after restore, only a later currently authorized
+active-Plant Feed open may fill missing rows.
 
-- Archived Plants are excluded before batch construction and rechecked by the
-  sink transaction.
-- Archive racing the scan produces no new rows.
-- Existing introduction UI rows remain retained while archived.
-- Restore performs no replay. A later fresh reconciliation sees the current
-  active Plant and idempotently fills only a missing current roster batch.
-- A process crash before commit leaves no accepted batch. A crash after commit
-  is an identical duplicate on retry.
+## Forward migration
+
+The forward migration removes only the presentation-only
+`agent_introduction_batches` table and its batch metadata. It preserves every
+existing `ui_feed_events` row, including introduction ids, payloads,
+`created_at`, uniqueness, foreign keys, ordering index, and agent-consumability
+constraints. It performs no introduction backfill, rewrite, delete, or
+reordering and adds no replacement lifecycle table.
 
 ## Classified publication transaction
 
@@ -212,8 +211,13 @@ governance copy is allowed.
 
 - Migration/model tests inspect UUID PK/FK parity, restricted deletes,
   constraints, uniqueness, and JSON/boolean defaults.
-- PostgreSQL integration tests prove introduction 8-or-0 atomicity, duplicate
-  identity, content conflict, restart reconciliation, and archive race denial.
+- Migration/model tests prove the batch table is removed without changing or
+  deleting existing `UIFeedEvent` rows and that introduction uniqueness,
+  restricted foreign keys, and non-consumability constraints remain.
+- PostgreSQL integration tests prove authorized active-Plant Feed access
+  inserts only missing canonical introductions; repeat, concurrent, failure,
+  and client-retry paths are idempotent; existing rows are unchanged; and
+  Plant create/startup/restore/archived-read paths write none.
 - Publication tests prove Bus/UI atomicity, current authorization, strict
   classification/consumer routing, typed quotation, literal display data, zero
   writes on denial, zero ordinary effect for every held Companion branch, no

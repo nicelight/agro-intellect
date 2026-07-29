@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Literal
 import uuid
-import logging
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,14 +23,9 @@ from ..access_admin.farm_service import (
 )
 from ..access_admin.models import Farm, PLANT_KEY_PATTERN, Plant, PlantAccessGrant
 from ..access_admin.permissions import OperationKind, PlantPermissionContext
-from ..agent_runtime.bootstrap import (
-    PlantAgentBootstrapCommandV1,
-    PlantAgentBootstrapService,
-)
 
 
 router = APIRouter(prefix="/api", tags=["farm-plants"])
-_logger = logging.getLogger(__name__)
 
 
 class ErrorDetail(BaseModel):
@@ -227,36 +221,6 @@ def create_plant(
     if not permission.can_read:
         raise ProtectedRouteDenied(AuthErrorCode.PLANT_STATE_CONFLICT)
     summary = _plant_summary(result.plant, permission)
-    # FarmService has left its transaction before this bounded best-effort
-    # handoff starts.  The committed HTTP result is never changed by a
-    # downstream sink rejection or failure.
-    try:
-        with request.app.state.database.session() as bootstrap_session:
-            bootstrap_result = PlantAgentBootstrapService(
-                bootstrap_session,
-                request.app.state.agent_introduction_sink,
-            ).run(
-                PlantAgentBootstrapCommandV1(
-                    farm_id=result.plant.farm_id,
-                    plant_id=result.plant.plant_id,
-                    creator_account_id=actor.account_id,
-                    requested_at=datetime.now(timezone.utc),
-                )
-            )
-            if bootstrap_result is None or not bootstrap_result.durable:
-                _logger.warning(
-                    "AGENT_BOOTSTRAP_HANDOFF_FAILED farm_id=%s plant_id=%s",
-                    result.plant.farm_id,
-                    result.plant.plant_id,
-                )
-    except Exception:
-        # Diagnostics deliberately omit introduction/provider/auth content.
-        # FT-008 owns durable reconciliation; POST /api/plants remains truthful.
-        _logger.warning(
-            "AGENT_BOOTSTRAP_HANDOFF_FAILED farm_id=%s plant_id=%s",
-            result.plant.farm_id,
-            result.plant.plant_id,
-        )
     _no_store(response)
     return summary
 

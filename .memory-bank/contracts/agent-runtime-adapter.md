@@ -2,7 +2,7 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-07-28
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -61,7 +61,8 @@ Plant state.
 - [.memory-bank/contracts/agent-model-provider-profiles.md](agent-model-provider-profiles.md):
   provider/model binding, egress, credential, and no-fallback rules.
 - [.memory-bank/contracts/agent-roster-bootstrap.md](agent-roster-bootstrap.md):
-  canonical identities and post-commit Plant bootstrap handoff.
+  canonical identities, competence metadata, and deterministic presentation
+  metadata.
 - [.memory-bank/contracts/access/actor-context.md](access/actor-context.md):
   authorization and safe context boundary.
 - [.memory-bank/domains/auth/session-storage.md](../domains/auth/session-storage.md),
@@ -95,8 +96,6 @@ project-owned seams:
   Plant, and grant authority after model execution and before an envelope may
   leave Agent Runtime.
 - `TimelineAppender`: writes the canonical sanitized runtime audit event.
-- `PlantAgentBootstrapService`: activates the static roster and builds
-  deterministic post-commit introduction handoffs without model I/O.
 
 Test definitions, assemblers, and fake/spy executors may be supplied only
 through explicit test dependency injection. Production composition MUST NOT
@@ -118,7 +117,7 @@ the canonical roster and its owning feature policy:
 Callers cannot supply or override system instructions, provider/model choice,
 tools, memory, output schema, or allowed claim types. FT-009 through FT-014 add
 their competence policies without changing this execution boundary. The exact
-eight identities and bootstrap metadata are defined in
+eight identities and presentation metadata are defined in
 `agent-roster-bootstrap.md`; FT-009 through FT-014 own detailed behavior and
 triggers. A roster member without its owning-feature runtime policy and a
 deployment model binding is not invocable and fails closed rather than
