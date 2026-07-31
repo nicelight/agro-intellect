@@ -22,6 +22,7 @@ from .permissions import (
     PlantPermissionContext,
     PlantStatus,
     RolePreset,
+    role_policy_for,
 )
 
 
@@ -315,8 +316,8 @@ def build_current_agent_bus_context(
             .limit(limit)
         )
     )
-    permission = actor.resolve_plant_permission(plant_id, OperationKind.NORMAL_READ)
-    if not plant_permission_allows(permission, OperationKind.NORMAL_READ):
+    policy = role_policy_for(actor.role_preset)
+    if policy is None or not policy.can_read:
         return None
     records: list[SafePlantContextRecord] = []
     try:
@@ -338,6 +339,25 @@ def build_current_agent_bus_context(
                     "authorization_scope": row.authorization_scope,
                 }
             )
+            if envelope.payload.get("record_type") == "decision_record":
+                from ..companion_governance import CompanionGovernanceService
+
+                summary = CompanionGovernanceService(
+                    session
+                ).get_approved_governance_summary(
+                    actor,
+                    plant_id=plant_id,
+                    decision_record_id=uuid.UUID(envelope.source_id),
+                )
+                if summary is None:
+                    continue
+                records.append(
+                    SafePlantContextRecord(
+                        source_ref=f"agent_bus_event:{envelope.event_id}",
+                        payload=summary.as_value(),
+                    )
+                )
+                continue
             records.append(
                 SafePlantContextRecord(
                     source_ref=f"agent_bus_event:{envelope.event_id}",
@@ -355,22 +375,34 @@ def build_current_agent_bus_context(
             )
     except (AgentChatContractError, TypeError, ValueError):
         return None
-    assert permission.plant_status is not None
+    can_approve_actions = policy.can_approve_actions
+    if actor.role_preset is RolePreset.ENGINEER:
+        from .models import PlantAccessGrant
+
+        grant = session.scalar(
+            select(PlantAccessGrant).where(
+                PlantAccessGrant.grant_id == auth.grant_id,
+                PlantAccessGrant.status == "active",
+            )
+        )
+        if grant is None:
+            return None
+        can_approve_actions = grant.plant_approve_actions is True
     return AuthorizedPlantContext(
         authorization_scope=AuthorizationScope(
             farm_id=auth.farm_id,
             plant_id=auth.plant_id,
             role_preset=actor.role_preset,
             operation_kind=OperationKind.NORMAL_READ,
-            plant_status=permission.plant_status,
+            plant_status=PlantStatus.ACTIVE,
             can_read=True,
-            can_comment=permission.can_comment,
-            can_operate=permission.can_operate,
-            can_create_domain_tasks=permission.can_create_domain_tasks,
-            can_manage_access=permission.can_manage_access,
-            can_approve_actions=permission.can_approve_actions,
-            source=permission.source,
-            grant_id=permission.grant_id,
+            can_comment=policy.can_comment,
+            can_operate=policy.can_operate,
+            can_create_domain_tasks=policy.can_create_domain_tasks,
+            can_manage_access=policy.can_manage_access,
+            can_approve_actions=can_approve_actions,
+            source=PermissionSource(auth.permission_source),
+            grant_id=auth.grant_id,
         ),
         records=tuple(records),
     )

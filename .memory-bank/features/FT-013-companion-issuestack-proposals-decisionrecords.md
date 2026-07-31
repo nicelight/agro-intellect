@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-07-27
+last_updated: 2026-07-29
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -119,6 +119,9 @@ spec_design_links:
   proposal authority are implemented.
 - DecisionRecord/effect and explicit Companion runtime slices remain planned,
   so feature `lifecycle` remains `planned`.
+- Their cards are reconciled to Global Planning Revision 2 and the current
+  repository baseline; the Planning Revision 1 approval is historical, so
+  fresh `/review-tasks-plan FT-013` is required before execution.
 
 ## Accepted Design Decisions
 

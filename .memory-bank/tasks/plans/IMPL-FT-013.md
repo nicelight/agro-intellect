@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-013 Companion IssueStack governance, atomic DecisionRecord effects, and explicit provider-neutral Companion invocation.
 status: active
-last_updated: 2026-07-27
+last_updated: 2026-07-29
 ---
 # IMPL-FT-013 — Companion IssueStack Proposals And DecisionRecords
 
@@ -109,9 +109,11 @@ neutral `companion` invocation over current PostgreSQL evidence.
 
 ### 3. Binding DecisionRecords and atomic workflow effects
 
-1. Add the next ordered FT-013 migration for the narrow TASK-039
-   `governance_decision` Task source, DecisionRecord Bus domain-ref constraints,
-   and nullable authorization scope only for backend domain adapters.
+1. Add the next ordered FT-013 migration after the current repository head
+   `ft008_lazy_introductions`, retaining `ft013_simplify_companion` in its
+   ancestry, for the narrow TASK-039 `governance_decision` Task source,
+   DecisionRecord Bus domain-ref constraints, and nullable authorization scope
+   only for backend domain adapters.
 2. Implement approve/reject with the Plant/current-focus/target lock order,
    expected proposal version, active-attention identity, canonical request
    fingerprint, exact closed effect, and optional issue resolution. Open
@@ -191,7 +193,9 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 
 ## Dependencies and waves
 
-- The current FT-013 task-plan review is `APPROVE` for Planning Revision 1.
+- The prior FT-013 task-plan review is historical `APPROVE` evidence for
+  Planning Revision 1. Global Planning Revision is now 2, so the reconciled
+  remaining queue requires fresh `/review-tasks-plan FT-013` before execution.
 - Foundation gate `TASK-004-T2-FT-000-W0` is satisfied transitively through
   the existing dependency chain.
 - `TASK-041-T3-FT-013-W1` depends directly on
@@ -203,11 +207,16 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   revision.
 - `TASK-044-T3-FT-013-W1` depends on TASK-041 and TASK-040. TASK-041 and
   TASK-044 are `done`; together they establish the simplified W1 proposal
-  authority at migration head `ft013_simplify_companion`.
+  authority at revision `ft013_simplify_companion`. Terminal TASK-046 later
+  advanced the repository migration head to `ft008_lazy_introductions`
+  without changing the FT-013 authority.
 - `TASK-042-T3-FT-013-W2` is `planned` and unselected. It depends on TASK-044,
   TASK-041, and TASK-040, consumes the repaired proposal authority and the
   completed FT-012 runtime/package surface, and reaches TASK-039 ordinary-task
-  workflow effects transitively.
+  workflow effects transitively. Its migration and compatibility gate extend
+  the current `ft008_lazy_introductions` head and preserve Companion, Plant
+  State, Agent Chat lazy-introduction, Safety Gate, Task Follow-Up, and older
+  exact-head contracts.
 - `TASK-043-T3-FT-013-W3` depends on TASK-042 and
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
@@ -216,7 +225,8 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 - TASK-041/TASK-042 build and verify the Companion router in isolated test apps
   without touching `main.py`; TASK-043 remains the only FT-013 production-
   registration owner, so the remaining executable DAG preserves the later
-  shared `main.py`/provider composition boundary.
+  shared `main.py`/provider composition boundary and the FT-008 feed/lazy-
+  introduction behavior already present after TASK-046.
 
 ## Expected touched files
 
@@ -258,8 +268,9 @@ Decision/effect slice:
 - `backend/app/timeline/writer.py`
 - `backend/migrations/versions/*_ft013_companion_decision_effects.py`
 - focused decision/effect/context/migration/API, Task Follow-Up, Agent Chat,
-  and all exact-head regression tests, including Safety Gate and Task
-  Follow-Up.
+  and all exact-head regression tests, including Companion, Plant State,
+  Agent Chat lazy introductions, Safety Gate classification/migration, and
+  Task Follow-Up.
 
 Explicit-runtime slice:
 
@@ -272,6 +283,8 @@ Explicit-runtime slice:
 - `tests/backend/companion_governance/test_runtime.py`
 - `tests/backend/api/test_ft013_companion_run_route.py`
 - `tests/backend/api/test_ft013_companion_app_registration.py`
+- `tests/backend/api/test_ft008_feed_routes.py`
+- `tests/backend/agent_chat/test_ft008_lazy_introductions.py`
 - `tests/backend/agent_runtime/test_ft007_roster_providers.py`.
 
 The runtime slice also executes the existing Plant Operations and direct
@@ -395,7 +408,8 @@ public-contract widening need.
 - Run task-specific commands from
   `.memory-bank/testing/companion-governance.md`.
 - Run exact-head compatibility tests after each ordered FT-013 migration,
-  including dependency-created Safety Gate and Task Follow-Up assertions.
+  including current Companion, Plant State, Agent Chat lazy-introduction,
+  Safety Gate classification/migration, Task Follow-Up, and older assertions.
 - Run `node scripts/mb-lint.mjs` and `git diff --check` at applicable planning
   and wave boundaries.
 - Run the full deterministic suite before handoff when the environment permits.
@@ -411,6 +425,9 @@ public-contract widening need.
 
 ## Execution handoff
 
+- Run fresh `/review-tasks-plan FT-013` for Global Planning Revision 2 before
+  selecting either remaining card; the Planning Revision 1 approval is
+  historical only.
 - Planning does not select or promote the remaining `planned` cards.
 - Execution and lifecycle handling follow each indexed task card and the
   canonical tier policy; task-specific evidence remains outside this plan.

@@ -6,18 +6,32 @@ import base64
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 import json
+from hashlib import sha256
 import uuid
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from ..access_admin.actor_context import ActorContext
+from ..task_follow_up import (
+    GovernanceDecisionTaskCommandV1,
+    TaskFollowUpError,
+    TaskFollowUpErrorCode,
+    TaskFollowUpService,
+    TaskKind,
+)
 from ..timeline import TimelineAppendError, TimelineEvent, TimelineJsonlAppender
 from .contracts import (
+    ApprovedGovernanceSummaryV1,
+    CloseCompanionIssueCommandV1,
+    CompanionDecisionResultV1,
     CompanionGovernanceError,
     CompanionGovernanceErrorCode,
     CompanionGovernanceValidationError,
+    CompanionIssueCloseResultV1,
     CompanionIssueDetailV1,
+    DecideCompanionProposalCommandV1,
+    DecisionValue,
     IssueStackPageV1,
     PersistCompanionProposalCommandV1,
     ProposalEffect,
@@ -25,13 +39,22 @@ from .contracts import (
     timestamp_text,
 )
 from .integrity import (
+    validate_issue_graph,
     validate_w1_current_pair,
     validate_w1_issue_graph,
     validate_w1_proposal_edge,
 )
-from .models import CompanionHumanAttention, CompanionIssue, CompanionProposal
+from .models import (
+    CompanionHumanAttention,
+    CompanionIssue,
+    CompanionProposal,
+    DecisionRecord,
+)
 from .projections import (
     attention_ui_event,
+    decision_bus_event,
+    decision_ui_event,
+    new_bus_model,
     new_ui_model,
     proposal_ui_event,
     repair_canonical_proposal_projection,
@@ -253,6 +276,329 @@ class CompanionGovernanceService:
                 CompanionGovernanceErrorCode.PERSISTENCE_FAILED
             ) from None
 
+    def decide_companion_proposal(
+        self,
+        command: DecideCompanionProposalCommandV1,
+    ) -> CompanionDecisionResultV1:
+        if not isinstance(command, DecideCompanionProposalCommandV1):
+            raise CompanionGovernanceValidationError()
+        if self._session.in_transaction():
+            self._session.rollback()
+        try:
+            with self._session.begin():
+                scope = self._require_write_scope(command)
+                proposal = self._repository.proposal(
+                    command.proposal_id,
+                    for_update=True,
+                )
+                if (
+                    proposal is None
+                    or proposal.farm_id != scope.farm_id
+                    or proposal.plant_id != scope.plant_id
+                ):
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.COMMAND_FORBIDDEN
+                    )
+                issue = self._repository.issue(
+                    proposal.issue_id,
+                    plant_id=scope.plant_id,
+                    farm_id=scope.farm_id,
+                    for_update=True,
+                )
+                attention = self._repository.attention(
+                    proposal.attention_id,
+                    for_update=True,
+                )
+                classification = self._repository.classification(
+                    proposal.source_classification_message_id,
+                    for_update=True,
+                )
+                if issue is None or attention is None:
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.READ_INCONSISTENT
+                    )
+                fingerprint = _decision_fingerprint(command, issue_id=issue.issue_id)
+                by_proposal = self._repository.decision_for_proposal(
+                    proposal.proposal_id,
+                    for_update=True,
+                )
+                by_request = self._repository.decision_for_request(
+                    command.request_id,
+                    for_update=True,
+                )
+                existing = by_proposal or by_request
+                if existing is not None:
+                    if (
+                        by_proposal is existing
+                        and (by_request is None or by_request is existing)
+                        and existing.request_fingerprint == fingerprint
+                        and existing.request_id == command.request_id
+                    ):
+                        return _decision_result(
+                            existing,
+                            issue=issue,
+                            result="duplicate",
+                        )
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.VERSION_CONFLICT
+                    )
+                if issue.status != "open":
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.ISSUE_NOT_OPEN
+                    )
+                if (
+                    proposal.state != "pending"
+                    or proposal.record_version != command.expected_version
+                    or attention.status != "active"
+                    or attention.issue_id != issue.issue_id
+                    or proposal.attention_id != attention.attention_id
+                ):
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.PROPOSAL_NOT_CURRENT
+                    )
+                if not _classification_matches_proposal(proposal, classification):
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.EFFECT_INVALID
+                    )
+
+                now = self._clock()
+                decision_id = uuid.uuid4()
+                allowed_effect = (
+                    proposal.proposed_effect
+                    if command.decision is DecisionValue.APPROVED
+                    else ProposalEffect.NONE.value
+                )
+                task_id = (
+                    uuid.uuid4()
+                    if allowed_effect
+                    in {
+                        ProposalEffect.CHECK.value,
+                        ProposalEffect.MEASUREMENT.value,
+                        ProposalEffect.FOLLOW_UP.value,
+                    }
+                    else None
+                )
+                task_ref = f"task:{task_id}" if task_id is not None else None
+                source_refs = _decision_source_refs(issue, attention, proposal)
+                decision_event_ref = self._append(
+                    scope,
+                    event_type="companion_decision_recorded",
+                    source_id=decision_id,
+                    source_refs=[
+                        *source_refs,
+                        *([task_ref] if task_ref is not None else []),
+                    ],
+                    payload={
+                        "decision": command.decision.value,
+                        "allowed_workflow_effect": allowed_effect,
+                        "issue_resolution": command.issue_resolution.value,
+                        "workflow_effect_ref": task_ref,
+                        "safety_gate_authority": "not_granted",
+                    },
+                    actor=command.actor_context,
+                )
+                decision = DecisionRecord(
+                    decision_record_id=decision_id,
+                    farm_id=scope.farm_id,
+                    plant_id=scope.plant_id,
+                    issue_id=issue.issue_id,
+                    proposal_id=proposal.proposal_id,
+                    attention_id=attention.attention_id,
+                    decision=command.decision.value,
+                    decision_summary=command.decision_summary,
+                    allowed_workflow_effect=allowed_effect,
+                    issue_resolution=command.issue_resolution.value,
+                    workflow_effect_ref=task_ref,
+                    decider_account_id=command.actor_context.account_id,
+                    decider_membership_id=command.actor_context.membership_id,
+                    decider_role_preset=scope.role_preset,
+                    decider_permission_source=scope.permission_source,
+                    decider_grant_id=scope.grant_id,
+                    request_id=command.request_id,
+                    request_fingerprint=fingerprint,
+                    decided_at=now,
+                    source_refs=source_refs,
+                    decision_event_ref=decision_event_ref,
+                    safety_gate_authority="not_granted",
+                )
+                self._session.add(decision)
+                proposal.state = command.decision.value
+                proposal.record_version = 2
+                proposal.terminal_at = now
+                proposal.decision_record_id = decision_id
+                attention.status = "satisfied"
+                attention.record_version += 1
+                attention.satisfied_at = now
+                attention.satisfied_by_decision_record_id = decision_id
+
+                focused = self._repository.focused_issue(
+                    command.plant_id,
+                    for_update=True,
+                )
+                if command.issue_resolution.value == "resolved":
+                    issue.status = "resolved"
+                    issue.is_focused = False
+                    issue.record_version += 1
+                    issue.resolved_at = now
+                    issue.resolved_event_ref = self._append(
+                        scope,
+                        event_type="companion_issue_resolved",
+                        source_id=issue.issue_id,
+                        source_refs=[
+                            f"companion_issue:{issue.issue_id}",
+                            f"decision_record:{decision_id}",
+                        ],
+                        payload={
+                            "issue_status": "resolved",
+                            "decision_record_id": str(decision_id),
+                        },
+                        actor=command.actor_context,
+                    )
+                else:
+                    self._focus_existing_issue(issue, focused=focused)
+
+                if task_id is not None:
+                    assert proposal.task_display_text is not None
+                    self._session.flush()
+                    TaskFollowUpService(
+                        self._session,
+                        timeline_appender=self._timeline,
+                        clock=self._clock,
+                    ).create_ordinary_task(
+                        GovernanceDecisionTaskCommandV1(
+                            actor_context=command.actor_context,
+                            plant_id=command.plant_id,
+                            task_id=task_id,
+                            decision_record=decision,
+                            proposal=proposal,
+                            attention=attention,
+                            classification=classification,
+                            task_kind=TaskKind(allowed_effect),
+                            task_display_text=proposal.task_display_text,
+                            request_id=command.request_id,
+                            request_fingerprint=fingerprint,
+                        )
+                    )
+
+                projection = self._repository.ui_projection(
+                    proposal.proposal_id,
+                    for_update=True,
+                )
+                repaired = repair_canonical_proposal_projection(
+                    projection,
+                    proposal,
+                )
+                if projection is None:
+                    self._session.add(repaired)
+                self._session.add(new_ui_model(decision_ui_event(decision)))
+                if command.decision is DecisionValue.APPROVED:
+                    self._session.add(new_bus_model(decision_bus_event(decision)))
+
+                self._session.flush()
+                return _decision_result(decision, issue=issue, result="created")
+        except CompanionGovernanceError:
+            raise
+        except TaskFollowUpError as error:
+            raise _translate_task_error(error) from None
+        except TimelineAppendError:
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.AUDIT_FAILED
+            ) from None
+        except IntegrityError:
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.VERSION_CONFLICT
+            ) from None
+        except (SQLAlchemyError, TypeError, ValueError):
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.PERSISTENCE_FAILED
+            ) from None
+
+    def close_companion_issue(
+        self,
+        command: CloseCompanionIssueCommandV1,
+    ) -> CompanionIssueCloseResultV1:
+        if not isinstance(command, CloseCompanionIssueCommandV1):
+            raise CompanionGovernanceValidationError()
+        if self._session.in_transaction():
+            self._session.rollback()
+        try:
+            with self._session.begin():
+                scope = self._require_write_scope(command)
+                issue = self._repository.issue(
+                    command.issue_id,
+                    plant_id=scope.plant_id,
+                    farm_id=scope.farm_id,
+                    for_update=True,
+                )
+                if issue is None:
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.COMMAND_FORBIDDEN
+                    )
+                fingerprint = _close_fingerprint(command)
+                by_request = self._repository.closed_issue_for_request(
+                    command.request_id,
+                    for_update=True,
+                )
+                if issue.status == "closed":
+                    if (
+                        by_request is issue
+                        and issue.close_request_id == command.request_id
+                        and issue.close_request_fingerprint == fingerprint
+                    ):
+                        return CompanionIssueCloseResultV1(
+                            result="duplicate",
+                            issue=_issue_value(issue),
+                        )
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.VERSION_CONFLICT
+                    )
+                if by_request is not None:
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.VERSION_CONFLICT
+                    )
+                if issue.status != "resolved":
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.ISSUE_NOT_OPEN
+                    )
+                if issue.record_version != command.expected_version:
+                    raise CompanionGovernanceError(
+                        CompanionGovernanceErrorCode.VERSION_CONFLICT
+                    )
+                now = self._clock()
+                issue.status = "closed"
+                issue.is_focused = False
+                issue.record_version += 1
+                issue.closed_at = now
+                issue.close_request_id = command.request_id
+                issue.close_request_fingerprint = fingerprint
+                issue.closed_event_ref = self._append(
+                    scope,
+                    event_type="companion_issue_closed",
+                    source_id=issue.issue_id,
+                    source_refs=[f"companion_issue:{issue.issue_id}"],
+                    payload={"issue_status": "closed"},
+                    actor=command.actor_context,
+                )
+                self._session.flush()
+                return CompanionIssueCloseResultV1(
+                    result="closed",
+                    issue=_issue_value(issue),
+                )
+        except CompanionGovernanceError:
+            raise
+        except TimelineAppendError:
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.AUDIT_FAILED
+            ) from None
+        except IntegrityError:
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.VERSION_CONFLICT
+            ) from None
+        except (SQLAlchemyError, TypeError, ValueError):
+            raise CompanionGovernanceError(
+                CompanionGovernanceErrorCode.PERSISTENCE_FAILED
+            ) from None
+
     def list_issues(
         self,
         actor: ActorContext,
@@ -353,7 +699,7 @@ class CompanionGovernanceService:
             farm_id=scope.farm_id,
             plant_id=plant_id,
         )
-        graph = validate_w1_issue_graph(
+        graph = validate_issue_graph(
             issue,
             farm_id=scope.farm_id,
             plant_id=plant_id,
@@ -365,21 +711,95 @@ class CompanionGovernanceService:
             issue,
             active_attention=graph.active_attention,
             current_proposal=graph.current_proposal,
-            latest_decision=None,
+            latest_decision=decisions[-1] if decisions else None,
         )
         return CompanionIssueDetailV1(
             issue=_issue_value(issue),
             attention=(
                 _attention_value(
                     graph.selected_attention,
-                    current_proposal=graph.current_proposal,
+                    selected_proposal=graph.selected_proposal,
                 )
                 if graph.selected_attention is not None
                 else None
             ),
             proposals=tuple(_proposal_value(item) for item in proposals),
-            decision_records=(),
+            decision_records=tuple(_decision_value(item) for item in decisions),
             conclusion=conclusion,
+        )
+
+    def get_approved_governance_summary(
+        self,
+        actor: ActorContext,
+        *,
+        plant_id: uuid.UUID,
+        decision_record_id: uuid.UUID,
+    ) -> ApprovedGovernanceSummaryV1 | None:
+        if (
+            not isinstance(actor, ActorContext)
+            or not isinstance(plant_id, uuid.UUID)
+            or not isinstance(decision_record_id, uuid.UUID)
+        ):
+            return None
+        scope = self._repository.current_scope(
+            actor,
+            plant_id=plant_id,
+            for_update=False,
+        )
+        if scope is None or not scope.can_read or scope.plant_status != "active":
+            return None
+        decision = self._repository.decision(
+            decision_record_id,
+            for_update=False,
+        )
+        if (
+            decision is None
+            or decision.farm_id != scope.farm_id
+            or decision.plant_id != scope.plant_id
+            or decision.decision != "approved"
+            or decision.safety_gate_authority != "not_granted"
+        ):
+            return None
+        proposal = self._repository.proposal(
+            decision.proposal_id,
+            for_update=False,
+        )
+        issue = self._repository.issue(
+            decision.issue_id,
+            plant_id=plant_id,
+            farm_id=scope.farm_id,
+            for_update=False,
+        )
+        attention = self._repository.attention(
+            decision.attention_id,
+            for_update=False,
+        )
+        if (
+            proposal is None
+            or issue is None
+            or attention is None
+            or proposal.farm_id != scope.farm_id
+            or proposal.plant_id != plant_id
+            or proposal.state != "approved"
+            or proposal.record_version != 2
+            or proposal.decision_record_id != decision.decision_record_id
+            or attention.issue_id != issue.issue_id
+            or attention.satisfied_by_decision_record_id
+            != decision.decision_record_id
+            or decision.source_refs
+            != _decision_source_refs(issue, attention, proposal)
+        ):
+            return None
+        return ApprovedGovernanceSummaryV1(
+            decision_record_id=decision.decision_record_id,
+            plant_id=decision.plant_id,
+            issue_id=decision.issue_id,
+            proposal_id=decision.proposal_id,
+            decision_summary=decision.decision_summary,
+            allowed_workflow_effect=decision.allowed_workflow_effect,
+            decider_role_preset=decision.decider_role_preset,
+            decided_at=decision.decided_at,
+            source_refs=tuple(decision.source_refs),
         )
 
     def _require_write_scope(
@@ -467,8 +887,8 @@ class CompanionGovernanceService:
             )
         return issue
 
-    @staticmethod
     def _focus_existing_issue(
+        self,
         issue: CompanionIssue,
         *,
         focused: CompanionIssue | None,
@@ -476,6 +896,11 @@ class CompanionGovernanceService:
         if focused is not None and focused.issue_id != issue.issue_id:
             focused.is_focused = False
             focused.record_version += 1
+            # The partial unique focus index is immediate. Persist the locked
+            # old-focus release before making the target dirty so SQLAlchemy's
+            # primary-key UPDATE ordering cannot transiently focus both rows.
+            # This remains an uncommitted step in the caller-owned transaction.
+            self._session.flush()
         if not issue.is_focused:
             issue.is_focused = True
             issue.record_version += 1
@@ -504,6 +929,9 @@ class CompanionGovernanceService:
                     "companion_issue_opened": "companion_issue",
                     "companion_proposal_created": "companion_proposal",
                     "companion_proposal_superseded": "companion_proposal",
+                    "companion_decision_recorded": "decision_record",
+                    "companion_issue_resolved": "companion_issue",
+                    "companion_issue_closed": "companion_issue",
                 }[event_type],
                 source_id=source_id,
                 source_refs={"record_refs": source_refs},
@@ -551,6 +979,121 @@ def _classification_matches(command, row, scope) -> bool:
         row.classification == "safe_task_request"
         and row.safe_task_kind == command.proposed_effect.value
     )
+
+
+def _classification_matches_proposal(proposal, row) -> bool:
+    if (
+        row is None
+        or row.message_id != proposal.source_classification_message_id
+        or row.farm_id != proposal.farm_id
+        or row.plant_id != proposal.plant_id
+        or row.origin_agent_id != "companion"
+        or row.provider_status != "completed"
+    ):
+        return False
+    if proposal.proposed_effect in {"discussion_only", "none"}:
+        return row.classification == "safe_information" and row.safe_task_kind is None
+    return (
+        row.classification == "safe_task_request"
+        and row.safe_task_kind == proposal.proposed_effect
+    )
+
+
+def _decision_source_refs(issue, attention, proposal) -> list[str]:
+    upstream = [
+        ref
+        for ref in proposal.source_refs[:-2]
+        if ref != f"companion_issue:{issue.issue_id}"
+    ]
+    return [
+        f"companion_issue:{issue.issue_id}",
+        f"companion_attention:{attention.attention_id}",
+        f"companion_proposal:{proposal.proposal_id}",
+        f"safety_classification:{proposal.source_classification_message_id}",
+        *upstream,
+    ]
+
+
+def _decision_fingerprint(command, *, issue_id: uuid.UUID) -> str:
+    return _fingerprint(
+        {
+            "schema_version": 1,
+            "request_id": str(command.request_id),
+            "plant_id": str(command.plant_id),
+            "issue_id": str(issue_id),
+            "proposal_id": str(command.proposal_id),
+            "expected_version": command.expected_version,
+            "decision": command.decision.value,
+            "decision_summary": command.decision_summary,
+            "issue_resolution": command.issue_resolution.value,
+        }
+    )
+
+
+def _close_fingerprint(command) -> str:
+    return _fingerprint(
+        {
+            "schema_version": 1,
+            "request_id": str(command.request_id),
+            "plant_id": str(command.plant_id),
+            "issue_id": str(command.issue_id),
+            "expected_version": command.expected_version,
+        }
+    )
+
+
+def _fingerprint(value: Mapping[str, object]) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    return sha256(encoded).hexdigest()
+
+
+def _decision_result(
+    decision: DecisionRecord,
+    *,
+    issue: CompanionIssue,
+    result: str,
+) -> CompanionDecisionResultV1:
+    return CompanionDecisionResultV1(
+        result=result,
+        decision_record=_decision_value(decision),
+        workflow_task_ref=decision.workflow_effect_ref,
+        issue=_issue_value(issue),
+        conclusion=_conclusion_value(
+            issue,
+            active_attention=None,
+            current_proposal=None,
+            latest_decision=decision,
+        ),
+    )
+
+
+def _translate_task_error(error: TaskFollowUpError) -> CompanionGovernanceError:
+    code = {
+        TaskFollowUpErrorCode.TASK_COMMAND_FORBIDDEN: (
+            CompanionGovernanceErrorCode.COMMAND_FORBIDDEN
+        ),
+        TaskFollowUpErrorCode.TASK_PLANT_NOT_ACTIVE: (
+            CompanionGovernanceErrorCode.PLANT_NOT_ACTIVE
+        ),
+        TaskFollowUpErrorCode.TASK_SOURCE_INVALID: (
+            CompanionGovernanceErrorCode.READ_INCONSISTENT
+        ),
+        TaskFollowUpErrorCode.TASK_VERSION_CONFLICT: (
+            CompanionGovernanceErrorCode.VERSION_CONFLICT
+        ),
+        TaskFollowUpErrorCode.TASK_AUDIT_FAILED: (
+            CompanionGovernanceErrorCode.AUDIT_FAILED
+        ),
+        TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED: (
+            CompanionGovernanceErrorCode.PERSISTENCE_FAILED
+        ),
+    }.get(error.code, CompanionGovernanceErrorCode.INTERNAL_ERROR)
+    return CompanionGovernanceError(code)
 
 
 def _proposal_matches_command(row, command, scope, *, issue) -> bool:
@@ -609,17 +1152,33 @@ def _issue_value(issue: CompanionIssue) -> Mapping[str, object]:
 def _attention_value(
     attention: CompanionHumanAttention,
     *,
-    current_proposal: CompanionProposal | None,
+    selected_proposal: CompanionProposal | None,
 ) -> Mapping[str, object]:
     if attention.status == "active":
         if (
-            current_proposal is None
-            or current_proposal.attention_id != attention.attention_id
+            selected_proposal is None
+            or selected_proposal.attention_id != attention.attention_id
+            or selected_proposal.state != "pending"
         ):
             raise CompanionGovernanceError(
                 CompanionGovernanceErrorCode.READ_INCONSISTENT
             )
-        current_proposal_id = current_proposal.proposal_id
+        current_proposal_ref = (
+            f"companion_proposal:{selected_proposal.proposal_id}"
+        )
+    elif (
+        attention.status == "satisfied"
+        and selected_proposal is not None
+        and selected_proposal.attention_id == attention.attention_id
+        and selected_proposal.state in {"approved", "rejected"}
+        and selected_proposal.decision_record_id
+        == attention.satisfied_by_decision_record_id
+        and attention.satisfied_at is not None
+        and attention.satisfied_by_decision_record_id is not None
+    ):
+        current_proposal_ref = (
+            f"companion_proposal:{selected_proposal.proposal_id}"
+        )
     else:
         raise CompanionGovernanceError(
             CompanionGovernanceErrorCode.READ_INCONSISTENT
@@ -631,7 +1190,7 @@ def _attention_value(
         "attention_sequence": attention.attention_sequence,
         "status": attention.status,
         "summary_text": attention.summary_text,
-        "current_proposal_ref": f"companion_proposal:{current_proposal_id}",
+        "current_proposal_ref": current_proposal_ref,
         "record_version": attention.record_version,
         "created_at": timestamp_text(attention.created_at),
         "satisfied_at": (

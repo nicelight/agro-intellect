@@ -4,14 +4,22 @@ from __future__ import annotations
 
 import uuid
 
+from sqlalchemy import null
+
 from ..agent_chat.contracts import (
     AgentChatContractError,
+    BusEventEnvelopeV1,
     UIFeedEventV1,
     timestamp_text,
 )
-from ..agent_chat.models import UIFeedEvent
+from ..agent_chat.models import AgentBusEvent, UIFeedEvent
 from .contracts import CompanionGovernanceError, CompanionGovernanceErrorCode
-from .models import CompanionHumanAttention, CompanionIssue, CompanionProposal
+from .models import (
+    CompanionHumanAttention,
+    CompanionIssue,
+    CompanionProposal,
+    DecisionRecord,
+)
 
 
 _VISIBLE_ROLES = ["boss", "engineer", "consultant"]
@@ -82,6 +90,90 @@ def proposal_ui_event(proposal: CompanionProposal) -> UIFeedEventV1:
             "visible_to_agents": False,
             "consumable_by_agents": False,
         }
+    )
+
+
+def decision_ui_event(decision: DecisionRecord) -> UIFeedEventV1:
+    refs = [
+        f"companion_issue:{decision.issue_id}",
+        f"companion_proposal:{decision.proposal_id}",
+        f"decision_record:{decision.decision_record_id}",
+    ]
+    if decision.workflow_effect_ref is not None:
+        refs.append(decision.workflow_effect_ref)
+    return UIFeedEventV1.from_untrusted(
+        {
+            "schema_version": 1,
+            "ui_event_id": str(decision.decision_record_id),
+            "created_at": timestamp_text(decision.decided_at),
+            "farm_id": str(decision.farm_id),
+            "plant_id": str(decision.plant_id),
+            "source_type": "companion_governance",
+            "source_id": str(decision.decision_record_id),
+            "source_refs": refs,
+            "display_kind": "companion_governance",
+            "display_payload": {
+                "payload_kind": "companion_decision",
+                "decision_record_ref": (
+                    f"decision_record:{decision.decision_record_id}"
+                ),
+                "issue_ref": f"companion_issue:{decision.issue_id}",
+                "proposal_ref": f"companion_proposal:{decision.proposal_id}",
+                "decision_summary": decision.decision_summary,
+                "safety_gate_authority": "not_granted",
+            },
+            "visible_to_roles": _VISIBLE_ROLES,
+            "visible_to_agents": False,
+            "consumable_by_agents": False,
+        }
+    )
+
+
+def decision_bus_event(decision: DecisionRecord) -> BusEventEnvelopeV1:
+    refs = [
+        f"decision_record:{decision.decision_record_id}",
+        f"companion_issue:{decision.issue_id}",
+        f"companion_proposal:{decision.proposal_id}",
+    ]
+    if decision.workflow_effect_ref is not None:
+        refs.append(decision.workflow_effect_ref)
+    return BusEventEnvelopeV1.from_untrusted(
+        {
+            "schema_version": 1,
+            "event_id": str(decision.decision_record_id),
+            "event_type": "domain_event_ref",
+            "created_at": timestamp_text(decision.decided_at),
+            "farm_id": str(decision.farm_id),
+            "plant_id": str(decision.plant_id),
+            "actor_ref": None,
+            "source_type": "domain_record",
+            "source_id": str(decision.decision_record_id),
+            "payload": {
+                "payload_kind": "domain_event_ref",
+                "record_type": "decision_record",
+                "record_ref": f"decision_record:{decision.decision_record_id}",
+            },
+            "source_refs": refs,
+            "consumable_by_agents": True,
+            "authorization_scope": None,
+        }
+    )
+
+
+def new_bus_model(event: BusEventEnvelopeV1) -> AgentBusEvent:
+    return AgentBusEvent(
+        event_id=event.event_id,
+        created_at=event.created_at,
+        farm_id=event.farm_id,
+        plant_id=event.plant_id,
+        event_type=event.event_type,
+        source_type=event.source_type,
+        source_id=event.source_id,
+        actor_ref=null(),
+        payload=dict(event.payload),
+        source_refs=list(event.source_refs),
+        authorization_scope=null(),
+        consumable_by_agents=True,
     )
 
 
@@ -160,6 +252,9 @@ def _persistence_failed() -> None:
 
 __all__ = [
     "attention_ui_event",
+    "decision_bus_event",
+    "decision_ui_event",
+    "new_bus_model",
     "new_ui_model",
     "proposal_ui_event",
     "repair_canonical_proposal_projection",

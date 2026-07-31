@@ -378,6 +378,59 @@ class CompanionGovernanceRepository:
             )
         )
 
+    def decision_for_proposal(
+        self,
+        proposal_id: uuid.UUID,
+        *,
+        for_update: bool,
+    ) -> DecisionRecord | None:
+        query = select(DecisionRecord).where(
+            DecisionRecord.proposal_id == proposal_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
+    def decision(
+        self,
+        decision_record_id: uuid.UUID,
+        *,
+        for_update: bool,
+    ) -> DecisionRecord | None:
+        query = select(DecisionRecord).where(
+            DecisionRecord.decision_record_id == decision_record_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
+    def decision_for_request(
+        self,
+        request_id: uuid.UUID,
+        *,
+        for_update: bool,
+    ) -> DecisionRecord | None:
+        query = select(DecisionRecord).where(
+            DecisionRecord.request_id == request_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
+    def closed_issue_for_request(
+        self,
+        request_id: uuid.UUID,
+        *,
+        for_update: bool,
+    ) -> CompanionIssue | None:
+        query = select(CompanionIssue).where(
+            CompanionIssue.close_request_id == request_id
+        )
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
+
 def _status_rank():
     return case(
         (CompanionIssue.status == "open", 0),

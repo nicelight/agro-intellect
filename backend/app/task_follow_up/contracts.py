@@ -87,6 +87,51 @@ class ClassifiedMessageTaskCommandV1:
 
 
 @dataclass(frozen=True, slots=True)
+class GovernanceDecisionTaskCommandV1:
+    """Caller-owned-UoW ordinary Task effect from approved governance."""
+
+    actor_context: ActorContext
+    plant_id: uuid.UUID
+    task_id: uuid.UUID
+    decision_record: object
+    proposal: object
+    attention: object
+    classification: object
+    task_kind: TaskKind
+    task_display_text: str
+    request_id: uuid.UUID
+    request_fingerprint: str
+    source_branch: str = "governance_decision"
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema_version != 1
+            or self.source_branch != "governance_decision"
+            or not isinstance(self.actor_context, ActorContext)
+            or not all(
+                isinstance(item, uuid.UUID)
+                for item in (self.plant_id, self.task_id, self.request_id)
+            )
+            or self.task_id.version != 4
+            or self.request_id.version != 4
+            or self.task_kind not in {
+                TaskKind.CHECK,
+                TaskKind.MEASUREMENT,
+                TaskKind.FOLLOW_UP,
+            }
+            or not isinstance(self.request_fingerprint, str)
+            or re.fullmatch(r"[0-9a-f]{64}", self.request_fingerprint) is None
+        ):
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_REQUEST_INVALID)
+        object.__setattr__(
+            self,
+            "task_display_text",
+            normalized_display_text(self.task_display_text),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ApprovalDecisionCommandV1:
     actor_context: ActorContext
     plant_id: uuid.UUID
@@ -244,6 +289,7 @@ __all__ = [
     "ApprovalDecisionResultV1",
     "ApprovalStatus",
     "ClassifiedMessageTaskCommandV1",
+    "GovernanceDecisionTaskCommandV1",
     "CompleteTaskCommandV1",
     "CompleteTaskResultV1",
     "OrdinaryTaskCreateResultV1",

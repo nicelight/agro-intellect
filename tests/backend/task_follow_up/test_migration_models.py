@@ -98,8 +98,8 @@ def test_cleanup_revision_precedes_companion_simplification_head():
     script = _script()
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft008_lazy_introductions"
-    assert head.down_revision == "ft013_simplify_companion"
+    assert head.revision == "ft013_decision_effects"
+    assert head.down_revision == "ft008_lazy_introductions"
 
     cleanup = script.get_revision("ft012_simplify_follow_up_runtime")
     retained = script.get_revision("ft013_governance_aggregate")
@@ -302,7 +302,7 @@ def test_alembic_current_head_upgrade_is_idempotent(ft012_database):
         command.upgrade(config, "head")
         with scoped_database.engine().connect() as connection:
             assert MigrationContext.configure(connection).get_current_revision() == (
-                "ft008_lazy_introductions"
+                "ft013_decision_effects"
             )
             inspector = inspect(connection)
             assert _RUNTIME_TABLE not in inspector.get_table_names()

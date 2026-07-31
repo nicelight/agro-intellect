@@ -199,6 +199,111 @@ class TaskFollowUpRepository:
             query = query.with_for_update()
         return self.session.scalar(query.execution_options(populate_existing=True))
 
+    def task_for_decision_record(
+        self, decision_record_id: uuid.UUID, *, for_update: bool = False
+    ) -> Task | None:
+        query = select(Task).where(Task.decision_record_id == decision_record_id)
+        if for_update:
+            query = query.with_for_update()
+        return self.session.scalar(query.execution_options(populate_existing=True))
+
+    def lock_governance_decision_source_graph(
+        self,
+        decision_record_id: uuid.UUID,
+    ) -> tuple[object, object, object, object, SafetyClassification] | None:
+        """Reload the flushed FT-013 source graph inside the caller-owned UoW."""
+
+        from ..companion_governance.models import (
+            CompanionHumanAttention,
+            CompanionIssue,
+            CompanionProposal,
+            DecisionRecord,
+        )
+
+        decision = self.session.scalar(
+            select(DecisionRecord)
+            .where(DecisionRecord.decision_record_id == decision_record_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if decision is None:
+            return None
+        proposal = self.session.scalar(
+            select(CompanionProposal)
+            .where(CompanionProposal.proposal_id == decision.proposal_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        attention = self.session.scalar(
+            select(CompanionHumanAttention)
+            .where(
+                CompanionHumanAttention.attention_id == decision.attention_id
+            )
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        issue = self.session.scalar(
+            select(CompanionIssue)
+            .where(CompanionIssue.issue_id == decision.issue_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        classification = (
+            None
+            if proposal is None
+            else self.safety_classification(
+                proposal.source_classification_message_id,
+                for_update=True,
+            )
+        )
+        if any(
+            item is None
+            for item in (proposal, attention, issue, classification)
+        ):
+            return None
+        assert proposal is not None
+        assert attention is not None
+        assert issue is not None
+        assert classification is not None
+        return decision, proposal, attention, issue, classification
+
+    def lock_governance_source_ref(
+        self,
+        ref: str,
+        *,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+        issue_id: uuid.UUID,
+    ) -> bool:
+        """Reload one canonical proposal input ref from its owning authority."""
+
+        try:
+            kind, identifier = ref.split(":", maxsplit=1)
+            item_id = uuid.UUID(identifier)
+        except (ValueError, TypeError, AttributeError):
+            return False
+        if kind != "companion_issue":
+            return self.lock_authoritative_ref(
+                ref,
+                farm_id=farm_id,
+                plant_id=plant_id,
+            )
+
+        from ..companion_governance.models import CompanionIssue
+
+        row = self.session.scalar(
+            select(CompanionIssue)
+            .where(CompanionIssue.issue_id == item_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return (
+            row is not None
+            and row.issue_id == issue_id
+            and row.farm_id == farm_id
+            and row.plant_id == plant_id
+        )
+
     def dispatch_disposition_for_message(
         self, message_id: uuid.UUID, *, for_update: bool = False
     ) -> OrdinaryTaskDispatchDisposition | None:

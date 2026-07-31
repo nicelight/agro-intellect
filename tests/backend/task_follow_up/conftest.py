@@ -74,6 +74,12 @@ def _postgres_database():
             "ft008_agent_chat_ui_feed", "ft009_plant_state",
             "ft011_safety_classifications", "ft011_safety_action_decisions",
             "ft012_task_approval_outcomes",
+            "ft012_runtime_dispositions",
+            "ft013_governance_aggregate",
+            "ft012_simplify_follow_up_runtime",
+            "ft013_simplify_companion",
+            "ft008_lazy_introductions",
+            "ft013_decision_effects",
         )
         with scoped.engine().connect() as connection:
             context = MigrationContext.configure(connection)

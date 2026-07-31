@@ -129,12 +129,12 @@ def test_governance_json_columns_and_ui_model_are_postgresql_native():
     assert "companion_governance" in constraints["ck_ui_feed_events_source_display"]
 
 
-def test_ft013_simplification_is_exact_guarded_product_head():
+def test_ft013_decision_effects_is_exact_guarded_product_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft008_lazy_introductions"
-    assert head.down_revision == "ft013_simplify_companion"
+    assert head.revision == "ft013_decision_effects"
+    assert head.down_revision == "ft008_lazy_introductions"
     simplification = script.get_revision("ft013_simplify_companion")
     assert simplification is not None
     source = Path(simplification.path).read_text(encoding="utf-8")

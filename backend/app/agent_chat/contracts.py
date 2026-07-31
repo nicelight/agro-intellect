@@ -105,7 +105,15 @@ def _bus_payload(value: object, event_type: str) -> Mapping[str, object]:
             raise AgentChatContractError()
     else:
         fields = _closed(value, {"payload_kind", "record_type", "record_ref"})
-        if fields["payload_kind"] != "domain_event_ref" or fields["record_type"] not in {"daily_checkin", "manual_measurement", "photo_catalog_item"} or not isinstance(fields["record_ref"], str) or _REF_RE.fullmatch(fields["record_ref"]) is None:
+        if fields["payload_kind"] != "domain_event_ref" or fields["record_type"] not in {"daily_checkin", "manual_measurement", "photo_catalog_item", "decision_record"} or not isinstance(fields["record_ref"], str) or _REF_RE.fullmatch(fields["record_ref"]) is None:
+            raise AgentChatContractError()
+        expected_kind = {
+            "daily_checkin": "daily_checkin",
+            "manual_measurement": "manual_measurement",
+            "photo_catalog_item": "photo_catalog_item",
+            "decision_record": "decision_record",
+        }[str(fields["record_type"])]
+        if not str(fields["record_ref"]).startswith(f"{expected_kind}:"):
             raise AgentChatContractError()
     return MappingProxyType(fields)
 

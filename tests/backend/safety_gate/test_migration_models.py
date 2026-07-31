@@ -112,8 +112,8 @@ def test_action_decision_revision_is_exact_product_head_and_guarded():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     revision = script.get_revision("head")
     assert revision is not None
-    assert revision.revision == "ft008_lazy_introductions"
-    assert revision.down_revision == "ft013_simplify_companion"
+    assert revision.revision == "ft013_decision_effects"
+    assert revision.down_revision == "ft008_lazy_introductions"
     companion_governance = script.get_revision("ft013_governance_aggregate")
     assert companion_governance is not None
     assert companion_governance.down_revision == "ft012_runtime_dispositions"

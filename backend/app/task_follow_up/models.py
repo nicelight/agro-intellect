@@ -185,6 +185,7 @@ class Task(Base):
     __tablename__ = "tasks"
     __table_args__ = (
         UniqueConstraint("classification_message_id", name="uq_tasks_classification_message"),
+        UniqueConstraint("decision_record_id", name="uq_tasks_decision_record"),
         UniqueConstraint("approval_id", name="uq_tasks_approval"),
         UniqueConstraint("parent_action_task_id", name="uq_tasks_parent_action"),
         UniqueConstraint("create_request_id", name="uq_tasks_create_request"),
@@ -196,7 +197,7 @@ class Task(Base):
         CheckConstraint("status IN ('open', 'completed')", name="ck_tasks_status"),
         CheckConstraint(
             "source_type IN ('safe_task_request', 'approved_action', "
-            "'automatic_follow_up')",
+            "'automatic_follow_up', 'governance_decision')",
             name="ck_tasks_source_type",
         ),
         CheckConstraint(
@@ -226,16 +227,26 @@ class Task(Base):
             "((source_type = 'safe_task_request' "
             "AND kind IN ('check', 'measurement', 'follow_up') "
             "AND classification_message_id IS NOT NULL AND approval_id IS NULL "
-            "AND parent_action_task_id IS NULL AND create_request_id IS NOT NULL "
+            "AND parent_action_task_id IS NULL AND decision_record_id IS NULL "
+            "AND create_request_id IS NOT NULL "
             "AND create_request_fingerprint IS NOT NULL) OR "
             "(source_type = 'approved_action' AND kind = 'action' "
             "AND classification_message_id IS NULL AND approval_id IS NOT NULL "
-            "AND parent_action_task_id IS NULL AND create_request_id IS NULL "
+            "AND parent_action_task_id IS NULL AND decision_record_id IS NULL "
+            "AND create_request_id IS NULL "
             "AND create_request_fingerprint IS NULL) OR "
             "(source_type = 'automatic_follow_up' AND kind = 'follow_up' "
             "AND classification_message_id IS NULL AND approval_id IS NULL "
             "AND parent_action_task_id IS NOT NULL AND due_at IS NOT NULL "
-            "AND create_request_id IS NULL AND create_request_fingerprint IS NULL))",
+            "AND decision_record_id IS NULL "
+            "AND create_request_id IS NULL AND create_request_fingerprint IS NULL) OR "
+            "(source_type = 'governance_decision' "
+            "AND kind IN ('check', 'measurement', 'follow_up') "
+            "AND classification_message_id IS NULL AND approval_id IS NULL "
+            "AND parent_action_task_id IS NULL AND due_at IS NULL "
+            "AND decision_record_id IS NOT NULL "
+            "AND create_request_id IS NOT NULL "
+            "AND create_request_fingerprint IS NOT NULL))",
             name="ck_tasks_source_matrix",
         ),
         CheckConstraint(
@@ -283,6 +294,10 @@ class Task(Base):
     source_refs: Mapped[list[str]] = mapped_column(JSON_DOCUMENT, nullable=False)
     classification_message_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("safety_classifications.message_id", ondelete="RESTRICT")
+    )
+    decision_record_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("decision_records.decision_record_id", ondelete="RESTRICT"),
     )
     approval_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("approvals.approval_id", ondelete="RESTRICT")

@@ -1,7 +1,7 @@
 {
   "id": "TASK-042-T3-FT-013-W2",
   "title": "Implement atomic Companion DecisionRecords and workflow effects",
-  "status": "planned",
+  "status": "done",
   "wave": "W2",
   "feature": "FT-013",
   "reqs": [
@@ -39,8 +39,11 @@
     "tests/backend/access_admin/test_ft002_schema_migration.py",
     "tests/backend/photo_intake/test_ft005_migration_models.py",
     "tests/backend/plant_operations/test_ft004_migration_models.py",
+    "tests/backend/plant_state/test_migration_models.py",
     "tests/backend/agent_chat/test_ft008_migration_models.py",
+    "tests/backend/agent_chat/test_ft008_lazy_introductions.py",
     "tests/backend/safety_gate/test_migration_models.py",
+    "tests/backend/safety_gate/test_classification_persistence.py",
     "tests/backend/task_follow_up/test_migration_models.py",
     "tests/backend/test_foundation_database_contract.py"
   ],
@@ -58,7 +61,7 @@
     },
     {
       "name": "migration_head_compatibility",
-      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/safety_gate/test_migration_models.py tests/backend/task_follow_up/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+      "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/agent_chat/test_ft008_lazy_introductions.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
       "required": true
     },
     {
@@ -77,7 +80,124 @@
       "required": true
     }
   ],
-  "verify": [],
+  "verify": [
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: FAIL",
+      "verified_at": "2026-07-29T23:03:19+05:00",
+      "evidence": [
+        ".protocols/TASK-042-T3-FT-013-W2/verification.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-VERIFY-final-report-code-01.md",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_contract_probe.py"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/companion_governance/test_decision_effects.py tests/backend/companion_governance/test_decision_projection_context.py tests/backend/companion_governance/test_migration_models.py tests/backend/api/test_ft013_companion_decision_routes.py -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/task_follow_up tests/backend/companion_governance -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/agent_chat/test_ft008_lazy_introductions.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+        ".venv/bin/python .tasks/TASK-042-T3-FT-013-W2/verify_contract_probe.py",
+        "node scripts/mb-lint.mjs",
+        "git diff --check"
+      ],
+      "summary": "Functional verification failed despite 20 focused, 191 shared, and 74 migration tests passing. An independent probe reproduced three direct canonical violations: satisfied attention exposes a nullable/null current_proposal_ref instead of the DecisionRecord-derived final proposal ref; the governance ordinary-Task fingerprint omits DecisionRecord request_fingerprint and uses the wrong canonical text key; and Decision/resolve Timeline payloads omit or replace required registered fields. The task remains in_progress for bounded same-task repair.",
+      "recommended_next_action": "/exe TASK-042-T3-FT-013-W2 bounded repair, then repeat /verify"
+    },
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: FAIL",
+      "verified_at": "2026-07-29T23:59:19+05:00",
+      "evidence": [
+        ".protocols/TASK-042-T3-FT-013-W2/verification.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-VERIFY-final-report-code-02.md",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_attempt02_boundary_probe.py"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/companion_governance/test_decision_effects.py tests/backend/companion_governance/test_decision_projection_context.py tests/backend/companion_governance/test_migration_models.py tests/backend/api/test_ft013_companion_decision_routes.py -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/task_follow_up tests/backend/companion_governance -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/agent_chat/test_ft008_lazy_introductions.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+        ".venv/bin/python -m pytest .tasks/TASK-042-T3-FT-013-W2/verify_attempt02_boundary_probe.py -q",
+        "node scripts/mb-lint.mjs",
+        "git diff --check",
+        "git diff --quiet -- backend/app/main.py"
+      ],
+      "summary": "Attempt 02 repaired the prior satisfied-attention, Task-fingerprint, and Timeline findings, and 20 focused, 191 shared, and 74 migration tests pass. A new PostgreSQL-backed verifier probe observed that the operative Task seam receives an unflushed pending DecisionRecord plus dirty proposal/attention objects; source inspection also shows the Task branch reloads only current scope and Task identities, not the authoritative DecisionRecord/proposal/attention graph or source refs. The complete T3 authority/concurrency/rollback/nested-error matrix also remains unproved. The task stays in_progress for bounded same-task repair.",
+      "recommended_next_action": "/exe TASK-042-T3-FT-013-W2 flush and reload the canonical governance Task source graph, complete the missing T3 matrix, then repeat /verify"
+    },
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: FAIL",
+      "verified_at": "2026-07-30T01:20:27+05:00",
+      "evidence": [
+        ".protocols/TASK-042-T3-FT-013-W2/verification.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-VERIFY-final-report-code-03.md",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_attempt03_t3_probe.py",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_attempt02_boundary_probe.py"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/companion_governance/test_decision_effects.py tests/backend/companion_governance/test_decision_projection_context.py tests/backend/companion_governance/test_migration_models.py tests/backend/api/test_ft013_companion_decision_routes.py -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/task_follow_up tests/backend/companion_governance -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/agent_chat/test_ft008_lazy_introductions.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+        ".venv/bin/python -m pytest .tasks/TASK-042-T3-FT-013-W2/verify_attempt02_boundary_probe.py tests/backend/api/test_ft013_companion_read_routes.py -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest .tasks/TASK-042-T3-FT-013-W2/verify_attempt03_t3_probe.py -q",
+        "node scripts/mb-lint.mjs",
+        "git diff --check",
+        "git diff --quiet -- backend/app/main.py"
+      ],
+      "summary": "Attempt 03 repaired the prior flushed-source and authoritative Task-source reload findings; 30 focused, 200 shared, 74 migration, 8 prior-boundary/read-route, and 14 verifier-probe tests pass. The verifier probe nevertheless establishes a direct normative failure: when a valid unfocused pending target UUID sorts below the different currently focused issue UUID, keep_open returns COMPANION_VERSION_CONFLICT because ORM flush ordering hits the partial unique focus index before clearing the old row. State and projections roll back completely, but the valid command cannot succeed or recover by retry. The task remains in_progress for bounded same-task repair.",
+      "recommended_next_action": "/exe TASK-042-T3-FT-013-W2 repair UUID-order-independent focus transfer, add the deterministic PostgreSQL regression, then repeat /verify"
+    },
+    {
+      "stage": "verify",
+      "mode": "manual",
+      "verdict": "VERDICT: PASS",
+      "verified_at": "2026-07-30T12:17:35+05:00",
+      "evidence": [
+        ".protocols/TASK-042-T3-FT-013-W2/verification.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-VERIFY-final-report-code-04.md",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_attempt04_focus_probe.py",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_attempt03_t3_probe.py",
+        ".tasks/TASK-042-T3-FT-013-W2/verify_attempt02_boundary_probe.py"
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/backend/companion_governance/test_decision_effects.py tests/backend/companion_governance/test_decision_projection_context.py tests/backend/companion_governance/test_migration_models.py tests/backend/api/test_ft013_companion_decision_routes.py -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin tests/backend/agent_chat tests/backend/task_follow_up tests/backend/companion_governance -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/agent_chat/test_ft008_lazy_introductions.py tests/backend/safety_gate/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/task_follow_up/test_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/test_foundation_database_contract.py -q",
+        ".venv/bin/python -m pytest .tasks/TASK-042-T3-FT-013-W2/verify_attempt02_boundary_probe.py tests/backend/api/test_ft013_companion_read_routes.py -m \"not real_model\" -q",
+        ".venv/bin/python -m pytest .tasks/TASK-042-T3-FT-013-W2/verify_attempt03_t3_probe.py -k \"not unfocused_pending_keep_open_observes_conflict_and_full_rollback\" -q",
+        ".venv/bin/python -m pytest .tasks/TASK-042-T3-FT-013-W2/verify_attempt04_focus_probe.py -q",
+        "node scripts/mb-lint.mjs",
+        "git diff --check",
+        "git diff --quiet -- backend/app/main.py"
+      ],
+      "summary": "Execution Attempt 04 passes independent functional verification. Required focused, shared, and exact-head gates pass with 33, 203, and 74 tests; prior boundary/read checks pass 8 tests; 13 still-applicable verifier T3 cases pass; and a new 3-case PostgreSQL probe proves valid unfocused keep_open focus transfer for both UUID polarities plus complete rollback after a projection failure following the intermediate old-focus flush. No task-scoped defect, ambiguity, higher-tier trigger, or forbidden scope remains. The T3 task stays in_progress pending per-task /red-verify and the later human checkpoint/explicit closure.",
+      "recommended_next_action": "/red-verify TASK-042-T3-FT-013-W2"
+    },
+    {
+      "stage": "owner_lifecycle_closure",
+      "mode": "manual_explicit_owner",
+      "decision": "done",
+      "attempt": "04",
+      "decided_at": "2026-07-31T04:45:26+05:00",
+      "basis": "The user explicitly confirmed human review and directly ordered TASK-042 closed after current Execution Attempt 04 received independent functional VERDICT: PASS and per-task SEMANTIC_VERDICT: semantic-pass with no material findings or operator questions.",
+      "accepted_evidence": [
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-EXE-final-report-code-04.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-VERIFY-final-report-code-04.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-042-T3-FT-013-W2/TASK-042-T3-FT-013-W2-S-CLOSURE-final-report-docs-01.md",
+        ".protocols/TASK-042-T3-FT-013-W2/administrative-closure.md"
+      ],
+      "gate_summary": {
+        "functional_verification": "VERDICT: PASS; focused 33, shared 203, exact-head 74, prior-boundary/read 8, still-applicable adversarial matrix 13, fresh focus probe 3, lint/diff/compile/scope PASS",
+        "red_verification": "SEMANTIC_VERDICT: semantic-pass; no material findings and no operator questions",
+        "human_checkpoint": "HUMAN_CHECKPOINT: done"
+      },
+      "findings": [],
+      "scope": "Closure changes only TASK-042 lifecycle and task-owned closure evidence. TASK-043 remains planned and is not promoted or selected; wave-boundary /mb-sync remains separate.",
+      "next_gate": "TASK-042 is terminal done. Any TASK-043 promotion or execution and the FT-013 wave-boundary /mb-sync are separate explicit workflow actions."
+    }
+  ],
   "docs": [
     ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
     ".memory-bank/states/companion-governance.md",
@@ -133,6 +253,7 @@
     ".memory-bank/tasks/plans/IMPL-FT-013.md"
   ],
   "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md",
     ".memory-bank/states/companion-governance.md",
     ".memory-bank/domains/companion-governance.md",
     ".memory-bank/contracts/companion-governance-http.md",
@@ -157,10 +278,11 @@
     "Effects are exactly discussion_only, check, measurement, follow_up, and none; approval copies the proposal effect, rejection forces none, and action/unknown/mismatch rejects the whole decision.",
     "Operative DecisionRecord, the proposal locked pending-v1 then flushed approved-v2 for that same record, same-kind governance_decision ordinary Task, state transitions, required Timeline refs, decision/proposal UI, and approved-only Bus row commit together or all roll back; no intermediate commit or failed/no_effect DecisionRecord is retained.",
     "Approved discussion_only/none may publish a compact DecisionRecord Bus fact without a Task; rejection creates human history only and no Bus fact; all agent context is the exact non-persisted ApprovedGovernanceSummaryV1 and safety_gate_authority remains not_granted.",
-    "The DecisionRecord migration adds only decision-effect Task/Bus compatibility after the TASK-044 head ft013_simplify_companion and preserves every earlier row/variant.",
-    "Every exact-head assertion present after TASK-041, including Safety Gate and Task Follow-Up migration-model tests, advances to the decision-effect revision in this task.",
+    "The DecisionRecord migration adds only decision-effect Task/Bus compatibility after the current repository head ft008_lazy_introductions, retains ft013_simplify_companion in its ancestry, and preserves every earlier row/variant.",
+    "Every current exact-head assertion, including Plant State, Agent Chat lazy-introduction, Safety Gate classification-persistence, Safety Gate migration-model, Task Follow-Up migration-model, Companion migration-model, and older compatibility tests, advances to the decision-effect revision in this task.",
     "The decision/close router is verified through an isolated FastAPI test app and remains unregistered in backend/app/main.py until TASK-043 performs the single production registration after TASK-040.",
-    "TASK-042 starts only after TASK-040 because both may edit backend/app/task_follow_up/; this explicit edge serializes the shared package even though their feature-local wave labels are both W2."
+    "TASK-042 starts only after TASK-040 because both may edit backend/app/task_follow_up/; this explicit edge serializes the shared package even though their feature-local wave labels are both W2.",
+    "Companion Governance remains the primary owner in backend/app/companion_governance; API handlers, generic utilities, and production composition must only adapt or wire that business orchestration."
   ],
   "invariants": [
     "PostgreSQL is DecisionRecord, issue transition, and Task authority; Timeline, UI Feed, Bus, MessageEnvelope, classification, and conclusion cannot independently create, repair, replay, or transition records.",
@@ -170,7 +292,7 @@
     "Identical decision/close retries return the first canonical result; stale versions, reused identities with different fingerprints, superseded/terminal proposals, and required projection persistence failures have no effect."
   ],
   "verification_targets": [
-    "Migration/model tests prove the decision-effect revision follows TASK-044, adds exact Task source/Bus constraints and nullable backend-domain scope, and advances Safety Gate, Task Follow-Up, and every older exact-head assertion without changing earlier rows.",
+    "Migration/model tests prove the decision-effect revision follows the current ft008_lazy_introductions repository head with ft013_simplify_companion retained in ancestry, adds exact Task source/Bus constraints and nullable backend-domain scope, and advances Companion, Plant State, Agent Chat lazy-introduction, Safety Gate classification/migration, Task Follow-Up, and every older exact-head assertion without changing earlier rows.",
     "PostgreSQL service/concurrency tests prove approve/reject, attention satisfaction, focused/unfocused open conclusion reads, keep_open focus transfer, resolved/close, identical duplicate versus conflict, current authority, and archive/grant/stale races.",
     "Effect tests cover all five allowed values, action/unknown/mismatch rejection, one same-kind governance_decision Task from the flushed approved-v2/same-DecisionRecord graph without intermediate commit, committed duplicate, wrong proposal phase/link rejection, discussion_only/none no Task, rejection none/no Bus, and zero Safety/action/Plant/device authority.",
     "Failure injection proves Task insert, Timeline append, UI/Bus projection, and database errors roll back DecisionRecord plus every state/effect mutation while non-authoritative appended audit noise cannot replay state.",

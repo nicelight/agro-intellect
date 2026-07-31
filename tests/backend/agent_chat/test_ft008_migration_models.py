@@ -72,18 +72,17 @@ def test_ft008_models_preserve_native_uuid_restricted_relations_and_flags():
     } <= names
 
 
-def test_lazy_introduction_revision_is_the_single_forward_head():
+def test_decision_effect_revision_is_the_single_forward_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
-    assert script.get_heads() == ["ft008_lazy_introductions"]
+    assert script.get_heads() == ["ft013_decision_effects"]
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft008_lazy_introductions"
-    assert head.down_revision == "ft013_simplify_companion"
+    assert head.revision == "ft013_decision_effects"
+    assert head.down_revision == "ft008_lazy_introductions"
 
     source = Path(head.path).read_text(encoding="utf-8")
-    assert "op.drop_table(_BATCH_TABLE)" in source
-    assert "ui_feed_events" not in source
-    assert "agent_bus_events" not in source
+    assert "decision_record_id" in source
+    assert "ck_agent_bus_events_authority_matrix" in source
 
 
 def test_current_ft008_schema_has_feed_and_bus_but_no_batch_table(ft008_database):

@@ -18,6 +18,7 @@ from .contracts import (
     ClassifiedMessageTaskCommandV1,
     CompleteTaskCommandV1,
     CompleteTaskResultV1,
+    GovernanceDecisionTaskCommandV1,
     OrdinaryTaskCreateResultV1,
     OutcomeValue,
     RecordOutcomeCommandV1,
@@ -74,6 +75,14 @@ class TaskFollowUpService:
         self._run_lock_key = run_lock_key or task_follow_up_run_lock_key
 
     def create_ordinary_task(
+        self,
+        command: ClassifiedMessageTaskCommandV1 | GovernanceDecisionTaskCommandV1,
+    ) -> OrdinaryTaskCreateResultV1:
+        if isinstance(command, GovernanceDecisionTaskCommandV1):
+            return self._create_governance_decision_task(command)
+        return self._create_classified_ordinary_task(command)
+
+    def _create_classified_ordinary_task(
         self, command: ClassifiedMessageTaskCommandV1
     ) -> OrdinaryTaskCreateResultV1:
         if not isinstance(command, ClassifiedMessageTaskCommandV1):
@@ -226,6 +235,257 @@ class TaskFollowUpService:
             )
         except SQLAlchemyError:
             self._rollback()
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
+
+    def _create_governance_decision_task(
+        self,
+        command: GovernanceDecisionTaskCommandV1,
+    ) -> OrdinaryTaskCreateResultV1:
+        """Flush one governance Task without owning commit or rollback."""
+
+        if not self._session.in_transaction():
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_REQUEST_INVALID)
+        supplied_decision = command.decision_record
+        supplied_proposal = command.proposal
+        supplied_attention = command.attention
+        supplied_classification = command.classification
+        decision_record_id = getattr(
+            supplied_decision,
+            "decision_record_id",
+            None,
+        )
+        if not isinstance(decision_record_id, uuid.UUID):
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_SOURCE_INVALID)
+        now = _utc(self._clock())
+        try:
+            with self._session.no_autoflush:
+                scope = self._repository.lock_current_scope(
+                    command.actor_context,
+                    plant_id=command.plant_id,
+                    now=now,
+                )
+                denial = self._scope_denial_code(scope)
+                if denial is not None:
+                    raise TaskFollowUpError(denial)
+                assert scope is not None
+                source_graph = (
+                    self._repository.lock_governance_decision_source_graph(
+                        decision_record_id
+                    )
+                )
+                if source_graph is None:
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_SOURCE_INVALID
+                    )
+                decision, proposal, attention, issue, classification = source_graph
+                try:
+                    from ..companion_governance.contracts import (
+                        CompanionGovernanceValidationError,
+                        validate_provider_input_refs,
+                    )
+
+                    provider_refs = validate_provider_input_refs(
+                        proposal.source_refs[:-2],
+                        plant_id=scope.plant_id,
+                        target_issue_id=(
+                            None
+                            if issue.created_by_run_id == proposal.source_run_id
+                            else issue.issue_id
+                        ),
+                    )
+                except (
+                    CompanionGovernanceValidationError,
+                    AttributeError,
+                    TypeError,
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_SOURCE_INVALID
+                    ) from None
+                expected_proposal_tail = [
+                    f"message_envelope:{proposal.source_message_id}",
+                    (
+                        "safety_classification:"
+                        f"{proposal.source_classification_message_id}"
+                    ),
+                ]
+                expected_decision_refs = [
+                    f"companion_issue:{issue.issue_id}",
+                    f"companion_attention:{attention.attention_id}",
+                    f"companion_proposal:{proposal.proposal_id}",
+                    (
+                        "safety_classification:"
+                        f"{proposal.source_classification_message_id}"
+                    ),
+                    *(
+                        ref
+                        for ref in provider_refs
+                        if ref != f"companion_issue:{issue.issue_id}"
+                    ),
+                ]
+                if (
+                    not scope.can_mutate_tasks
+                    or supplied_decision is not decision
+                    or supplied_proposal is not proposal
+                    or supplied_attention is not attention
+                    or supplied_classification is not classification
+                    or getattr(decision, "decision", None) != "approved"
+                    or getattr(decision, "farm_id", None) != scope.farm_id
+                    or getattr(decision, "plant_id", None) != command.plant_id
+                    or getattr(decision, "issue_id", None)
+                    != getattr(issue, "issue_id", None)
+                    or getattr(decision, "proposal_id", None)
+                    != getattr(proposal, "proposal_id", None)
+                    or getattr(decision, "attention_id", None)
+                    != getattr(attention, "attention_id", None)
+                    or getattr(decision, "request_id", None) != command.request_id
+                    or getattr(decision, "request_fingerprint", None)
+                    != command.request_fingerprint
+                    or getattr(decision, "allowed_workflow_effect", None)
+                    != command.task_kind.value
+                    or getattr(decision, "workflow_effect_ref", None)
+                    != f"task:{command.task_id}"
+                    or getattr(decision, "source_refs", None)
+                    != expected_decision_refs
+                    or getattr(issue, "farm_id", None) != scope.farm_id
+                    or getattr(issue, "plant_id", None) != scope.plant_id
+                    or getattr(issue, "status", None)
+                    != (
+                        "resolved"
+                        if getattr(decision, "issue_resolution", None)
+                        == "resolved"
+                        else "open"
+                    )
+                    or getattr(proposal, "farm_id", None) != scope.farm_id
+                    or getattr(proposal, "plant_id", None) != scope.plant_id
+                    or getattr(proposal, "issue_id", None)
+                    != getattr(issue, "issue_id", None)
+                    or getattr(proposal, "state", None) != "approved"
+                    or getattr(proposal, "record_version", None) != 2
+                    or getattr(proposal, "decision_record_id", None)
+                    != getattr(decision, "decision_record_id", None)
+                    or getattr(proposal, "proposed_effect", None)
+                    != command.task_kind.value
+                    or getattr(proposal, "task_display_text", None)
+                    != command.task_display_text
+                    or getattr(proposal, "source_refs", None)[-2:]
+                    != expected_proposal_tail
+                    or getattr(attention, "farm_id", None) != scope.farm_id
+                    or getattr(attention, "plant_id", None) != scope.plant_id
+                    or getattr(attention, "issue_id", None)
+                    != getattr(issue, "issue_id", None)
+                    or getattr(attention, "status", None) != "satisfied"
+                    or getattr(attention, "satisfied_by_decision_record_id", None)
+                    != getattr(decision, "decision_record_id", None)
+                    or getattr(classification, "message_id", None)
+                    != getattr(proposal, "source_classification_message_id", None)
+                    or getattr(classification, "farm_id", None) != scope.farm_id
+                    or getattr(classification, "plant_id", None) != scope.plant_id
+                    or getattr(classification, "origin_agent_id", None) != "companion"
+                    or getattr(classification, "provider_status", None) != "completed"
+                    or getattr(classification, "classification", None)
+                    != "safe_task_request"
+                    or getattr(classification, "safe_task_kind", None)
+                    != command.task_kind.value
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_SOURCE_INVALID
+                    )
+                if any(
+                    not self._repository.lock_governance_source_ref(
+                        ref,
+                        farm_id=scope.farm_id,
+                        plant_id=scope.plant_id,
+                        issue_id=issue.issue_id,
+                    )
+                    for ref in provider_refs
+                ):
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_SOURCE_INVALID
+                    )
+
+                refs = ordered_unique(
+                    (
+                        f"decision_record:{decision.decision_record_id}",
+                        f"companion_proposal:{proposal.proposal_id}",
+                        f"message_envelope:{proposal.source_message_id}",
+                        (
+                            "safety_classification:"
+                            f"{proposal.source_classification_message_id}"
+                        ),
+                        *provider_refs,
+                    )
+                )
+                fingerprint = canonical_fingerprint(
+                    {
+                        "schema_version": 1,
+                        "source_branch": "governance_decision",
+                        "request_id": str(command.request_id),
+                        "request_fingerprint": command.request_fingerprint,
+                        "decision_record_id": str(decision.decision_record_id),
+                        "proposal_id": str(proposal.proposal_id),
+                        "task_kind": command.task_kind.value,
+                        "task_display_text": command.task_display_text,
+                        "source_refs": list(refs),
+                    }
+                )
+                existing = self._repository.task_for_decision_record(
+                    decision.decision_record_id,
+                    for_update=True,
+                )
+                by_request = self._repository.task_for_create_request(
+                    command.request_id
+                )
+                if existing is not None or by_request is not None:
+                    candidate = existing or by_request
+                    if (
+                        candidate is not None
+                        and existing is candidate
+                        and (by_request is None or by_request is candidate)
+                        and candidate.task_id == command.task_id
+                        and candidate.create_request_fingerprint == fingerprint
+                        and candidate.source_refs == list(refs)
+                    ):
+                        return OrdinaryTaskCreateResultV1("duplicate", candidate)
+                    raise TaskFollowUpError(
+                        TaskFollowUpErrorCode.TASK_VERSION_CONFLICT
+                    )
+                task = Task(
+                    task_id=command.task_id,
+                    farm_id=scope.farm_id,
+                    plant_id=scope.plant_id,
+                    kind=command.task_kind.value,
+                    status="open",
+                    display_text=command.task_display_text,
+                    source_type="governance_decision",
+                    source_refs=list(refs),
+                    classification_message_id=None,
+                    decision_record_id=decision.decision_record_id,
+                    approval_id=None,
+                    parent_action_task_id=None,
+                    due_at=None,
+                    created_by_account_id=command.actor_context.account_id,
+                    created_by_membership_id=command.actor_context.membership_id,
+                    created_by_role_preset=scope.role_preset,
+                    created_by_agent_id="companion",
+                    created_at=now,
+                    create_request_id=command.request_id,
+                    create_request_fingerprint=fingerprint,
+                    created_event_ref={},
+                )
+                task.created_event_ref = self._append_task_created(
+                    task,
+                    command.actor_context,
+                )
+                self._session.add(task)
+            self._session.flush()
+            return OrdinaryTaskCreateResultV1("created", task)
+        except TaskFollowUpError:
+            raise
+        except TimelineAppendError:
+            raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_AUDIT_FAILED) from None
+        except SQLAlchemyError:
             raise TaskFollowUpError(
                 TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
             ) from None

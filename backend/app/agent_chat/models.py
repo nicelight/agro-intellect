@@ -137,9 +137,17 @@ class AgentBusEvent(Base):
             name="ck_agent_bus_events_source_refs_array",
         ).ddl_if(dialect="postgresql"),
         CheckConstraint(
-            "jsonb_typeof(authorization_scope) = 'object'",
+            "jsonb_typeof(authorization_scope) = 'object' "
+            "OR authorization_scope IS NULL",
             name="ck_agent_bus_events_authorization_scope_object",
         ).ddl_if(dialect="postgresql"),
+        CheckConstraint(
+            "((source_type = 'domain_record' AND actor_ref IS NULL "
+            "AND authorization_scope IS NULL) OR "
+            "(source_type = 'message_envelope' AND actor_ref IS NOT NULL "
+            "AND authorization_scope IS NOT NULL))",
+            name="ck_agent_bus_events_authority_matrix",
+        ),
         UniqueConstraint(
             "plant_id",
             "source_type",
@@ -172,8 +180,8 @@ class AgentBusEvent(Base):
     )
     payload: Mapped[dict[str, object]] = mapped_column(JSON_DOCUMENT, nullable=False)
     source_refs: Mapped[list[str]] = mapped_column(JSON_DOCUMENT, nullable=False)
-    authorization_scope: Mapped[dict[str, object]] = mapped_column(
-        JSON_DOCUMENT, nullable=False
+    authorization_scope: Mapped[dict[str, object] | None] = mapped_column(
+        JSON_DOCUMENT, nullable=True
     )
     consumable_by_agents: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default=text("true")

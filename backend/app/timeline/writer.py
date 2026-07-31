@@ -24,6 +24,9 @@ _EVENT_SOURCE_TYPES = {
     "companion_issue_opened": "companion_issue",
     "companion_proposal_created": "companion_proposal",
     "companion_proposal_superseded": "companion_proposal",
+    "companion_decision_recorded": "decision_record",
+    "companion_issue_resolved": "companion_issue",
+    "companion_issue_closed": "companion_issue",
 }
 
 

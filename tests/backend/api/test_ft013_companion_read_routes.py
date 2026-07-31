@@ -38,6 +38,8 @@ from tests.backend.plant_operations.conftest import (
 
 _LIST_PATH = "/api/plants/{plant_id}/companion/issues"
 _DETAIL_PATH = "/api/plants/{plant_id}/companion/issues/{issue_id}"
+_DECISION_PATH = "/api/plants/{plant_id}/companion/proposals/{proposal_id}/decision"
+_CLOSE_PATH = "/api/plants/{plant_id}/companion/issues/{issue_id}/close"
 _UUID_PATTERN = (
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 )
@@ -192,11 +194,18 @@ def _seed_inconsistent_open_issue(database, farm, plant) -> uuid.UUID:
     return issue_id
 
 
-def test_openapi_is_exact_read_only_w1_boundary_without_production_registration():
+def test_openapi_is_exact_governance_boundary_without_production_registration():
     schema = _isolated_app().openapi()
-    assert set(schema["paths"]) == {_LIST_PATH, _DETAIL_PATH}
+    assert set(schema["paths"]) == {
+        _LIST_PATH,
+        _DETAIL_PATH,
+        _DECISION_PATH,
+        _CLOSE_PATH,
+    }
     assert set(schema["paths"][_LIST_PATH]) == {"get"}
     assert set(schema["paths"][_DETAIL_PATH]) == {"get"}
+    assert set(schema["paths"][_DECISION_PATH]) == {"post"}
+    assert set(schema["paths"][_CLOSE_PATH]) == {"post"}
     list_operation = schema["paths"][_LIST_PATH]["get"]
     assert {item["name"] for item in list_operation["parameters"]} == {
         "plant_id",
@@ -239,6 +248,8 @@ def test_openapi_is_exact_read_only_w1_boundary_without_production_registration(
     production_paths = create_app().openapi()["paths"]
     assert _LIST_PATH not in production_paths
     assert _DETAIL_PATH not in production_paths
+    assert _DECISION_PATH not in production_paths
+    assert _CLOSE_PATH not in production_paths
 
 
 def test_list_and_detail_return_exact_authority_views_and_status_rank_cursor(

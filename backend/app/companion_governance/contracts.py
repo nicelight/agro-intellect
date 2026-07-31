@@ -51,6 +51,11 @@ class SuggestedResolution(StrEnum):
     RESOLVED = "resolved"
 
 
+class DecisionValue(StrEnum):
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 class CompanionGovernanceErrorCode(StrEnum):
     COMMAND_FORBIDDEN = "COMPANION_COMMAND_FORBIDDEN"
     PLANT_NOT_ACTIVE = "COMPANION_PLANT_NOT_ACTIVE"
@@ -61,6 +66,7 @@ class CompanionGovernanceErrorCode(StrEnum):
     READ_INCONSISTENT = "COMPANION_READ_INCONSISTENT"
     AUDIT_FAILED = "COMPANION_AUDIT_FAILED"
     PERSISTENCE_FAILED = "COMPANION_PERSISTENCE_FAILED"
+    INTERNAL_ERROR = "COMPANION_INTERNAL_ERROR"
 
 
 class CompanionGovernanceError(RuntimeError):
@@ -214,6 +220,140 @@ class ProposalPersistenceResultV1:
 
 
 @dataclass(frozen=True, slots=True)
+class DecideCompanionProposalCommandV1:
+    actor_context: ActorContext
+    plant_id: uuid.UUID
+    proposal_id: uuid.UUID
+    request_id: uuid.UUID
+    expected_version: int
+    decision: DecisionValue | str
+    decision_summary: str
+    issue_resolution: SuggestedResolution | str
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        try:
+            decision = DecisionValue(self.decision)
+            resolution = SuggestedResolution(self.issue_resolution)
+        except (TypeError, ValueError):
+            raise CompanionGovernanceValidationError() from None
+        if (
+            self.schema_version != 1
+            or not isinstance(self.actor_context, ActorContext)
+            or not isinstance(self.plant_id, uuid.UUID)
+            or not isinstance(self.proposal_id, uuid.UUID)
+            or not _uuid4(self.request_id)
+            or self.expected_version != 1
+        ):
+            raise CompanionGovernanceValidationError()
+        object.__setattr__(self, "decision", decision)
+        object.__setattr__(self, "issue_resolution", resolution)
+        object.__setattr__(
+            self,
+            "decision_summary",
+            normalize_text(self.decision_summary, maximum=500),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CloseCompanionIssueCommandV1:
+    actor_context: ActorContext
+    plant_id: uuid.UUID
+    issue_id: uuid.UUID
+    request_id: uuid.UUID
+    expected_version: int
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema_version != 1
+            or not isinstance(self.actor_context, ActorContext)
+            or not isinstance(self.plant_id, uuid.UUID)
+            or not isinstance(self.issue_id, uuid.UUID)
+            or not _uuid4(self.request_id)
+            or not _positive_int(self.expected_version)
+        ):
+            raise CompanionGovernanceValidationError()
+
+
+@dataclass(frozen=True, slots=True)
+class CompanionDecisionResultV1:
+    result: str
+    decision_record: Mapping[str, object]
+    workflow_task_ref: str | None
+    issue: Mapping[str, object]
+    conclusion: Mapping[str, object]
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1 or self.result not in {"created", "duplicate"}:
+            raise CompanionGovernanceValidationError()
+
+    def as_value(self) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "result": self.result,
+            "decision_record": dict(self.decision_record),
+            "workflow_task_ref": self.workflow_task_ref,
+            "issue": dict(self.issue),
+            "conclusion": dict(self.conclusion),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class CompanionIssueCloseResultV1:
+    result: str
+    issue: Mapping[str, object]
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1 or self.result not in {"closed", "duplicate"}:
+            raise CompanionGovernanceValidationError()
+
+    def as_value(self) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "result": self.result,
+            "issue": dict(self.issue),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class ApprovedGovernanceSummaryV1:
+    decision_record_id: uuid.UUID
+    plant_id: uuid.UUID
+    issue_id: uuid.UUID
+    proposal_id: uuid.UUID
+    decision_summary: str
+    allowed_workflow_effect: str
+    decider_role_preset: str
+    decided_at: datetime
+    source_refs: tuple[str, ...]
+    schema_version: int = 1
+
+    def as_value(self) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "decision_record_id": str(self.decision_record_id),
+            "decision_record_ref": f"decision_record:{self.decision_record_id}",
+            "plant_id": str(self.plant_id),
+            "plant_ref": f"plant:{self.plant_id}",
+            "issue_id": str(self.issue_id),
+            "issue_ref": f"companion_issue:{self.issue_id}",
+            "proposal_id": str(self.proposal_id),
+            "proposal_ref": f"companion_proposal:{self.proposal_id}",
+            "proposal_version": 2,
+            "decision": "approved",
+            "decision_summary": self.decision_summary,
+            "allowed_workflow_effect": self.allowed_workflow_effect,
+            "decider_role_preset": self.decider_role_preset,
+            "decided_at": timestamp_text(self.decided_at),
+            "source_refs": list(self.source_refs),
+            "safety_gate_authority": "not_granted",
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class IssueStackPageV1:
     plant_id: uuid.UUID
     focused_issue_ref: str | None
@@ -342,11 +482,17 @@ _TASK_EFFECTS = frozenset(
 
 
 __all__ = [
+    "ApprovedGovernanceSummaryV1",
     "AttentionStatus",
+    "CloseCompanionIssueCommandV1",
+    "CompanionDecisionResultV1",
     "CompanionGovernanceError",
     "CompanionGovernanceErrorCode",
     "CompanionGovernanceValidationError",
+    "CompanionIssueCloseResultV1",
     "CompanionIssueDetailV1",
+    "DecideCompanionProposalCommandV1",
+    "DecisionValue",
     "IssueStackPageV1",
     "IssueStatus",
     "PersistCompanionProposalCommandV1",

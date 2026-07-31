@@ -194,7 +194,13 @@ def _postgres_database(*, include_companion_simplification: bool = True):
             "ft012_simplify_follow_up_runtime",
         ]
         if include_companion_simplification:
-            revision_ids.append("ft013_simplify_companion")
+            revision_ids.extend(
+                (
+                    "ft013_simplify_companion",
+                    "ft008_lazy_introductions",
+                    "ft013_decision_effects",
+                )
+            )
         with scoped.engine().connect() as connection:
             context = MigrationContext.configure(connection)
             with Operations.context(context):

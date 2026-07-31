@@ -1,11 +1,17 @@
 """Plant-scoped Companion IssueStack and proposal authority."""
 
 from .contracts import (
+    ApprovedGovernanceSummaryV1,
     AttentionStatus,
+    CloseCompanionIssueCommandV1,
+    CompanionDecisionResultV1,
     CompanionGovernanceError,
     CompanionGovernanceErrorCode,
     CompanionGovernanceValidationError,
+    CompanionIssueCloseResultV1,
     CompanionIssueDetailV1,
+    DecideCompanionProposalCommandV1,
+    DecisionValue,
     IssueStackPageV1,
     IssueStatus,
     PersistCompanionProposalCommandV1,
@@ -24,7 +30,10 @@ from .repository import CompanionGovernanceRepository, CurrentGovernanceScope
 from .service import CompanionGovernanceService
 
 __all__ = [
+    "ApprovedGovernanceSummaryV1",
     "AttentionStatus",
+    "CloseCompanionIssueCommandV1",
+    "CompanionDecisionResultV1",
     "CompanionGovernanceError",
     "CompanionGovernanceErrorCode",
     "CompanionGovernanceRepository",
@@ -32,10 +41,13 @@ __all__ = [
     "CompanionGovernanceValidationError",
     "CompanionHumanAttention",
     "CompanionIssue",
+    "CompanionIssueCloseResultV1",
     "CompanionIssueDetailV1",
     "CompanionProposal",
     "CurrentGovernanceScope",
     "DecisionRecord",
+    "DecideCompanionProposalCommandV1",
+    "DecisionValue",
     "IssueStackPageV1",
     "IssueStatus",
     "PersistCompanionProposalCommandV1",

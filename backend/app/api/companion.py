@@ -15,6 +15,7 @@ from pydantic import (
     ConfigDict,
     Field,
     ValidationError,
+    UUID4,
     WithJsonSchema,
 )
 
@@ -22,6 +23,8 @@ from ..access_admin.actor_context import ActorContext
 from ..access_admin.dependencies import require_actor_context
 from ..access_admin.errors import AuthErrorCode, auth_error_response, request_id_for
 from ..companion_governance import (
+    CloseCompanionIssueCommandV1,
+    DecideCompanionProposalCommandV1,
     CompanionGovernanceError,
     CompanionGovernanceErrorCode,
     CompanionGovernanceService,
@@ -40,6 +43,10 @@ _UUID_FRAGMENT = _CANONICAL_UUID_PATTERN.removeprefix("^").removesuffix("$")
 _COMPANION_RAW_ROUTE_PATTERNS = (
     re.compile(rb"^/api/plants/([^/]+)/companion/issues$"),
     re.compile(rb"^/api/plants/([^/]+)/companion/issues/([^/]+)$"),
+    re.compile(
+        rb"^/api/plants/([^/]+)/companion/proposals/([^/]+)/decision$"
+    ),
+    re.compile(rb"^/api/plants/([^/]+)/companion/issues/([^/]+)/close$"),
 )
 _COMPANION_DECODED_ROUTE_PATTERNS = tuple(
     re.compile(pattern.pattern.decode("ascii"))
@@ -270,6 +277,36 @@ class CompanionIssueDetailResponseV1(StrictModel):
     conclusion: CompanionConclusionV1
 
 
+class CompanionDecisionRequestV1(StrictModel):
+    schema_version: Literal[1]
+    request_id: UUID4
+    expected_version: Literal[1]
+    decision: Literal["approved", "rejected"]
+    decision_summary: str = Field(min_length=1, max_length=500)
+    issue_resolution: Literal["keep_open", "resolved"]
+
+
+class CompanionDecisionResultResponseV1(StrictModel):
+    schema_version: Literal[1]
+    result: Literal["created", "duplicate"]
+    decision_record: DecisionRecordViewV1
+    workflow_task_ref: TaskRef | None
+    issue: IssueSummaryV1
+    conclusion: CompanionConclusionV1
+
+
+class CompanionIssueCloseRequestV1(StrictModel):
+    schema_version: Literal[1]
+    request_id: UUID4
+    expected_version: int = Field(ge=1)
+
+
+class CompanionIssueCloseResultResponseV1(StrictModel):
+    schema_version: Literal[1]
+    result: Literal["closed", "duplicate"]
+    issue: IssueSummaryV1
+
+
 class ErrorDetail(StrictModel):
     code: str
     message: str
@@ -325,6 +362,11 @@ _ERRORS = {
         500,
         "COMPANION_PERSISTENCE_FAILED",
         "Companion governance request could not be completed.",
+    ),
+    CompanionGovernanceErrorCode.INTERNAL_ERROR: (
+        500,
+        "COMPANION_INTERNAL_ERROR",
+        "Companion governance request failed.",
     ),
 }
 _ERROR_RESPONSES = {
@@ -437,6 +479,107 @@ def get_companion_issue(
         return _governance_error_response(
             request,
             CompanionGovernanceErrorCode.PERSISTENCE_FAILED,
+        )
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+@router.post(
+    "/plants/{plant_id}/companion/proposals/{proposal_id}/decision",
+    response_model=CompanionDecisionResultResponseV1,
+    responses=_ERROR_RESPONSES,
+)
+def decide_companion_proposal(
+    plant_id: CanonicalPathUUID,
+    proposal_id: CanonicalPathUUID,
+    body: CompanionDecisionRequestV1,
+    request: Request,
+    response: Response,
+    actor: ActorContext = Depends(require_actor_context),
+) -> CompanionDecisionResultResponseV1 | JSONResponse:
+    try:
+        if request.query_params:
+            raise CompanionGovernanceValidationError()
+        with request.app.state.database.session() as session:
+            result_value = CompanionGovernanceService(
+                session
+            ).decide_companion_proposal(
+                DecideCompanionProposalCommandV1(
+                    actor_context=actor,
+                    plant_id=plant_id,
+                    proposal_id=proposal_id,
+                    request_id=body.request_id,
+                    expected_version=body.expected_version,
+                    decision=body.decision,
+                    decision_summary=body.decision_summary,
+                    issue_resolution=body.issue_resolution,
+                )
+            )
+        result = CompanionDecisionResultResponseV1.model_validate(
+            result_value.as_value()
+        )
+    except CompanionGovernanceValidationError:
+        return _validation_error_response(request)
+    except CompanionGovernanceError as error:
+        return _governance_error_response(request, error.code)
+    except ValidationError:
+        return _governance_error_response(
+            request,
+            CompanionGovernanceErrorCode.READ_INCONSISTENT,
+        )
+    except Exception:
+        return _governance_error_response(
+            request,
+            CompanionGovernanceErrorCode.INTERNAL_ERROR,
+        )
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+@router.post(
+    "/plants/{plant_id}/companion/issues/{issue_id}/close",
+    response_model=CompanionIssueCloseResultResponseV1,
+    responses=_ERROR_RESPONSES,
+)
+def close_companion_issue(
+    plant_id: CanonicalPathUUID,
+    issue_id: CanonicalPathUUID,
+    body: CompanionIssueCloseRequestV1,
+    request: Request,
+    response: Response,
+    actor: ActorContext = Depends(require_actor_context),
+) -> CompanionIssueCloseResultResponseV1 | JSONResponse:
+    try:
+        if request.query_params:
+            raise CompanionGovernanceValidationError()
+        with request.app.state.database.session() as session:
+            result_value = CompanionGovernanceService(
+                session
+            ).close_companion_issue(
+                CloseCompanionIssueCommandV1(
+                    actor_context=actor,
+                    plant_id=plant_id,
+                    issue_id=issue_id,
+                    request_id=body.request_id,
+                    expected_version=body.expected_version,
+                )
+            )
+        result = CompanionIssueCloseResultResponseV1.model_validate(
+            result_value.as_value()
+        )
+    except CompanionGovernanceValidationError:
+        return _validation_error_response(request)
+    except CompanionGovernanceError as error:
+        return _governance_error_response(request, error.code)
+    except ValidationError:
+        return _governance_error_response(
+            request,
+            CompanionGovernanceErrorCode.READ_INCONSISTENT,
+        )
+    except Exception:
+        return _governance_error_response(
+            request,
+            CompanionGovernanceErrorCode.INTERNAL_ERROR,
         )
     response.headers["Cache-Control"] = "no-store"
     return result
