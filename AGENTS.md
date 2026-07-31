@@ -95,6 +95,30 @@ Do not report speculative observations that were rejected before becoming real
 candidates. Always report evidenced defects and any issue affecting the
 requested verdict.
 
+## Source path semantics
+
+- Treat `package/workspace/code root + directories + complete filename` as one
+  context surface for project-authored source.
+- Preserve language/framework/tooling contracts, configured generators and
+  applicable project scaffolds, accepted architecture/project conventions, and
+  then observed local convention. Apply the general path heuristic only after
+  those authorities.
+- Within accepted executable boundaries, use the minimum necessary path
+  structure with enough durable context to identify the relevant owner,
+  boundary, subject/capability, or technical role. Each optional segment should
+  add durable meaning.
+- Do not repeat directory context mechanically in the filename. Repetition is
+  valid when required by an exported/public symbol, component identity, tooling,
+  or another evidenced convention.
+- Generic or reserved filenames are valid when the full path, framework, or
+  project convention makes their role clear. Preserve required prefixes,
+  suffixes, and compound extensions.
+- Filesystem paths, import/module paths, package exports, URLs/routes, and build
+  targets are distinct executable identities; do not force them to match unless
+  the applicable architecture or ecosystem contract does.
+- Do not opportunistically rename brownfield source. Rename only when required
+  by the current task outcome and inside its semantic and hard scope.
+
 ## Communication
 
 - Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.
@@ -131,21 +155,13 @@ After finishing a meaningful unit of work:
 
 ## Clean context (recommended)
 - Route each `TASK-NNN-TN-FT-NNN-WN` by `task.tier` and `.memory-bank/workflows/tier-policy.md`.
-- Active product feature means a product feature with at least one indexed task in `planned|ready|in_progress|blocked`.
 - Product execution requires task-plan `APPROVE` for the current positive Global
-  Backbone `Planning Revision` only for active product features. `/exe` checks
-  only the feature of its selected task.
-- Missing or mismatched review evidence keeps task statuses unchanged and routes
-  the affected active feature through `/feature-to-tasks FT-<NNN>` ->
-  `/review-tasks-plan FT-<NNN>`.
-- Features whose indexed tasks are all `done|failed` retain historical approvals
-  and require no migration re-review. A material global design change still
-  reconciles every affected active feature.
+  Backbone `Planning Revision`. A mismatch keeps task statuses unchanged and
+  routes `/feature-to-tasks --all` -> `/review-tasks-plan --all`.
 - The caller selects a concrete task. `/exe` prepares/reconciles its tier
   protocol and neutral current Execution Attempt before writing
   `ready -> in_progress`; it never selects queue work.
 - Delegation follows `.memory-bank/roles/orchestrator.md`; each delegated agent follows its assigned role contract.
-- Do not check delegated agents more than once every 60 seconds.
 - T0/T1 may use compact `.protocols/TASK-NNN-TN-FT-NNN-WN/run.md`; compact evidence can be enough.
 - Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - Scheduler mode: T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all feature tasks are implemented, recorded in the feature doc. Run it when the last T2 feature task closes, before the wave-boundary `/mb-sync` and strict doctor.
@@ -165,7 +181,7 @@ After finishing a meaningful unit of work:
 
 ## Two modes (manual vs scheduler)
 - **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd-to-features` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor --strict` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/feature-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/exe TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/exe TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/exe TASK` → `/verify TASK` → `/red-verify TASK`, then explicit owner closure and wave-boundary `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. Every task writes status/closure/evidence immediately; full `/mb-sync` runs once at the end of the wave, with early sync only for a real reconciled RTM/index/spec/contract/changelog dependency or explicit owner request. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/feature-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd-to-features`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; it always records the explicit `.memory-bank/foundation.md` decision, and `/foundation-to-tasks` creates normal `FT-000` task records only when foundation is required. Use `/feature-doctor FT-<NNN>` only for explicit feature blockers and rerun `/feature-to-tasks FT-<NNN>` for feature-level canonical spec repair.
-- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/feature-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each active product feature. Use `/autopilot` only if product JSON task records and required SDD spec links already exist, every active product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the current positive Planning Revision, strict doctor passes, and Foundation is `not_required` or its named final gate is `done` with no unresolved FT-000 work; `/autopilot` never executes FT-000. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
+- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/feature-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each task-linked product feature. Use `/autopilot` only if product JSON task records and required SDD spec links already exist, every task-linked product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the current positive Planning Revision, strict doctor passes, and Foundation is `not_required` or its named final gate is `done` with no unresolved FT-000 work; `/autopilot` never executes FT-000. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
 
 Naming:
 - Folder: `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`

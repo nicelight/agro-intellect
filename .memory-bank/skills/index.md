@@ -18,6 +18,8 @@ status: active
 | <code>cold-start</code> | yes | yes |
 | <code>constitution</code> | yes | yes |
 | <code>context-manifest</code> | yes | yes |
+| <code>creator-vibe</code> | yes | yes |
+| <code>debug</code> | yes | yes |
 | <code>discuss</code> | yes | yes |
 | <code>exe</code> | yes | yes |
 | <code>feature-doctor</code> | yes | yes |
@@ -38,6 +40,7 @@ status: active
 | <code>spec-auto</code> | yes | yes |
 | <code>spec-design</code> | yes | yes |
 | <code>spec-init</code> | yes | yes |
+| <code>technical-premortem</code> | yes | yes |
 | <code>verify</code> | yes | yes |
 | <code>write-prd</code> | yes | yes |
 

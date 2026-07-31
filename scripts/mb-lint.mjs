@@ -37,7 +37,6 @@ const ANALYSIS_DIR_REL = '.memory-bank/analysis';
 const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
 const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';
 const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
-const TERMINAL_TASK_STATUSES = new Set(['done', 'failed']);
 const ALLOWED_TASK_TIER = new Set(['T0', 'T1', 'T2', 'T3']);
 const TASK_ID_FORMAT = 'TASK-NNN-TN-FT-NNN-WN';
 const TASK_ID_RE = /^TASK-[0-9]{3}-(T[0-3])-(FT-[0-9]{3})-W([0-9]+)$/;
@@ -48,7 +47,6 @@ const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md
 const ARCHITECTURE_DECISION_ANCHOR_RE = /^AD-[0-9]{3,}$/;
 const RETIRED_ARCHITECTURE_DECISION_RE = /\b(retired|replaced|superseded|deprecated)\b/i;
 const INDEX_ROUTER_EXEMPT_DIRS = new Set([
-  '.memory-bank/roles',
   '.memory-bank/templates/protocols',
 ]);
 const ARCHITECTURE_REF_PATH_RE =
@@ -644,10 +642,7 @@ function checkOptionalTaskRuntimeContext(rel, task) {
 
   if (hasOwn(runtimeContext, 'write_boundary') && hasOwn(runtimeContext, 'allowed_write_scope')) {
     errors.push(`${rel}: runtime_context must not contain both 'write_boundary' and deprecated 'allowed_write_scope'`);
-  } else if (
-    hasOwn(runtimeContext, 'allowed_write_scope')
-    && !TERMINAL_TASK_STATUSES.has(task.status)
-  ) {
+  } else if (hasOwn(runtimeContext, 'allowed_write_scope')) {
     warnings.push(`${rel}: runtime_context.allowed_write_scope is deprecated; use write_boundary`);
   }
 
