@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-07-29
+last_updated: 2026-07-31
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -39,7 +39,7 @@ source_of_truth:
 
 ## EP-005 Companion Governance
 
-- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md) — `planned`: IssueStack, proposals, DecisionRecords, and Companion runtime.
+- [FT-013 Companion IssueStack Proposals And DecisionRecords](FT-013-companion-issuestack-proposals-decisionrecords.md) — `verified`: IssueStack, proposals, DecisionRecords, and explicit provider-neutral Companion runtime.
 
 ## EP-006 Local Privacy And Operator Surface
 

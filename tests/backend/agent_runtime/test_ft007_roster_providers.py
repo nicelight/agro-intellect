@@ -10,6 +10,7 @@ from backend.app.agent_runtime import (
     AgentRunCommand,
     AgentRuntimeService,
     CANONICAL_ROSTER_V1,
+    ProviderExecutorBindings,
     StaticAgentDefinitionResolver,
     canonical_roster,
 )
@@ -51,6 +52,17 @@ EXPECTED_FEATURES = (
     "FT-014",
     "FT-014",
 )
+
+
+def test_provider_bindings_are_explicit_and_unbound_by_default():
+    default = ProviderExecutorBindings()
+    companion = object()
+    safety = object()
+    explicit = ProviderExecutorBindings(companion=companion, safety_gate=safety)
+
+    assert default.companion is default.safety_gate is None
+    assert explicit.companion is companion
+    assert explicit.safety_gate is safety
 
 
 def test_canonical_roster_v1_is_exact_ordered_and_immutable():

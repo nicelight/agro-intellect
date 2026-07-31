@@ -3,8 +3,8 @@ description: EP-005 Companion Governance.
 status: draft
 type: epic
 epic_id: EP-005
-lifecycle: planned
-last_updated: 2026-06-29
+lifecycle: verified
+last_updated: 2026-07-31
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md

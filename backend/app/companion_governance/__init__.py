@@ -28,6 +28,22 @@ from .models import (
 )
 from .repository import CompanionGovernanceRepository, CurrentGovernanceScope
 from .service import CompanionGovernanceService
+from .runtime_contracts import (
+    COMPANION_DEFINITION_V1,
+    CompanionAgentDefinitionV1,
+    CompanionInputRecordV1,
+    CompanionModelResultV1,
+    CompanionProviderRequestV1,
+    CompanionRunCommandV1,
+    CompanionRunResultV1,
+    CompanionRuntimeValidationError,
+)
+from .runtime import (
+    CompanionModelExecutor,
+    CompanionRuntimeService,
+    DatabaseCompanionInputAssembler,
+    companion_run_fingerprint,
+)
 
 __all__ = [
     "ApprovedGovernanceSummaryV1",
@@ -39,12 +55,22 @@ __all__ = [
     "CompanionGovernanceRepository",
     "CompanionGovernanceService",
     "CompanionGovernanceValidationError",
+    "CompanionAgentDefinitionV1",
+    "CompanionInputRecordV1",
+    "CompanionModelExecutor",
+    "CompanionModelResultV1",
+    "CompanionProviderRequestV1",
+    "CompanionRunCommandV1",
+    "CompanionRunResultV1",
+    "CompanionRuntimeService",
+    "CompanionRuntimeValidationError",
     "CompanionHumanAttention",
     "CompanionIssue",
     "CompanionIssueCloseResultV1",
     "CompanionIssueDetailV1",
     "CompanionProposal",
     "CurrentGovernanceScope",
+    "DatabaseCompanionInputAssembler",
     "DecisionRecord",
     "DecideCompanionProposalCommandV1",
     "DecisionValue",
@@ -55,4 +81,6 @@ __all__ = [
     "ProposalPersistenceResultV1",
     "ProposalState",
     "SuggestedResolution",
+    "COMPANION_DEFINITION_V1",
+    "companion_run_fingerprint",
 ]

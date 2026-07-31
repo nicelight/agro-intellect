@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-07-29
+last_updated: 2026-07-31
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -132,7 +132,7 @@ source_of_truth:
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 missing/stale-data policy plus completed FT-011 deterministic classification and Safety routing through pending human approval; lifecycle awaits explicit owner reconciliation | planned |
 | REQ-015 | EP-004 | FT-011, FT-012 | unit: Safety Gate fail-closed policy; integration: current human approval and human action-task authority checks | planned |
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
-| REQ-017 | EP-005 | FT-013 | unit: focus/attention/proposal lifecycle and derived conclusion; integration: retained non-operative governance records, DecisionRecord creation, and an explicit provider-neutral Companion proposal through deterministic fake/spy executors; real-provider tests run only after an explicit user request | planned |
+| REQ-017 | EP-005 | FT-013 | verified: focus/attention/proposal lifecycle, derived conclusion, retained non-operative governance records, DecisionRecord creation, and explicit provider-neutral Companion proposal through deterministic fake/spy executors; real-provider tests remain a separate explicit future request | verified |
 | REQ-018 | EP-005, EP-004 | FT-013, FT-011, FT-012 | integration: closed atomic governance effects separated from Safety Gate/action authority and revalidated after restore | planned |
 | REQ-019 | EP-006 | FT-014 | unit: trainability default false; integration: evidence refs required | planned |
 | REQ-020 | EP-006 | FT-015 | integration: loopback/LAN controls, secret redaction, storage prompt | planned |

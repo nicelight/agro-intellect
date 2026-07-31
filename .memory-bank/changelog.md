@@ -4,6 +4,25 @@ status: active
 ---
 # Changelog
 
+## [2026-07-31] Wave W3 — TASK-043 and FT-013 verified
+
+- Reconciled the explicit manual owner's `done` decision for
+  `TASK-043-T3-FT-013-W3` after fresh Attempt 02 functional `PASS`, per-task
+  `semantic-pass`, and `HUMAN_CHECKPOINT: done`.
+- Recorded the explicit provider-neutral Companion run, exact authorized
+  PostgreSQL snapshot, transient model-selected MessageEnvelope refs, complete
+  persisted request provenance, matching Safety classification, guarded
+  proposal handoff, fail-closed unbound production, and single production
+  router registration.
+- Reconciled all indexed FT-013 tasks as terminal `done`; marked FT-013,
+  EP-005, and directly owned REQ-017 `verified`.
+- Kept shared REQ-003, REQ-011, REQ-018, and REQ-022 lifecycle values
+  unchanged because their remaining mapped features or future milestone are
+  outside this completed FT-013 boundary.
+- Updated feature/epic routers and the FT-013 implementation/planning handoff.
+  No task promotion, new task, canonical design change, provider selection,
+  credential access, or production side effect was performed by sync.
+
 ## [2026-07-31] Wave W2 — TASK-042 closed
 
 - Reconciled the explicit manual owner's `done` decision for

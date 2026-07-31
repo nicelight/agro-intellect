@@ -4,7 +4,7 @@ status: draft
 type: feature
 feature_id: FT-013
 epic: EP-005
-lifecycle: planned
+lifecycle: verified
 last_updated: 2026-07-31
 source_of_truth:
   - .memory-bank/prd.md
@@ -117,11 +117,21 @@ spec_design_links:
 
 - SDD design is complete. The IssueStack/proposal aggregate and one-way current
   proposal authority plus the DecisionRecord/effect slice are implemented.
-- The explicit Companion runtime slice remains planned, so feature `lifecycle`
-  remains `planned`.
-- The remaining TASK-043 card is reconciled to Global Planning Revision 2 and
-  the current repository baseline. Fresh task-plan review for that revision is
-  `APPROVE`; task promotion or execution remains a separate workflow action.
+- TASK-043 has implemented the explicit provider-neutral Companion runtime,
+  strict protected run POST, committed-classification hold, and single
+  production router registration. Production executor bindings remain unbound
+  and fail closed; deterministic tests inject separate Companion and Safety
+  spies. Its second execution attempt repaired the adversarially found
+  provenance handoff so the transient MessageEnvelope retains the
+  model-selected request-ref subset while proposal persistence receives the
+  complete ordered provider request refs.
+- TASK-043 is `done` after fresh Attempt 02 functional `PASS`, per-task
+  `semantic-pass`, the exact human checkpoint, and explicit owner closure.
+  All indexed FT-013 tasks are terminal `done`, so feature `lifecycle` is
+  `verified`.
+- The task remains reconciled to Global Planning Revision 2 and the current
+  repository baseline; the fresh task-plan review for that revision is
+  `APPROVE`.
 
 ## Accepted Design Decisions
 
@@ -150,3 +160,20 @@ spec_design_links:
   transition, publication, replay, or workflow-effect authority. Current
   authorization, version, idempotency, lock ordering, and same-run versus
   distinct-run concurrency rules remain defined by the linked canonical specs.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+- Fresh feature-level adversarial review verified the supported explicit
+  Companion run through persisted proposal, authorized human DecisionRecord,
+  one bounded ordinary Task, and compact approved Bus fact while preserving
+  Plant isolation, archive failure, idempotency, complete provenance, and
+  `safety_gate_authority=not_granted`.
+- TASK-041's historical red-verification failure and explicit owner acceptance
+  remain preserved without a retrospective task-level pass claim. The current
+  supported feature path includes the TASK-043 PostgreSQL assembler; the
+  direct-database corruption cases remain outside accepted decision D11.
+- No task status, feature lifecycle, product code, or per-task T3 evidence was
+  changed by this additional feature review.
+- Report: [FT-013 feature semantic review](../../.tasks/FT-013/FT-013-S-RED-VERIFY-final-report-docs-01.md).

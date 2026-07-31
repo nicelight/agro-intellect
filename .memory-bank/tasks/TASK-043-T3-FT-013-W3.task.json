@@ -1,7 +1,7 @@
 {
   "id": "TASK-043-T3-FT-013-W3",
   "title": "Invoke provider-neutral Companion explicitly and persist one classified current proposal",
-  "status": "planned",
+  "status": "done",
   "wave": "W3",
   "feature": "FT-013",
   "reqs": [
@@ -62,7 +62,80 @@
       "required": true
     }
   ],
-  "verify": [],
+  "verify": [
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "01",
+      "verdict": "PASS",
+      "verified_at": "2026-07-31T06:19:56+05:00",
+      "basis": "Fresh task-scoped PostgreSQL, runtime, API, registration, access, classifier, governance, concurrency, effect-boundary, and static-composition evidence passed without reusing execute receipts.",
+      "evidence": [
+        ".protocols/TASK-043-T3-FT-013-W3/verification.md",
+        ".tasks/TASK-043-T3-FT-013-W3/TASK-043-T3-FT-013-W3-S-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-043-T3-FT-013-W3/verify_t3_harm_probe.py"
+      ],
+      "gate_summary": {
+        "companion_runtime_deterministic": "PASS: 76 passed, 1 warning",
+        "companion_input_and_classifier_contract": "PASS: 74 passed",
+        "companion_trigger_classifier_governance_regression": "PASS: 233 passed",
+        "verifier_harm_driving_matrix": "PASS: 19 passed, 1 warning",
+        "verifier_postgresql_effect_boundary": "PASS: one Companion call, one Safety classifier call, one classification/issue/attention/proposal, zero forbidden effects",
+        "memory_bank_lint_diff_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Run per-task /red-verify TASK-043-T3-FT-013-W3, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "functional_verification",
+      "mode": "independent_verifier",
+      "attempt": "02",
+      "verdict": "PASS",
+      "verified_at": "2026-07-31T07:29:17+05:00",
+      "basis": "Fresh ATTEMPT 02 PostgreSQL, runtime, API, registration, provenance, access, classifier, governance, concurrency, effect-boundary, full-regression, and static-composition evidence passed without reusing execute receipts.",
+      "evidence": [
+        ".protocols/TASK-043-T3-FT-013-W3/verification.md",
+        ".tasks/TASK-043-T3-FT-013-W3/TASK-043-T3-FT-013-W3-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-043-T3-FT-013-W3/verify_subset_provenance_probe.py",
+        ".tasks/TASK-043-T3-FT-013-W3/verify_t3_harm_probe.py"
+      ],
+      "gate_summary": {
+        "companion_runtime_deterministic": "PASS: 78 passed, 1 warning",
+        "companion_input_and_classifier_contract": "PASS: 76 passed",
+        "companion_trigger_classifier_governance_regression": "PASS: 235 passed",
+        "full_deterministic_regression": "PASS: 573 passed, 207 warnings",
+        "verifier_harm_driving_matrix": "PASS: 21 passed, 1 warning",
+        "verifier_subset_provenance": "PASS: Plant-only and measurement-only subsets remain transient while proposals retain complete ordered request plus message/classification refs",
+        "verifier_postgresql_effect_boundary": "PASS: one Companion call, one Safety classifier call, one classification/issue/attention/proposal, zero forbidden effects",
+        "memory_bank_lint_diff_scope": "PASS"
+      },
+      "findings": [],
+      "next_owner": "Run fresh per-task /red-verify TASK-043-T3-FT-013-W3, then obtain HUMAN_CHECKPOINT: done before explicit-owner or scheduler closure; task remains in_progress."
+    },
+    {
+      "stage": "owner_lifecycle_closure",
+      "mode": "manual_explicit_owner",
+      "decision": "done",
+      "attempt": "02",
+      "decided_at": "2026-07-31T09:30:37+05:00",
+      "basis": "The user explicitly confirmed human review and directly ordered TASK-043 closed after current Execution Attempt 02 received independent functional VERDICT: PASS and per-task SEMANTIC_VERDICT: semantic-pass with no material findings or operator questions.",
+      "accepted_evidence": [
+        ".tasks/TASK-043-T3-FT-013-W3/TASK-043-T3-FT-013-W3-S-EXECUTE-final-report-code-02.md",
+        ".tasks/TASK-043-T3-FT-013-W3/TASK-043-T3-FT-013-W3-S-VERIFY-final-report-docs-02.md",
+        ".tasks/TASK-043-T3-FT-013-W3/TASK-043-T3-FT-013-W3-S-RED-VERIFY-final-report-docs-01.md",
+        ".tasks/TASK-043-T3-FT-013-W3/TASK-043-T3-FT-013-W3-S-CLOSURE-final-report-docs-01.md",
+        ".protocols/TASK-043-T3-FT-013-W3/administrative-closure.md"
+      ],
+      "gate_summary": {
+        "functional_verification": "VERDICT: PASS; required gates 78, 76, and 235; full deterministic 573; verifier harm matrix 21; provenance and effect-boundary probes PASS; lint/diff/scope PASS",
+        "red_verification": "SEMANTIC_VERDICT: semantic-pass; no material findings and no operator questions",
+        "human_checkpoint": "HUMAN_CHECKPOINT: done"
+      },
+      "findings": [],
+      "scope": "Closure changes TASK-043 lifecycle and task-owned closure evidence. All indexed FT-013 tasks are now terminal done; feature, RTM, epic, router, and changelog reconciliation follows through the W3 boundary /mb-sync.",
+      "next_gate": "TASK-043 is terminal done. Reconcile the completed FT-013 wave through /mb-sync and run the manual caller-owned post-sync lint/doctor gates."
+    }
+  ],
   "docs": [
     ".memory-bank/features/FT-013-companion-issuestack-proposals-decisionrecords.md",
     ".memory-bank/contracts/companion-runtime.md",

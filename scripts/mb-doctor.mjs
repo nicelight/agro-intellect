@@ -908,7 +908,10 @@ function checkFullProtocolTask(record) {
         task_id: id,
         suggested_fix: `Record red-verify evidence in .protocols/${id}/red-verification.md or .tasks/${id}/.`,
       });
-    } else if (!hasClosureEligibleRedVerificationEvidence(redFiles)) {
+    } else if (
+      !hasClosureEligibleRedVerificationEvidence(redFiles)
+      && !hasOwnerAcceptedSemanticFindings(task)
+    ) {
       addTerminalClosureFinding(
         record,
         severity,
@@ -1536,6 +1539,23 @@ function hasClosureEligibleRedVerificationEvidence(files) {
       return false;
     }
   });
+}
+
+function hasOwnerAcceptedSemanticFindings(task) {
+  const closure = Array.isArray(task?.verify)
+    ? task.verify.find((entry) =>
+      entry
+      && entry.stage === 'owner_lifecycle_closure'
+      && entry.mode === 'manual_explicit_owner'
+      && entry.decision === 'done'
+      && typeof entry.gate_summary?.red_verification === 'string'
+      && entry.gate_summary.red_verification.startsWith('OWNER-ACCEPTED')
+      && Array.isArray(entry.accepted_evidence)
+      && entry.accepted_evidence.length > 0
+      && Array.isArray(entry.accepted_residual_risk)
+      && entry.accepted_residual_risk.length > 0)
+    : undefined;
+  return Boolean(closure);
 }
 
 function protocolAndArtifactText(id) {

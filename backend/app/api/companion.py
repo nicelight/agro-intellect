@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 from typing import Annotated, Literal
 import uuid
@@ -14,6 +14,7 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
+    model_validator,
     ValidationError,
     UUID4,
     WithJsonSchema,
@@ -29,7 +30,12 @@ from ..companion_governance import (
     CompanionGovernanceErrorCode,
     CompanionGovernanceService,
     CompanionGovernanceValidationError,
+    CompanionRunCommandV1,
+    CompanionRunResultV1,
+    CompanionRuntimeService,
+    CompanionRuntimeValidationError,
 )
+from ..timeline import TimelineJsonlAppender
 
 
 router = APIRouter(prefix="/api", tags=["companion-governance"])
@@ -41,6 +47,7 @@ _CANONICAL_UUID_PATTERN = (
 _CANONICAL_UUID_BYTES = re.compile(_CANONICAL_UUID_PATTERN.encode("ascii"))
 _UUID_FRAGMENT = _CANONICAL_UUID_PATTERN.removeprefix("^").removesuffix("$")
 _COMPANION_RAW_ROUTE_PATTERNS = (
+    re.compile(rb"^/api/plants/([^/]+)/companion/runs$"),
     re.compile(rb"^/api/plants/([^/]+)/companion/issues$"),
     re.compile(rb"^/api/plants/([^/]+)/companion/issues/([^/]+)$"),
     re.compile(
@@ -146,6 +153,89 @@ SafeSourceRef = Annotated[
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+class CompanionRunRequestV1(StrictModel):
+    schema_version: Literal[1]
+    request_id: UUID4
+    issue_id: CanonicalPathUUID | None
+    expected_issue_version: int | None = Field(ge=1)
+
+    @model_validator(mode="after")
+    def validate_target(self):
+        if (self.issue_id is None) is not (self.expected_issue_version is None):
+            raise ValueError("Issue id and expected version must be supplied together.")
+        return self
+
+
+class CompanionRunResponseV1(StrictModel):
+    schema_version: Literal[1]
+    run_id: UUID4
+    route_status: Literal[
+        "proposal_created",
+        "proposal_duplicate",
+        "silent",
+        "not_governable",
+    ]
+    issue_ref: CompanionIssueRef | None
+    attention_ref: CompanionAttentionRef | None
+    proposal_ref: CompanionProposalRef | None
+    classification_ref: Annotated[
+        str,
+        Field(pattern=rf"^safety_classification:{_UUID_FRAGMENT}$"),
+    ] | None
+    model_ref: Annotated[
+        str,
+        Field(pattern=r"^[a-z][a-z0-9_]{0,63}:[A-Za-z0-9._-]{1,127}$"),
+    ] | None
+    reason_code: Literal[
+        "no_material_output",
+        "insufficient_evidence",
+        "physical_action_not_allowed",
+        "classification_uncertain",
+        "classification_mismatch",
+    ] | None
+
+    @model_validator(mode="after")
+    def validate_matrix(self):
+        governance = (self.issue_ref, self.attention_ref, self.proposal_ref)
+        if self.route_status == "proposal_created":
+            valid = (
+                all(governance)
+                and self.classification_ref is not None
+                and self.model_ref is not None
+                and self.reason_code is None
+            )
+        elif self.route_status == "proposal_duplicate":
+            valid = (
+                all(governance)
+                and self.classification_ref is not None
+                and self.model_ref is None
+                and self.reason_code is None
+            )
+        elif self.route_status == "silent":
+            valid = (
+                not any(governance)
+                and self.classification_ref is None
+                and self.model_ref is not None
+                and self.reason_code
+                in {"no_material_output", "insufficient_evidence"}
+            )
+        else:
+            valid = (
+                not any(governance)
+                and self.classification_ref is not None
+                and self.model_ref is not None
+                and self.reason_code
+                in {
+                    "physical_action_not_allowed",
+                    "classification_uncertain",
+                    "classification_mismatch",
+                }
+            )
+        if not valid:
+            raise ValueError("Companion run response matrix is invalid.")
+        return self
 
 
 class IssueSummaryV1(StrictModel):
@@ -371,7 +461,55 @@ _ERRORS = {
 }
 _ERROR_RESPONSES = {
     code: {"model": ErrorEnvelope}
-    for code in (401, 403, 404, 409, 422, 500)
+    for code in (401, 403, 404, 409, 422, 500, 502, 503)
+}
+
+_RUNTIME_ERRORS = {
+    "AGENT_CONTEXT_DENIED": (
+        404,
+        "COMPANION_SCOPE_NOT_FOUND",
+        "Companion scope is not available.",
+    ),
+    "AGENT_PUBLICATION_BLOCKED": (
+        404,
+        "COMPANION_SCOPE_NOT_FOUND",
+        "Companion scope is not available.",
+    ),
+    "AGENT_RUNTIME_NOT_CONFIGURED": (
+        503,
+        "COMPANION_RUNTIME_NOT_CONFIGURED",
+        "Companion runtime is not configured.",
+    ),
+    "AGENT_PROVIDER_FAILED": (
+        502,
+        "COMPANION_PROVIDER_FAILED",
+        "Companion provider failed.",
+    ),
+    "AGENT_OUTPUT_INVALID": (
+        502,
+        "COMPANION_OUTPUT_INVALID",
+        "Companion provider output is invalid.",
+    ),
+    "AGENT_AUDIT_FAILED": (
+        500,
+        "COMPANION_RUNTIME_AUDIT_FAILED",
+        "Companion runtime audit could not be recorded.",
+    ),
+    "SAFETY_CLASSIFICATION_CONFLICT": (
+        409,
+        "COMPANION_VERSION_CONFLICT",
+        "Companion governance record changed or request conflicts.",
+    ),
+    "SAFETY_CLASSIFICATION_GUARD_DENIED": (
+        404,
+        "COMPANION_SCOPE_NOT_FOUND",
+        "Companion scope is not available.",
+    ),
+    "SAFETY_CLASSIFICATION_PERSISTENCE_FAILED": (
+        500,
+        "COMPANION_CLASSIFICATION_PERSISTENCE_FAILED",
+        "Companion classification could not be recorded.",
+    ),
 }
 _LIST_PARAMETERS = [
     {
@@ -401,6 +539,78 @@ _LIST_PARAMETERS = [
         },
     },
 ]
+
+
+@router.post(
+    "/plants/{plant_id}/companion/runs",
+    response_model=CompanionRunResponseV1,
+    responses=_ERROR_RESPONSES,
+)
+def run_companion(
+    plant_id: CanonicalPathUUID,
+    body: CompanionRunRequestV1,
+    request: Request,
+    response: Response,
+    actor: ActorContext = Depends(require_actor_context),
+) -> CompanionRunResponseV1 | JSONResponse:
+    try:
+        if request.query_params:
+            raise CompanionRuntimeValidationError()
+        bindings = request.app.state.provider_bindings
+        with request.app.state.database.session() as session:
+            result = CompanionRuntimeService(
+                session,
+                model_executor=bindings.companion,
+                safety_classifier_executor=bindings.safety_gate,
+                timeline_append=TimelineJsonlAppender(
+                    request.app.state.settings
+                ),
+            ).run(
+                CompanionRunCommandV1(
+                    run_id=body.request_id,
+                    requested_at=datetime.now(timezone.utc),
+                    actor_context=actor,
+                    plant_id=plant_id,
+                    issue_id=body.issue_id,
+                    expected_issue_version=body.expected_issue_version,
+                )
+            )
+        if result.route_status == "failed":
+            return _runtime_error_response(request, result)
+        model_ref = (
+            result.runtime_outcome.model_ref
+            if result.runtime_outcome is not None
+            else None
+        )
+        payload = CompanionRunResponseV1.model_validate(
+            {
+                "schema_version": 1,
+                "run_id": str(result.run_id),
+                "route_status": result.route_status,
+                "issue_ref": result.issue_ref,
+                "attention_ref": result.attention_ref,
+                "proposal_ref": result.proposal_ref,
+                "classification_ref": result.classification_ref,
+                "model_ref": model_ref,
+                "reason_code": result.reason_code,
+            }
+        )
+    except (CompanionRuntimeValidationError, CompanionGovernanceValidationError):
+        return _validation_error_response(request)
+    except ValidationError:
+        return _governance_error_response(
+            request,
+            CompanionGovernanceErrorCode.READ_INCONSISTENT,
+        )
+    except Exception:
+        return _safe_error_response(
+            request,
+            500,
+            "COMPANION_INTERNAL_ERROR",
+            "Companion governance request failed.",
+        )
+    response.headers["Cache-Control"] = "no-store"
+    return payload
 
 
 @router.get(
@@ -645,4 +855,47 @@ def _governance_error_response(
     )
 
 
-__all__ = ["FT013RawPathCanonicalityMiddleware", "router"]
+def _runtime_error_response(
+    request: Request,
+    result: CompanionRunResultV1,
+) -> JSONResponse:
+    code = result.failure_code
+    if code in _RUNTIME_ERRORS:
+        return _safe_error_response(request, *_RUNTIME_ERRORS[code])
+    try:
+        governance_code = CompanionGovernanceErrorCode(code)
+    except (TypeError, ValueError):
+        return _safe_error_response(
+            request,
+            500,
+            "COMPANION_INTERNAL_ERROR",
+            "Companion governance request failed.",
+        )
+    return _governance_error_response(request, governance_code)
+
+
+def _safe_error_response(
+    request: Request,
+    status: int,
+    code: str,
+    message: str,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status,
+        content={
+            "error": {
+                "code": code,
+                "message": message,
+                "request_id": request_id_for(request),
+            }
+        },
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+__all__ = [
+    "CompanionRunRequestV1",
+    "CompanionRunResponseV1",
+    "FT013RawPathCanonicalityMiddleware",
+    "router",
+]

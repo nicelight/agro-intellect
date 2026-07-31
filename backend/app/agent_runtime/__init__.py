@@ -27,6 +27,7 @@ from .bootstrap import (
     eligible_roster_for_plant,
 )
 from .roster import CANONICAL_ROSTER_V1, ROSTER_VERSION, canonical_roster
+from .providers import ProviderExecutorBindings
 
 __all__ = [
     "AgentDefinition",
@@ -43,6 +44,7 @@ __all__ = [
     "MessageEnvelopeV1",
     "ModelExecution",
     "ProviderRequestV1",
+    "ProviderExecutorBindings",
     "RuntimeDecision",
     "SafetyClassificationResultV1",
     "StaticAgentDefinitionResolver",

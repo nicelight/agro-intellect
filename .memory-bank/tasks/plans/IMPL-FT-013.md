@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for FT-013 Companion IssueStack governance, atomic DecisionRecord effects, and explicit provider-neutral Companion invocation.
 status: active
-last_updated: 2026-07-29
+last_updated: 2026-07-31
 ---
 # IMPL-FT-013 — Companion IssueStack Proposals And DecisionRecords
 
@@ -218,13 +218,22 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 - `TASK-043-T3-FT-013-W3` depends on TASK-042 and
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
-  pattern and shared provider files. TASK-043 is `planned` and unselected.
-- The feature lifecycle remains `planned` while TASK-043 is open.
+  pattern and shared provider files. TASK-043 is `done`: its execution
+  attempts implemented the strict runtime contracts, exact PostgreSQL input
+  assembler, pending-envelope/classifier hold, guarded proposal handoff,
+  protected run route, explicit unbound production bindings, and one complete
+  production Companion router registration. Execution Attempt 02 repaired the
+  bounded provenance wiring defect found by adversarial verification:
+  MessageEnvelope keeps the model-selected subset while governance persistence
+  receives the complete ordered provider-request refs.
+- The feature lifecycle is `verified`: every indexed FT-013 task is terminal
+  `done`, and TASK-043 Attempt 02 has fresh independent functional `PASS`,
+  per-task `semantic-pass`, exact human checkpoint, and explicit owner closure.
 - TASK-041/TASK-042 built and verified the Companion router in isolated test
-  apps without touching `main.py`; TASK-043 remains the only FT-013 production-
-  registration owner, so the remaining executable DAG preserves the later
-  shared `main.py`/provider composition boundary and the FT-008 feed/lazy-
-  introduction behavior already present after TASK-046.
+  apps without touching `main.py`; TASK-043 is the only FT-013 production-
+  registration owner. Its execution preserved the shared `main.py`/provider
+  composition boundary and the FT-008 feed/lazy-introduction behavior already
+  present after TASK-046.
 
 ## Expected touched files
 
