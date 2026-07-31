@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-013
 epic: EP-005
 lifecycle: planned
-last_updated: 2026-07-29
+last_updated: 2026-07-31
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -116,12 +116,12 @@ spec_design_links:
 ## Current Feature State
 
 - SDD design is complete. The IssueStack/proposal aggregate and one-way current
-  proposal authority are implemented.
-- DecisionRecord/effect and explicit Companion runtime slices remain planned,
-  so feature `lifecycle` remains `planned`.
-- Their cards are reconciled to Global Planning Revision 2 and the current
-  repository baseline; the Planning Revision 1 approval is historical, so
-  fresh `/review-tasks-plan FT-013` is required before execution.
+  proposal authority plus the DecisionRecord/effect slice are implemented.
+- The explicit Companion runtime slice remains planned, so feature `lifecycle`
+  remains `planned`.
+- The remaining TASK-043 card is reconciled to Global Planning Revision 2 and
+  the current repository baseline. Fresh task-plan review for that revision is
+  `APPROVE`; task promotion or execution remains a separate workflow action.
 
 ## Accepted Design Decisions
 

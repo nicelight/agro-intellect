@@ -193,9 +193,9 @@ outbound spies own the positive field assertion and negative exclusion matrix.
 
 ## Dependencies and waves
 
-- The prior FT-013 task-plan review is historical `APPROVE` evidence for
-  Planning Revision 1. Global Planning Revision is now 2, so the reconciled
-  remaining queue requires fresh `/review-tasks-plan FT-013` before execution.
+- Global Planning Revision is 2. Fresh `/review-tasks-plan FT-013` review for
+  that revision is `APPROVE`; task promotion and execution remain separate
+  workflow actions.
 - Foundation gate `TASK-004-T2-FT-000-W0` is satisfied transitively through
   the existing dependency chain.
 - `TASK-041-T3-FT-013-W1` depends directly on
@@ -210,20 +210,18 @@ outbound spies own the positive field assertion and negative exclusion matrix.
   authority at revision `ft013_simplify_companion`. Terminal TASK-046 later
   advanced the repository migration head to `ft008_lazy_introductions`
   without changing the FT-013 authority.
-- `TASK-042-T3-FT-013-W2` is `planned` and unselected. It depends on TASK-044,
-  TASK-041, and TASK-040, consumes the repaired proposal authority and the
-  completed FT-012 runtime/package surface, and reaches TASK-039 ordinary-task
-  workflow effects transitively. Its migration and compatibility gate extend
-  the current `ft008_lazy_introductions` head and preserve Companion, Plant
-  State, Agent Chat lazy-introduction, Safety Gate, Task Follow-Up, and older
-  exact-head contracts.
+- `TASK-042-T3-FT-013-W2` is `done`. It consumed TASK-044, TASK-041, and
+  TASK-040, implemented the DecisionRecord/effect boundary, and added
+  `ft013_decision_effects` after `ft008_lazy_introductions` while preserving
+  Companion, Plant State, Agent Chat lazy-introduction, Safety Gate, Task
+  Follow-Up, and older exact-head contracts.
 - `TASK-043-T3-FT-013-W3` depends on TASK-042 and
   `TASK-040-T3-FT-012-W2`, because it composes the completed FT-013 governance
   boundary with the implemented competence-specific provider/classifier
   pattern and shared provider files. TASK-043 is `planned` and unselected.
-- The feature lifecycle remains `planned` while TASK-042 and TASK-043 are open.
-- TASK-041/TASK-042 build and verify the Companion router in isolated test apps
-  without touching `main.py`; TASK-043 remains the only FT-013 production-
+- The feature lifecycle remains `planned` while TASK-043 is open.
+- TASK-041/TASK-042 built and verified the Companion router in isolated test
+  apps without touching `main.py`; TASK-043 remains the only FT-013 production-
   registration owner, so the remaining executable DAG preserves the later
   shared `main.py`/provider composition boundary and the FT-008 feed/lazy-
   introduction behavior already present after TASK-046.

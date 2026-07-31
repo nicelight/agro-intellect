@@ -4,6 +4,22 @@ status: active
 ---
 # Changelog
 
+## [2026-07-31] Wave W2 — TASK-042 closed
+
+- Reconciled the explicit manual owner's `done` decision for
+  `TASK-042-T3-FT-013-W2` after independent functional `PASS`, per-task
+  `semantic-pass`, and `HUMAN_CHECKPOINT: done`.
+- Recorded the implemented DecisionRecord/close, atomic ordinary-task effect,
+  projection/context, and UUID-order-independent focus-transfer boundary; the
+  current migration head is `ft013_decision_effects`.
+- Reconciled the FT-013 feature, implementation plan, and planning protocol
+  with the current Planning Revision 2 `APPROVE` evidence and completed W2
+  state.
+- Kept FT-013, EP-005, and mapped requirement lifecycles `planned` because the
+  explicit Companion runtime and production registration remain in planned
+  TASK-043. No TASK-043 promotion, selection, or execution and no canonical
+  design change was made.
+
 ## [2026-07-29] Timeline writer simplification
 
 - Removed Agent Runtime, Task Follow-Up, and Companion domain state matrices
