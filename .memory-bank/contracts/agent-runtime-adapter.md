@@ -2,13 +2,14 @@
 description: Project-owned agent runtime adapter, invocation, validation, and publication-handoff contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-29
+last_updated: 2026-08-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/contracts/message-envelope.md
+  - .memory-bank/contracts/dataset-agents-runtime.md
   - .memory-bank/contracts/access/actor-context.md
   - .memory-bank/domains/auth/session-storage.md
   - .memory-bank/domains/identity/account-membership.md
@@ -47,6 +48,12 @@ Plant state.
   [.memory-bank/contracts/companion-runtime.md](companion-runtime.md), which
   composes this outcome/authorization/audit boundary without widening generic
   `ProviderRequestV1`.
+- Dataset Candidate input, advisory result semantics, and the competence-local
+  outcome/audit matrix are owned by
+  [.memory-bank/contracts/dataset-agents-runtime.md](dataset-agents-runtime.md).
+  AD-011 registers that route as the sole advisory-only exception: it reuses
+  shared provider/current-guard infrastructure but intentionally creates no
+  generic `AgentRuntimeOutcomeV1` or MessageEnvelope.
 - Safety classifier implementation and action approval; the shared
   `SafetyClassificationResultV1` wire contract lives in the Safety Action
   Lifecycle, while FT-011 owns the concrete classifier/policy implementation.
@@ -96,6 +103,9 @@ project-owned seams:
   Plant, and grant authority after model execution and before an envelope may
   leave Agent Runtime.
 - `TimelineAppender`: writes the canonical sanitized runtime audit event.
+- Registered advisory-only competence adapters may reuse provider resolution,
+  executor injection rules, redaction, and current-authorization helpers, but
+  their owning domain module retains orchestration and mutable write authority.
 
 Test definitions, assemblers, and fake/spy executors may be supplied only
 through explicit test dependency injection. Production composition MUST NOT
@@ -122,6 +132,12 @@ eight identities and presentation metadata are defined in
 triggers. A roster member without its owning-feature runtime policy and a
 deployment model binding is not invocable and fails closed rather than
 borrowing another agent's policy or binding.
+
+The only current non-MessageEnvelope roster members are
+`dataset_governance` and `training_data_curator`. Their immutable definitions
+declare `runtime_route=dataset_advisory_v1`; every other roster definition uses
+the generic pending-classification route. Callers, model output, configuration,
+or missing bindings cannot choose or change that route.
 
 An isolated test-only `runtime_contract_smoke` may exercise the typed Plant-
 data path through an explicit fake/spy executor seam. It is absent from
@@ -307,6 +323,36 @@ boundary as its Bus/UI write. If archive/revoke occurs after the FT-007 guard,
 FT-008 rejects the handoff; the envelope remains transient/audit-only and is
 never replayed after restore. Until FT-008 exists, FT-007 performs no Bus/UI
 publication, so this later race window cannot create an operational event.
+
+## Registered advisory-only exception
+
+AD-011 permits exactly one exception family to the generic invocation result:
+the canonical `dataset_governance` and `training_data_curator` roster agents.
+The exception is registered at composition time and is not a caller option.
+
+It MUST:
+
+- accept only the strict competence commands and provider requests in
+  [Dataset Agents Runtime](dataset-agents-runtime.md);
+- use the shared production binding resolver and narrow executor protocol;
+- preserve fail-closed unbound production and explicit test-only fake/spy
+  injection;
+- perform current ActorContext, same-Farm candidate, active-Plant, membership,
+  and grant checks before I/O and again after I/O before any advisory or
+  lifecycle write;
+- append the dedicated registered `dataset_agent_runtime_decided` event under
+  its exact Timeline matrix; and
+- return only the strict competence-local outcome defined by its owning
+  contract.
+
+It MUST NOT construct generic `ProviderRequestV1`, `AgentModelResultV1`,
+`AgentRuntimeOutcomeV1`, or MessageEnvelope; invoke Safety classification;
+publish Bus/UI Feed; or let the adapter write Dataset Candidate lifecycle,
+quality, split, confirmation, evidence, or trainability. Dataset Governance
+owns any allowed advisory persistence and transition transaction through its
+public application boundary. A future advisory-only competence requires a new
+accepted global design decision; this rule is not an extension point inferred
+from the absence of a downstream consumer.
 
 ## AgentRuntimeOutcomeV1
 

@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-07-28
+last_updated: 2026-08-07
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -41,6 +41,7 @@ source_of_truth:
 | data_spec | [.memory-bank/domains/safety-action-routing.md](domains/safety-action-routing.md) | active | Immutable Safety classifications, action decisions, approval-input evidence, and pending proposal persistence | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/task-approval-outcomes.md](domains/task-approval-outcomes.md) | active | Approval, ordinary/action Task, automatic follow-up, Outcome, idempotency, and audit-ref persistence | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/companion-governance.md](domains/companion-governance.md) | active | Companion IssueStack, HumanAttentionNeeded, proposal, DecisionRecord, transactions, and projections | `/feature-to-tasks` or `/spec-design` |
+| data_spec | [.memory-bank/domains/dataset-governance.md](domains/dataset-governance.md) | active | Exact Dataset Candidate persistence, creation seam, transition transactions, and migration | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/identity/account-membership.md](domains/identity/account-membership.md) | active | Account and FarmMembership persistence | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/auth/session-storage.md](domains/auth/session-storage.md) | active | LocalSession digest-only persistence | `/feature-to-tasks` or `/spec-design` |
 | data_spec | [.memory-bank/domains/farm/farm-plant-access-storage.md](domains/farm/farm-plant-access-storage.md) | active | Exact Farm/Plant/grant persistence, migration, bootstrap, and transaction rules | `/feature-to-tasks` or `/spec-design` |
@@ -58,6 +59,7 @@ source_of_truth:
 | interface_contract | [.memory-bank/contracts/safety-gate-runtime.md](contracts/safety-gate-runtime.md) | active | Strict provider-neutral Safety candidate and project-owned classification mapping | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/task-follow-up-runtime.md](contracts/task-follow-up-runtime.md) | active | Strict authorized Task/Outcome input, provider-neutral proposal/classification, and ordinary-task handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md) | active | Explicit provider-neutral Companion input, result, classification, trigger, and proposal handoff | `/feature-to-tasks` or `/spec-design` |
+| interface_contract | [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md) | active | Provider-neutral dataset_governance/training_data_curator input, advisory results, and curator gate | `/feature-to-tasks` or `/spec-design` |
 | agent_io_contract | [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | active | Structured pending pre-safety agent output | `/feature-to-tasks` or `/spec-design` |
 | presentation_contract | [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md) | active | Human-facing non-authoritative projection | `/spec-design` |
 | audit_contract | [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md) | active | Append-only timeline event, current event registry, and minimal append writer seam | `/spec-design` or `/feature-to-tasks` |
@@ -96,6 +98,7 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/safety-gate.md](testing/safety-gate.md) | active | Provider-neutral classification, durable Safety routing, 2-hour evidence, projection, and concurrency verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/task-follow-up.md](testing/task-follow-up.md) | active | Approval/task/outcome transactions, HTTP, archive/concurrency, and provider-neutral Task and Follow-Up verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/companion-governance.md](testing/companion-governance.md) | active | Companion governance authority, atomic effects, projections, HTTP, runtime triggers, and provider-neutral verification | `/feature-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/dataset-governance.md](testing/dataset-governance.md) | active | Dataset aggregate, transition policy, evidence wiring, and dataset-agents runtime verification | `/feature-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/feature-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | active | Provider-neutral fail-closed operation and deferred selected-endpoint integration milestone | `/feature-to-tasks` or `/spec-design` |

@@ -54,6 +54,9 @@ source_of_truth:
 - [Companion Governance Verification](companion-governance.md): IssueStack,
   proposal/attention lifecycle, atomic DecisionRecord effects, projections,
   HTTP, explicit runtime trigger, and real Companion evidence.
+- [Dataset Governance Verification](dataset-governance.md): Dataset Candidate
+  aggregate, transition policy, evidence-flow wiring, and provider-neutral
+  dataset-agents runtime with the curator gate.
 
 ## Archive
 

@@ -1,0 +1,70 @@
+{
+  "id": "TASK-055-T3-FT-014-W2",
+  "title": "Run Dataset Governance Agent through the advisory-only route",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-014",
+  "reqs": ["REQ-011", "REQ-019"],
+  "depends_on": ["TASK-047-T3-FT-014-W1"],
+  "touched_files": [
+    "backend/app/dataset_governance/runtime_contracts.py",
+    "backend/app/dataset_governance/runtime.py",
+    "backend/app/agent_runtime/providers.py",
+    "backend/app/agent_runtime/roster.py",
+    "tests/backend/dataset_governance/test_governance_agent_runtime.py",
+    "tests/backend/agent_runtime/test_dataset_advisory_registration.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "governance_agent_runtime", "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_governance_agent_runtime.py tests/backend/agent_runtime/test_dataset_advisory_registration.py -q", "required": true},
+    {"name": "agent_runtime_regression", "command": ".venv/bin/python -m pytest tests/backend/agent_runtime -m \"not real_model\" -q", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+    ".memory-bank/contracts/dataset-agents-runtime.md",
+    ".memory-bank/contracts/agent-runtime-adapter.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/contracts/timeline-event.md",
+    ".memory-bank/testing/dataset-governance.md",
+    ".memory-bank/changelog.md"
+  ],
+  "purpose": "Implement the first canonical AD-011 competence as an independently useful advisory runtime: Dataset Governance Agent assesses one authorized candidate without persisting any Dataset field or entering generic MessageEnvelope/Safety/Bus/UI flow.",
+  "success_outcome": "An explicit internal dataset_governance invocation constructs only DatasetGovernanceProviderRequestV1, validates DatasetGovernanceAssessmentV1, performs pre/post-I/O current authorization and candidate-version guards, returns the exact DatasetAgentRuntimeOutcomeV1 branch, appends exactly one redacted dataset_agent_runtime_decided event for every accepted attempt including context-denied/unbound/error, persists no Candidate field, and production remains unbound with no fake/fallback or generic MessageEnvelope effect.",
+  "anti_goals": [
+    "Training Data Curator behavior, curator fields/gate, public endpoint/trigger, generic AgentRuntimeOutcomeV1 changes, MessageEnvelope/Safety/Bus/UI, provider selection, or lifecycle/trainability writes."
+  ],
+  "evidence_required": [
+    "FT-014-AC-006 RED: the canonical roster identity exists but current ProviderExecutorBindings/composition has no Dataset Governance request/result route, so an explicit invocation is unsupported and produces no advisory outcome/event; GREEN: strict request/result and every outcome/audit branch execute with zero Candidate/MessageEnvelope/Safety/Bus/UI mutation; decisive comparison: spy input/calls, result/event matrix, post-I/O race rows and static forbidden-effect scan; artifact: focused deterministic/PostgreSQL transcript under .tasks/TASK-055-T3-FT-014-W2/."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-006",
+    ".protocols/FT-014/decision-log.md",
+    ".memory-bank/tasks/plans/IMPL-FT-014.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md#AD-011",
+    ".memory-bank/contracts/agent-runtime-adapter.md#registered-advisory-only-exception",
+    ".memory-bank/contracts/agent-model-provider-profiles.md#registered-advisory-only-result-route",
+    ".memory-bank/contracts/dataset-agents-runtime.md#registered-advisory-only-exception",
+    ".memory-bank/contracts/dataset-agents-runtime.md#datasetagentruntimeoutcomev1",
+    ".memory-bank/contracts/timeline-event.md#dataset_agent_runtime_decided-payload-summary",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/contracts/boundary-map.md#dataset-advisory-runtime-exception",
+    ".memory-bank/testing/dataset-governance.md#dataset-agents-runtime-matrix"
+  ],
+  "constraints": [
+    "runtime_route=dataset_advisory_v1 is immutable roster composition, not caller/model/config choice.",
+    "Provider I/O occurs outside DB transactions; current session/membership/Plant/grant/candidate locks repeat after I/O before any owning write, though this competence writes none.",
+    "Every accepted attempt tries the dedicated audit, including no-I/O denial and unbound production; audit failure returns no validated result/event."
+  ],
+  "invariants": [
+    "Dataset Governance Agent assessment is untrusted advisory data and never mutable Dataset or Safety authority.",
+    "No production fake, canned result, fallback, credential lookup, provider/model/base URL selection, or network closure claim."
+  ],
+  "verification_targets": [
+    "FT-014-AC-006: exact command/request/result allowlists, unknown/assignment rejection, success/context-denied/unbound/provider-failed/output-invalid/post-I/O-denied/audit-failed outcomes, event source/payload redaction and cardinality, archive/revoke/candidate-change races, zero Candidate writes, and zero generic publication effects."
+  ]
+}

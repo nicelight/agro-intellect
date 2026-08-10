@@ -1,0 +1,107 @@
+{
+ "id": "TASK-047-T3-FT-014-W1",
+ "title": "Create the Dataset Candidate aggregate and sole creation seam",
+ "status": "done",
+ "wave": "W1",
+ "feature": "FT-014",
+ "reqs": [
+  "REQ-019"
+ ],
+ "depends_on": [
+  "TASK-046-T3-FT-008-W3"
+ ],
+ "touched_files": [
+  "backend/app/dataset_governance/__init__.py",
+  "backend/app/dataset_governance/models.py",
+  "backend/app/dataset_governance/repository.py",
+  "backend/app/dataset_governance/contracts.py",
+  "backend/app/dataset_governance/service.py",
+  "backend/migrations/versions/<revision>_ft014_dataset_candidates.py",
+  "tests/backend/dataset_governance/test_candidate_aggregate.py",
+  "tests/backend/dataset_governance/test_migration_models.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "candidate_aggregate",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_candidate_aggregate.py tests/backend/dataset_governance/test_migration_models.py -q",
+   "required": true
+  },
+  {
+   "name": "migration_compatibility",
+   "command": ".venv/bin/python -m pytest tests/backend/test_foundation_database_contract.py tests/backend/dataset_governance/test_migration_models.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  {
+   "verdict": "PASS",
+   "by": "/verify TASK-047-T3-FT-014-W1 (scheduler mode)",
+   "date": "2026-08-10",
+   "summary": "Verifier reran candidate_aggregate (13 passed) and migration_compatibility (11 passed) gates plus mb-lint and diff-check against current state; independent 20/20 PostgreSQL probe confirmed persisted defaults (candidate|raw|standard|split=null|confirmation_source=null|can_train_on=false, record_version=1, null curator-run identity), 7 named PG enum columns + 6 checks + source-identity/curator-run uniques + RESTRICT FKs, one redacted dataset_candidate_created ref, same-source idempotency vs new-source UUID behavior, structural rejection of authority fields, append-failure rollback, append-success/commit-failure noise, and single linear Alembic head ft014_dataset_candidates with direct parent ft013_decision_effects. No HTTP/transition/source-wiring/agent-runtime surface introduced. Forward drift: 10 historical feature migration head-pin tests assert ft013_decision_effects; outside this task's gates and documented in handoff; does not invalidate this verdict. Evidence: .protocols/TASK-047-T3-FT-014-W1/verification.md."
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+  ".memory-bank/domains/dataset-governance.md",
+  ".memory-bank/contracts/timeline-event.md",
+  ".memory-bank/testing/dataset-governance.md",
+  ".memory-bank/changelog.md"
+ ],
+ "purpose": "Establish one PostgreSQL Dataset Candidate aggregate and the only service that creates a raw candidate from an already-authorized canonical source row, so every later transition and source integration consumes one writer instead of duplicating defaults or source identity.",
+ "success_outcome": "An additive migration and Dataset Governance service persist one native-UUID candidate per named source identity with exact enums/checks, record_version=1, ordered audit refs, null curator-run identity, and candidate|raw|standard|split=null|confirmation_source=null|can_train_on=false defaults; the creation seam rejects caller authority fields, appends one redacted dataset_candidate_created ref, is idempotent only for the same source row, and exposes no HTTP, transition, source wiring, or agent runtime.",
+ "anti_goals": [
+  "Lifecycle transitions, evidence association, source-owner wiring, or Dataset Agent execution.",
+  "A partial index without a predicate, mutable-current-head pin, public endpoint, export, split assignment, or historical backfill."
+ ],
+ "evidence_required": [
+  "FT-014-AC-001 RED_NOT_APPLICABLE: no pre-existing Dataset Candidate aggregate or supported writer exists, so a behavior-equivalent default row cannot be invoked without first creating this task-owned schema/seam; alternative proof: preflight catalog/source absence plus GREEN exact new-row/default/forbidden-input/event-ref matrix; decisive comparison: persisted columns, named source uniqueness, and one redacted event ref; artifact: focused PostgreSQL pytest transcript under .tasks/TASK-047-T3-FT-014-W1/.",
+  "FT-014-AC-001 migration proof: GREEN upgrade/downgrade creates/removes the exact enums/table/checks, normal uq_dataset_candidates_source_identity, nullable unique curator_run_id, record_version and event_refs while preserving one dynamic linear Alembic head; decisive comparison: catalog/model parity and ancestry; artifact: migration gate transcript."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-001",
+  ".memory-bank/behavior-specs/FT-014-BHV-001-auto-created-candidate-non-trainable.behavior.json",
+  ".protocols/FT-014/decision-log.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/domains/dataset-governance.md#dataset_candidates",
+  ".memory-bank/domains/dataset-governance.md#creation-seam",
+  ".memory-bank/contracts/timeline-event.md#dataset-candidate-payload-summaries",
+  ".memory-bank/domains/runtime-data-model.md",
+  ".memory-bank/contracts/boundary-map.md#dataset-evidence-creation",
+  ".memory-bank/testing/dataset-governance.md#aggregate-derivation-and-transition-matrix"
+ ],
+ "constraints": [
+  "Use named normal source identity uniqueness because every key column is non-null; a new source-row UUID is new evidence, not an idempotent retry.",
+  "Generate the migration from the linear head discovered at executor preflight; do not pin the planning-time head.",
+  "Creation and Timeline append participate in the caller-owned UoW; append failure rolls back, while append-success/commit-failure is non-authoritative noise."
+ ],
+ "invariants": [
+  "Dataset Governance is the only Dataset Candidate writer and every new candidate is non-trainable by default.",
+  "Timeline and event_refs are audit/export correlation only and cannot reconstruct candidate state."
+ ],
+ "verification_targets": [
+  "FT-014-AC-001: focused PostgreSQL service tests compare exact persisted defaults, rejected authority fields, same-source duplicate versus new-source identity behavior, event ref shape/redaction/cardinality, append failure rollback, and append-success/commit-failure noise.",
+  "FT-014-AC-001: migration tests compare SQLAlchemy/catalog constraints and types, direct down_revision to the executor-discovered head, upgrade/downgrade, and no branch/ancestry regression."
+ ],
+ "red_verify": [
+  {
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-047-T3-FT-014-W1 (scheduler mode)",
+   "date": "2026-08-10",
+   "summary": "Adversarial semantic verifier: independent 22/22 PostgreSQL probe (exact enum sets, source-identity isolation, farm/archived/consultant denies, concurrent same-source single row via unique constraint, exact event payload/redaction/cardinality, tz-aware timestamps, downgrade removes table+dataset_* enums, single linear head ft014_dataset_candidates<-ft013_decision_effects); static checks confirm sole writer in service.py:90, no external imports/api routes, no agent-runtime call; rerun gates candidate_aggregate 13 passed, migration_compatibility 11 passed; findings none blocking.",
+   "artifact": ".protocols/TASK-047-T3-FT-014-W1/red-verification.md, .tasks/TASK-047-T3-FT-014-W1/TASK-047-T3-FT-014-W1-S-RED-VERIFY-final-report-docs-01.md"
+  }
+ ]
+}

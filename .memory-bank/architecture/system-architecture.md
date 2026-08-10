@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-07-28
+last_updated: 2026-08-10
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -36,7 +36,10 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
 - Agent output must pass project-owned runtime decision, pending MessageEnvelope,
   Safety & Task Loop classification, a server-owned classification-consumer
   route, and only then an applicable domain boundary. Classification is
-  persisted evidence, never automatic dispatch authority.
+  persisted evidence, never automatic dispatch authority. The only current
+  exception is the registered advisory-only Dataset Agents route in AD-011;
+  it has no MessageEnvelope consumer and cannot write lifecycle or
+  trainability fields directly.
 - Model `candidate_output` is opaque untrusted normalized text. Markup- or
   prompt-looking sequences have no markup, instruction, command, or authority
   semantics at any boundary.
@@ -247,6 +250,31 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   and
   [.memory-bank/domains/agent-chat-ui-feed-storage.md](../domains/agent-chat-ui-feed-storage.md).
 
+#### AD-011 - Dataset Agents use a registered advisory-only runtime route
+- Binds: Agent Runtime provider composition, Dataset Governance Agent,
+  Training Data Curator Agent, Dataset Candidate advisory fields, Timeline
+  audit, and FT-014 tasking.
+- Prevents: forcing advisory results into MessageEnvelope/Safety/Bus/UI without
+  a consumer, widening generic AgentRuntimeOutcomeV1, or letting model output
+  mutate Dataset lifecycle, quality, split, confirmation, or trainability.
+- Rule: only canonical roster agents `dataset_governance` and
+  `training_data_curator` may use the registered advisory-only exception. They
+  reuse the shared fail-closed provider binding, strict typed egress,
+  redaction, and pre/post-I/O current guards, then return a competence-local
+  advisory outcome and append `dataset_agent_runtime_decided`. Dataset
+  Governance alone may persist the allowed advisory fields and invoke its
+  server-owned transition authority. No MessageEnvelope, Safety
+  classification, Agent Chat Bus, or UI Feed effect exists on this route.
+- Verification: deterministic tests prove the closed request/result/outcome
+  and Timeline matrices, unbound/no-fallback behavior, current-guard races,
+  advisory-field allowlist, zero MessageEnvelope/Bus/UI/Safety effect, and zero
+  direct lifecycle/trainability assignment by either model result.
+- Source: explicit operator-delegated `/spec-design` decision on 2026-08-10,
+  [.memory-bank/contracts/agent-runtime-adapter.md](../contracts/agent-runtime-adapter.md),
+  [.memory-bank/contracts/agent-model-provider-profiles.md](../contracts/agent-model-provider-profiles.md),
+  and
+  [.memory-bank/contracts/dataset-agents-runtime.md](../contracts/dataset-agents-runtime.md).
+
 ## Architecture Style
 
 Use a local modular monolith:
@@ -296,11 +324,11 @@ Runtime authority:
 | Plant Operations | Daily check-in, observations, manual pH/EC, Plant selection, Plant card/history entry points. | Photo binary authority, model reasoning, Safety Gate bypass, roster-introduction persistence during Plant creation. |
 | Photo & Artifact Intake | Local photo files, accepted photo catalog metadata, sha256, capture manifests, artifact refs. | Mutable Plant state, agent facts, trainability decisions. |
 | Runtime State & Audit | PostgreSQL/read model, timeline audit/export refs, retained Plant history. | UI presentation, raw model output, physical actuation. |
-| Agent Runtime | Model invocation adapters, runtime decision, pending non-consumable MessageEnvelope preparation, canonical roster metadata. | Domain source of truth, direct DB mutation of Plant facts, safety classification authority, UI Feed context or introduction persistence. |
+| Agent Runtime | Model invocation adapters, generic pending non-consumable MessageEnvelope preparation, the registered Dataset Agents advisory-only route, and canonical roster metadata. | Domain source of truth, direct DB mutation of Plant or Dataset authority, safety classification authority, UI Feed context or introduction persistence. |
 | Agent Chat Bus & UI Feed | Bus working events, UI presentation projections, and missing canonical introduction materialization inside authorized active-Plant Feed access. | Raw provider history, hidden reasoning, unauthorized context, Safety Gate approval, startup/restore reconciliation. |
 | Safety & Task Loop | Project-owned output classification evidence, server-owned consumer routing, the single ordinary-task creation command, Safety Gate routing, physical-action approval authority, human-performed action tasks, follow-up outcomes. | Automated device execution, model-selected safety authority, governance approval semantics, or a second Task creation service. |
 | Companion Governance | IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, DecisionRecord, approved governance summary. | Plant-state confirmation, Safety Gate approval, action_task creation by itself. |
-| Dataset Governance | Dataset fields, evidence refs, trainability default false, future trainability gates. | Full dataset registry, model fine-tuning, UI Feed-derived trainability. |
+| Dataset Governance | Dataset Candidate creation, evidence association, advisory fields, lifecycle, trainability derivation, and Dataset Agent application orchestration. | Full dataset registry, model fine-tuning, UI Feed-derived trainability, provider binding ownership, or MessageEnvelope publication. |
 | Operator PWA | Role-aware UI, Plant selector, admin and operations surfaces, cards/prompts/history. | Backend authorization, runtime authority, agent working context. |
 
 ## Data Flow
@@ -331,6 +359,12 @@ flowchart LR
   Governance -->|approved DecisionRecord task effect| OrdinaryTasks
   Governance -->|approved compact DecisionRecord fact| Bus
   Safety --> ActionTasks[Approvals / human action tasks / follow-up]
+  State --> Dataset[Dataset Governance]
+  Dataset --> DatasetAdapter[Registered advisory-only Dataset Agent adapter]
+  DatasetAdapter --> Model
+  Model --> DatasetAdapter
+  DatasetAdapter --> Dataset
+  Dataset --> Timeline
   Feed --> UI
   OrdinaryTasks --> State
   ActionTasks --> State

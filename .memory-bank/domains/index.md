@@ -29,6 +29,9 @@ source_of_truth:
 - [Companion Governance Data](companion-governance.md): IssueStack,
   HumanAttentionNeeded, proposals, DecisionRecords, atomic effects, and
   projections.
+- [Dataset Governance Data](dataset-governance.md): Dataset Candidate
+  persistence, evidence-flow creation seam, transition transactions, and
+  derived trainability.
 
 ## Subject data specs
 

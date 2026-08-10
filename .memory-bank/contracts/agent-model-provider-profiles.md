@@ -2,12 +2,13 @@
 description: Provider-neutral Agent Runtime binding, typed egress, fail-closed production, and future endpoint selection contract.
 status: active
 type: interface_contract
-last_updated: 2026-07-19
+last_updated: 2026-08-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
   - .memory-bank/invariants.md
   - .memory-bank/contracts/agent-runtime-adapter.md
+  - .memory-bank/contracts/dataset-agents-runtime.md
   - .memory-bank/contracts/evidence-redaction.md
 ---
 # Agent Model Provider Boundary
@@ -92,7 +93,9 @@ The executor receives exactly one registered strict request:
 - `HydroponicsAdvisorProviderRequestV1`;
 - `SafetyGateProviderRequestV1`;
 - `TaskFollowUpProviderRequestV1`; or
-- `CompanionProviderRequestV1`.
+- `CompanionProviderRequestV1`;
+- `DatasetGovernanceProviderRequestV1`; or
+- `TrainingDataCuratorProviderRequestV1`.
 
 No adjacent executor argument or hidden metadata may add Farm/Plant identity,
 ActorContext, session/account/membership/grant state, authorization snapshots,
@@ -103,6 +106,24 @@ the sole binary exception and remains bound to its verified photo ref/hash.
 Registered agent-specific governance fields are allowed only when their
 owning contract lists them. They remain untrusted and grant no DecisionRecord,
 Plant-state, Task, Safety, publication, or actuation authority.
+
+### Registered advisory-only result route
+
+`DatasetGovernanceProviderRequestV1` and
+`TrainingDataCuratorProviderRequestV1` are the only registered requests whose
+strict results do not enter generic `AgentRuntimeOutcomeV1` and
+MessageEnvelope. Their owning
+[Dataset Agents Runtime](dataset-agents-runtime.md#registered-advisory-only-exception)
+contract defines the competence-local result/outcome and audit matrices.
+
+This exception changes no provider selection or production binding rule. The
+two requests use the same fail-closed binding resolver and narrow executor
+protocol; tests may inject only explicit fake/spy executors. A valid result is
+still untrusted advisory data. Only Dataset Governance may persist its exact
+allowlisted advisory fields or invoke its server-owned lifecycle authority.
+The provider adapter cannot create a Dataset Candidate, associate evidence,
+set lifecycle/quality/split/confirmation/trainability, or produce
+MessageEnvelope, Safety, Bus, or UI Feed effects.
 
 ## Failure and timeout contract
 

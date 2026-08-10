@@ -13,3 +13,14 @@ status: active
 - [IMPL-FT-006](IMPL-FT-006.md): runtime state, timeline refs, and Plant history.
 - [IMPL-FT-007](IMPL-FT-007.md): authorized Agent Runtime, canonical roster,
   post-commit bootstrap, provider bindings, and MessageEnvelope.
+- [IMPL-FT-008](IMPL-FT-008.md): Agent Chat Bus, UI Feed projections, and
+  authorized Plant feed.
+- [IMPL-FT-009](IMPL-FT-009.md): Vision Observation and Plant state trust.
+- [IMPL-FT-010](IMPL-FT-010.md): Hydroponics Advisor missing-data policy.
+- [IMPL-FT-011](IMPL-FT-011.md): Safety Gate classification and physical-action
+  routing.
+- [IMPL-FT-012](IMPL-FT-012.md): human approval, tasks, follow-up, and outcomes.
+- [IMPL-FT-013](IMPL-FT-013.md): Companion IssueStack, proposals, and
+  DecisionRecords.
+- [IMPL-FT-014](IMPL-FT-014.md): Dataset Candidate aggregate, transition
+  authority, evidence-flow wiring, and dataset-agents runtime.

@@ -1,0 +1,18 @@
+{
+  "id": "FT-014-BHV-002",
+  "feature_id": "FT-014",
+  "title": "Weak evidence blocks curator_auto and leaves no reusable selection",
+  "given": {
+    "candidate": "raw, standard, with exactly one photo evidence ref and follow_up_seen=false",
+    "curator": "a valid current-run Training Data Curator result with curator_decision=selected"
+  },
+  "when": {
+    "command": "the server-side curator gate evaluates a curator_auto confirmation",
+    "policy": "the strong-evidence policy requires at least two refs of two distinct kinds and follow_up_seen=true"
+  },
+  "then": {
+    "transition": "the confirmation is rejected with dataset_confirmation_policy_violation",
+    "state": "candidate_status, quality_tier, confirmation_source stay unchanged and can_train_on remains false",
+    "authority": "the selected current-run advisory and lifecycle mutation roll back together; model wording never enters policy evaluation"
+  }
+}

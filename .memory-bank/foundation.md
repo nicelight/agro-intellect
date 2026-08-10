@@ -1,7 +1,7 @@
 ---
 description: Foundation Dev Path evidence and feature pressure map.
 status: active
-last_updated: 2026-07-12
+last_updated: 2026-08-10
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
@@ -69,6 +69,11 @@ were created by `/foundation-to-tasks`. The final foundation gate is
 - The archived-Plant and FT-007 shared-contract repairs change product
   contracts, not the executable substrate. `TASK-004-T2-FT-000-W0` remains the
   verified Foundation gate; no new FT-000 task or gate rerun is required.
+- Planning Revision 3 adds the registered Dataset Agents advisory-only route,
+  Dataset Timeline matrix, and canonical Boundary Map topology. These are
+  product contracts over the already verified provider/redaction/database/
+  timeline substrate; they do not change the Foundation work path or require a
+  new FT-000 task. `TASK-004-T2-FT-000-W0` remains the concrete final gate.
 
 ## Foundation Substrate Specs
 

@@ -1,193 +1,233 @@
 {
-  "version": 1,
-  "tasks": [
-    {
-      "id": "TASK-000-T1-FT-000-W0",
-      "file": "TASK-000-T1-FT-000-W0.task.json"
-    },
-    {
-      "id": "TASK-001-T2-FT-000-W0",
-      "file": "TASK-001-T2-FT-000-W0.task.json"
-    },
-    {
-      "id": "TASK-002-T2-FT-000-W0",
-      "file": "TASK-002-T2-FT-000-W0.task.json"
-    },
-    {
-      "id": "TASK-003-T3-FT-000-W0",
-      "file": "TASK-003-T3-FT-000-W0.task.json"
-    },
-    {
-      "id": "TASK-004-T2-FT-000-W0",
-      "file": "TASK-004-T2-FT-000-W0.task.json"
-    },
-    {
-      "id": "TASK-005-T3-FT-001-W1",
-      "file": "TASK-005-T3-FT-001-W1.task.json"
-    },
-    {
-      "id": "TASK-006-T3-FT-001-W1",
-      "file": "TASK-006-T3-FT-001-W1.task.json"
-    },
-    {
-      "id": "TASK-007-T3-FT-001-W2",
-      "file": "TASK-007-T3-FT-001-W2.task.json"
-    },
-    {
-      "id": "TASK-008-T3-FT-001-W2",
-      "file": "TASK-008-T3-FT-001-W2.task.json"
-    },
-    {
-      "id": "TASK-009-T3-FT-001-W2",
-      "file": "TASK-009-T3-FT-001-W2.task.json"
-    },
-    {
-      "id": "TASK-010-T3-FT-001-W3",
-      "file": "TASK-010-T3-FT-001-W3.task.json"
-    },
-    {
-      "id": "TASK-011-T3-FT-001-W3",
-      "file": "TASK-011-T3-FT-001-W3.task.json"
-    },
-    {
-      "id": "TASK-012-T3-FT-002-W1",
-      "file": "TASK-012-T3-FT-002-W1.task.json"
-    },
-    {
-      "id": "TASK-013-T3-FT-002-W2",
-      "file": "TASK-013-T3-FT-002-W2.task.json"
-    },
-    {
-      "id": "TASK-014-T3-FT-002-W3",
-      "file": "TASK-014-T3-FT-002-W3.task.json"
-    },
-    {
-      "id": "TASK-015-T3-FT-002-W4",
-      "file": "TASK-015-T3-FT-002-W4.task.json"
-    },
-    {
-      "id": "TASK-016-T3-FT-003-W1",
-      "file": "TASK-016-T3-FT-003-W1.task.json"
-    },
-    {
-      "id": "TASK-017-T3-FT-003-W2",
-      "file": "TASK-017-T3-FT-003-W2.task.json"
-    },
-    {
-      "id": "TASK-018-T3-FT-003-W3",
-      "file": "TASK-018-T3-FT-003-W3.task.json"
-    },
-    {
-      "id": "TASK-019-T3-FT-004-W1",
-      "file": "TASK-019-T3-FT-004-W1.task.json"
-    },
-    {
-      "id": "TASK-020-T3-FT-004-W2",
-      "file": "TASK-020-T3-FT-004-W2.task.json"
-    },
-    {
-      "id": "TASK-021-T3-FT-005-W1",
-      "file": "TASK-021-T3-FT-005-W1.task.json"
-    },
-    {
-      "id": "TASK-022-T3-FT-005-W2",
-      "file": "TASK-022-T3-FT-005-W2.task.json"
-    },
-    {
-      "id": "TASK-023-T3-FT-006-W1",
-      "file": "TASK-023-T3-FT-006-W1.task.json"
-    },
-    {
-      "id": "TASK-024-T3-FT-006-W2",
-      "file": "TASK-024-T3-FT-006-W2.task.json"
-    },
-    {
-      "id": "TASK-025-T3-FT-004-W3",
-      "file": "TASK-025-T3-FT-004-W3.task.json"
-    },
-    {
-      "id": "TASK-026-T2-FT-005-W3",
-      "file": "TASK-026-T2-FT-005-W3.task.json"
-    },
-    {
-      "id": "TASK-027-T3-FT-006-W3",
-      "file": "TASK-027-T3-FT-006-W3.task.json"
-    },
-    {
-      "id": "TASK-028-T3-FT-007-W1",
-      "file": "TASK-028-T3-FT-007-W1.task.json"
-    },
-    {
-      "id": "TASK-029-T3-FT-007-W2",
-      "file": "TASK-029-T3-FT-007-W2.task.json"
-    },
-    {
-      "id": "TASK-030-T3-FT-007-W1",
-      "file": "TASK-030-T3-FT-007-W1.task.json"
-    },
-    {
-      "id": "TASK-031-T3-FT-007-W2",
-      "file": "TASK-031-T3-FT-007-W2.task.json"
-    },
-    {
-      "id": "TASK-032-T3-FT-008-W1",
-      "file": "TASK-032-T3-FT-008-W1.task.json"
-    },
-    {
-      "id": "TASK-033-T3-FT-008-W2",
-      "file": "TASK-033-T3-FT-008-W2.task.json"
-    },
-    {
-      "id": "TASK-034-T3-FT-009-W1",
-      "file": "TASK-034-T3-FT-009-W1.task.json"
-    },
-    {
-      "id": "TASK-035-T3-FT-009-W2",
-      "file": "TASK-035-T3-FT-009-W2.task.json"
-    },
-    {
-      "id": "TASK-036-T3-FT-010-W1",
-      "file": "TASK-036-T3-FT-010-W1.task.json"
-    },
-    {
-      "id": "TASK-037-T3-FT-011-W1",
-      "file": "TASK-037-T3-FT-011-W1.task.json"
-    },
-    {
-      "id": "TASK-038-T3-FT-011-W2",
-      "file": "TASK-038-T3-FT-011-W2.task.json"
-    },
-    {
-      "id": "TASK-039-T3-FT-012-W1",
-      "file": "TASK-039-T3-FT-012-W1.task.json"
-    },
-    {
-      "id": "TASK-040-T3-FT-012-W2",
-      "file": "TASK-040-T3-FT-012-W2.task.json"
-    },
-    {
-      "id": "TASK-041-T3-FT-013-W1",
-      "file": "TASK-041-T3-FT-013-W1.task.json"
-    },
-    {
-      "id": "TASK-042-T3-FT-013-W2",
-      "file": "TASK-042-T3-FT-013-W2.task.json"
-    },
-    {
-      "id": "TASK-043-T3-FT-013-W3",
-      "file": "TASK-043-T3-FT-013-W3.task.json"
-    },
-    {
-      "id": "TASK-044-T3-FT-013-W1",
-      "file": "TASK-044-T3-FT-013-W1.task.json"
-    },
-    {
-      "id": "TASK-045-T3-FT-007-W3",
-      "file": "TASK-045-T3-FT-007-W3.task.json"
-    },
-    {
-      "id": "TASK-046-T3-FT-008-W3",
-      "file": "TASK-046-T3-FT-008-W3.task.json"
-    }
-  ]
+ "version": 1,
+ "tasks": [
+  {
+   "id": "TASK-000-T1-FT-000-W0",
+   "file": "TASK-000-T1-FT-000-W0.task.json"
+  },
+  {
+   "id": "TASK-001-T2-FT-000-W0",
+   "file": "TASK-001-T2-FT-000-W0.task.json"
+  },
+  {
+   "id": "TASK-002-T2-FT-000-W0",
+   "file": "TASK-002-T2-FT-000-W0.task.json"
+  },
+  {
+   "id": "TASK-003-T3-FT-000-W0",
+   "file": "TASK-003-T3-FT-000-W0.task.json"
+  },
+  {
+   "id": "TASK-004-T2-FT-000-W0",
+   "file": "TASK-004-T2-FT-000-W0.task.json"
+  },
+  {
+   "id": "TASK-005-T3-FT-001-W1",
+   "file": "TASK-005-T3-FT-001-W1.task.json"
+  },
+  {
+   "id": "TASK-006-T3-FT-001-W1",
+   "file": "TASK-006-T3-FT-001-W1.task.json"
+  },
+  {
+   "id": "TASK-007-T3-FT-001-W2",
+   "file": "TASK-007-T3-FT-001-W2.task.json"
+  },
+  {
+   "id": "TASK-008-T3-FT-001-W2",
+   "file": "TASK-008-T3-FT-001-W2.task.json"
+  },
+  {
+   "id": "TASK-009-T3-FT-001-W2",
+   "file": "TASK-009-T3-FT-001-W2.task.json"
+  },
+  {
+   "id": "TASK-010-T3-FT-001-W3",
+   "file": "TASK-010-T3-FT-001-W3.task.json"
+  },
+  {
+   "id": "TASK-011-T3-FT-001-W3",
+   "file": "TASK-011-T3-FT-001-W3.task.json"
+  },
+  {
+   "id": "TASK-012-T3-FT-002-W1",
+   "file": "TASK-012-T3-FT-002-W1.task.json"
+  },
+  {
+   "id": "TASK-013-T3-FT-002-W2",
+   "file": "TASK-013-T3-FT-002-W2.task.json"
+  },
+  {
+   "id": "TASK-014-T3-FT-002-W3",
+   "file": "TASK-014-T3-FT-002-W3.task.json"
+  },
+  {
+   "id": "TASK-015-T3-FT-002-W4",
+   "file": "TASK-015-T3-FT-002-W4.task.json"
+  },
+  {
+   "id": "TASK-016-T3-FT-003-W1",
+   "file": "TASK-016-T3-FT-003-W1.task.json"
+  },
+  {
+   "id": "TASK-017-T3-FT-003-W2",
+   "file": "TASK-017-T3-FT-003-W2.task.json"
+  },
+  {
+   "id": "TASK-018-T3-FT-003-W3",
+   "file": "TASK-018-T3-FT-003-W3.task.json"
+  },
+  {
+   "id": "TASK-019-T3-FT-004-W1",
+   "file": "TASK-019-T3-FT-004-W1.task.json"
+  },
+  {
+   "id": "TASK-020-T3-FT-004-W2",
+   "file": "TASK-020-T3-FT-004-W2.task.json"
+  },
+  {
+   "id": "TASK-021-T3-FT-005-W1",
+   "file": "TASK-021-T3-FT-005-W1.task.json"
+  },
+  {
+   "id": "TASK-022-T3-FT-005-W2",
+   "file": "TASK-022-T3-FT-005-W2.task.json"
+  },
+  {
+   "id": "TASK-023-T3-FT-006-W1",
+   "file": "TASK-023-T3-FT-006-W1.task.json"
+  },
+  {
+   "id": "TASK-024-T3-FT-006-W2",
+   "file": "TASK-024-T3-FT-006-W2.task.json"
+  },
+  {
+   "id": "TASK-025-T3-FT-004-W3",
+   "file": "TASK-025-T3-FT-004-W3.task.json"
+  },
+  {
+   "id": "TASK-026-T2-FT-005-W3",
+   "file": "TASK-026-T2-FT-005-W3.task.json"
+  },
+  {
+   "id": "TASK-027-T3-FT-006-W3",
+   "file": "TASK-027-T3-FT-006-W3.task.json"
+  },
+  {
+   "id": "TASK-028-T3-FT-007-W1",
+   "file": "TASK-028-T3-FT-007-W1.task.json"
+  },
+  {
+   "id": "TASK-029-T3-FT-007-W2",
+   "file": "TASK-029-T3-FT-007-W2.task.json"
+  },
+  {
+   "id": "TASK-030-T3-FT-007-W1",
+   "file": "TASK-030-T3-FT-007-W1.task.json"
+  },
+  {
+   "id": "TASK-031-T3-FT-007-W2",
+   "file": "TASK-031-T3-FT-007-W2.task.json"
+  },
+  {
+   "id": "TASK-032-T3-FT-008-W1",
+   "file": "TASK-032-T3-FT-008-W1.task.json"
+  },
+  {
+   "id": "TASK-033-T3-FT-008-W2",
+   "file": "TASK-033-T3-FT-008-W2.task.json"
+  },
+  {
+   "id": "TASK-034-T3-FT-009-W1",
+   "file": "TASK-034-T3-FT-009-W1.task.json"
+  },
+  {
+   "id": "TASK-035-T3-FT-009-W2",
+   "file": "TASK-035-T3-FT-009-W2.task.json"
+  },
+  {
+   "id": "TASK-036-T3-FT-010-W1",
+   "file": "TASK-036-T3-FT-010-W1.task.json"
+  },
+  {
+   "id": "TASK-037-T3-FT-011-W1",
+   "file": "TASK-037-T3-FT-011-W1.task.json"
+  },
+  {
+   "id": "TASK-038-T3-FT-011-W2",
+   "file": "TASK-038-T3-FT-011-W2.task.json"
+  },
+  {
+   "id": "TASK-039-T3-FT-012-W1",
+   "file": "TASK-039-T3-FT-012-W1.task.json"
+  },
+  {
+   "id": "TASK-040-T3-FT-012-W2",
+   "file": "TASK-040-T3-FT-012-W2.task.json"
+  },
+  {
+   "id": "TASK-041-T3-FT-013-W1",
+   "file": "TASK-041-T3-FT-013-W1.task.json"
+  },
+  {
+   "id": "TASK-042-T3-FT-013-W2",
+   "file": "TASK-042-T3-FT-013-W2.task.json"
+  },
+  {
+   "id": "TASK-043-T3-FT-013-W3",
+   "file": "TASK-043-T3-FT-013-W3.task.json"
+  },
+  {
+   "id": "TASK-044-T3-FT-013-W1",
+   "file": "TASK-044-T3-FT-013-W1.task.json"
+  },
+  {
+   "id": "TASK-045-T3-FT-007-W3",
+   "file": "TASK-045-T3-FT-007-W3.task.json"
+  },
+  {
+   "id": "TASK-046-T3-FT-008-W3",
+   "file": "TASK-046-T3-FT-008-W3.task.json"
+  },
+  {
+   "id": "TASK-047-T3-FT-014-W1",
+   "file": "TASK-047-T3-FT-014-W1.task.json"
+  },
+  {
+   "id": "TASK-048-T3-FT-014-W2",
+   "file": "TASK-048-T3-FT-014-W2.task.json"
+  },
+  {
+   "id": "TASK-049-T3-FT-014-W3",
+   "file": "TASK-049-T3-FT-014-W3.task.json"
+  },
+  {
+   "id": "TASK-050-T3-FT-014-W2",
+   "file": "TASK-050-T3-FT-014-W2.task.json"
+  },
+  {
+   "id": "TASK-051-T3-FT-014-W2",
+   "file": "TASK-051-T3-FT-014-W2.task.json"
+  },
+  {
+   "id": "TASK-052-T3-FT-014-W2",
+   "file": "TASK-052-T3-FT-014-W2.task.json"
+  },
+  {
+   "id": "TASK-053-T3-FT-014-W2",
+   "file": "TASK-053-T3-FT-014-W2.task.json"
+  },
+  {
+   "id": "TASK-054-T3-FT-014-W4",
+   "file": "TASK-054-T3-FT-014-W4.task.json"
+  },
+  {
+   "id": "TASK-055-T3-FT-014-W2",
+   "file": "TASK-055-T3-FT-014-W2.task.json"
+  },
+  {
+   "id": "TASK-057-T3-FT-014-W5",
+   "file": "TASK-057-T3-FT-014-W5.task.json"
+  }
+ ]
 }

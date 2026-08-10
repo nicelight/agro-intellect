@@ -2,7 +2,7 @@
 description: Global dataset governance and trainability lifecycle boundary for MVP v2.
 status: active
 type: state
-last_updated: 2026-07-17
+last_updated: 2026-08-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -18,9 +18,14 @@ Dataset Governance defines the global evidence and trainability boundary for
 photo, measurement, follow-up, review, and agent-output evidence. It does not
 create a full dataset registry or real fine-tuning path in MVP.
 
-Exact persistence beyond the global fields below, lifecycle transitions,
-evidence-policy details, derived-value materialization, endpoint schemas, and
-UI behavior belong to `/feature-to-tasks FT-014`.
+Exact persistence beyond the global fields below, endpoint schemas, and
+UI behavior belong to `/feature-to-tasks FT-014`. The exact FT-014 transition
+table and evidence policy are now fixed in
+[FT-014 Transition Authority](#ft-014-transition-authority) below; exact
+persistence lives in
+[.memory-bank/domains/dataset-governance.md](../domains/dataset-governance.md),
+and the dataset-agents runtime boundary lives in
+[.memory-bank/contracts/dataset-agents-runtime.md](../contracts/dataset-agents-runtime.md).
 
 ## Scope Boundaries
 
@@ -29,6 +34,12 @@ UI behavior belong to `/feature-to-tasks FT-014`.
 - Out of scope: full registry schema, ML training jobs, model evaluation,
   export packaging, or fine-tuning workflows.
 - Related specs:
+  - [.memory-bank/domains/dataset-governance.md](../domains/dataset-governance.md):
+    exact Dataset Candidate persistence, creation seam, and transactions.
+  - [.memory-bank/contracts/dataset-agents-runtime.md](../contracts/dataset-agents-runtime.md):
+    advisory dataset-agents runtime and curator gate boundary.
+  - [.memory-bank/testing/dataset-governance.md](../testing/dataset-governance.md):
+    verification method and evidence.
   - [.memory-bank/domains/photo-artifacts.md](../domains/photo-artifacts.md):
     defines local photo evidence refs.
   - [.memory-bank/contracts/timeline-event.md](../contracts/timeline-event.md):
@@ -75,8 +86,8 @@ Every Dataset Candidate governance record must carry:
 - New candidates start with `candidate_status=candidate`,
   `quality_tier=standard`, nullable `confirmation_source=null`, and derived
   `can_train_on=false`.
-- `curator_auto` may confirm an ordinary candidate only under the future exact
-  FT-014 strong-evidence policy. A `gold` designation additionally requires
+- `curator_auto` may confirm an ordinary candidate only under the exact FT-014
+  strong-evidence policy. A `gold` designation additionally requires
   human, expert, or batch review and can never be granted by `curator_auto`.
 - Candidate provenance (`raw|agent_labeled`), dataset split, curator output, or
   a `gold` designation alone never grants trainability.
@@ -94,6 +105,70 @@ Every Dataset Candidate governance record must carry:
   out of MVP.
 - Dataset/export context must stay Farm/Plant scoped and permission-aware.
 
+## FT-014 Transition Authority
+
+Accepted by operator decisions D1/D4/D5 (`.protocols/FT-014/decision-log.md`).
+In MVP the transition authority is an internal backend service only; there is
+no HTTP boundary or review UI. Exact transactions, locking, and failures live
+in
+[.memory-bank/domains/dataset-governance.md](../domains/dataset-governance.md).
+
+### Transition table
+
+| From | To | Authority | Conditions |
+|---|---|---|---|
+| `candidate` | `needs_review` | service review-request command | evidence refs remain non-empty |
+| `candidate`, `needs_review` | `confirmed` | `human_review`, `expert_review`, or `batch_review` service command | evidence refs validate; `candidate_origin=raw` only in MVP (D5) |
+| `candidate`, `needs_review` | `confirmed` | `curator_auto` | strong-evidence policy below plus persisted current-run `curator_decision=selected` |
+| `candidate`, `needs_review` | `rejected` | any review command | terminal in MVP |
+| `candidate`, `needs_review`, `confirmed` | `excluded` | any review command | terminal in MVP; recomputes `can_train_on=false` |
+
+- Review confirmations may set `quality_tier=gold`; `curator_auto` and any
+  unconfirmed path reject `gold`.
+- MVP assigns no `split`; the field stays NULL.
+- No other transitions exist; `rejected`/`excluded` have no outgoing
+  transitions in MVP.
+
+### Strong-evidence policy for `curator_auto`
+
+`curator_auto` confirmation is permitted only when the canonical candidate
+row satisfies all of:
+
+- `candidate_origin=raw`;
+- `quality_tier=standard`;
+- at least two `evidence_refs` of at least two distinct kinds;
+- at least one `follow_up_outcome` evidence ref (`follow_up_seen=true`);
+- a persisted current-run `curator_decision=selected`.
+
+The policy evaluates canonical row state only. When any condition fails, the
+confirmation is rejected and the candidate keeps its current status.
+
+### Production reachability
+
+Positive `curator_auto` is required to be production-reachable in FT-014. The
+sole route to its multi-evidence precondition is the internal
+`associate_follow_up_evidence` command in
+[Dataset Governance Data](../domains/dataset-governance.md#follow-up-evidence-association-command):
+`record_follow_up_outcome` supplies an Outcome plus already-authorized source
+refs, and Dataset Governance derives/locks matching source candidates before
+appending the Outcome ref. No HTTP/UI/scheduler trigger and no caller-selected
+candidate association exists.
+
+Evidence association is not a lifecycle transition. It is allowed only for
+`candidate|needs_review`, leaves `can_train_on=false`, and cannot confirm,
+exclude, reject, set quality/split, or persist curator output. A later explicit
+Training Data Curator invocation must persist the exact current run selection
+and apply the `curator_auto` transition in one guarded transaction. Weak
+evidence, stale/different run identity, post-I/O authority loss, audit failure,
+or commit failure leaves neither a reusable selected advisory nor a lifecycle
+change.
+
+### MVP `agent_labeled` guard
+
+MVP has no explicit review path for agent-labeled evidence, so
+`agent_labeled` candidates cannot reach `confirmed`; every confirm transition
+on them is rejected until a future review path allows it.
+
 ## Edge Cases And Errors
 
 - Missing evidence refs block any trainability transition.
@@ -102,6 +177,8 @@ Every Dataset Candidate governance record must carry:
 - `quality_tier=gold` on a non-confirmed candidate, or with
   `confirmation_source=curator_auto|null`, is rejected.
 - Unauthorized Plant evidence must not be mixed into a dataset candidate.
+- Follow-up association cannot enrich a confirmed/rejected/excluded candidate,
+  accept a caller-selected candidate, or reuse a stale curator run.
 - Raw model/provider output must not be stored as trainable fact.
 - Server sync/upload wording must not appear because MVP sync status is
   `local_only`.

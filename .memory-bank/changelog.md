@@ -4,6 +4,40 @@ status: active
 ---
 # Changelog
 
+## [2026-08-10] FT-014 design decisions closed and queue rebuilt
+
+- Selected AD-011's registered advisory-only Agent Runtime exception for the
+  two Dataset Agents, completed the Dataset Timeline event matrices and
+  canonical Boundary Map, and advanced Global Backbone Planning Revision from
+  2 to 3. The verified Foundation gate remains sufficient.
+- Clarified that positive `curator_auto` is required in FT-014 and that
+  `record_follow_up_outcome` invokes Dataset Governance's internal
+  `associate_follow_up_evidence` command to create production multi-evidence
+  state inside the existing PostgreSQL UoW.
+- Applied the explicit reslicing/rebuild authorization and reconciled the former
+  three-card FT-014 plan into ten cards: TASK-047 through TASK-055 plus
+  TASK-057, all `planned`. The Training Data Curator runtime and its atomic
+  selected gate are one cohesive TASK-057 outcome; TASK-056 was removed from
+  the indexed queue.
+  Task claims use only REQ-011/REQ-019; REQ-003/REQ-010/REQ-020 remain direct
+  normative constraints. No task was promoted or executed.
+
+## [2026-08-07] FT-014 planned — dataset governance tasks created
+
+- Completed `/feature-to-tasks FT-014` feature-local design: new canonical
+  specs `domains/dataset-governance.md`, `contracts/dataset-agents-runtime.md`,
+  `testing/dataset-governance.md`; extended `states/dataset-governance.md`
+  with the exact transition table and strong-evidence `curator_auto` policy.
+- Operator decisions: internal transition authority without HTTP (D1),
+  automatic `raw` candidate creation from photo/check-in/measurement/outcome
+  flows (D2), provider-neutral runtime for `dataset_governance` and
+  `training_data_curator` in scope (D3); planner decisions D4-D9 recorded in
+  `.protocols/FT-014/decision-log.md`.
+- Created `TASK-047-T3-FT-014-W1`, `TASK-048-T3-FT-014-W2`,
+  `TASK-049-T3-FT-014-W2` (planned) with claim-linked AC locators
+  `FT-014-AC-01..06`; updated task index, spec-index, routers, and
+  `IMPL-FT-014.md`. Planning Revision 2 unchanged; no task executed.
+
 ## [2026-07-31] Wave W3 — TASK-043 and FT-013 verified
 
 - Reconciled the explicit manual owner's `done` decision for

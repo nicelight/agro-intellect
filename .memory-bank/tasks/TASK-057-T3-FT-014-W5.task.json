@@ -1,0 +1,88 @@
+{
+  "id": "TASK-057-T3-FT-014-W5",
+  "title": "Run Training Data Curator with its atomic selected gate",
+  "status": "planned",
+  "wave": "W5",
+  "feature": "FT-014",
+  "reqs": ["REQ-011", "REQ-019"],
+  "depends_on": [
+    "TASK-048-T3-FT-014-W2",
+    "TASK-050-T3-FT-014-W2",
+    "TASK-054-T3-FT-014-W4",
+    "TASK-055-T3-FT-014-W2"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/runtime_contracts.py",
+    "backend/app/dataset_governance/runtime.py",
+    "backend/app/dataset_governance/service.py",
+    "backend/app/dataset_governance/repository.py",
+    "backend/app/agent_runtime/providers.py",
+    "tests/backend/dataset_governance/test_curator_agent_runtime.py",
+    "tests/backend/dataset_governance/test_curator_auto_gate.py",
+    "tests/backend/dataset_governance/test_curator_auto_production_path.py",
+    "tests/backend/agent_runtime/test_dataset_advisory_registration.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "curator_agent_command", "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_curator_agent_runtime.py tests/backend/dataset_governance/test_curator_auto_gate.py tests/backend/dataset_governance/test_curator_auto_production_path.py tests/backend/agent_runtime/test_dataset_advisory_registration.py -q", "required": true},
+    {"name": "dataset_agent_regression", "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_governance_agent_runtime.py tests/backend/dataset_governance/test_curator_agent_runtime.py -q", "required": true},
+    {"name": "dataset_governance_regression", "command": ".venv/bin/python -m pytest tests/backend/dataset_governance -m \"not real_model\" -q", "required": true},
+    {"name": "full_deterministic_regression", "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/domains/dataset-governance.md",
+    ".memory-bank/contracts/dataset-agents-runtime.md",
+    ".memory-bank/testing/dataset-governance.md",
+    ".memory-bank/changelog.md"
+  ],
+  "purpose": "Implement the one indivisible Training Data Curator application command: strict provider-neutral invocation, advisory-only persistence for non-selected outcomes, and atomic selected-plus-curator_auto application over production-reachable multi-evidence state.",
+  "success_outcome": "An explicit training_data_curator invocation uses only TrainingDataCuratorProviderRequestV1/DecisionV1. Deferred or rejected commits only the exact current-run advisory allowlist and returns advisory_ready/not_requested; silent commits no advisory and returns model_silent; every selected result that passes current guards and is accepted for application ends only as one advisory_ready/confirmed atomic commit of selected identity, curator_auto confirmation and derived can_train_on=true, or as a real policy_blocked rollback with no reusable selected advisory. Invalid, unbound/provider, pre/post-I/O guard, stale/duplicate-run, weak-evidence, gold, agent_labeled, archive/revoke, candidate-race, audit, and commit branches return their canonical outcome with zero partial lifecycle/trainability authority or generic MessageEnvelope/Safety/Bus/UI effect.",
+  "anti_goals": [
+    "A new evidence source/HTTP/UI/trigger, direct model transition or field assignment, gold assignment, agent_labeled confirmation, generic MessageEnvelope/Safety/Bus/UI changes, provider selection, or inherited proof for dependency claims."
+  ],
+  "evidence_required": [
+    "FT-014-AC-013 RED: after TASK-055 the Dataset Governance Agent route works but training_data_curator has no registered strict request/result/application command; GREEN: deferred/rejected persist only the current-run advisory allowlist, silent persists nothing, selected cannot directly assign authority, and invalid/unbound/provider/current-guard/audit branches return their canonical outcome with zero forbidden effects; decisive comparison: exact fields, versions, events, provider calls and outcome matrix; artifact: focused deterministic/PostgreSQL transcript under .tasks/TASK-057-T3-FT-014-W5/.",
+    "FT-014-AC-014 RED: after TASK-055 and the evidence/transition dependencies, no Training Data Curator application command can atomically consume a selected result, so a production-enriched strong-evidence candidate remains unconfirmed; GREEN: the exact current-run positive case commits selected identity, curator_auto confirmation and can_train_on=true together, while every accepted selected policy failure rolls the advisory and transition back and returns policy_blocked; decisive comparison: canonical rows/versions/events, outcome and provider calls; artifact: focused PostgreSQL transcript under .tasks/TASK-057-T3-FT-014-W5/.",
+    "FT-014-AC-014 negative matrix: GREEN weak/missing/distinct-kind/follow-up, stale/different run or candidate version, gold, agent_labeled, archive/revoke, audit failure and commit failure each preserve prior candidate/advisory state with zero partial authority; decisive comparison: exact error/outcome, row/event counts and safe rerun; artifact: adversarial gate transcript."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-013",
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-014",
+    ".memory-bank/behavior-specs/FT-014-BHV-002-curator-auto-evidence-gate.behavior.json",
+    ".memory-bank/behavior-specs/FT-014-BHV-003-production-curator-auto-positive.behavior.json",
+    ".protocols/FT-014/clarification.md",
+    ".protocols/FT-014/decision-log.md",
+    ".memory-bank/tasks/plans/IMPL-FT-014.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/architecture/system-architecture.md#AD-011",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/domains/dataset-governance.md#curatorgovernance-advisory-writes",
+    ".memory-bank/contracts/dataset-agents-runtime.md#typed-results-version-1",
+    ".memory-bank/contracts/dataset-agents-runtime.md#datasetagentruntimeoutcomev1",
+    ".memory-bank/contracts/dataset-agents-runtime.md#invocation-flow-and-curator-gate",
+    ".memory-bank/contracts/timeline-event.md#dataset_agent_runtime_decided-payload-summary",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/testing/dataset-governance.md#dataset-agents-runtime-matrix"
+  ],
+  "constraints": [
+    "Use one explicit internal curator application command; no automatic source event, scheduler, page read, startup, or HTTP trigger.",
+    "Provider I/O stays outside transactions; after I/O one canonical lock order revalidates current authority, Plant, candidate version and exact run identity before advisory/gate writes.",
+    "Every schema-valid selected result is handled in this command; a result that passes current guards and reaches policy application may not stop at an intermediate runnable or reusable advisory branch.",
+    "Selected advisory, lifecycle transition, derived trainability and required event refs are one all-or-nothing PostgreSQL UoW; a policy failure rolls them all back and an appended event before commit failure is audit noise only."
+  ],
+  "invariants": [
+    "Training Data Curator is advisory: model wording is never a policy input and the result cannot set confirmation_source, quality tier, split, evidence, or can_train_on directly.",
+    "curator_auto confirms only raw standard strong-evidence candidates and never gold or agent_labeled."
+  ],
+  "verification_targets": [
+    "FT-014-AC-013: strict curator request/result and complete outcome matrix over deferred/rejected/silent/selected, exact current-run fields and all-or-none/unique constraints, duplicate/stale run, audit and post-I/O race failures, unbound/no-fallback behavior, and static zero MessageEnvelope/Safety/Bus/UI/direct-authority proof.",
+    "FT-014-AC-014: production-created photo candidate plus record_outcome association plus selected curator success matrix with exact run/digest/version equality, atomic advisory/transition/events, and derived trainability.",
+    "FT-014-AC-014: isolated rollback-safe adversarial matrix for every weak/stale/gold/agent_labeled/current-authority/race/audit/commit branch, safe rerun, zero partial rows/events authority, and zero generic publication/device effects."
+  ]
+}

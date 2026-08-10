@@ -1,0 +1,19 @@
+{
+  "id": "FT-014-BHV-003",
+  "feature_id": "FT-014",
+  "title": "Authorized Outcome evidence makes the positive curator_auto path reachable",
+  "given": {
+    "candidate": "an active-Plant raw standard photo candidate still in candidate state",
+    "outcome": "a newly recorded follow-up Outcome whose authorized evidence_refs contain that photo source",
+    "curator": "a fresh Training Data Curator run returning selected"
+  },
+  "when": {
+    "association": "record_follow_up_outcome invokes associate_follow_up_evidence in the same UoW and adds the Outcome ref",
+    "gate": "the current-run selected advisory and curator_auto transition execute under current locks"
+  },
+  "then": {
+    "evidence": "the candidate has at least two refs of distinct kinds including follow_up_outcome and follow_up_seen=true",
+    "transition": "candidate_status=confirmed, confirmation_source=curator_auto, quality_tier=standard, and can_train_on=true commit atomically",
+    "authority": "no MessageEnvelope, Safety, Bus, UI, gold, caller-selected association, or stale curator selection contributes authority"
+  }
+}

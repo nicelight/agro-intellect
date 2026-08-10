@@ -1,0 +1,18 @@
+{
+  "id": "FT-014-BHV-001",
+  "feature_id": "FT-014",
+  "title": "An accepted photo automatically creates one non-trainable raw dataset candidate",
+  "given": {
+    "plant": "active and authorized for a granted Engineer with can_operate=true",
+    "photo": "a valid upload accepted by the FT-005 Photo Intake flow"
+  },
+  "when": {
+    "command": "accept_photo commits inside its unit of work",
+    "seam": "the Dataset Governance creation seam runs in the same transaction"
+  },
+  "then": {
+    "candidate": "exactly one candidate row exists with candidate_status=candidate, candidate_origin=raw, quality_tier=standard, split=null, confirmation_source=null, can_train_on=false, and one typed photo evidence ref",
+    "idempotency": "repeating the same accepted-photo operation creates no second candidate",
+    "authority": "the Photo Intake catalog can_train_on=false assertion is unchanged and no timeline/UI/manifest/agent path granted trainability"
+  }
+}

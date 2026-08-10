@@ -1,0 +1,95 @@
+{
+ "id": "TASK-048-T3-FT-014-W2",
+ "title": "Implement the Dataset transition and trainability authority",
+ "status": "ready",
+ "wave": "W2",
+ "feature": "FT-014",
+ "reqs": [
+  "REQ-019"
+ ],
+ "depends_on": [
+  "TASK-047-T3-FT-014-W1"
+ ],
+ "touched_files": [
+  "backend/app/dataset_governance/contracts.py",
+  "backend/app/dataset_governance/repository.py",
+  "backend/app/dataset_governance/service.py",
+  "tests/backend/dataset_governance/test_transition_authority.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "transition_authority",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_transition_authority.py -q",
+   "required": true
+  },
+  {
+   "name": "dataset_regression",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [],
+ "docs": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+  ".memory-bank/states/dataset-governance.md",
+  ".memory-bank/domains/dataset-governance.md",
+  ".memory-bank/testing/dataset-governance.md",
+  ".memory-bank/changelog.md"
+ ],
+ "purpose": "Implement one locked service transaction as the sole owner of Dataset lifecycle, confirmation, quality, and derived trainability, independently from candidate creation, evidence enrichment, source wiring, and model I/O.",
+ "success_outcome": "The internal transition command enforces the exact state table, current ActorContext/session/membership/active-Plant/grant and candidate-version locks, allowed evidence refs, stale/concurrent conflict, terminal behavior, derived can_train_on, gold and agent_labeled guards, and one redacted dataset_candidate_reviewed ref per successful mutation; no other service or caller can assign lifecycle/trainability fields.",
+ "anti_goals": [
+  "Candidate schema/creation changes, evidence association, source flow wiring, Dataset Agent advisory persistence, HTTP/UI, or export.",
+  "Locking across provider I/O or treating Timeline/model output as transition authority."
+ ],
+ "evidence_required": [
+  "FT-014-AC-002 RED_NOT_APPLICABLE: TASK-047 intentionally exposes no lifecycle command, so a supported pre-implementation transition cannot be observed without first adding this sole authority; alternative proof: preflight direct-assignment/schema guards plus GREEN service-only transition/derivation/anti-assignment matrix; artifact: focused PostgreSQL transcript under .tasks/TASK-048-T3-FT-014-W2/.",
+  "FT-014-AC-003 RED_NOT_APPLICABLE: the transition boundary is absent; alternative proof: the GREEN forbidden-kind matrix separately records rejection of UI Feed, Timeline, manifest, raw-agent and raw-Companion refs with unchanged rows/events; decisive comparison: error code and row/event count per claim; artifact: evidence-policy matrix.",
+  "FT-014-AC-004 RED_NOT_APPLICABLE: the transition boundary is absent; alternative proof: the GREEN evidence-resolution matrix separately records rejection of empty, unresolved and cross-scope refs while valid canonical same-Farm/Plant refs permit only the exact transition; decisive comparison: error code and row/event count per claim; artifact: evidence-resolution matrix.",
+  "FT-014-AC-008 RED_NOT_APPLICABLE: the transition boundary is absent; alternative proof: the GREEN origin-guard matrix shows every agent_labeled confirm authority returns dataset_transition_forbidden with unchanged lifecycle/trainability/event refs while the raw control may follow only its allowed branch; artifact: origin-guard matrix."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-002",
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-003",
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-004",
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-008",
+  ".protocols/FT-014/decision-log.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/states/dataset-governance.md#ft-014-transition-authority",
+  ".memory-bank/domains/dataset-governance.md#transition-authority-transactions",
+  ".memory-bank/contracts/access/actor-context.md",
+  ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+  ".memory-bank/contracts/timeline-event.md#dataset-candidate-payload-summaries",
+  ".memory-bank/architecture/system-architecture.md#AD-006",
+  ".memory-bank/architecture/system-architecture.md#AD-007",
+  ".memory-bank/testing/dataset-governance.md#aggregate-derivation-and-transition-matrix"
+ ],
+ "constraints": [
+  "No HTTP boundary exists in FT-014; the service command accepts current ActorContext and expected status/version only.",
+  "Use canonical lock order and recheck current authority in the same transaction as the write; archive/revoke/association races fail closed.",
+  "Append failure rolls back; append success followed by commit failure is audit noise and cannot replay the transition."
+ ],
+ "invariants": [
+  "can_train_on is recomputed only by this authority and false unless a valid confirmed state plus allowed confirmation/evidence exists.",
+  "curator_auto never grants gold and agent_labeled never confirms in MVP."
+ ],
+ "verification_targets": [
+  "FT-014-AC-002: exact legal/illegal transition, derived value, anti-assignment, expected status/version, row-lock concurrency, archive/revoke and event rollback/noise matrix.",
+  "FT-014-AC-003: forbidden evidence-kind matrix with distinct claim results.",
+  "FT-014-AC-004: evidence existence and same-Farm/Plant resolution matrix with distinct claim results.",
+  "FT-014-AC-008: every confirm source against agent_labeled plus raw controls, exact errors, unchanged rows and zero events on rejection."
+ ]
+}

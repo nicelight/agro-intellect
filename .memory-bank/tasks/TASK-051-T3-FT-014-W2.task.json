@@ -1,0 +1,60 @@
+{
+  "id": "TASK-051-T3-FT-014-W2",
+  "title": "Wire daily check-ins into Dataset Candidate creation",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-014",
+  "reqs": ["REQ-019"],
+  "depends_on": ["TASK-047-T3-FT-014-W1", "TASK-025-T3-FT-004-W3"],
+  "touched_files": [
+    "backend/app/plant_operations/service.py",
+    "tests/backend/plant_operations/test_check_in_dataset_candidate.py",
+    "tests/backend/dataset_governance/test_check_in_wiring.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "check_in_dataset_wiring", "command": ".venv/bin/python -m pytest tests/backend/plant_operations/test_check_in_dataset_candidate.py tests/backend/dataset_governance/test_check_in_wiring.py -q", "required": true},
+    {"name": "plant_operations_regression", "command": ".venv/bin/python -m pytest tests/backend/plant_operations -q", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+    ".memory-bank/domains/dataset-governance.md",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/testing/dataset-governance.md",
+    ".memory-bank/changelog.md"
+  ],
+  "purpose": "Compose only the daily check-in source transaction with the Dataset creation seam so check-in evidence becomes a raw non-trainable candidate without merging the separately owned measurement flow.",
+  "success_outcome": "Every newly completed daily check-in atomically creates one daily_check_in Dataset Candidate with exactly one observation ref and default false trainability; failure rolls back the check-in/candidate together, same-row seam retry is idempotent, new check-ins remain distinct, and existing observation/freshness/Timeline/public outcomes are unchanged.",
+  "anti_goals": [
+    "Manual measurement candidate wiring, check-in API/observation semantic changes, evidence association, lifecycle, agent runtime, or backfill."
+  ],
+  "evidence_required": [
+    "FT-014-AC-009 RED: after TASK-047 and before this wiring, create_check_in commits no candidate for check_in_id; GREEN: one exact raw/default candidate and event ref commit in the same UoW; decisive comparison: source identity, rollback in both failure directions, same-row retry, distinct new check-in, and unchanged CheckInResult/freshness; artifact: focused PostgreSQL transcript under .tasks/TASK-051-T3-FT-014-W2/."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-009",
+    ".memory-bank/tasks/plans/IMPL-FT-014.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/dataset-governance.md#creation-seam",
+    ".memory-bank/domains/plant-operations.md",
+    ".memory-bank/contracts/boundary-map.md#dataset-evidence-creation",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/dataset-governance.md#evidence-flow-wiring-matrix"
+  ],
+  "constraints": [
+    "Plant Operations retains command/UoW and passes only the persisted DailyCheckIn identity; combined check-in-with-measurement remains two source rows and TASK-052 owns the measurement candidate.",
+    "Do not change observation validation, freshness ordering, or public response shape."
+  ],
+  "invariants": [
+    "Check-in candidate creation cannot promote Plant state or Dataset trainability.",
+    "Unauthorized/archived Plant operation creates no source row or candidate."
+  ],
+  "verification_targets": [
+    "FT-014-AC-009: check-in-only and check-in-with-measurement controls, source/candidate/audit rollback, same-source idempotency versus new-row identity, current authorization/archive behavior, and unchanged service/API result."
+  ]
+}

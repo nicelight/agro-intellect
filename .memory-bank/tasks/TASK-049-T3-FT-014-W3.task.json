@@ -1,0 +1,65 @@
+{
+  "id": "TASK-049-T3-FT-014-W3",
+  "title": "Implement the follow-up evidence association command",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-014",
+  "reqs": ["REQ-019"],
+  "depends_on": ["TASK-048-T3-FT-014-W2"],
+  "touched_files": [
+    "backend/app/dataset_governance/contracts.py",
+    "backend/app/dataset_governance/repository.py",
+    "backend/app/dataset_governance/service.py",
+    "tests/backend/dataset_governance/test_follow_up_evidence_association.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "evidence_association", "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_follow_up_evidence_association.py -q", "required": true},
+    {"name": "dataset_regression", "command": ".venv/bin/python -m pytest tests/backend/dataset_governance -m \"not real_model\" -q", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": [],
+  "docs": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+    ".memory-bank/domains/dataset-governance.md",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/testing/dataset-governance.md",
+    ".memory-bank/changelog.md"
+  ],
+  "purpose": "Create the Dataset-owned internal command that safely forms multi-evidence candidate state from an authorized follow-up Outcome without coupling it to Task & Follow-Up wiring or granting lifecycle/trainability authority.",
+  "success_outcome": "AssociateFollowUpEvidenceCommandV1 derives matching photo/check-in/measurement candidates only from the locked Outcome's authorized refs, rechecks current scope and candidate versions, enriches only candidate|needs_review with one typed follow_up_outcome ref, derives follow_up_seen, increments version, appends one redacted event per changed row, makes identical delivery a no-op, and leaves lifecycle/quality/split/confirmation/curator/trainability unchanged.",
+  "anti_goals": [
+    "TaskFollowUpService wiring, caller-selected candidate IDs, arbitrary evidence, lifecycle transitions, Curator execution, HTTP/UI, batch/backfill, or terminal candidate mutation."
+  ],
+  "evidence_required": [
+    "FT-014-AC-007 RED_NOT_APPLICABLE: TASK-048 intentionally has no evidence-association application command, so the exact command claim cannot be invoked before implementation; alternative proof: preflight one-ref canonical candidate plus GREEN target-derivation/append/no-op/forbidden-field matrix; decisive comparison: exact refs, follow_up_seen, version, unchanged authority fields and event count; artifact: focused PostgreSQL transcript under .tasks/TASK-049-T3-FT-014-W3/."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-007",
+    ".memory-bank/behavior-specs/FT-014-BHV-003-production-curator-auto-positive.behavior.json",
+    ".protocols/FT-014/clarification.md",
+    ".memory-bank/tasks/plans/IMPL-FT-014.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/dataset-governance.md#follow-up-evidence-association-command",
+    ".memory-bank/states/dataset-governance.md#production-reachability",
+    ".memory-bank/contracts/boundary-map.md#follow-up-evidence-association",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/timeline-event.md#dataset-candidate-payload-summaries",
+    ".memory-bank/testing/dataset-governance.md#follow-up-evidence-association-matrix"
+  ],
+  "constraints": [
+    "The command receives a locked Outcome row and authorized canonical refs from its caller; plant and plant_state_record refs yield no candidate match.",
+    "Confirmed/rejected/excluded candidates stay unchanged; zero eligible matches succeeds without an event.",
+    "No database lock is held outside this command transaction and no Timeline event grants replay authority."
+  ],
+  "invariants": [
+    "Evidence association never transitions a candidate or sets can_train_on.",
+    "Only same-Farm/Plant source identity may determine a target candidate; callers cannot name one."
+  ],
+  "verification_targets": [
+    "FT-014-AC-007: PostgreSQL matrix for each supported/ignored source kind, current scope/lock order, stale/concurrent/archive/revoke cases, candidate-state eligibility, idempotent duplicate, exact changed/unchanged result, event cardinality/redaction, append rollback and commit-failure noise."
+  ]
+}

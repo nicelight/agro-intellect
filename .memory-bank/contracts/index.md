@@ -35,6 +35,9 @@ source_of_truth:
   classified Task handoff.
 - [Companion Runtime](companion-runtime.md): explicit authorized provider-neutral
   input/result, closed trigger policy, classification, and proposal handoff.
+- [Dataset Agents Runtime](dataset-agents-runtime.md): provider-neutral
+  dataset_governance/training_data_curator input, strict advisory results,
+  and the server-owned curator gate.
 - [MessageEnvelope](message-envelope.md): validated pending pre-safety agent
   output.
 - [UI Feed](ui-feed.md): human presentation only.

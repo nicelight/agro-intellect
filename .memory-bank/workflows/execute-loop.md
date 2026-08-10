@@ -29,10 +29,11 @@ status: active
   owns only non-trivial reproducible measurement detail. Tasks proving a
   material NFR carry concrete `verification_targets` and `evidence_required`
   at every tier; compact T0/T1 protocol does not waive that evidence.
-- Newly created or reconciled `planned|ready` T2/T3 cards use existing
-  `evidence_required` and direct links to plan claim-linked RED/GREEN, or one
-  concrete accepted not-applicable reason; `/review-tasks-plan` evaluates this
-  prospective path without adding a workflow stage.
+- Newly created or reconciled `planned|ready` T2/T3 cards map only task-owned
+  outcomes and integration delta. Dependency proof is not inherited;
+  `evidence_required` stays minimal while required probe method remains in the
+  task package. `/review-tasks-plan` rejects missing and excess proof without a
+  new workflow stage.
 - Rerun `/feature-to-tasks FT-<NNN>` to reconcile subject-based canonical specs, task cards,
   and plans.
 - After the current feature task set is decomposed, run
@@ -41,6 +42,26 @@ status: active
   queue has T3 work, autonomous/autopilot handoff, or complex
   T2/foundation/dependency/stale-doc/risky-link conditions. Simple manual
   T0/T1 queues do not require `/mb-doctor` by default.
+
+## Execution-Cohesive Task Boundary
+
+A task is one grounded material unit that can reach an owner-valid useful
+implementation-and-proof completion. That completion need not be
+feature-visible, close a whole AC, or complete the surrounding command,
+invariant, transaction, or end-to-end flow.
+
+A unit reaches useful task-level completion when task closure leaves one
+material owner-valid implementation result true and decisively proved. Later
+work may compose or depend on it but is not required to make that result true.
+
+Different exact task-owned claims or canonical semantic owners are split
+signals. Keep independently completable implementation, proof,
+failure/retry/rollout/rollback surfaces in sibling tasks unless accepted
+contracts and, when available, the bounded code/change surface show that they
+cannot complete separately. Shared product outcome, capability owner, tier,
+transaction, AC, flow, or KISS is not merge evidence. Do not split solely by
+files, layers, artifacts, tests, AC count, or modules without distinct semantic
+ownership; task count is not an optimization target.
 
 ## Interactive mode (you stay)
 1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts
@@ -58,22 +79,14 @@ feature/task-queue boundary only when T3, autonomous/autopilot handoff, or
 complex T2/foundation/dependency/stale-doc/risky-link conditions apply;
 use `/mb-doctor --strict` before autonomous handoff
 12) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
-   - T0/T1 manual: `/exe TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner
-   - T2 manual: `/exe TASK` records RED -> implementation -> GREEN, pre-GREEN,
-     or accepted alternative proof, then one handoff to `/verify TASK`; sync at
-     wave/feature boundary unless broader state must be reconciled earlier
-   - T3 manual: `/exe TASK` records the same evidence variants through safe
-     isolated/disposable probes, then `/verify TASK -> /red-verify TASK`; the
-     explicit owner records closure/status/evidence immediately and runs
-     `/mb-sync` at the end of the current wave
-   - after all tasks for a T2 feature are implemented, run `/red-verify --feature FT-<ID>` before treating the feature as complete
+   - run `/exe TASK`, then the verification, semantic, closure, and sync route
+     in `tier-policy.md#tier-obligations` and
+     `tier-policy.md#closure-authority`; `/exe` owns its detailed
+     start/attempt/resume contract
    - start `/exe` only after the current feature task set has been decomposed and any required/conditional feature/task-queue doctor gate has passed
    - `/exe` reads the indexed task card and direct task-linked canonical specs; structural single-card readiness is owned by `/mb-doctor`, while semantic contradictions remain implementer blockers
-   - if `/exe` or `/verify` discovers a required higher tier, stop the
-     current run and route the original task ID through
-     `/feature-to-tasks FT-<NNN>` for controlled rebuild/split; rerun
-     `/review-tasks-plan`, applicable `/mb-doctor`, and `/exe` with the
-     replacement task ID
+   - a required higher tier follows
+     `tier-policy.md#tier-classification-and-escalation`
 13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
 the planning surface: task cards, specs, dependencies, tier, scope, or
 unresolved plan assumptions. Status/evidence-only closure does not
@@ -97,9 +110,10 @@ to canonical `/autopilot`; `/autonomous` does not copy its product-queue
 recovery, selection, task-stage, wave-boundary, or no-ready algorithm
 6) `/autopilot` owns product promotion, selection, final lifecycle decisions,
 and queue recovery; selected-task `/exe` owns protocol preparation and
-`ready -> in_progress`; `tier-policy.md` owns tier gates and failure handling;
-`autonomy-policy.md` owns the durable checkpoint, budgets, hard stops, and
-terminal vocabulary; `mb-sync.md` owns boundary reconciliation only
+`ready -> in_progress`; `tier-policy.md` owns tier gates and closure authority;
+`autonomy-policy.md` owns scheduler failure/retry semantics, the durable
+checkpoint, budgets, hard stops, and terminal vocabulary; `mb-sync.md` owns
+boundary reconciliation only
 7) `/autonomous` preserves any scheduler halt unchanged and reports final
 end-to-end `SUCCESS` only after the product queue and all outer gates pass
 

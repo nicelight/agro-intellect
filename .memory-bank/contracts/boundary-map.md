@@ -1,33 +1,156 @@
 ---
-description: Preliminary boundary hints for MVP v2 PRD decomposition.
+description: Canonical module inventory, dependency graph, and inline ownership contracts for the MVP modular monolith.
 status: active
-last_updated: 2026-07-28
+last_updated: 2026-08-10
 source_of_truth:
-  - .memory-bank/prd.md
+  - .memory-bank/architecture/system-architecture.md
   - .memory-bank/invariants.md
-  - .memory-bank/glossary.md
+  - .memory-bank/spec-index.md
 ---
 # Boundary Map
 
-This is a pre-PRD framing artifact only. It intentionally does not define
-endpoints, schemas, auth policy details, OpenAPI shapes, database migrations, or
-error codes. Global boundary rules are promoted into the active global specs;
-feature-required detail belongs to discovered canonical subject specs created
-or extended by `/feature-to-tasks FT-<NNN>` before task slicing.
+This file is the canonical detailed module/change-unit inventory and accepted
+`Consumer -> Provider` topology. Parent architecture units remain in
+[System Architecture](../architecture/system-architecture.md); subject specs
+own exact payloads, states, persistence, errors, and verification matrices.
+Code roots are discovery locations, not task hard write boundaries.
 
-| Boundary | Purpose | Direction | Change route | Known Constraints | Questions |
-|---|---|---|---|---|---|
-| Local app session -> ActorContext | Resolve who acts in which Farm, with which role and Plant permissions. | UI/API request into backend application boundary. | /spec-design | Backend authorization is mandatory for every Farm/Plant route and context builder. Secrets/session material must be redacted. | Exact session/token lifecycle belongs to `/feature-to-tasks FT-001`. |
-| Boss Admin Surface -> Farm/Account/Plant administration | Manage personnel, roles, Plant archive/restore, Plant access, Plant list, and admin audit. Plant creation is also available to active Engineers through the Farm/Plant boundary, not this admin boundary. | Human UI command into backend admin services. | /prd-to-features then /spec-design | One local Farm only; no SaaS tenancy, email delivery, hosted recovery, or enterprise identity. Admin changes create durable audit. | Minimal first-demo admin surface may be smaller than full MVP admin capability. |
-| Plant operations UI/API -> runtime evidence | Record authorized check-ins, observations, manual pH/EC, and Plant-scoped photo/history refs. | Human UI/API command into backend Plant operations, photo-intake, and history boundaries. | /prd-to-features then /spec-design | Evidence is Farm/Plant/Actor scoped. PostgreSQL remains runtime authority; archived Plants deny new operations but retain authorized history. | Exact operation, photo, and history contracts belong to their registered canonical specs. |
-| Photo intake -> local artifacts and catalog | Store photo file, metadata, sha256, initial capture manifest, and audit/export refs. | Upload/capture into filesystem plus runtime catalog/audit. | /spec-design | Local artifacts are not mutable runtime authority. Photo details must be re-specified for MVP v2 before task slicing. | Exact manifest fields and storage layout belong to `/feature-to-tasks FT-005`. |
-| Runtime state -> timeline audit/export | Preserve append-only trace and export references. | Backend persistence into audit/export event stream. | /spec-design | Timeline is not primary mutable state. Runtime authority remains PostgreSQL/read model. | Exact event taxonomy belongs to `/feature-to-tasks FT-006`. |
-| Runtime state -> Agent Chat Bus | Publish validated agent-consumable events. | Backend/domain adapters into Bus. | /spec-design | Bus is domain-owned working context; raw model output, UI Feed, raw chat, and unapproved proposals cannot bypass adapters. | Exact BusEventEnvelope refinements belong to applicable canonical specs created or extended by `/feature-to-tasks FT-<NNN>`. |
-| Authorized active Plant Feed access -> roster introduction rows | Materialize only missing canonical presentation rows immediately before the normal Feed page read. | Protected `GET` application boundary into UI Feed persistence; never into Agent Chat Bus or agent context. | /spec-design | Current identity/grant and `Plant.status=active` are locked/rechecked in the same transaction as inserts. Plant create/startup/restore/archived retained-history reads write none; deterministic identities and uniqueness make retry/concurrency idempotent; public response/order/cursor stay unchanged. | Exact transaction, migration, and evidence live in the registered roster, Feed, storage, lifecycle, and testing specs. |
-| Agent execution -> MessageEnvelope | Convert validated provider-neutral executor output into project-owned structured candidate output. | Provider-neutral execution through a domain adapter into an immutable pending, non-consumable handoff. | /spec-design | Agno is execution layer only. Current code-phase acceptance may use deterministic test-only fake/spy seams; production remains unbound and fail-closed without fake, canned, hardcoded, or fallback output. Authorization remains service-side and model labels are not safety authority. Real-endpoint verification belongs to a separate future integration milestone. | Exact adapter contract belongs to `/feature-to-tasks FT-007`. |
-| MessageEnvelope -> Safety & Task Loop classifier | Derive the project-owned safe-information, ordinary-task, physical-action, or blocked-uncertain route. | Pending envelope into strict `SafetyClassificationResultV1`. | /spec-design | No pending text is Bus/UI/task authority; safe tasks remain separate from `action_task`. | The shared result matrix lives in `states/safety-action-lifecycle.md`; exact domain action taxonomy and classifier implementation belong to `/feature-to-tasks FT-011`. |
-| Classified output -> Bus/UI/task/Safety route | Apply only the route selected by the project-owned classifier. | Matching envelope plus classification into guarded downstream boundary. | /spec-design | UI Feed remains presentation-only; physical action still requires Safety Gate and approval; current Plant/auth guard repeats at the write. | Concrete Bus/UI/task projections belong to FT-008/FT-011/FT-012/FT-016 feature design. |
-| Physical-action advice -> Safety Gate | Block or route risky wording before display/action tracking. | Agent/advisor output into safety policy boundary. | /spec-design | Fresh data alone is insufficient. Requires Safety Gate pass, authorized approval, and human-performed task tracking. No automated actuation. | Exact freshness and action taxonomy belong to `/feature-to-tasks FT-011`. |
-| Safe request / Safety Gate -> Safety & Task Loop | Create and transition check/measurement tasks, pending approvals, human-performed `action_task` records, and follow-up outcomes. | Approved or low-risk backend request into task/approval/follow-up authority. | /prd-to-features then /spec-design | Tasks, approvals, and outcomes retain Plant/evidence refs; archived Plants make them non-operative; restore never auto-resumes work. No automated actuation. | Exact task, approval, outcome, and follow-up contracts belong to `/feature-to-tasks FT-012`. |
-| Companion governance -> DecisionRecord | Turn human-approved Plant-scoped governance proposal into typed binding workflow direction. | Companion proposal plus valid human decision into backend governance record. | /spec-design | DecisionRecord is not Safety Gate approval, Plant-state evidence, or physical-action unlock. Raw proposal text/rationale/chat stay non-consumable. | Exact proposal/decision state machine belongs to `/feature-to-tasks FT-013`. |
-| Runtime evidence -> dataset governance | Preserve evidence refs and trainability guardrails for future learning loop. | Photo/measurement/outcome/review evidence into dataset lifecycle fields. | /spec-design | Dataset items are non-trainable by default. UI Feed, timeline snapshots, manifests, and raw agent output never grant trainability by themselves. | Full dataset registry and fine-tuning are out of MVP. |
+## Modules
+
+| Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |
+|---|---|---|---|
+| Access & Admin | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/access_admin/`; `backend/app/api/session.py`; `backend/app/api/admin.py`; `backend/app/api/plants.py` | Own Account, Farm, Membership, LocalSession, ActorContext, Plant lifecycle, PlantAccessGrant, and admin audit authority. |
+| Plant Operations | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/plant_operations/`; `backend/app/api/operations.py` | Own daily check-ins, observations, and manual pH/EC commands and rows. |
+| Photo Intake | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/photo_intake/`; `backend/app/api/photos.py` | Own accepted photo files, catalog identity, hash, capture manifest, and upload transaction. |
+| Plant History | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/plant_history/`; `backend/app/api/history.py` | Own Plant card/history projections and authorized retained-history reads. |
+| Timeline Audit | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/timeline/` | Own registered append-only `timeline.jsonl` validation and append refs; never mutable domain authority. |
+| Agent Runtime Core | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/agent_runtime/` | Own canonical roster metadata, provider binding composition, generic MessageEnvelope runtime, and registered advisory-only runtime rules. |
+| Vision Observation | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/vision_observation/` | Own strict real-photo observation request/result composition and observation handoff. |
+| Plant State | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/plant_state/`; `backend/app/api/plant_state.py` | Own Plant-state observations, assessments, conflicts, trust records, and review transitions. |
+| Hydroponics Advisor | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/hydroponics_advisor/` | Own advisor input freshness/missing-data policy and typed advisory result. |
+| Agent Chat & UI Feed | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/agent_chat/`; `backend/app/api/feed.py` | Own classified Bus publication, human Feed rows, protected Feed reads, and lazy roster-introduction materialization. |
+| Safety Gate | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/safety_gate/` | Own strict classification evidence, server-derived consumer route, and physical-action Safety routing. |
+| Task & Follow-Up | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/task_follow_up/`; `backend/app/api/task_follow_up.py` | Own the sole ordinary Task writer, Approval/Task/Outcome state, and follow-up transitions. |
+| Companion Governance | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/companion_governance/`; `backend/app/api/companion.py` | Own IssueStack, attention, proposal, conclusion, DecisionRecord, and allowed governance effects. |
+| Dataset Governance | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/dataset_governance/` | Own Dataset Candidate creation, evidence association, lifecycle, trainability derivation, and Dataset Agents advisory persistence. |
+| Operator PWA | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `frontend/` | Own SvelteKit presentation and interaction only; backend modules retain authorization and mutable authority. |
+
+## Dependency Graph
+
+| Consumer | Provider | Contract |
+|---|---|---|
+| Plant Operations | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Photo Intake | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Plant History | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Agent Chat & UI Feed | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Task & Follow-Up | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Companion Governance | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Dataset Governance | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
+| Plant Operations | Timeline Audit | [Timeline Append Boundary](#timeline-append-boundary) |
+| Photo Intake | Timeline Audit | [Timeline Append Boundary](#timeline-append-boundary) |
+| Agent Runtime Core | Timeline Audit | [Timeline Append Boundary](#timeline-append-boundary) |
+| Task & Follow-Up | Timeline Audit | [Timeline Append Boundary](#timeline-append-boundary) |
+| Companion Governance | Timeline Audit | [Timeline Append Boundary](#timeline-append-boundary) |
+| Dataset Governance | Timeline Audit | [Timeline Append Boundary](#timeline-append-boundary) |
+| Vision Observation | Agent Runtime Core | [Registered Runtime Composition](#registered-runtime-composition) |
+| Plant State | Agent Runtime Core | [Registered Runtime Composition](#registered-runtime-composition) |
+| Hydroponics Advisor | Agent Runtime Core | [Registered Runtime Composition](#registered-runtime-composition) |
+| Safety Gate | Agent Runtime Core | [Registered Runtime Composition](#registered-runtime-composition) |
+| Task & Follow-Up | Agent Runtime Core | [Registered Runtime Composition](#registered-runtime-composition) |
+| Companion Governance | Agent Runtime Core | [Registered Runtime Composition](#registered-runtime-composition) |
+| Dataset Governance | Agent Runtime Core | [Dataset Advisory Runtime Exception](#dataset-advisory-runtime-exception) |
+| Agent Chat & UI Feed | Safety Gate | [Classified Publication Route](#classified-publication-route) |
+| Task & Follow-Up | Safety Gate | [Classified Publication Route](#classified-publication-route) |
+| Companion Governance | Safety Gate | [Companion Governance Hold](#companion-governance-hold) |
+| Companion Governance | Task & Follow-Up | [Approved Governance Task Effect](#approved-governance-task-effect) |
+| Photo Intake | Dataset Governance | [Dataset Evidence Creation](#dataset-evidence-creation) |
+| Plant Operations | Dataset Governance | [Dataset Evidence Creation](#dataset-evidence-creation) |
+| Task & Follow-Up | Dataset Governance | [Dataset Evidence Creation](#dataset-evidence-creation) |
+| Task & Follow-Up | Dataset Governance | [Follow-Up Evidence Association](#follow-up-evidence-association) |
+| Operator PWA | Access & Admin | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Plant Operations | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Photo Intake | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Plant History | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Agent Chat & UI Feed | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Task & Follow-Up | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Companion Governance | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+
+## Inline Contracts
+
+### ActorContext Gate
+
+Consumers call the Access & Admin ActorContext/Plant permission boundary and
+must not duplicate its session, membership, role, grant, or archive rules.
+State-advancing work repeats current guards at its owning write boundary. See
+[ActorContext](access/actor-context.md#scope) and
+[Plant And Access Lifecycle](../states/plants/plant-and-access-lifecycle.md#rules).
+
+### Timeline Append Boundary
+
+Producers use only registered event/source pairs and redacted summaries from
+[Timeline Event](timeline-event.md#active-event-registry). The owning domain
+mutation remains PostgreSQL authority; an append followed by commit failure is
+non-authoritative audit noise, and Timeline replay never repairs state.
+
+### Registered Runtime Composition
+
+Competence modules reuse the provider factory, fail-closed binding,
+pre/post-I/O authorization, redaction, sanitized audit, and generic
+MessageEnvelope handoff from
+[Agent Runtime Adapter](agent-runtime-adapter.md#invocation-flow). They must not
+select providers, write neighbor state, or turn model output into authority.
+
+### Dataset Advisory Runtime Exception
+
+Only `dataset_governance` and `training_data_curator` use the registered
+advisory-only exception defined by
+[Dataset Agents Runtime](dataset-agents-runtime.md#registered-advisory-only-exception).
+They reuse shared provider and current-guard infrastructure but return a strict
+advisory outcome and never create MessageEnvelope, Safety, Bus, or UI Feed
+effects. Dataset Governance alone may persist advisory fields or apply a
+server-owned transition.
+
+### Classified Publication Route
+
+Consumers accept only a matching pending MessageEnvelope plus persisted
+project-owned classification and the server-derived consumer route. They
+repeat current authorization and Plant guards in the same transaction as their
+write and never dispatch from model labels alone. See
+[Safety Action Lifecycle](../states/safety-action-lifecycle.md#project-owned-classification-contract).
+
+### Companion Governance Hold
+
+Companion-classified output may enter only the guarded proposal boundary; it
+cannot enter ordinary Bus/UI/Task consumers until an authorized human creates
+a DecisionRecord. See
+[Companion Runtime](companion-runtime.md#messageenvelope-and-classification).
+
+### Approved Governance Task Effect
+
+Companion Governance calls the sole Task & Follow-Up ordinary-task command
+inside its caller-owned unit of work only for a valid approved DecisionRecord
+effect. It never writes Task rows directly. See
+[Task And Approval HTTP](task-approval-http.md#canonical-internal-ordinary-task-command).
+
+### Dataset Evidence Creation
+
+Source owners call the Dataset Governance creation seam inside their own unit
+of work. The seam accepts service-side source identity only, creates a raw
+non-trainable candidate idempotently, and never lets a source owner write
+status, tier, confirmation, split, curator, or trainability fields. See
+[Dataset Governance Data](../domains/dataset-governance.md#creation-seam).
+
+### Follow-Up Evidence Association
+
+Task & Follow-Up calls the Dataset-Governance-owned association command inside
+`record_follow_up_outcome`. The command derives eligible target candidates from
+the Outcome's already-authorized source refs, appends only the new Outcome ref,
+and never accepts a caller-selected lifecycle or trainability result. See
+[Dataset Governance Data](../domains/dataset-governance.md#follow-up-evidence-association-command).
+
+### Presentation Calls Backend Authority
+
+The Operator PWA may invoke registered HTTP/read boundaries and render their
+results, but it never owns backend authorization, mutable domain state, agent
+context, Safety approval, or dataset trainability. See
+[API / Contract Boundaries](../architecture/system-architecture.md#api--contract-boundaries).

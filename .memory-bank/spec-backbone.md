@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-07-29
+last_updated: 2026-08-10
 ---
 # SDD Spec Backbone
 
@@ -41,6 +41,20 @@ last_updated: 2026-07-29
   `TASK-046-T3-FT-008-W3` removed the superseded post-create sink, batch table,
   startup scan, and reconciliation path and passed every required T3 closure
   gate.
+- `AD-011` closes the FT-014 shared runtime branch: canonical roster agents
+  `dataset_governance` and `training_data_curator` use the only registered
+  advisory-only Agent Runtime route. Their strict requests are registered in
+  typed egress, their competence-local outcome creates no MessageEnvelope,
+  Safety, Bus, or UI effect, and Dataset Governance retains every mutable
+  advisory/lifecycle/trainability write.
+- The Timeline registry now defines exact Dataset Candidate create/evidence-
+  link/review events plus the dedicated Dataset Agent attempt event, including
+  no-I/O outcomes, cardinality, redaction, append failure, and
+  append-success/commit-failure noise semantics.
+- The canonical Boundary Map now contains the required detailed Modules,
+  Dependency Graph, and Inline Contracts structure. It records Dataset
+  evidence creation, follow-up evidence association, and the advisory-only
+  runtime edge without promoting code roots to task write boundaries.
 
 ## FT-013 Shared Design Decisions
 
@@ -52,6 +66,14 @@ last_updated: 2026-07-29
 | FT-013 post-review Task, conclusion, and context behavior | [Task And Approval HTTP](contracts/task-approval-http.md), [Companion Governance Data](domains/companion-governance.md), [Companion Governance HTTP](contracts/companion-governance-http.md), [Agent Chat Bus](contracts/agent-chat-bus.md), [Provider Profiles](contracts/agent-model-provider-profiles.md) | Approved Task creation stays in the caller-owned UoW; conclusions support open/unfocused state; approved summaries are derived; nested Task errors remain reachable; governance input is typed and non-authoritative. |
 | FT-013 aggregate authority | [Companion Governance Data](domains/companion-governance.md), [Companion Governance State](states/companion-governance.md), [Companion Governance HTTP](contracts/companion-governance-http.md), [Companion Verification](testing/companion-governance.md) | Current proposal derives from unique pending-proposal authority; there is no reverse attention pointer; read integrity covers supported paths; proposal projection repair derives from authority state. |
 
+## FT-014 Shared Design Decisions
+
+| Concern | Canonical sources | Durable decision |
+|---|---|---|
+| Dataset Agents outcome route | [AD-011](architecture/system-architecture.md#ad-011---dataset-agents-use-a-registered-advisory-only-runtime-route), [Agent Runtime](contracts/agent-runtime-adapter.md#registered-advisory-only-exception), [Provider Boundary](contracts/agent-model-provider-profiles.md#registered-advisory-only-result-route), [Dataset Agents](contracts/dataset-agents-runtime.md#registered-advisory-only-exception) | Only the two canonical Dataset Agents use `dataset_advisory_v1`; they reuse shared fail-closed provider/current-guard infrastructure but return a strict advisory outcome and never create MessageEnvelope/Safety/Bus/UI effects. |
+| Dataset Timeline matrix | [Timeline Event](contracts/timeline-event.md#dataset-candidate-payload-summaries), [Dataset Agent event](contracts/timeline-event.md#dataset_agent_runtime_decided-payload-summary) | Candidate create/evidence-link/review events and every accepted Dataset Agent attempt have exact registered identities, redacted summaries, cardinality, failure behavior, and non-authoritative audit-noise semantics. |
+| Detailed module topology | [Boundary Map](contracts/boundary-map.md#modules), [Dependency Graph](contracts/boundary-map.md#dependency-graph) | Dataset source owners call the Dataset Governance creation/association seams; Dataset Governance consumes Agent Runtime Core only through the registered advisory exception and owns all mutable Dataset state. |
+
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
 |---|---|---|---|
@@ -62,16 +84,16 @@ last_updated: 2026-07-29
 | constraints | authoritative | [.memory-bank/constitution.md](constitution.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local-first, low-maintenance, safety, data authority, context hygiene, and no automated actuation. |
 | non_goals | authoritative | [.memory-bank/prd.md](prd.md), [.memory-bank/requirements.md](requirements.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | SaaS, hosted sync, enterprise identity, multi-Farm, microservices, full dataset registry, and actuation excluded. |
 | domain_model | authoritative | [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/domains/index.md](domains/index.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/domains/plant-history.md](domains/plant-history.md), [.memory-bank/states/index.md](states/index.md) | Global entities, shared native-UUID/non-cascading relation compatibility, foundation substrate, photo authority, Plant history projections, archived-Plant operational guard, and dataset lifecycle/trainability ownership are defined; exact feature fields live in registered subject specs. |
-| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/foundation.md](foundation.md) | Existing agent/Safety/task/governance flow remains; roster introductions use the separate authorized active Feed GET -> same-transaction guard -> missing UI rows -> unchanged page flow and never enter Bus/context. |
+| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md), [.memory-bank/foundation.md](foundation.md) | Existing generic agent/Safety/task/governance flow remains; roster introductions keep the separate active-Feed route, while the two Dataset Agents use a separate registered advisory-only provider/outcome/audit route with zero MessageEnvelope/Bus/UI/Safety effect. |
 | storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/agent-chat-ui-feed-storage.md](domains/agent-chat-ui-feed-storage.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/foundation.md](foundation.md) | Existing UI rows and uniqueness remain; forward migration removes only presentation batch metadata/table and adds no replacement lifecycle state. Other PostgreSQL/artifact/audit boundaries are unchanged. |
 | api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md), [.memory-bank/contracts/task-approval-http.md](contracts/task-approval-http.md) | Plant create/201 remains free of introduction work; protected active Feed GET owns missing-row materialization without changing response/order/cursor/error grammar. |
-| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Existing MessageEnvelope/Bus/Safety/UI rules remain; introductions are presentation-only rows with both agent flags false and no Bus/context path. |
-| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Agent Runtime owns the canonical roster and deterministic metadata but no introduction persistence; registered typed provider boundaries and fail-closed unbound production behavior remain unchanged. |
+| event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Generic MessageEnvelope/Bus/Safety/UI rules remain; introductions are presentation-only, and the Dataset advisory exception uses only its dedicated Timeline attempt event plus candidate audit events. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Agent Runtime owns canonical roster/provider composition; AD-011 registers exactly two advisory-only Dataset requests/results without widening generic AgentRuntimeOutcomeV1 or MessageEnvelope. Fail-closed unbound production remains unchanged. |
 | security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-008 remains; AD-010 additionally requires current identity/grant/active-Plant locks in the same transaction as lazy introduction writes and keeps archived reads/restore write-free. |
-| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Existing deterministic runtime acceptance remains; Feed/migration verification proves sole trigger, same-UoW guard, missing-only idempotency, retained rows, no forbidden-trigger writes, unchanged public grammar, and retry. |
+| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md), [.memory-bank/testing/dataset-governance.md](testing/dataset-governance.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Existing deterministic runtime acceptance remains; FT-014 additionally proves the advisory outcome/current-guard/audit matrices and zero generic publication/direct Dataset authority. |
 | deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md), [.memory-bank/foundation.md](foundation.md) | Local loopback path remains; application startup performs no introduction reconciliation and recovery is an authorized active Feed retry. |
 | risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md) | Lazy Feed persistence may fail or race archive/revocation; same-transaction current guards plus `FEED_PERSISTENCE_FAILED` and retry are the accepted bounded recovery. |
-| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md) | No unresolved global/shared blocker remains; Finding 4 and the FT-013 provider-input policy are authoritative. |
+| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md) | No unresolved global/shared blocker remains; Finding 4, the FT-013 provider-input policy, and AD-011 are authoritative. FT-014 curator reachability is also closed: positive `curator_auto` is required and the production association route is feature-local Dataset Governance authority. |
 
 ## Handoff To /prd-to-features
 - Ready: yes
@@ -80,8 +102,9 @@ last_updated: 2026-07-29
 
 ## Handoff To /spec-design
 - Global Backbone Status: complete; the FT-013 typed governance-input decision,
-  ordinary-task UoW phase, Finding 4 active-Feed materialization boundary, and
-  all other current shared routes are authoritative.
+  ordinary-task UoW phase, Finding 4 active-Feed materialization boundary,
+  AD-011 Dataset advisory route, Dataset Timeline matrix, and current Boundary
+  Map topology are authoritative.
 - Backbone areas decided: architecture_style, source_of_truth, module_boundaries, ActorContext/authz, Farm/Plant data authority, photo artifact storage, timeline audit/export, Agent Chat Bus, MessageEnvelope, UI Feed, Plant state trust, Safety Gate/action lifecycle, Companion governance, dataset governance, testing, deployment.
 - Authoritative specs: see .memory-bank/spec-index.md Spec Registry.
 - L1-L3 context: [.memory-bank/requirements.md](requirements.md), [.memory-bank/epics/index.md](epics/index.md), and [.memory-bank/features/index.md](features/index.md).
@@ -106,13 +129,17 @@ last_updated: 2026-07-29
 - FT-002 Plant create and FT-016 Feed rendering are compatibility consumers:
   their public outcomes remain unchanged and do not require an independent
   design branch.
+- FT-014 shared and feature-local design is complete. Its reconciled
+  TASK-047..055 plus TASK-057 queue has fresh task-plan APPROVE for Planning
+  Revision 3 and passes the strict readiness gate; this handoff does not
+  execute it.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.
 
 ## Global Backbone Status
 - Status: complete
-- Planning Revision: 2
+- Planning Revision: 3
 - Mode: strict_architecture_scaffold
 - Architecture artifact strategy: single-file
 - Not applicable areas:
@@ -121,10 +148,10 @@ last_updated: 2026-07-29
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
 - Notes: Foundation remains verified and its gate/status are unchanged.
-  Planning Revision advanced exactly once from 1 to 2 for the durable Finding 4
-  Plant-create/Agent Runtime/Feed/storage ownership change. Historical
-  `done|failed` task records and their approvals remain unchanged;
-  Planning Revision 2 review and TASK-046 closure completed the Finding 4
-  implementation delta. FT-008 is `verified`; FT-007 remains `planned` for its
-  deferred selected-endpoint milestone. No unresolved global/shared ambiguity
-  remains.
+  Planning Revision advanced exactly once from 2 to 3 on 2026-08-10 because
+  AD-011 registers a durable global Agent Runtime/provider/Timeline route and
+  the canonical Boundary Map topology used by downstream task planning.
+  Historical task lifecycle/evidence remains unchanged; every product
+  task-plan approval for Revision 2 is now stale until the applicable
+  reconciliation/review route records Revision 3. FT-014 is the current
+  bounded repair target. No unresolved global/shared ambiguity remains.

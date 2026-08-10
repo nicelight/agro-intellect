@@ -2,7 +2,7 @@
 description: Global timeline audit/export event contract for MVP v2.
 status: active
 type: contract
-last_updated: 2026-07-18
+last_updated: 2026-08-10
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -89,6 +89,10 @@ The following event types are registered for the current taskable features:
 | `companion_decision_recorded` | Companion Governance service | `decision_record` | `decision_record_id` | `.memory-bank/domains/companion-governance.md` |
 | `companion_issue_resolved` | Companion Governance service | `companion_issue` | `issue_id` | `.memory-bank/domains/companion-governance.md` |
 | `companion_issue_closed` | Companion Governance service | `companion_issue` | `issue_id` | `.memory-bank/domains/companion-governance.md` |
+| `dataset_candidate_created` | Dataset Governance service | `dataset_candidate` | `candidate_id` | `.memory-bank/domains/dataset-governance.md` |
+| `dataset_candidate_evidence_linked` | Dataset Governance service | `dataset_candidate` | `candidate_id` | `.memory-bank/domains/dataset-governance.md` |
+| `dataset_candidate_reviewed` | Dataset Governance service | `dataset_candidate` | `candidate_id` | `.memory-bank/states/dataset-governance.md` |
+| `dataset_agent_runtime_decided` | Dataset Governance service | `dataset_agent_attempt` | `run_id` correlation UUID | `.memory-bank/contracts/dataset-agents-runtime.md` |
 
 New event types require the emitting feature's subject spec to define producer,
 source identity, payload summary, redaction, failure behavior, and verification
@@ -173,6 +177,78 @@ No event exists for derived CompanionConclusion or attention satisfaction by
 itself. The Companion data spec owns append-before-commit refs and rollback;
 Timeline replay cannot create, supersede, decide, focus, resolve, close, or
 publish governance state.
+
+### Dataset Candidate payload summaries
+
+The FT-014 candidate events use strict redacted summaries:
+
+- `dataset_candidate_created`: `source_kind`, `candidate_origin=raw`,
+  `candidate_status=candidate`, `evidence_ref_count=1`,
+  `quality_tier=standard`, and `can_train_on=false`;
+- `dataset_candidate_evidence_linked`:
+  `added_evidence_kind=follow_up_outcome`, `candidate_status` limited to
+  `candidate|needs_review`, `evidence_ref_count`, `distinct_evidence_kind_count`,
+  `follow_up_seen=true`, and `can_train_on=false`;
+- `dataset_candidate_reviewed`: `from_status`, `to_status`, nullable
+  `confirmation_source`, `quality_tier`, `evidence_ref_count`, and derived
+  `can_train_on`.
+
+The standard `actor_ref` carries safe human attribution. Payloads and
+`source_refs` MUST NOT contain evidence bodies, filenames, absolute paths,
+photo bytes/hashes, measurement values, observation or Outcome text, curator
+notes, raw model output, ActorContext/session/grant objects, request
+fingerprints, credentials, or arbitrary metadata.
+
+Cardinality follows Dataset Governance authority:
+
+- every newly inserted candidate appends one `dataset_candidate_created`;
+- every candidate actually enriched by the follow-up association command
+  appends one `dataset_candidate_evidence_linked`; an idempotent retry that
+  adds no ref appends none;
+- every successful lifecycle transition appends one
+  `dataset_candidate_reviewed`; a conflict/forbidden/no-op request appends
+  none.
+
+Candidate insert/association/transition and their returned event refs are in
+the owning PostgreSQL unit of work. Append failure rolls the owning mutation
+back; an append that succeeds before a later PostgreSQL commit failure is
+non-authoritative audit noise. Timeline replay cannot create a candidate,
+associate evidence, change lifecycle/quality/confirmation, or derive
+trainability.
+
+### `dataset_agent_runtime_decided` payload summary
+
+AD-011 registers this dedicated event for the advisory-only Dataset Agents
+route. It contains only:
+
+- `agent_id=dataset_governance|training_data_curator`;
+- nullable safe `model_ref`;
+- `outcome_kind` from the exact
+  [DatasetAgentRuntimeOutcomeV1](dataset-agents-runtime.md#datasetagentruntimeoutcomev1)
+  union;
+- `status`, `reason_code`, nullable `error_code`,
+  `provider_call_status`, and `curator_gate_result` from that outcome;
+- `candidate_ref_count=0|1`;
+- `advisory_persisted=true|false`; and
+- `lifecycle_changed=true|false`.
+
+The event MUST NOT contain the provider request/result, assessment notes,
+curator notes, evidence bodies, candidate row snapshot, lifecycle command,
+prompts, hidden reasoning, raw exceptions, auth/session/grant material, or
+credentials. `source_type=dataset_agent_attempt` and `source_id=run_id` are a
+correlation-only identity, not a PostgreSQL FK or replay key. When pre-I/O
+authorization has validated the candidate, `source_refs` is exactly
+`{"candidate_refs":["dataset_candidate:<candidate_id>"]}` and
+`candidate_ref_count=1`; a pre-I/O context denial uses
+`{"candidate_refs":[]}` and count `0` to avoid protected-existence leakage.
+
+Every accepted explicit Dataset Agent attempt tries exactly one append,
+including pre-I/O denial, unbound runtime, provider failure, invalid output,
+post-I/O denial, silence, policy block, and success. `audit_failed` has no
+event/event ref and rolls back pending advisory/lifecycle state. If append
+succeeds and the later advisory/lifecycle PostgreSQL commit fails, the event
+remains non-authoritative audit noise; it cannot replay the attempt or repair
+Dataset state.
 
 ### `agent_runtime_decided` payload summary
 
@@ -274,6 +350,8 @@ noise if a later downstream publisher rejects the envelope.
   `safety_gate_authority=not_granted` when governance summary is involved.
 - Timeline events that reference dataset candidates cannot set or imply
   `can_train_on=true`.
+- `dataset_agent_runtime_decided` cannot persist or replay advisory fields,
+  evidence association, lifecycle, confirmation, or trainability.
 - Feature success responses must not claim audit/export evidence when the
   append helper failed.
 
@@ -305,6 +383,10 @@ Tests must prove:
   owning runtime mutation policy.
 - Agent Runtime audit tests prove exactly one safe event per invoked run, no
   content/provider/auth leakage, and no envelope handoff after append failure.
+- FT-014 tests prove the Dataset Candidate and Dataset Agent event registries,
+  exact redacted summaries/cardinality, no-I/O Dataset Agent branches, append
+  failure rollback, append-success/commit-failure noise, and zero replay
+  authority.
 - FT-012 tests prove the registered task/approval/outcome cardinality, strict
   redacted summaries, branch-exact `approval_decided` field sets, persisted
   event refs, rollback on append failure, and no Timeline-based replay or state
