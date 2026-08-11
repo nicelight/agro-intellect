@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-006
 lifecycle: planned
-last_updated: 2026-07-11
+last_updated: 2026-08-11
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -53,3 +53,12 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 - Exact local storage accounting.
 - Exact UI route/view set and PWA/offline boundary.
 - Exact LAN/CORS/session control shape.
+
+## FT-014 Implementation Status
+
+- FT-014 is fully implemented: all ten indexed tasks are terminal `done`
+  (TASK-047 W1; TASK-048, TASK-050/051/052/053, TASK-055 W2; TASK-049 W3;
+  TASK-054 W4; TASK-057 W5), each with per-task `/verify` `PASS` and
+  `/red-verify` `semantic-pass`. The feature `lifecycle` is `implemented`; the
+  T2 feature-completion red-verify gate does not apply to this T3-only feature.
+- EP-006 lifecycle stays `planned`; FT-015 and FT-016 remain unexecuted.

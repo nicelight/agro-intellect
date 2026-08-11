@@ -132,6 +132,8 @@ def test_ft004_bhv001_engineer_check_in_persists_projection_and_timeline_refs(
     assert [event["event_type"] for event in timeline_events] == [
         "daily_checkin_recorded",
         "manual_measurement_recorded",
+        "dataset_candidate_created",
+        "dataset_candidate_created",
     ]
     assert "synthetic-test-token" not in timeline_path.read_text(encoding="utf-8")
 
@@ -329,7 +331,12 @@ def test_observation_limit_returns_stable_422_without_writes(
         json.loads(line)
         for line in (timeline_root / "timeline.jsonl").read_text(encoding="utf-8").splitlines()
     ]
-    assert len(timeline_events) == 2
+    assert [event["event_type"] for event in timeline_events] == [
+        "daily_checkin_recorded",
+        "dataset_candidate_created",
+        "daily_checkin_recorded",
+        "dataset_candidate_created",
+    ]
 
 
 @pytest.mark.parametrize(

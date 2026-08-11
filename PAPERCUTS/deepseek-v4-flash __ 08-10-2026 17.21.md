@@ -12,3 +12,12 @@ probe invocation; the fix is to run PG-dependent pytest gates sequentially.
 Also: crashed probe runs left stale `task047_*` / `task041_*` schemas behind
 (cleanup in conftest `finally` did not always run), which must be dropped before
 re-running catalog-wide assertions.
+
+## Standalone probes under `.tasks/` need repo root on sys.path
+Running `python .tasks/TASK-051-.../red-probe.py` directly fails with
+`ModuleNotFoundError: No module named 'tests'` because the script dir is
+prepended to sys.path, not the repo root (no `tests/__init__.py`; pytest
+inserts rootdir instead). Fix: run with `PYTHONPATH=<repo root>`
+(`PYTHONPATH=/home/serg/Projects/agro-intellect .venv/bin/python .tasks/.../red-probe.py`).
+TASK-050's probe imported `tests...conftest._postgres_database` the same way, so
+the same env requirement applies there.

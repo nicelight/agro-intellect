@@ -4,8 +4,8 @@ status: active
 type: feature
 feature_id: FT-014
 epic: EP-006
-lifecycle: planned
-last_updated: 2026-08-10
+lifecycle: implemented
+last_updated: 2026-08-11
 clarification_status: complete
 last_clarified: 2026-08-10
 clarification_questions: 1
@@ -145,6 +145,26 @@ source_of_truth:
 - Governing requirements remain REQ-011 and REQ-019. REQ-003, REQ-010, and
   REQ-020 remain non-owning normative constraints.
 
+## Wave Implementation Status
+
+- W1 (TASK-047 `done`): `dataset_candidates` aggregate, migration, and the
+  sole creation seam; single linear Alembic head `ft014_dataset_candidates`.
+- W2 (`done`): TASK-048 transition/trainability authority; TASK-050/051/052/053
+  photo/check-in/measurement/outcome candidate wiring inside owning UoWs; and
+  TASK-055 advisory-only Dataset Governance Agent runtime.
+- W3 (TASK-049 `done`): the Dataset-Governance-owned
+  `associate_follow_up_evidence` command with locked refs, idempotency, and
+  unchanged authority fields.
+- W4 (TASK-054 `done`): Outcome association composition production wiring via
+  `record_follow_up_outcome` inside its existing UoW.
+- W5 (TASK-057 `done`): advisory-only Training Data Curator runtime and the
+  atomic `curator_auto` selected gate over production strong evidence.
+- All ten indexed FT-014 tasks are terminal `done` with per-task `/verify`
+  `PASS` and `/red-verify` `semantic-pass`; feature `lifecycle` is therefore
+  `implemented`. Feature-level `verified` is not applied: the feature is
+  T3-only, so the T2 feature-completion `/red-verify --feature` gate does not
+  apply, and feature-level promotion remains a scheduler/owner decision.
+
 ## Edge Cases & Failure Modes
 
 - Agent-labeled data is not trainable by default.
@@ -200,9 +220,11 @@ source_of_truth:
   blocker.
 - Photo Intake's existing `can_train_on=false` remains an immutable source
   assertion and is not mutable trainability authority.
-- Feature-local status: complete. The full rebuilt queue is execution-blocked
-  only until fresh `/review-tasks-plan FT-014` APPROVE for Planning Revision 3;
+- Feature-local status: complete. The reconciled TASK-047..055 plus TASK-057
+  queue received fresh `/review-tasks-plan FT-014` APPROVE for Planning
+  Revision 3 (recorded in [spec-backbone](../spec-backbone.md)) and has since
+  been fully executed to terminal `done`; every per-task `/verify` `PASS` and
+  `/red-verify` `semantic-pass` is recorded in the indexed `.task.json` cards
+  with evidence under `.protocols/TASK-0XX-*/` and `.tasks/TASK-0XX-*/`.
   [.memory-bank/tasks/plans/IMPL-FT-014.md](../tasks/plans/IMPL-FT-014.md)
-  records the exact resume gates. No FT-014 task may execute until a rebuilt
-  queue passes `/review-tasks-plan FT-014` for the then-current positive
-  Planning Revision.
+  records the plan-level resume gates.

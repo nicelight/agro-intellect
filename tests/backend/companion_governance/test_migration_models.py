@@ -133,8 +133,11 @@ def test_ft013_decision_effects_is_exact_guarded_product_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft013_decision_effects"
-    assert head.down_revision == "ft008_lazy_introductions"
+    assert head.revision == "ft014_dataset_candidates"
+    assert head.down_revision == "ft013_decision_effects"
+    decision_effects = script.get_revision("ft013_decision_effects")
+    assert decision_effects is not None
+    assert decision_effects.down_revision == "ft008_lazy_introductions"
     simplification = script.get_revision("ft013_simplify_companion")
     assert simplification is not None
     source = Path(simplification.path).read_text(encoding="utf-8")

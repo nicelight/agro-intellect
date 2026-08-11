@@ -64,6 +64,8 @@ def test_ft004_bhv001_engineer_records_check_in_measurement_and_timeline_refs(
     assert [event.event_type for event in event_ref_factory.events] == [
         "daily_checkin_recorded",
         "manual_measurement_recorded",
+        "dataset_candidate_created",
+        "dataset_candidate_created",
     ]
     assert event_ref_factory.events[0].source_id == result.check_in.check_in_id
     assert event_ref_factory.events[1].source_id == result.measurements[0].measurement_id
@@ -417,7 +419,13 @@ def test_observation_code_point_limit_is_authoritative_and_zero_write(
             )
     assert rejected.value.code is PlantOperationErrorCode.OBSERVATION_TEXT_TOO_LONG
     assert row_counts(ft004_database) == (2, 0)
-    assert len(event_ref_factory.events) == 2
+    assert len(event_ref_factory.events) == 4
+    assert [e.event_type for e in event_ref_factory.events] == [
+        "daily_checkin_recorded",
+        "dataset_candidate_created",
+        "daily_checkin_recorded",
+        "dataset_candidate_created",
+    ]
 
 
 def test_validation_errors_do_not_persist(ft004_database, event_ref_factory):

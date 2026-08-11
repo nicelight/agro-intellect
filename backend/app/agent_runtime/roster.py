@@ -7,6 +7,11 @@ from dataclasses import dataclass
 
 ROSTER_VERSION = 1
 
+#: Generic pending-classification route used by every non-dataset roster member.
+RUNTIME_ROUTE_GENERIC = "generic_pending_classification"
+#: Registered advisory-only exception route for the two Dataset Agents (AD-011).
+RUNTIME_ROUTE_DATASET_ADVISORY = "dataset_advisory_v1"
+
 
 @dataclass(frozen=True, slots=True)
 class RosterAgentV1:
@@ -16,6 +21,14 @@ class RosterAgentV1:
     introduction_text: str
     owning_feature: str
     output_schema_version: int = 1
+    runtime_route: str = RUNTIME_ROUTE_GENERIC
+
+    def __post_init__(self) -> None:
+        if self.runtime_route not in {
+            RUNTIME_ROUTE_GENERIC,
+            RUNTIME_ROUTE_DATASET_ADVISORY,
+        }:
+            raise ValueError("Unsupported runtime route.")
 
 
 CANONICAL_ROSTER_V1 = (
@@ -67,6 +80,7 @@ CANONICAL_ROSTER_V1 = (
         "dataset lifecycle, evidence, split, and trainability policy",
         "Я Dataset Governance Agent. Контролирую происхождение данных и правила их допустимого использования для обучения.",
         "FT-014",
+        runtime_route=RUNTIME_ROUTE_DATASET_ADVISORY,
     ),
     RosterAgentV1(
         "training_data_curator",
@@ -74,10 +88,17 @@ CANONICAL_ROSTER_V1 = (
         "delayed evidence-based training selection; silent by default",
         "Я Training Data Curator Agent. Отбираю обучающие примеры только при наличии разрешённых evidence refs и обычно остаюсь безмолвным.",
         "FT-014",
+        runtime_route=RUNTIME_ROUTE_DATASET_ADVISORY,
     ),
 )
 
 CANONICAL_AGENT_IDS = frozenset(item.agent_id for item in CANONICAL_ROSTER_V1)
+
+ADVISORY_ONLY_AGENT_IDS = frozenset(
+    item.agent_id
+    for item in CANONICAL_ROSTER_V1
+    if item.runtime_route == RUNTIME_ROUTE_DATASET_ADVISORY
+)
 
 
 def canonical_roster(version: int = ROSTER_VERSION) -> tuple[RosterAgentV1, ...]:
@@ -89,9 +110,12 @@ def canonical_roster(version: int = ROSTER_VERSION) -> tuple[RosterAgentV1, ...]
 
 
 __all__ = [
+    "ADVISORY_ONLY_AGENT_IDS",
     "CANONICAL_AGENT_IDS",
     "CANONICAL_ROSTER_V1",
     "ROSTER_VERSION",
+    "RUNTIME_ROUTE_DATASET_ADVISORY",
+    "RUNTIME_ROUTE_GENERIC",
     "RosterAgentV1",
     "canonical_roster",
 ]

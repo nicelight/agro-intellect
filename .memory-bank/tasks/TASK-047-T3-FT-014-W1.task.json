@@ -49,6 +49,14 @@
    "by": "/verify TASK-047-T3-FT-014-W1 (scheduler mode)",
    "date": "2026-08-10",
    "summary": "Verifier reran candidate_aggregate (13 passed) and migration_compatibility (11 passed) gates plus mb-lint and diff-check against current state; independent 20/20 PostgreSQL probe confirmed persisted defaults (candidate|raw|standard|split=null|confirmation_source=null|can_train_on=false, record_version=1, null curator-run identity), 7 named PG enum columns + 6 checks + source-identity/curator-run uniques + RESTRICT FKs, one redacted dataset_candidate_created ref, same-source idempotency vs new-source UUID behavior, structural rejection of authority fields, append-failure rollback, append-success/commit-failure noise, and single linear Alembic head ft014_dataset_candidates with direct parent ft013_decision_effects. No HTTP/transition/source-wiring/agent-runtime surface introduced. Forward drift: 10 historical feature migration head-pin tests assert ft013_decision_effects; outside this task's gates and documented in handoff; does not invalidate this verdict. Evidence: .protocols/TASK-047-T3-FT-014-W1/verification.md."
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-047-T3-FT-014-W1 (scheduler mode)",
+   "date": "2026-08-10",
+   "summary": "Adversarial semantic verifier: independent 22/22 PostgreSQL probe (exact enum sets, source-identity isolation, farm/archived/consultant denies, concurrent same-source single row via unique constraint, exact event payload/redaction/cardinality, tz-aware timestamps, downgrade removes table+dataset_* enums, single linear head ft014_dataset_candidates<-ft013_decision_effects); static checks confirm sole writer in service.py:90, no external imports/api routes, no agent-runtime call; rerun gates candidate_aggregate 13 passed, migration_compatibility 11 passed; findings none blocking.",
+   "evidence": ".protocols/TASK-047-T3-FT-014-W1/red-verification.md, .tasks/TASK-047-T3-FT-014-W1/TASK-047-T3-FT-014-W1-S-RED-VERIFY-final-report-docs-01.md"
   }
  ],
  "docs": [
@@ -94,14 +102,5 @@
  "verification_targets": [
   "FT-014-AC-001: focused PostgreSQL service tests compare exact persisted defaults, rejected authority fields, same-source duplicate versus new-source identity behavior, event ref shape/redaction/cardinality, append failure rollback, and append-success/commit-failure noise.",
   "FT-014-AC-001: migration tests compare SQLAlchemy/catalog constraints and types, direct down_revision to the executor-discovered head, upgrade/downgrade, and no branch/ancestry regression."
- ],
- "red_verify": [
-  {
-   "verdict": "semantic-pass",
-   "by": "/red-verify TASK-047-T3-FT-014-W1 (scheduler mode)",
-   "date": "2026-08-10",
-   "summary": "Adversarial semantic verifier: independent 22/22 PostgreSQL probe (exact enum sets, source-identity isolation, farm/archived/consultant denies, concurrent same-source single row via unique constraint, exact event payload/redaction/cardinality, tz-aware timestamps, downgrade removes table+dataset_* enums, single linear head ft014_dataset_candidates<-ft013_decision_effects); static checks confirm sole writer in service.py:90, no external imports/api routes, no agent-runtime call; rerun gates candidate_aggregate 13 passed, migration_compatibility 11 passed; findings none blocking.",
-   "artifact": ".protocols/TASK-047-T3-FT-014-W1/red-verification.md, .tasks/TASK-047-T3-FT-014-W1/TASK-047-T3-FT-014-W1-S-RED-VERIFY-final-report-docs-01.md"
-  }
  ]
 }

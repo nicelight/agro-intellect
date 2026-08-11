@@ -80,6 +80,7 @@ def _postgres_database():
             "ft013_simplify_companion",
             "ft008_lazy_introductions",
             "ft013_decision_effects",
+            "ft014_dataset_candidates",
         )
         with scoped.engine().connect() as connection:
             context = MigrationContext.configure(connection)

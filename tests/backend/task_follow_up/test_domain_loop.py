@@ -437,6 +437,7 @@ def test_approve_action_follow_up_and_outcome_are_atomic_and_exact(
     assert [event.event_type for event in task_timeline.events] == [
         "approval_decided", "task_created", "task_completed", "task_created",
         "task_completed", "follow_up_outcome_recorded",
+        "dataset_candidate_created",
     ]
     with ft012_database.session() as session:
         assert session.scalar(select(func.count(Task.task_id))) == 2

@@ -1,0 +1,102 @@
+{
+ "id": "TASK-058-T1-FT-014-W6",
+ "title": "Reconcile historical migration head-pin tests to the current head",
+ "status": "done",
+ "wave": "W6",
+ "feature": "FT-014",
+ "reqs": [
+  "REQ-019"
+ ],
+ "depends_on": [
+  "TASK-047-T3-FT-014-W1"
+ ],
+ "touched_files": [
+  "tests/backend/access_admin/test_ft002_schema_migration.py",
+  "tests/backend/agent_chat/test_ft008_migration_models.py",
+  "tests/backend/companion_governance/test_migration_models.py",
+  "tests/backend/photo_intake/test_ft005_migration_models.py",
+  "tests/backend/plant_operations/test_ft004_migration_models.py",
+  "tests/backend/plant_state/test_migration_models.py",
+  "tests/backend/safety_gate/test_classification_persistence.py",
+  "tests/backend/safety_gate/test_migration_models.py",
+  "tests/backend/task_follow_up/test_migration_models.py"
+ ],
+ "tier": "T1",
+ "gates": [
+  {
+   "name": "head_pin_reconciliation",
+   "command": ".venv/bin/python -m pytest tests/backend/access_admin/test_ft002_schema_migration.py tests/backend/agent_chat/test_ft008_migration_models.py tests/backend/companion_governance/test_migration_models.py tests/backend/photo_intake/test_ft005_migration_models.py tests/backend/plant_operations/test_ft004_migration_models.py tests/backend/plant_state/test_migration_models.py tests/backend/safety_gate/test_classification_persistence.py tests/backend/safety_gate/test_migration_models.py tests/backend/task_follow_up/test_migration_models.py -q",
+   "required": true
+  },
+  {
+   "name": "full_deterministic_regression",
+   "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  {
+   "date": "2026-08-11",
+   "mode": "scheduler",
+   "attempt": 1,
+   "verdict": "PASS",
+   "summary": "Independent rerun: focused head-pin gate 54 passed/0 failed (9 files, 10 tests); full deterministic suite 754 passed/0 failed; mb-lint exit 0 (222 files); diff_check exit 0; foundation contract + dataset_governance migration tests 11 passed/0 failed (unchanged). Scope: git diff of the 9 test files limited to head-pin re-point and agent_chat source-content guard relocation; migrations dir unchanged; feature AC-014 section unchanged. VERDICT: PASS (functional).",
+   "evidence": ".protocols/TASK-058-T1-FT-014-W6/run.md"
+  },
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-058-T1-FT-014-W6 (scheduler mode)",
+   "date": "2026-08-10",
+   "summary": "Independent rerun: focused head_pin_reconciliation 54/54, full deterministic 754 passed / 0 failed, mb-lint exit 0, diff_check 0, foundation contract + dataset_governance migration 11/11; all 10 historical tests re-pinned to ft014_dataset_candidates with exact down_revision chain, feature guards preserved, agent_chat source-content guard re-pointed, no production/migration/spec/AC change; no findings.",
+   "evidence": ".protocols/TASK-058-T1-FT-014-W6/run.md, .tasks/TASK-058-T1-FT-014-W6/"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md",
+  ".memory-bank/changelog.md"
+ ],
+ "purpose": "Reconcile ten historical feature migration tests that still pin ft013_decision_effects as the current head after TASK-047 advanced the live head to ft014_dataset_candidates, so the full deterministic suite becomes green and stops masking real regressions.",
+ "success_outcome": "All ten previously failing historical migration tests (access_admin FT-002, agent_chat FT-008, companion_governance FT-013, photo_intake FT-005, plant_operations FT-004, plant_state FT-009, safety_gate x2 FT-011, task_follow_up x2) now assert the current head ft014_dataset_candidates with exact down_revision chain ft013_decision_effects preserved; the full deterministic suite `pytest tests -m \"not real_model\"` passes with zero failures; no production code, migration, spec, or task state changes.",
+ "anti_goals": [
+  "Changing production behavior, the migration chain, feature ACs, verification evidence, or task lifecycle state.",
+  "Relaxing assertions so tests pass vacuously; each reconciled test keeps its exact-head and guarded-downgrade intent against the new head."
+ ],
+ "evidence_required": [
+  "FT-014-AC-014 RED: before this reconciliation, the ten named historical tests fail with AssertionError asserting ft013_decision_effects while the live head is ft014_dataset_candidates (baseline transcript). GREEN: the same tests pass asserting ft014_dataset_candidates and the exact down_revision chain; decisive comparison: test pass/fail before vs after, live head, and full-suite total failures; artifact: focused pytest transcript under .tasks/TASK-058-T1-FT-014-W6/."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md#FT-014-AC-014",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/tasks/TASK-047-T3-FT-014-W1.task.json",
+  ".protocols/TASK-047-T3-FT-014-W1/handoff.md",
+  "backend/migrations/versions/ft014_dataset_candidates.py",
+  "tests/backend/test_foundation_database_contract.py"
+ ],
+ "constraints": [
+  "Only the ten named failing historical migration tests may change; keep their exact-head and guarded-downgrade intent updated to the new head.",
+  "Do not change production code, migrations, specs, feature ACs, verification evidence, or task lifecycle state.",
+  "Preserve the feature-specific guards inside each test (revision content, constraints, downgrade checks) while updating only the head identity and its down_revision chain."
+ ],
+ "invariants": [
+  "The live head remains ft014_dataset_candidates and its down_revision remains ft013_decision_effects.",
+  "No test is weakened to pass vacuously; each keeps a real assertion on the current head."
+ ],
+ "verification_targets": [
+  "FT-014-AC-014 negative-matrix evidence is unaffected: this task changes no production behavior, so prior AC-014 semantic evidence remains valid.",
+  "Every previously failing historical migration test passes against the current head with exact down_revision chain; full deterministic suite green; migration/head foundation contract test stays green."
+ ]
+}

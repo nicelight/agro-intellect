@@ -74,13 +74,16 @@ def test_ft008_models_preserve_native_uuid_restricted_relations_and_flags():
 
 def test_decision_effect_revision_is_the_single_forward_head():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
-    assert script.get_heads() == ["ft013_decision_effects"]
+    assert script.get_heads() == ["ft014_dataset_candidates"]
     head = script.get_revision("head")
     assert head is not None
-    assert head.revision == "ft013_decision_effects"
-    assert head.down_revision == "ft008_lazy_introductions"
+    assert head.revision == "ft014_dataset_candidates"
+    assert head.down_revision == "ft013_decision_effects"
 
-    source = Path(head.path).read_text(encoding="utf-8")
+    decision_effects = script.get_revision("ft013_decision_effects")
+    assert decision_effects is not None
+    assert decision_effects.down_revision == "ft008_lazy_introductions"
+    source = Path(decision_effects.path).read_text(encoding="utf-8")
     assert "decision_record_id" in source
     assert "ck_agent_bus_events_authority_matrix" in source
 

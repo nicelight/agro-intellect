@@ -28,6 +28,9 @@ _EVENT_SOURCE_TYPES = {
     "companion_issue_resolved": "companion_issue",
     "companion_issue_closed": "companion_issue",
     "dataset_candidate_created": "dataset_candidate",
+    "dataset_candidate_evidence_linked": "dataset_candidate",
+    "dataset_candidate_reviewed": "dataset_candidate",
+    "dataset_agent_runtime_decided": "dataset_agent_attempt",
 }
 
 

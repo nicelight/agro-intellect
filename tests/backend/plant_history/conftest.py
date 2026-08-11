@@ -71,6 +71,7 @@ def _postgres_database():
                 script.get_revision("ft002_farm_plant_access").module.upgrade()
                 script.get_revision("ft004_plant_operations").module.upgrade()
                 script.get_revision("ft005_photo_intake").module.upgrade()
+                script.get_revision("ft014_dataset_candidates").module.upgrade()
             connection.commit()
         yield scoped
     finally:

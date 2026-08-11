@@ -14,6 +14,8 @@ from dataclasses import dataclass
 class ProviderExecutorBindings:
     companion: object | None = None
     safety_gate: object | None = None
+    dataset_governance: object | None = None
+    training_data_curator: object | None = None
 
 
 __all__ = ["ProviderExecutorBindings"]

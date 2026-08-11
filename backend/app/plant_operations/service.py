@@ -20,6 +20,11 @@ from ..access_admin.permissions import (
     RolePreset,
     _BoundedPlantPermissionResolver,
 )
+from ..dataset_governance import (
+    DatasetGovernanceService,
+    RecordDatasetEvidenceCommandV1,
+    SourceKind,
+)
 from ..timeline import TimelineEvent, TimelineJsonlAppender
 from .models import DailyCheckIn, ManualMeasurement
 from .repository import PlantOperationsRepository
@@ -91,10 +96,12 @@ class PlantOperationsService:
         *,
         repository_factory: RepositoryFactory = PlantOperationsRepository,
         timeline_append: TimelineAppender | None = None,
+        dataset_governance: DatasetGovernanceService | None = None,
     ) -> None:
         self._session = session
         self._repository_factory = repository_factory
         self._timeline_append = timeline_append or TimelineJsonlAppender()
+        self._dataset_governance = dataset_governance
 
     def create_check_in(
         self,
@@ -172,6 +179,19 @@ class PlantOperationsService:
                     )
                 }
             repository.flush()
+            for item in measurements:
+                self._record_dataset_evidence(
+                    actor,
+                    plant_id=plant_id,
+                    source_kind=SourceKind.MANUAL_MEASUREMENT,
+                    source_ref=item.measurement_id,
+                )
+            self._record_dataset_evidence(
+                actor,
+                plant_id=plant_id,
+                source_kind=SourceKind.DAILY_CHECK_IN,
+                source_ref=check_in.check_in_id,
+            )
             freshness = _freshness_projection(
                 repository,
                 farm_id=actor.farm_id,
@@ -221,6 +241,12 @@ class PlantOperationsService:
                 )
             }
             repository.flush()
+            self._record_dataset_evidence(
+                actor,
+                plant_id=plant_id,
+                source_kind=SourceKind.MANUAL_MEASUREMENT,
+                source_ref=row.measurement_id,
+            )
             return MeasurementResult(
                 measurement=row,
                 freshness=_freshness_projection(
@@ -257,6 +283,27 @@ class PlantOperationsService:
             )
 
         return self._run(command)
+
+    def _record_dataset_evidence(
+        self,
+        actor: ActorContext,
+        *,
+        plant_id: uuid.UUID,
+        source_kind: SourceKind,
+        source_ref: uuid.UUID,
+    ) -> None:
+        governance = self._dataset_governance or DatasetGovernanceService(
+            self._session,
+            timeline_appender=self._timeline_append,
+        )
+        governance.record_dataset_evidence(
+            RecordDatasetEvidenceCommandV1(
+                actor_context=actor,
+                plant_id=plant_id,
+                source_kind=source_kind,
+                source_ref=source_ref,
+            )
+        )
 
     def _run(self, command):
         try:

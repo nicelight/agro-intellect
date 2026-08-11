@@ -4,6 +4,63 @@ status: active
 ---
 # Changelog
 
+## [2026-08-11] FT-014 feature completion — W3/W4/W5 closures reconciled
+
+- Reconciled the scheduler-written `done` decisions for
+  `TASK-049-T3-FT-014-W3` (follow-up evidence association command),
+  `TASK-054-T3-FT-014-W4` (Outcome association composition), and
+  `TASK-057-T3-FT-014-W5` (Training Data Curator with atomic selected gate).
+  Each card records fresh `/verify` `PASS` and `/red-verify` `semantic-pass`
+  in its indexed `.task.json` with evidence under `.protocols/TASK-0XX-*/`
+  and `.tasks/TASK-0XX-*/`.
+- FT-014 feature completion: all ten indexed FT-014 tasks are terminal `done`.
+  Feature `lifecycle` is now `implemented`. Feature-level `verified` is not
+  applied because FT-014 is T3-only, so the T2 feature-completion
+  `/red-verify --feature` gate does not apply; promotion remains
+  scheduler/owner-owned.
+- REQ-019 lifecycle advanced to `implemented` (solely owned by the now
+  complete FT-014). REQ-011 stays `planned` because its remaining mapped
+  features (FT-007/FT-009/FT-010/FT-011/FT-012) remain open, matching the
+  FT-013 precedent. EP-006 stays `planned` while FT-015 and FT-016 remain
+  unexecuted.
+- Updated feature/epic routers and the FT-014 wave-status section. No task
+  was promoted, no closure beyond the scheduler-recorded decisions was
+  inferred, and no product/design/lifecycle decision was invented.
+- Known non-blocking baseline items (no task state changed): (1) 10 historical
+  feature migration tests still pin `ft013_decision_effects` as the head while
+  the live head is `ft014_dataset_candidates` (pre-existing head-pin drift, an
+  owner item for feature/wave completion); (2) `node scripts/mb-lint.mjs`
+  historical `allowed_write_scope` deprecations remain on old task cards
+  (accepted legacy terminal records).
+- Advisory tech-debt report recorded (no task state change):
+  `PAPERCUTS/TECHDEBTS/FT-014-W2-tech-debt.md`.
+
+## [2026-08-11] Wave W2 — FT-014 W1/W2 closures reconciled
+
+- Reconciled the scheduler-written `done` decisions for
+  `TASK-047-T3-FT-014-W1` (W1) and `TASK-048-T3-FT-014-W2`,
+  `TASK-050-T3-FT-014-W2`, `TASK-051-T3-FT-014-W2`, `TASK-052-T3-FT-014-W2`,
+  `TASK-053-T3-FT-014-W2`, `TASK-055-T3-FT-014-W2` (W2). Each card records a
+  fresh `/verify` PASS and `/red-verify` `semantic-pass` in its indexed
+  `.task.json` with evidence under `.protocols/TASK-0XX-*/` and
+  `.tasks/TASK-0XX-*/`.
+- Recorded the implemented W1/W2 boundary: the `dataset_candidates` aggregate
+  and sole creation seam with single linear Alembic head
+  `ft014_dataset_candidates` (TASK-047); the locked transition/trainability
+  authority (TASK-048); same-UoW photo/check-in/measurement/outcome candidate
+  wiring with owning-command rollback (TASK-050/051/052/053); and the
+  advisory-only Dataset Governance Agent runtime with zero
+  MessageEnvelope/Safety/Bus/UI effect (TASK-055).
+- Kept FT-014, EP-006, REQ-011, and REQ-019 lifecycle `planned`: TASK-049 (W3),
+  TASK-054 (W4), and TASK-057 (W5) remain `planned`. No task was promoted and
+  no closure beyond the scheduler-recorded decisions was inferred.
+- Known non-blocking baseline items (no task state changed): (1) 10 historical
+  feature migration tests still pin `ft013_decision_effects` as the head while
+  the live head is `ft014_dataset_candidates` (pre-existing head-pin drift, an
+  owner item for feature/wave completion); (2) `node scripts/mb-lint.mjs`
+  historical `allowed_write_scope` deprecations remain on old task cards
+  (accepted legacy terminal records).
+
 ## [2026-08-10] FT-014 design decisions closed and queue rebuilt
 
 - Selected AD-011's registered advisory-only Agent Runtime exception for the

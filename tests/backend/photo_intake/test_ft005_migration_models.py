@@ -81,8 +81,8 @@ def test_ft005_revision_is_ordered_head_and_contains_guarded_downgrade():
     script = ScriptDirectory.from_config(build_alembic_config(AppSettings()))
     product_head = script.get_revision("head")
     assert product_head is not None
-    assert product_head.revision == "ft013_decision_effects"
-    assert product_head.down_revision == "ft008_lazy_introductions"
+    assert product_head.revision == "ft014_dataset_candidates"
+    assert product_head.down_revision == "ft013_decision_effects"
     companion_governance = script.get_revision("ft013_governance_aggregate")
     assert companion_governance is not None
     assert companion_governance.down_revision == "ft012_runtime_dispositions"

@@ -9,6 +9,14 @@ import uuid
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from ..dataset_governance import (
+    AssociateFollowUpEvidenceCommandV1,
+    DatasetGovernanceError,
+    DatasetGovernanceErrorCode,
+    DatasetGovernanceService,
+    RecordDatasetEvidenceCommandV1,
+    SourceKind,
+)
 from ..safety_gate.models import SafetyActionDecision, SafetyClassification
 from ..timeline.writer import TimelineAppendError, TimelineEvent, TimelineJsonlAppender
 from .contracts import (
@@ -66,12 +74,14 @@ class TaskFollowUpService:
         repository: TaskFollowUpRepository | None = None,
         timeline_appender=None,
         clock=None,
+        dataset_governance: DatasetGovernanceService | None = None,
         run_lock_key: Callable[[uuid.UUID], int] | None = None,
     ) -> None:
         self._session = session
         self._repository = repository or TaskFollowUpRepository(session)
         self._timeline = timeline_appender or TimelineJsonlAppender()
         self._clock = clock or _utc_now
+        self._dataset_governance = dataset_governance
         self._run_lock_key = run_lock_key or task_follow_up_run_lock_key
 
     def create_ordinary_task(
@@ -768,6 +778,17 @@ class TaskFollowUpService:
                 outcome.outcome_event_ref = self._append_outcome(outcome, command.actor_context)
                 self._session.add(outcome)
                 self._session.flush()
+                self._record_dataset_evidence(
+                    command.actor_context,
+                    plant_id=command.plant_id,
+                    outcome_id=outcome.outcome_id,
+                )
+                self._associate_follow_up_evidence(
+                    command.actor_context,
+                    plant_id=command.plant_id,
+                    outcome_id=outcome.outcome_id,
+                    evidence_refs=tuple(command.evidence_refs),
+                )
             return RecordOutcomeResultV1("created", task, outcome)
         except TaskFollowUpError:
             self._rollback()
@@ -775,6 +796,15 @@ class TaskFollowUpService:
         except TimelineAppendError:
             self._rollback()
             raise TaskFollowUpError(TaskFollowUpErrorCode.TASK_AUDIT_FAILED) from None
+        except DatasetGovernanceError as error:
+            self._rollback()
+            if error.code is DatasetGovernanceErrorCode.AUDIT_FAILED:
+                raise TaskFollowUpError(
+                    TaskFollowUpErrorCode.TASK_AUDIT_FAILED
+                ) from None
+            raise TaskFollowUpError(
+                TaskFollowUpErrorCode.TASK_PERSISTENCE_FAILED
+            ) from None
         except IntegrityError as error:
             self._rollback()
             return self._recover_outcome_request_loss(
@@ -811,6 +841,47 @@ class TaskFollowUpService:
             return self._repository.list_approvals(
                 farm_id=scope.farm_id, plant_id=plant_id, status=status, limit=limit
             )
+
+    def _record_dataset_evidence(
+        self,
+        actor,
+        *,
+        plant_id: uuid.UUID,
+        outcome_id: uuid.UUID,
+    ) -> None:
+        governance = self._dataset_governance or DatasetGovernanceService(
+            self._session,
+            timeline_appender=self._timeline,
+        )
+        governance.record_dataset_evidence(
+            RecordDatasetEvidenceCommandV1(
+                actor_context=actor,
+                plant_id=plant_id,
+                source_kind=SourceKind.FOLLOW_UP_OUTCOME,
+                source_ref=outcome_id,
+            )
+        )
+
+    def _associate_follow_up_evidence(
+        self,
+        actor,
+        *,
+        plant_id: uuid.UUID,
+        outcome_id: uuid.UUID,
+        evidence_refs: tuple[str, ...],
+    ) -> None:
+        governance = self._dataset_governance or DatasetGovernanceService(
+            self._session,
+            timeline_appender=self._timeline,
+        )
+        governance.associate_follow_up_evidence(
+            AssociateFollowUpEvidenceCommandV1(
+                actor_context=actor,
+                plant_id=plant_id,
+                outcome_id=outcome_id,
+                evidence_refs=evidence_refs,
+            )
+        )
 
     def _require_scope(self, actor, plant_id, *, now, mutation) -> CurrentTaskScope:
         scope = self._repository.lock_current_scope(actor, plant_id=plant_id, now=now)

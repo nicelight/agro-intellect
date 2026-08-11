@@ -21,6 +21,11 @@ from ..access_admin.permissions import (
     PlantStatus,
     _BoundedPlantPermissionResolver,
 )
+from ..dataset_governance import (
+    DatasetGovernanceService,
+    RecordDatasetEvidenceCommandV1,
+    SourceKind,
+)
 from ..timeline import TimelineEvent, TimelineJsonlAppender
 from .models import PhotoCatalogItem
 from .repository import PhotoIntakeRepository
@@ -109,11 +114,13 @@ class PhotoIntakeService:
         repository_factory: RepositoryFactory = PhotoIntakeRepository,
         artifact_store: PhotoArtifactStore | None = None,
         timeline_append: TimelineAppender | None = None,
+        dataset_governance: DatasetGovernanceService | None = None,
     ) -> None:
         self._session = session
         self._repository_factory = repository_factory
         self._artifact_store = artifact_store or PhotoArtifactStore()
         self._timeline_append = timeline_append or TimelineJsonlAppender()
+        self._dataset_governance = dataset_governance
 
     def accept_photo(
         self,
@@ -215,6 +222,11 @@ class PhotoIntakeService:
                     )
                 }
                 repository.flush()
+                self._record_dataset_evidence(
+                    actor,
+                    plant_id=plant_id,
+                    photo_id=photo_id,
+                )
                 return PhotoAcceptanceResult(item=item, manifest=manifest)
         except PhotoIntakeError:
             self._artifact_store.cleanup_generated_refs(
@@ -352,6 +364,26 @@ class PhotoIntakeService:
             raise PhotoIntakeError(
                 PhotoIntakeErrorCode.PHOTO_ARTIFACT_WRITE_FAILED
             ) from None
+
+    def _record_dataset_evidence(
+        self,
+        actor: ActorContext,
+        *,
+        plant_id: uuid.UUID,
+        photo_id: uuid.UUID,
+    ) -> None:
+        governance = self._dataset_governance or DatasetGovernanceService(
+            self._session,
+            timeline_appender=self._timeline_append,
+        )
+        governance.record_dataset_evidence(
+            RecordDatasetEvidenceCommandV1(
+                actor_context=actor,
+                plant_id=plant_id,
+                source_kind=SourceKind.PHOTO_CATALOG_ITEM,
+                source_ref=photo_id,
+            )
+        )
 
 
 def _validated_upload(
