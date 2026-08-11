@@ -21,6 +21,7 @@ from .contracts import (
     TransitionDatasetCandidateCommandV1,
     TransitionDatasetCandidateResultV1,
 )
+from .evidence_seam import record_dataset_evidence
 from .models import DatasetCandidate
 from .repository import CurrentDatasetScope, DatasetGovernanceRepository
 from .runtime import (
@@ -109,4 +110,5 @@ __all__ = [
     "TransitionDatasetCandidateCommandV1",
     "TransitionDatasetCandidateResultV1",
     "dataset_agent_command_sha256",
+    "record_dataset_evidence",
 ]

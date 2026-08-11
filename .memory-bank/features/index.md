@@ -1,7 +1,7 @@
 ---
 description: Active MVP v2 feature router.
 status: active
-last_updated: 2026-08-11
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -43,6 +43,6 @@ source_of_truth:
 
 ## EP-006 Local Privacy And Operator Surface
 
-- [FT-014 Dataset Governance And Trainability](FT-014-dataset-governance-trainability.md) — `implemented`: evidence-gated trainability; all ten tasks `done` (TASK-047/048/049/050/051/052/053/054/055/057).
+- [FT-014 Dataset Governance And Trainability](FT-014-dataset-governance-trainability.md) — `implemented`: evidence-gated trainability; all thirteen tasks `done` (TASK-047/048/049/050/051/052/053/054/055/057 plus W6 remediation TASK-058/059/060); feature-level `SEMANTIC_VERDICT: semantic-pass` recorded.
 - [FT-015 Local Security Privacy And Storage Prompt](FT-015-local-security-privacy-storage-prompt.md) — `planned`: local privacy, exposure, and storage policy.
 - [FT-016 Web App PWA Operator Surface And First Demo](FT-016-web-app-pwa-operator-surface-first-demo.md) — `planned`: role-aware first-demo PWA.

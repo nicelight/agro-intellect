@@ -1,0 +1,93 @@
+{
+ "id": "TASK-061-T1-FT-014-W6",
+ "title": "Repair dangling DatasetGovernanceService annotations in photo/plant",
+ "status": "done",
+ "wave": "W6",
+ "feature": "FT-014",
+ "reqs": [
+  "REQ-019"
+ ],
+ "depends_on": [
+  "TASK-059-T2-FT-014-W6"
+ ],
+ "touched_files": [
+  "backend/app/photo_intake/service.py",
+  "backend/app/plant_operations/service.py",
+  "tests/backend/photo_intake/test_ft005_service.py",
+  "tests/backend/plant_operations/test_ft004_service.py"
+ ],
+ "tier": "T1",
+ "gates": [
+  {
+   "name": "photo_plant_introspection",
+   "command": ".venv/bin/python -c \"import typing, backend.app.photo_intake.service as p, backend.app.plant_operations.service as q; typing.get_type_hints(p.PhotoIntakeService.__init__); typing.get_type_hints(q.PlantOperationsService.__init__)\"",
+   "required": true
+  },
+  {
+   "name": "photo_plant_regression",
+   "command": ".venv/bin/python -m pytest tests/backend/photo_intake/test_ft005_service.py tests/backend/plant_operations/test_ft004_service.py -q",
+   "required": true
+  },
+  {
+   "name": "full_deterministic_regression",
+   "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-061-T1-FT-014-W6 (scheduler mode)",
+   "date": "2026-08-11",
+   "summary": "Independent reruns: photo_plant_introspection exit 0 (get_type_hints resolves on both constructors), photo_plant_regression 21 passed, full deterministic 756/0 (754 baseline + 2 new tests), mb-lint 0, diff_check 0; DatasetGovernanceService imported at photo_intake/service.py:27 and plant_operations/service.py:26; single construction site remains evidence_seam.py:44, no wrappers re-introduced; findings none.",
+   "evidence": ".protocols/TASK-061-T1-FT-014-W6/run.md, .tasks/TASK-061-T1-FT-014-W6/red-green.txt"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+  "PAPERCUTS/TECHDEBTS/techdebt.md",
+  "PAPERCUTS/TECHDEBTS/FT-014-W6-tech-debt.md",
+  ".memory-bank/changelog.md"
+ ],
+ "purpose": "Restore the DatasetGovernanceService import in photo_intake and plant_operations services after TASK-059 moved construction into the shared evidence_seam helper, so the constructor type annotations resolve under typing.get_type_hints instead of raising NameError.",
+ "success_outcome": "backend/app/photo_intake/service.py and backend/app/plant_operations/service.py re-import DatasetGovernanceService (only for the constructor annotation; the shared helper remains the single construction site); typing.get_type_hints on both service constructors succeeds; photo/plant service tests and the full deterministic suite stay green; no behavioral change.",
+ "anti_goals": [
+  "No change to the shared evidence_seam helper, seam call sites, error codes, runtime, or any other module.",
+  "No re-introduction of the removed private seam wrappers or hard-coded source-kind construction."
+ ],
+ "evidence_required": [
+  "W6-techdebt-dangling-annotation RED: before this task, typing.get_type_hints on PhotoIntakeService.__init__ and PlantOperationsService.__init__ raises NameError because DatasetGovernanceService is referenced in the annotation but no longer imported (backend/app/photo_intake/service.py:119, backend/app/plant_operations/service.py:101); GREEN: both get_type_hints calls succeed after re-importing the name, with no behavioral change; decisive comparison: introspection result before vs after plus photo/plant regression and full-suite counts; artifact: focused transcript under .tasks/TASK-061-T1-FT-014-W6/."
+ ],
+ "source_artifacts": [
+  "PAPERCUTS/TECHDEBTS/techdebt.md",
+  "PAPERCUTS/TECHDEBTS/FT-014-W6-tech-debt.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/boundary-map.md#dataset-evidence-creation",
+  ".memory-bank/domains/dataset-governance.md#creation-seam",
+  "backend/app/dataset_governance/evidence_seam.py"
+ ],
+ "constraints": [
+  "Only re-add the missing import to the two service modules; the shared evidence_seam helper stays the single RecordDatasetEvidenceCommandV1 construction site.",
+  "No behavioral, contract, error-code, runtime, or spec change.",
+  "Add a cheap regression assertion (get_type_hints resolves) to the two affected service test files."
+ ],
+ "invariants": [
+  "Both service constructor type annotations resolve under typing.get_type_hints.",
+  "Dataset Governance service construction remains single-sourced in evidence_seam.py."
+ ],
+ "verification_targets": [
+  "W6-techdebt-dangling-annotation RED/GREEN: typing.get_type_hints on both service constructors fails before and succeeds after; photo/plant service tests and full deterministic suite green; diff_check/mb-lint clean."
+ ]
+}

@@ -1,0 +1,167 @@
+{
+ "id": "TASK-060-T2-FT-014-W6",
+ "title": "Unify Dataset Agent runtime flow and audit_failed helper",
+ "status": "done",
+ "wave": "W6",
+ "feature": "FT-014",
+ "reqs": [
+  "REQ-011",
+  "REQ-019"
+ ],
+ "depends_on": [
+  "TASK-057-T3-FT-014-W5"
+ ],
+ "touched_files": [
+  "backend/app/dataset_governance/runtime.py",
+  ".memory-bank/contracts/dataset-agents-runtime.md",
+  "tests/backend/dataset_governance/test_governance_agent_runtime.py",
+  "tests/backend/dataset_governance/test_curator_agent_runtime.py",
+  "tests/backend/dataset_governance/test_curator_auto_gate.py",
+  "tests/backend/dataset_governance/test_curator_auto_production_path.py"
+ ],
+ "tier": "T2",
+ "gates": [
+  {
+   "name": "curator_agent_command",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_curator_agent_runtime.py tests/backend/dataset_governance/test_curator_auto_gate.py tests/backend/dataset_governance/test_curator_auto_production_path.py tests/backend/agent_runtime/test_dataset_advisory_registration.py -q",
+   "required": true
+  },
+  {
+   "name": "governance_curator_runtime",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_governance_agent_runtime.py tests/backend/dataset_governance/test_curator_agent_runtime.py -q",
+   "required": true
+  },
+  {
+   "name": "dataset_governance_regression",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "full_deterministic_regression",
+   "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "The refactored runtime.py has one module-private shared flow core (prepare/scope/candidate/post-I/O guard/rollback/audit) and the two public service classes are thin adapters; per-service divergence (governance writes nothing; curator persists advisory and atomically applies the selected gate; curator _audit ends the DB transaction on append failure) is preserved.",
+  "All three audit_failed construction sites use the single module-level _audit_failed_outcome(command, *, model_ref, provider_call_status, curator_gate_result) helper and follow the documented curator_gate_result convention recorded spec-first in dataset-agents-runtime.md.",
+  "DatasetAgentRuntimeOutcomeV1 semantics, the outcome matrix, and the event payload schema are unchanged; the full governance/curator runtime suites and the full deterministic suite stay green.",
+  {
+   "stage": "verify",
+   "mode": "scheduler",
+   "verdict": "VERDICT: PASS",
+   "verified_at": "2026-08-12T04:05:00+05:00",
+   "evidence": [
+    ".protocols/TASK-060-T2-FT-014-W6/verification.md",
+    ".tasks/TASK-060-T2-FT-014-W6/probe_static.py",
+    ".tasks/TASK-060-T2-FT-014-W6/{red_static_probe,green_static_probe,w52_value_probe}.txt",
+    ".tasks/TASK-060-T2-FT-014-W6/baseline_{curator_agent_command,governance_curator_runtime,dataset_governance_regression}.txt",
+    ".tasks/TASK-060-T2-FT-014-W6/green_{curator_agent_command,governance_curator_runtime,dataset_governance_regression,full_deterministic_regression,memory_bank_lint,diff_check}.txt"
+   ],
+   "commands": [
+    ".venv/bin/python .tasks/TASK-060-T2-FT-014-W6/probe_static.py --expect green",
+    ".venv/bin/python -m pytest tests/backend/dataset_governance/test_curator_agent_runtime.py tests/backend/dataset_governance/test_curator_auto_gate.py tests/backend/dataset_governance/test_curator_auto_production_path.py tests/backend/agent_runtime/test_dataset_advisory_registration.py -q",
+    ".venv/bin/python -m pytest tests/backend/dataset_governance/test_governance_agent_runtime.py tests/backend/dataset_governance/test_curator_agent_runtime.py -q",
+    ".venv/bin/python -m pytest tests/backend/dataset_governance -m \"not real_model\" -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    ".venv/bin/python -m pytest tests/backend/dataset_governance/test_zz_060_verify_probe.py -q (verifier-owned, removed after run)"
+   ],
+   "summary": "PASS. One module-private shared flow core (_DatasetAgentRuntimeFlow + _RuntimeFlowSpec) with the two public services as thin adapters; per-service divergence preserved (governance rollback_on_audit_failure=False, curator True; curator persists advisory and applies the selected gate atomically); single module-level _audit_failed_outcome used by all three audit_failed sites under the documented convention (transition-audit selected-gate records attempted confirmed; silent/deferred/rejected -> not_requested; no gate -> not_applicable). Spec-first confirmed: contract mtime 03:11:23 < runtime.py 03:15:41; only additive audit_failed matrix-row note. No change to DatasetAgentRuntimeOutcomeV1, _validate_outcome_matrix, event payload, runtime_contracts/service/repository/contracts, or public signatures; forbidden scope respected. Verifier-owned gates: curator_agent_command 37 passed, governance_curator_runtime 31 passed, dataset_governance_regression 151 passed, full deterministic 754 passed, mb-lint passed (222 files), git diff --check clean; verifier-owned outcome probe (4 tests) asserted the W5-2 confirmed/not_requested/not_applicable convention values and curator rollback, then was removed. Lifecycle left unchanged (in_progress); scheduler owns closure."
+  },
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-060-T2-FT-014-W6 (scheduler mode)",
+   "date": "2026-08-11",
+   "summary": "AST probe: one shared flow core, thin adapters, one _audit_failed_outcome helper, zero inline audit_failed outside it; per-service divergence preserved via spec flags; W5-2 fix verified at outcome level (transition-audit confirmed, silent not_requested, governance not_applicable, curator advisory rollback); spec-first order proven by mtimes; forbidden scope untouched; matrix parity 37/37, 31/31, 151/151, full 754; findings none.",
+   "evidence": ".protocols/TASK-060-T2-FT-014-W6/verification.md, .tasks/TASK-060-T2-FT-014-W6/"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+  ".memory-bank/contracts/dataset-agents-runtime.md",
+  ".memory-bank/testing/dataset-governance.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md",
+  "PAPERCUTS/TECHDEBTS/techdebt.md"
+ ],
+ "purpose": "Remove the near-duplicated governance/curator runtime skeleton and the triplicated divergent audit_failed construction so the two Dataset Agent services share one module-private flow core and one _audit_failed_outcome helper with a documented curator_gate_result convention, preserving every public outcome.",
+ "success_outcome": "backend/app/dataset_governance/runtime.py exposes one module-private shared flow core parameterized by prepared-run type, decision type, and gate-result mapping, with DatasetGovernanceRuntimeService and TrainingDataCuratorRuntimeService as thin adapters; all three audit_failed construction sites use one module-level _audit_failed_outcome(command, *, model_ref, provider_call_status, curator_gate_result) helper under a documented curator_gate_result convention recorded in .memory-bank/contracts/dataset-agents-runtime.md; DatasetAgentRuntimeOutcomeV1 semantics, the outcome matrix, the event payload, and public behavior are unchanged and the full governance/curator runtime suites stay green.",
+ "anti_goals": [
+  "No change to DatasetAgentRuntimeOutcomeV1 fields/validation, the _validate_outcome_matrix rules, or the dataset_agent_runtime_decided event payload schema.",
+  "No change to public service class signatures, public behavior, provider/request/result contracts, service.py/repository.py/contracts.py, or runtime_contracts.py semantics.",
+  "No new agent, provider, route, HTTP/UI surface, migration, or feature lifecycle/queue state change; no other spec change beyond the audit_failed matrix row."
+ ],
+ "evidence_required": [
+  "W5-1 RED: before this task the two runtime services duplicate the prepare/scope/candidate/guard/audit skeleton by copy (governance runtime.py:200-358 vs curator runtime.py:596-819) with observable drift (curator _audit calls _end_database_transaction() on append failure, governance does not); GREEN: one module-private shared flow core serves both services with the two public classes as thin adapters and the drifted per-service behavior is preserved; decisive comparison: identical public outcome matrix on the full runtime suites before vs after; artifact: focused runtime transcripts under .tasks/TASK-060-T2-FT-014-W6/.",
+  "W5-2 RED: three inline near-identical audit_failed constructions record different curator_gate_result values (governance and curator gate-failure branch hard-code not_applicable, curator _audit preserves the attempted value at runtime.py:803); GREEN: all three sites call the single _audit_failed_outcome helper under the documented convention recorded spec-first in dataset-agents-runtime.md's audit_failed matrix row; decisive comparison: one construction site and per-site gate-result values consistent with the convention; artifact: static scan plus runtime tests.",
+  "Matrix-parity GREEN: after the refactor the exact governance and curator outcome/audit matrices, advisory-only persistence, atomic selected curator_auto gate, and rollback behavior are unchanged; decisive comparison: curator_agent_command + governance_curator_runtime + dataset_governance_regression gates green before and after; artifact: gate transcripts."
+ ],
+ "source_artifacts": [
+  "PAPERCUTS/TECHDEBTS/techdebt.md",
+  "PAPERCUTS/TECHDEBTS/FT-014-W5-tech-debt.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/dataset-agents-runtime.md#datasetagentruntimeoutcomev1",
+  ".memory-bank/contracts/dataset-agents-runtime.md#invocation-flow-and-curator-gate",
+  ".memory-bank/contracts/boundary-map.md#dataset-advisory-runtime-exception",
+  ".memory-bank/testing/dataset-governance.md#dataset-agents-runtime-matrix",
+  ".memory-bank/workflows/tier-policy.md#claim-linked-red--green-for-t2t3"
+ ],
+ "constraints": [
+  "Spec-first: record the documented curator_gate_result convention on audit_failed in .memory-bank/contracts/dataset-agents-runtime.md (the audit_failed matrix row) before the code change; no other spec change.",
+  "Documented convention: on audit_failed, curator_gate_result records the attempted gate-result value the failing run would have recorded had the audit append succeeded — not_applicable when no gate is attempted, not_requested for silent/deferred/rejected runs, confirmed/policy_blocked for the selected-gate application surface — so an observer can tell whether a gate was attempted.",
+  "The shared flow core is parameterized by prepared-run type, decision type, and gate-result mapping and must preserve the per-service divergence current tests pin (governance writes nothing; curator persists the advisory allowlist and atomically applies the selected gate; curator _audit ends the DB transaction on append failure).",
+  "Keep both public service class public signatures and public behavior; _audit_failed_outcome(command, *, model_ref, provider_call_status, curator_gate_result) is module-private.",
+  "No change to DatasetAgentRuntimeOutcomeV1 validation, _validate_outcome_matrix, or the event payload schema."
+ ],
+ "invariants": [
+  "Every accepted attempt still appends exactly one dataset_agent_runtime_decided event; audit_failed returns no result and no event ref and rolls back pending advisory/lifecycle mutations.",
+  "Governance and curator public outcomes are identical to the pre-refactor matrix for every accepted branch.",
+  "All three audit_failed construction sites follow the documented curator_gate_result convention."
+ ],
+ "verification_targets": [
+  ".venv/bin/python -m pytest tests/backend/dataset_governance/test_curator_agent_runtime.py tests/backend/dataset_governance/test_curator_auto_gate.py tests/backend/dataset_governance/test_curator_auto_production_path.py tests/backend/agent_runtime/test_dataset_advisory_registration.py -q",
+  ".venv/bin/python -m pytest tests/backend/dataset_governance/test_governance_agent_runtime.py tests/backend/dataset_governance/test_curator_agent_runtime.py -q",
+  ".venv/bin/python -m pytest tests/backend/dataset_governance -m \"not real_model\" -q",
+  ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+  "node scripts/mb-lint.mjs",
+  "git diff --check",
+  "Static scan: exactly one module-level _audit_failed_outcome helper used by all three audit_failed sites; one shared flow core; no public signature change."
+ ],
+ "runtime_context": {
+  "write_boundary": [
+   "backend/app/dataset_governance/runtime.py",
+   ".memory-bank/contracts/dataset-agents-runtime.md",
+   "tests/backend/dataset_governance/",
+   "tests/backend/agent_runtime/test_dataset_advisory_registration.py",
+   ".protocols/TASK-060-T2-FT-014-W6/",
+   ".tasks/TASK-060-T2-FT-014-W6/",
+   ".memory-bank/tasks/TASK-060-T2-FT-014-W6.task.json"
+  ],
+  "forbidden_scope": [
+   "DatasetAgentRuntimeOutcomeV1, _validate_outcome_matrix, runtime_contracts.py, service.py, repository.py, contracts.py, provider/request/result contracts",
+   "Event payload schema or public service class signatures/public behavior",
+   "Feature lifecycle/queue state and any spec change beyond the audit_failed matrix row",
+   "Unredacted auth/session/path/evidence material"
+  ],
+  "stop_conditions": [
+   "The refactor requires a change to DatasetAgentRuntimeOutcomeV1 validation, the outcome matrix, or the event payload schema.",
+   "The shared flow core cannot preserve the two services' distinct behaviors (governance writes nothing; curator persists advisory and atomically applies the selected gate; curator _audit ends the DB transaction on append failure) without a public behavior change.",
+   "A documented curator_gate_result convention cannot satisfy both the matrix constraints and the existing runtime tests.",
+   "The dataset_governance or full deterministic regression cannot be green."
+  ]
+ }
+}

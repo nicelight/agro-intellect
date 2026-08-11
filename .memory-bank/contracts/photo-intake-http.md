@@ -91,6 +91,7 @@ All errors use the global error envelope.
 | `PHOTO_ARTIFACT_WRITE_FAILED` | 500 | local file or manifest write failed safely |
 | `TIMELINE_APPEND_FAILED` | 500 | accepted photo cannot claim audit/export evidence |
 | `PHOTO_PERSISTENCE_FAILED` | 500 | unclassified rollback-safe persistence failure |
+| `PHOTO_DATASET_AUDIT_FAILED` | 500 | Dataset Governance audit append failed; the accepted-photo UoW rolled back |
 | `VALIDATION_FAILED` | 422 | malformed UUID/body/query or unknown field |
 
 ## Verification

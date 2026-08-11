@@ -506,6 +506,34 @@ def test_operation_failures_are_safe_and_do_not_claim_success(
     assert "raw sql" not in persistence_failed.text
     assert _row_counts(database) == (0, 0)
 
+    class DatasetAuditFailingService:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        def create_check_in(self, *_args, **_kwargs):
+            raise PlantOperationError(
+                PlantOperationErrorCode.OPERATION_DATASET_AUDIT_FAILED
+            )
+
+    monkeypatch.setattr(
+        "backend.app.api.operations.PlantOperationsService",
+        DatasetAuditFailingService,
+    )
+    dataset_audit_failed = client.post(
+        f"/api/plants/{seed.plant_id}/operations/check-ins",
+        json={"observation_state": "observed", "observation_text": "Dataset audit"},
+        cookies=_cookies(seed.engineer),
+        headers={"x-request-id": "req-ft004-dataset-audit-failed"},
+    )
+    assert dataset_audit_failed.status_code == 500
+    assert dataset_audit_failed.headers["cache-control"] == "no-store"
+    assert dataset_audit_failed.json()["error"] == {
+        "code": "OPERATION_DATASET_AUDIT_FAILED",
+        "message": "Plant operation dataset audit could not be recorded.",
+        "request_id": "req-ft004-dataset-audit-failed",
+    }
+    assert _row_counts(database) == (0, 0)
+
 
 def test_generated_openapi_contains_ft004_operations_contracts():
     database = build_database(AppSettings(database_url="sqlite+pysqlite:///:memory:"))

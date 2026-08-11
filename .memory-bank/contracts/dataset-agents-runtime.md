@@ -2,7 +2,7 @@
 description: Strict provider-neutral Dataset Governance and Training Data Curator agent input, advisory result, and curator gate contract for FT-014.
 status: active
 type: interface_contract
-last_updated: 2026-08-10
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/features/FT-014-dataset-governance-trainability.md
   - .memory-bank/states/dataset-governance.md
@@ -165,6 +165,13 @@ Unknown fields are rejected. The exact matrix is:
 | `post_io_guard_denied` | `blocked` | null | `completed` | `appended` | `not_applicable` |
 | `policy_blocked` | `blocked` | null | `completed` | `appended` | `policy_blocked` |
 | `audit_failed` | `failed` | null | `not_attempted|completed|failed` | `failed` | `not_applicable|not_requested|confirmed|policy_blocked` |
+
+On `audit_failed`, `curator_gate_result` records the attempted gate-result value
+the failing run would have recorded had the audit append succeeded: `not_applicable`
+when no gate is attempted, `not_requested` for silent/deferred/rejected runs, and
+`confirmed`/`policy_blocked` on the selected-gate application surface — so an
+observer can tell whether a gate was attempted. The audit event always has the
+`audit_status=failed` value and no event ref.
 
 `validated_result` exists only for `advisory_ready|model_silent`. A selected
 curator result returns `advisory_ready` only when its current-run advisory row

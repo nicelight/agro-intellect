@@ -22,9 +22,11 @@ from ..access_admin.permissions import (
     _BoundedPlantPermissionResolver,
 )
 from ..dataset_governance import (
+    DatasetGovernanceError,
+    DatasetGovernanceErrorCode,
     DatasetGovernanceService,
-    RecordDatasetEvidenceCommandV1,
     SourceKind,
+    record_dataset_evidence,
 )
 from ..timeline import TimelineEvent, TimelineJsonlAppender
 from .models import PhotoCatalogItem
@@ -51,6 +53,7 @@ class PhotoIntakeErrorCode(StrEnum):
     PHOTO_CHECKSUM_MISMATCH = "PHOTO_CHECKSUM_MISMATCH"
     PHOTO_ARTIFACT_WRITE_FAILED = "PHOTO_ARTIFACT_WRITE_FAILED"
     TIMELINE_APPEND_FAILED = "TIMELINE_APPEND_FAILED"
+    PHOTO_DATASET_AUDIT_FAILED = "PHOTO_DATASET_AUDIT_FAILED"
     PHOTO_PERSISTENCE_FAILED = "PHOTO_PERSISTENCE_FAILED"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
@@ -222,10 +225,14 @@ class PhotoIntakeService:
                     )
                 }
                 repository.flush()
-                self._record_dataset_evidence(
-                    actor,
+                record_dataset_evidence(
+                    self._dataset_governance,
+                    session=self._session,
+                    timeline_appender=self._timeline_append,
+                    actor=actor,
                     plant_id=plant_id,
-                    photo_id=photo_id,
+                    source_kind=SourceKind.PHOTO_CATALOG_ITEM,
+                    source_ref=photo_id,
                 )
                 return PhotoAcceptanceResult(item=item, manifest=manifest)
         except PhotoIntakeError:
@@ -235,6 +242,19 @@ class PhotoIntakeService:
                 refs=created_refs,
             )
             raise
+        except DatasetGovernanceError as error:
+            self._artifact_store.cleanup_generated_refs(
+                plant_id=plant_id,
+                photo_id=photo_id,
+                refs=created_refs,
+            )
+            if error.code is DatasetGovernanceErrorCode.AUDIT_FAILED:
+                raise PhotoIntakeError(
+                    PhotoIntakeErrorCode.PHOTO_DATASET_AUDIT_FAILED
+                ) from None
+            raise PhotoIntakeError(
+                PhotoIntakeErrorCode.PHOTO_PERSISTENCE_FAILED
+            ) from None
         except (IntegrityError, Exception):
             self._artifact_store.cleanup_generated_refs(
                 plant_id=plant_id,
@@ -364,26 +384,6 @@ class PhotoIntakeService:
             raise PhotoIntakeError(
                 PhotoIntakeErrorCode.PHOTO_ARTIFACT_WRITE_FAILED
             ) from None
-
-    def _record_dataset_evidence(
-        self,
-        actor: ActorContext,
-        *,
-        plant_id: uuid.UUID,
-        photo_id: uuid.UUID,
-    ) -> None:
-        governance = self._dataset_governance or DatasetGovernanceService(
-            self._session,
-            timeline_appender=self._timeline_append,
-        )
-        governance.record_dataset_evidence(
-            RecordDatasetEvidenceCommandV1(
-                actor_context=actor,
-                plant_id=plant_id,
-                source_kind=SourceKind.PHOTO_CATALOG_ITEM,
-                source_ref=photo_id,
-            )
-        )
 
 
 def _validated_upload(

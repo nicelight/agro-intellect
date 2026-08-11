@@ -1,0 +1,172 @@
+{
+ "id": "TASK-059-T2-FT-014-W6",
+ "title": "Align dataset evidence seam helper and audit error taxonomy",
+ "status": "done",
+ "wave": "W6",
+ "feature": "FT-014",
+ "reqs": [
+  "REQ-019"
+ ],
+ "depends_on": [
+  "TASK-047-T3-FT-014-W1"
+ ],
+ "touched_files": [
+  "backend/app/dataset_governance/evidence_seam.py",
+  "backend/app/photo_intake/service.py",
+  "backend/app/plant_operations/service.py",
+  "backend/app/task_follow_up/service.py",
+  "backend/app/api/photos.py",
+  "backend/app/api/operations.py",
+  ".memory-bank/contracts/photo-intake-http.md",
+  ".memory-bank/contracts/plant-operations-http.md",
+  "tests/backend/dataset_governance/test_photo_wiring.py",
+  "tests/backend/dataset_governance/test_check_in_wiring.py",
+  "tests/backend/dataset_governance/test_measurement_wiring.py",
+  "tests/backend/photo_intake/test_photo_dataset_candidate.py",
+  "tests/backend/plant_operations/test_check_in_dataset_candidate.py",
+  "tests/backend/plant_operations/test_measurement_dataset_candidate.py",
+  "tests/backend/task_follow_up/test_outcome_dataset_candidate.py",
+  "tests/backend/api/test_ft004_operations_routes.py",
+  "tests/backend/api/test_ft005_photos_routes.py"
+ ],
+ "tier": "T2",
+ "gates": [
+  {
+   "name": "source_owner_wiring",
+   "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_photo_wiring.py tests/backend/dataset_governance/test_check_in_wiring.py tests/backend/dataset_governance/test_measurement_wiring.py tests/backend/dataset_governance/test_outcome_wiring.py tests/backend/dataset_governance/test_outcome_association_wiring.py tests/backend/dataset_governance/test_follow_up_evidence_association.py -q",
+   "required": true
+  },
+  {
+   "name": "source_owner_dataset_candidates",
+   "command": ".venv/bin/python -m pytest tests/backend/photo_intake/test_photo_dataset_candidate.py tests/backend/plant_operations/test_check_in_dataset_candidate.py tests/backend/plant_operations/test_measurement_dataset_candidate.py tests/backend/task_follow_up/test_outcome_dataset_candidate.py tests/backend/task_follow_up/test_outcome_dataset_association.py -q",
+   "required": true
+  },
+  {
+   "name": "photo_plant_api_errors",
+   "command": ".venv/bin/python -m pytest tests/backend/api/test_ft004_operations_routes.py tests/backend/api/test_ft005_photos_routes.py -q",
+   "required": true
+  },
+  {
+   "name": "full_deterministic_regression",
+   "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "Focused source-owner wiring tests prove an injected governance AUDIT_FAILED returns PHOTO_DATASET_AUDIT_FAILED / OPERATION_DATASET_AUDIT_FAILED with the same rollback and artifact cleanup that the baseline tests assert under the old generic codes, and TASK_AUDIT_FAILED remains unchanged.",
+  "The four source owners invoke the same generalized dataset-evidence helper (parameterized by source_kind/source_ref) as the single RecordDatasetEvidenceCommandV1 construction point; photo and task_follow_up no longer hard-code their source kind.",
+  "Independent Reviewer runs /verify and task-level /red-verify; contract rows exist in photo-intake-http.md and plant-operations-http.md before the code change.",
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-059-T2-FT-014-W6 (scheduler mode)",
+   "date": "2026-08-11",
+   "summary": "13/13 probes: photo/check-in/measurement governance audit failure returns new audit codes with zero rows/artifacts/candidates and identical rollback; generic persistence preserved; success path single candidate; rerun gates wiring 46, candidates 25, API 30, full deterministic 754/0, mb-lint 0, diff_check 0; spec-first order proven by mtimes; single RecordDatasetEvidenceCommandV1 site in evidence_seam.py:44, all four owners call shared helper; TASK_AUDIT_FAILED untouched; LOW note only.",
+   "evidence": ".protocols/TASK-059-T2-FT-014-W6/verification.md, .tasks/TASK-059-T2-FT-014-W6/"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-014-dataset-governance-trainability.md",
+  ".memory-bank/contracts/photo-intake-http.md",
+  ".memory-bank/contracts/plant-operations-http.md",
+  ".memory-bank/domains/dataset-governance.md",
+  ".memory-bank/testing/dataset-governance.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md",
+  "PAPERCUTS/TECHDEBTS/techdebt.md"
+ ],
+ "purpose": "Remove the repeated source-owner dataset-evidence seam wrapper and the divergent audit-failure taxonomy so one generalized helper serves all four Dataset Evidence Creation owners and a governance audit failure surfaces an explicit audit code on the photo/check-in/measurement paths, matching the TASK_AUDIT_FAILED precedent.",
+ "success_outcome": "One shared generalized dataset-evidence helper (parameterized by source_kind/source_ref, the plant_operations shape) is the single seam invocation used by Photo Intake, Plant Operations (daily check-in and manual measurement), and Task & Follow-Up (follow-up outcome). PHOTO_DATASET_AUDIT_FAILED and OPERATION_DATASET_AUDIT_FAILED (HTTP 500) are added to the photo/plant error enums, the API route error tables, and the two HTTP contracts, and are raised only when DatasetGovernanceErrorCode.AUDIT_FAILED crosses the owner boundary; TASK_AUDIT_FAILED behavior is unchanged.",
+ "anti_goals": [
+  "No change to Dataset Governance runtime, DatasetAgentRuntimeOutcomeV1, the migration chain, feature lifecycle/queue state, or any other module error contract.",
+  "No new HTTP/UI surface or response shape; both new codes reuse the existing HTTP 500 error envelope.",
+  "No change to non-audit error mapping, TASK_AUDIT_FAILED, or the accepted candidate-creation outcomes (same-UoW rollback, idempotency, unchanged source rows)."
+ ],
+ "evidence_required": [
+  "W2-F2-audit-code RED: before this task a DatasetGovernanceError(AUDIT_FAILED) raised by the creation seam during photo accept / daily check-in / manual measurement is collapsed by the owner services into generic PHOTO_PERSISTENCE_FAILED / OPERATION_PERSISTENCE_FAILED (baseline tests/backend/dataset_governance/test_{photo,check_in,measurement}_wiring.py assert those codes); GREEN: the same injected audit failure returns PHOTO_DATASET_AUDIT_FAILED / OPERATION_DATASET_AUDIT_FAILED with identical source-row and artifact rollback; decisive comparison: raised error code and row/artifact counts before vs after; artifact: focused wiring transcript under .tasks/TASK-059-T2-FT-014-W6/.",
+  "W2-F2-taxonomy RED: task_follow_up already maps governance AUDIT_FAILED to TASK_AUDIT_FAILED (task_follow_up/service.py:799-807) while photo/plant collapse it, so the same underlying failure is observable as an audit failure only on the outcome path; GREEN: all four source owners report the dataset-audit failure through their explicit audit code with TASK_AUDIT_FAILED unchanged; decisive comparison: per-owner raised code on the same injected failure; artifact: outcome-wiring transcript.",
+  "Seam-helper GREEN: photo and task_follow_up call the same generalized helper (parameterized by source_kind/source_ref) that plant_operations already uses, so one seam invocation shape serves all four source owners; decisive comparison: one shared construction site for RecordDatasetEvidenceCommandV1 per owner; artifact: static/scan evidence plus focused owner suite transcripts.",
+  "Contract GREEN: .memory-bank/contracts/photo-intake-http.md and .memory-bank/contracts/plant-operations-http.md register PHOTO_DATASET_AUDIT_FAILED / OPERATION_DATASET_AUDIT_FAILED (HTTP 500, Status/Error/Meaning rows) before the code change, and backend/app/api/photos.py / backend/app/api/operations.py map both codes to HTTP 500; decisive comparison: contract rows plus API error-table entries present; artifact: spec rows and API mapping snippet."
+ ],
+ "source_artifacts": [
+  "PAPERCUTS/TECHDEBTS/techdebt.md",
+  "PAPERCUTS/TECHDEBTS/FT-014-W2-tech-debt.md",
+  ".memory-bank/tasks/plans/IMPL-FT-014.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/boundary-map.md#dataset-evidence-creation",
+  ".memory-bank/domains/dataset-governance.md#creation-seam",
+  ".memory-bank/contracts/photo-intake-http.md",
+  ".memory-bank/contracts/plant-operations-http.md",
+  ".memory-bank/contracts/task-approval-http.md#error-mapping",
+  ".memory-bank/testing/dataset-governance.md#evidence-flow-wiring-matrix",
+  ".memory-bank/workflows/tier-policy.md#claim-linked-red--green-for-t2t3"
+ ],
+ "constraints": [
+  "Spec-first: register the two new error codes in the two HTTP contracts (Status/Error/Meaning rows) BEFORE any code change; no other spec change.",
+  "Use the TASK_AUDIT_FAILED mapping as the taxonomy precedent: map only DatasetGovernanceErrorCode.AUDIT_FAILED to the new audit codes; every other governance error keeps the existing generic persistence mapping.",
+  "The shared helper receives the owner's bound injectable dataset_governance service and keeps same-UoW semantics; exact shared location is an immaterial executor choice inside the write boundary (expected backend/app/dataset_governance/evidence_seam.py).",
+  "Both new codes map to HTTP 500 through the existing route error tables; no new response shape or status is introduced.",
+  "Do not change TASK_AUDIT_FAILED behavior, task_follow_up audit semantics, or the acceptance outcomes of the four creation seams."
+ ],
+ "invariants": [
+  "All four Dataset Evidence Creation source owners use the same seam invocation shape.",
+  "A governance audit failure is always an explicit audit failure on the owner boundary (TASK_AUDIT_FAILED / PHOTO_DATASET_AUDIT_FAILED / OPERATION_DATASET_AUDIT_FAILED), never a generic persistence failure.",
+  "Owner audit-failure rollback/cleanup semantics and the accepted candidate-creation outcomes remain unchanged."
+ ],
+ "verification_targets": [
+  ".venv/bin/python -m pytest tests/backend/dataset_governance/test_photo_wiring.py tests/backend/dataset_governance/test_check_in_wiring.py tests/backend/dataset_governance/test_measurement_wiring.py tests/backend/dataset_governance/test_outcome_wiring.py tests/backend/dataset_governance/test_outcome_association_wiring.py tests/backend/dataset_governance/test_follow_up_evidence_association.py -q",
+  ".venv/bin/python -m pytest tests/backend/photo_intake/test_photo_dataset_candidate.py tests/backend/plant_operations/test_check_in_dataset_candidate.py tests/backend/plant_operations/test_measurement_dataset_candidate.py tests/backend/task_follow_up/test_outcome_dataset_candidate.py tests/backend/task_follow_up/test_outcome_dataset_association.py -q",
+  ".venv/bin/python -m pytest tests/backend/api/test_ft004_operations_routes.py tests/backend/api/test_ft005_photos_routes.py -q",
+  ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+  "node scripts/mb-lint.mjs",
+  "git diff --check",
+  "Contract rows for the two new codes exist in photo-intake-http.md / plant-operations-http.md before the code change; API error tables map both new codes to HTTP 500."
+ ],
+ "runtime_context": {
+  "write_boundary": [
+   "backend/app/dataset_governance/evidence_seam.py",
+   "backend/app/photo_intake/service.py",
+   "backend/app/plant_operations/service.py",
+   "backend/app/task_follow_up/service.py",
+   "backend/app/api/photos.py",
+   "backend/app/api/operations.py",
+   ".memory-bank/contracts/photo-intake-http.md",
+   ".memory-bank/contracts/plant-operations-http.md",
+   "tests/backend/dataset_governance/test_photo_wiring.py",
+   "tests/backend/dataset_governance/test_check_in_wiring.py",
+   "tests/backend/dataset_governance/test_measurement_wiring.py",
+   "tests/backend/photo_intake/test_photo_dataset_candidate.py",
+   "tests/backend/plant_operations/test_check_in_dataset_candidate.py",
+   "tests/backend/plant_operations/test_measurement_dataset_candidate.py",
+   "tests/backend/task_follow_up/test_outcome_dataset_candidate.py",
+   "tests/backend/api/test_ft004_operations_routes.py",
+   "tests/backend/api/test_ft005_photos_routes.py",
+   ".protocols/TASK-059-T2-FT-014-W6/",
+   ".tasks/TASK-059-T2-FT-014-W6/",
+   ".memory-bank/tasks/TASK-059-T2-FT-014-W6.task.json"
+  ],
+  "forbidden_scope": [
+   "Dataset Governance runtime, DatasetAgentRuntimeOutcomeV1, runtime_contracts.py, migrations, and other modules' error codes/contracts",
+   "TASK_AUDIT_FAILED behavior or task_follow_up audit semantics (already aligned)",
+   "Feature lifecycle/queue state and any spec change beyond the two HTTP contracts",
+   "Unredacted auth/session/path/evidence material"
+  ],
+  "stop_conditions": [
+   "The shared helper cannot live in one shared location without a new unaccepted cross-module dependency or architecture change.",
+   "Registering the new codes requires a migration, a new response shape, a non-500 status, or a contract change beyond the two named rows.",
+   "Aligning the taxonomy requires changing TASK_AUDIT_FAILED behavior.",
+   "A governance audit failure no longer rolls back the source row/artifacts exactly as today.",
+   "The full deterministic suite cannot be green."
+  ]
+ }
+}

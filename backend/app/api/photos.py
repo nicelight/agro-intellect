@@ -110,6 +110,10 @@ _ERROR_DEFINITIONS = {
         500,
         "Photo audit trail could not be recorded.",
     ),
+    PhotoIntakeErrorCode.PHOTO_DATASET_AUDIT_FAILED: _PhotoErrorDefinition(
+        500,
+        "Photo dataset audit could not be recorded.",
+    ),
     PhotoIntakeErrorCode.PHOTO_PERSISTENCE_FAILED: _PhotoErrorDefinition(
         500,
         "Photo intake could not be completed.",

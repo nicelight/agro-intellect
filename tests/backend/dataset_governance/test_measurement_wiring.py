@@ -314,7 +314,7 @@ def test_ft014_ac010_audit_failure_rolls_back_measurement_and_candidate(
                 measurement=ManualMeasurementInput(ph="6.50"),
             )
 
-    assert failure.value.code is PlantOperationErrorCode.OPERATION_PERSISTENCE_FAILED
+    assert failure.value.code is PlantOperationErrorCode.OPERATION_DATASET_AUDIT_FAILED
     with ft014_database.session() as session:
         assert session.scalar(select(func.count(ManualMeasurement.measurement_id))) == 0
         assert session.scalar(select(func.count(DatasetCandidate.candidate_id))) == 0

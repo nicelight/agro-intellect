@@ -130,9 +130,11 @@ last_updated: 2026-08-10
   their public outcomes remain unchanged and do not require an independent
   design branch.
 - FT-014 shared and feature-local design is complete. Its reconciled
-  TASK-047..055 plus TASK-057 queue has fresh task-plan APPROVE for Planning
-  Revision 3 and passes the strict readiness gate; this handoff does not
-  execute it.
+  TASK-047..055 plus TASK-057 queue received fresh task-plan APPROVE for
+  Planning Revision 3 and passed the strict readiness gate, and has since been
+  fully executed to terminal `done`; the W6 remediation cards
+  (TASK-058/059/060) are likewise terminal `done` and the feature-level T2
+  completion gate recorded `SEMANTIC_VERDICT: semantic-pass`.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.

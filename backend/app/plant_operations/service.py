@@ -21,9 +21,11 @@ from ..access_admin.permissions import (
     _BoundedPlantPermissionResolver,
 )
 from ..dataset_governance import (
+    DatasetGovernanceError,
+    DatasetGovernanceErrorCode,
     DatasetGovernanceService,
-    RecordDatasetEvidenceCommandV1,
     SourceKind,
+    record_dataset_evidence,
 )
 from ..timeline import TimelineEvent, TimelineJsonlAppender
 from .models import DailyCheckIn, ManualMeasurement
@@ -40,6 +42,7 @@ class PlantOperationErrorCode(StrEnum):
     PH_INVALID = "PH_INVALID"
     EC_INVALID = "EC_INVALID"
     TIMELINE_APPEND_FAILED = "TIMELINE_APPEND_FAILED"
+    OPERATION_DATASET_AUDIT_FAILED = "OPERATION_DATASET_AUDIT_FAILED"
     OPERATION_PERSISTENCE_FAILED = "OPERATION_PERSISTENCE_FAILED"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
@@ -180,14 +183,20 @@ class PlantOperationsService:
                 }
             repository.flush()
             for item in measurements:
-                self._record_dataset_evidence(
-                    actor,
+                record_dataset_evidence(
+                    self._dataset_governance,
+                    session=self._session,
+                    timeline_appender=self._timeline_append,
+                    actor=actor,
                     plant_id=plant_id,
                     source_kind=SourceKind.MANUAL_MEASUREMENT,
                     source_ref=item.measurement_id,
                 )
-            self._record_dataset_evidence(
-                actor,
+            record_dataset_evidence(
+                self._dataset_governance,
+                session=self._session,
+                timeline_appender=self._timeline_append,
+                actor=actor,
                 plant_id=plant_id,
                 source_kind=SourceKind.DAILY_CHECK_IN,
                 source_ref=check_in.check_in_id,
@@ -241,8 +250,11 @@ class PlantOperationsService:
                 )
             }
             repository.flush()
-            self._record_dataset_evidence(
-                actor,
+            record_dataset_evidence(
+                self._dataset_governance,
+                session=self._session,
+                timeline_appender=self._timeline_append,
+                actor=actor,
                 plant_id=plant_id,
                 source_kind=SourceKind.MANUAL_MEASUREMENT,
                 source_ref=row.measurement_id,
@@ -284,27 +296,6 @@ class PlantOperationsService:
 
         return self._run(command)
 
-    def _record_dataset_evidence(
-        self,
-        actor: ActorContext,
-        *,
-        plant_id: uuid.UUID,
-        source_kind: SourceKind,
-        source_ref: uuid.UUID,
-    ) -> None:
-        governance = self._dataset_governance or DatasetGovernanceService(
-            self._session,
-            timeline_appender=self._timeline_append,
-        )
-        governance.record_dataset_evidence(
-            RecordDatasetEvidenceCommandV1(
-                actor_context=actor,
-                plant_id=plant_id,
-                source_kind=source_kind,
-                source_ref=source_ref,
-            )
-        )
-
     def _run(self, command):
         try:
             with self._session.begin():
@@ -312,6 +303,14 @@ class PlantOperationsService:
         except PlantOperationError:
             raise
         except IntegrityError:
+            raise PlantOperationError(
+                PlantOperationErrorCode.OPERATION_PERSISTENCE_FAILED
+            ) from None
+        except DatasetGovernanceError as error:
+            if error.code is DatasetGovernanceErrorCode.AUDIT_FAILED:
+                raise PlantOperationError(
+                    PlantOperationErrorCode.OPERATION_DATASET_AUDIT_FAILED
+                ) from None
             raise PlantOperationError(
                 PlantOperationErrorCode.OPERATION_PERSISTENCE_FAILED
             ) from None

@@ -4,6 +4,36 @@ status: active
 ---
 # Changelog
 
+## [2026-08-12] FT-014 tech-debt remediation wave W6 reconciled
+
+- Reconciled the scheduler-written `done` decisions for the W6 wave:
+  `TASK-058-T1-FT-014-W6` (historical migration head-pin reconciliation),
+  `TASK-059-T2-FT-014-W6` (shared dataset-evidence seam helper + explicit audit
+  error taxonomy), and `TASK-060-T2-FT-014-W6` (unified Dataset Agent runtime
+  flow core + `_audit_failed_outcome` helper). Each card records a fresh
+  `/verify` `PASS` in its indexed `.task.json` with evidence under
+  `.protocols/TASK-0XX-*/` and `.tasks/TASK-0XX-*/`.
+- Recorded the implemented remediation boundary: one generalized
+  `record_dataset_evidence` seam serves all four source owners;
+  `PHOTO_DATASET_AUDIT_FAILED` / `OPERATION_DATASET_AUDIT_FAILED` (HTTP 500)
+  registered spec-first in `photo-intake-http.md` / `plant-operations-http.md`;
+  one module-private shared Dataset Agent flow core with thin public adapters
+  and a documented `curator_gate_result` convention on `audit_failed` recorded
+  in `dataset-agents-runtime.md`. `TASK_AUDIT_FAILED` behavior unchanged;
+  outcome/audit matrix and public contracts unchanged.
+- FT-014 feature-level T2 completion gate: `SEMANTIC_VERDICT: semantic-pass`
+  recorded in the feature doc; feature `lifecycle` stays `implemented`;
+  feature-level `verified` and promotion remain scheduler/owner-owned.
+- REQ-019 stays `implemented` (remediation complete, feature-level
+  semantic-pass recorded); REQ-011 stays `planned` because its remaining
+  mapped features (FT-007/FT-009/FT-010/FT-011/FT-012) remain open. EP-006
+  stays `planned` while FT-015 and FT-016 remain unexecuted.
+- Marked tech-debt register findings F1, W2-F2, W5-1, W5-2 as CLOSED (F1 by
+  TASK-058, W2-F2 by TASK-059, W5-1/W5-2 by TASK-060) in
+  `PAPERCUTS/TECHDEBTS/techdebt.md`; W2-F3 remains recorded and out of scope.
+- No task was promoted and no closure beyond the scheduler-recorded decisions
+  was inferred; no product/design/lifecycle decision was invented.
+
 ## [2026-08-11] FT-014 feature completion — W3/W4/W5 closures reconciled
 
 - Reconciled the scheduler-written `done` decisions for

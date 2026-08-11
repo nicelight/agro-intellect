@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import typing
 import uuid
 
 import pytest
@@ -33,6 +34,11 @@ from tests.backend.plant_operations.conftest import (
 
 
 JPEG_BYTES = b"\xff\xd8\xff\xe0ft005-service-photo"
+
+
+def test_photo_intake_service_constructor_annotations_resolve():
+    hints = typing.get_type_hints(PhotoIntakeService.__init__)
+    assert "dataset_governance" in hints
 
 
 def test_ft005_bhv001_engineer_accepts_photo_catalog_manifest_checksum_and_timeline(

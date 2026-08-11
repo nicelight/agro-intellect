@@ -126,6 +126,7 @@ All errors use the global `{error: {code, message, request_id}}` envelope.
 | `EC_INVALID` | 422 | EC negative or wrong type |
 | `TIMELINE_APPEND_FAILED` | 500 | runtime write cannot claim audit/export evidence |
 | `OPERATION_PERSISTENCE_FAILED` | 500 | unclassified rollback-safe persistence failure |
+| `OPERATION_DATASET_AUDIT_FAILED` | 500 | Dataset Governance audit append failed; the operation UoW rolled back |
 | `VALIDATION_FAILED` | 422 | malformed UUID/body/query or unknown field |
 
 ## Verification

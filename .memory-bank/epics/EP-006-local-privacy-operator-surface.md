@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-006
 lifecycle: planned
-last_updated: 2026-08-11
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -56,9 +56,12 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 
 ## FT-014 Implementation Status
 
-- FT-014 is fully implemented: all ten indexed tasks are terminal `done`
+- FT-014 is fully implemented: all thirteen indexed tasks are terminal `done`
   (TASK-047 W1; TASK-048, TASK-050/051/052/053, TASK-055 W2; TASK-049 W3;
-  TASK-054 W4; TASK-057 W5), each with per-task `/verify` `PASS` and
-  `/red-verify` `semantic-pass`. The feature `lifecycle` is `implemented`; the
-  T2 feature-completion red-verify gate does not apply to this T3-only feature.
+  TASK-054 W4; TASK-057 W5; W6 remediation TASK-058, TASK-059, TASK-060).
+  The ten T3 cards carry per-task `/verify` `PASS` and `/red-verify`
+  `semantic-pass`; the W6 T1/T2 cards carry fresh `/verify` `PASS`. The
+  feature `lifecycle` is `implemented`; the feature-level T2 completion gate
+  recorded `SEMANTIC_VERDICT: semantic-pass`, while feature-level `verified`
+  and promotion remain scheduler/owner-owned.
 - EP-006 lifecycle stays `planned`; FT-015 and FT-016 remain unexecuted.

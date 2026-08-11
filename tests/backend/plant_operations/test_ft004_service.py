@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+import typing
 import uuid
 
 import pytest
@@ -26,6 +27,11 @@ from tests.backend.plant_operations.conftest import (
     row_counts,
     seed_farm,
 )
+
+
+def test_plant_operations_service_constructor_annotations_resolve():
+    hints = typing.get_type_hints(PlantOperationsService.__init__)
+    assert "dataset_governance" in hints
 
 
 def test_ft004_bhv001_engineer_records_check_in_measurement_and_timeline_refs(

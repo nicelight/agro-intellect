@@ -1,7 +1,7 @@
 ---
 description: Implementation plan for the reconciled FT-014 Dataset Governance And Trainability queue.
 status: active
-last_updated: 2026-08-10
+last_updated: 2026-08-12
 ---
 # IMPL-FT-014 — Dataset Governance And Trainability
 
@@ -9,8 +9,31 @@ last_updated: 2026-08-10
 
 Feature design is complete at Global Planning Revision 3. The operator
 explicitly authorized full rebuild/reslicing of the rejected planned queue.
-TASK-047..055 plus TASK-057 are the reconciled sequential JSON queue and remain `planned` until
-fresh `/review-tasks-plan FT-014` and the applicable doctor/scheduler gates.
+TASK-047..055 plus TASK-057 are the reconciled sequential JSON queue that
+received fresh `/review-tasks-plan FT-014` APPROVE and has since been fully
+executed to terminal `done`. The W6 remediation cycle (TASK-058/059/060) below
+is likewise terminal `done`; the feature `lifecycle` stays `implemented` and
+the feature-level T2 completion gate recorded `SEMANTIC_VERDICT: semantic-pass`.
+
+## Remediation cycle (W6)
+
+An approved tech-debt remediation cycle (2026-08-12, register
+`PAPERCUTS/TECHDEBTS/techdebt.md`) added follow-up cards to the already
+`implemented` feature without changing feature lifecycle, the executed queue,
+or accepted evidence. All three are terminal `done` with fresh `/verify` `PASS`
+evidence under `.protocols/TASK-0XX-*/` and `.tasks/TASK-0XX-*/`:
+
+- `TASK-058-T1-FT-014-W6` (F1): the ten historical feature migration tests are
+  re-pinned to the live head `ft014_dataset_candidates`.
+- `TASK-059-T2-FT-014-W6` (W2-F2): one generalized dataset-evidence seam helper
+  shared by all four source owners plus explicit audit error codes
+  `PHOTO_DATASET_AUDIT_FAILED` / `OPERATION_DATASET_AUDIT_FAILED` (HTTP 500)
+  registered spec-first in `photo-intake-http.md` and `plant-operations-http.md`.
+- `TASK-060-T2-FT-014-W6` (W5-1 + W5-2): one module-private Dataset Agent
+  runtime flow core with the two public services as thin adapters, plus one
+  `_audit_failed_outcome` helper with a documented `curator_gate_result`
+  convention recorded spec-first in `dataset-agents-runtime.md`. Behavior
+  preserved; outcome/audit matrix unchanged.
 
 ## Goal
 
@@ -114,9 +137,10 @@ dependency proof remains with the dependency.
 - deterministic provider fake/spy success/error/unbound/no-fallback matrices;
 - `node scripts/mb-lint.mjs`, `git diff --check`, and task-proportionate full
   deterministic regression;
-- no HTTP/UI UAT exists in FT-014. Each T3 task still follows normal
-  `/verify` and `/red-verify`; feature completion later requires
-  `/red-verify --feature FT-014`.
+- no HTTP/UI UAT exists in FT-014. Each T3 task followed normal
+  `/verify` and `/red-verify`; the feature-completion
+  `/red-verify --feature FT-014` gate ran and recorded
+  `SEMANTIC_VERDICT: semantic-pass`.
 
 ## Governing sources and constraints
 
@@ -153,6 +177,8 @@ dependency proof remains with the dependency.
 
 ## Handoff
 
-Queue action: `rebuilt`. Immediate next command:
-`/review-tasks-plan FT-014`. No task promotion/execution is authorized before
-Revision 3 APPROVE and the required readiness gate.
+Queue action: `rebuilt`, then fully executed to terminal `done` under Planning
+Revision 3 APPROVE. W6 remediation (TASK-058/059/060) is also terminal `done`.
+Feature `lifecycle` stays `implemented`; feature-level `SEMANTIC_VERDICT:
+semantic-pass` is recorded. Feature-level `verified` and promotion remain
+scheduler/owner-owned decisions after the applicable post-sync gates.

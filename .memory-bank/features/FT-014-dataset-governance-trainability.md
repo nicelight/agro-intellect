@@ -5,7 +5,7 @@ type: feature
 feature_id: FT-014
 epic: EP-006
 lifecycle: implemented
-last_updated: 2026-08-11
+last_updated: 2026-08-12
 clarification_status: complete
 last_clarified: 2026-08-10
 clarification_questions: 1
@@ -159,11 +159,40 @@ source_of_truth:
   `record_follow_up_outcome` inside its existing UoW.
 - W5 (TASK-057 `done`): advisory-only Training Data Curator runtime and the
   atomic `curator_auto` selected gate over production strong evidence.
-- All ten indexed FT-014 tasks are terminal `done` with per-task `/verify`
-  `PASS` and `/red-verify` `semantic-pass`; feature `lifecycle` is therefore
-  `implemented`. Feature-level `verified` is not applied: the feature is
-  T3-only, so the T2 feature-completion `/red-verify --feature` gate does not
-  apply, and feature-level promotion remains a scheduler/owner decision.
+- W6 (`done`): TASK-058 reconciliation re-pins the ten historical feature
+  migration tests to the live head `ft014_dataset_candidates`;
+  TASK-059 shares one generalized dataset-evidence seam helper across all four
+  source owners and registers `PHOTO_DATASET_AUDIT_FAILED` /
+  `OPERATION_DATASET_AUDIT_FAILED` (HTTP 500) in the HTTP contracts;
+  TASK-060 unifies the two Dataset Agent runtime skeletons into one
+  module-private flow core with a single `_audit_failed_outcome` helper under
+  the documented `curator_gate_result` convention.
+- All thirteen indexed FT-014 tasks are terminal `done`: the ten T3 cards
+  (TASK-047..055, TASK-057) each carry per-task `/verify` `PASS` and
+  `/red-verify` `semantic-pass`, and the W6 cards TASK-058 (T1) and
+  TASK-059/060 (T2) each carry a fresh `/verify` `PASS`. Feature `lifecycle`
+  is therefore `implemented`. The feature-level T2 completion gate recorded
+  `SEMANTIC_VERDICT: semantic-pass` (below). Feature-level `verified` is not
+  applied and feature-level promotion remains a scheduler/owner decision.
+
+## Semantic Verification
+
+SEMANTIC_VERDICT: semantic-pass
+
+- Fresh feature-level adversarial review (T2 feature-completion gate) verified
+  the whole implemented feature including the W6 tech-debt remediation: sole
+  Dataset Candidate writer via one shared `record_dataset_evidence` seam,
+  sole derived trainability authority, advisory-only Dataset Agents with no
+  MessageEnvelope/Safety/Bus/UI effect, atomic `curator_auto` gate, the unified
+  Dataset Agent runtime flow core, and the explicit
+  PHOTO_DATASET_AUDIT_FAILED / OPERATION_DATASET_AUDIT_FAILED taxonomy, with
+  boundary/contract integrity and cross-spec agreement confirmed.
+- Independent probes: `probe_static.py --expect green` holds=True; fresh full
+  deterministic suite 754 passed; dataset_governance 151 passed; API
+  error-code + candidate suites 50 passed; mb-lint passed; diff_check clean;
+  sole-writer and no-HTTP-surface static scans clean. No admitted material
+  finding; no task or feature lifecycle mutated.
+- Report: [FT-014 feature semantic review](../../.tasks/FT-014/FT-014-S-RED-VERIFY-final-report-docs-01.md).
 
 ## Edge Cases & Failure Modes
 

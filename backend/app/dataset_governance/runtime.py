@@ -7,6 +7,13 @@ command over one candidate, persists only the current-run advisory allowlist
 (or nothing for silence), and consumes a selected result through the
 server-owned ``curator_auto`` gate in one atomic unit of work. Production
 remains unbound and fails closed with no fake, canned, or fallback result.
+
+The two public runtime services are thin adapters over one module-private
+shared flow core (``_DatasetAgentRuntimeFlow``) parameterized by prepared-run
+type, decision type, and gate-result mapping. Every ``audit_failed`` outcome is
+built by the single module-level ``_audit_failed_outcome`` helper under the
+``curator_gate_result`` convention documented in
+``.memory-bank/contracts/dataset-agents-runtime.md``.
 """
 
 from __future__ import annotations
@@ -34,7 +41,6 @@ from .contracts import (
 from .models import DatasetCandidate
 from .repository import CurrentDatasetScope, DatasetGovernanceRepository
 from .runtime_contracts import (
-    CURATOR_DECISIONS,
     DATASET_AGENT_AUDIT_FAILED,
     DATASET_AGENT_CONTEXT_DENIED,
     DATASET_AGENT_OUTPUT_INVALID,
@@ -87,37 +93,88 @@ class _PreparedRun:
     candidate_ref: str
 
 
-class DatasetGovernanceRuntimeService:
-    """Runs one explicit internal Dataset Governance Agent attempt."""
+@dataclass(frozen=True, slots=True)
+class _CuratorPreparedRun:
+    request: TrainingDataCuratorProviderRequestV1
+    candidate_record_version: int
+    candidate_ref: str
+
+
+@dataclass(frozen=True, slots=True)
+class _RuntimeFlowSpec:
+    """Per-service parameterization of the shared Dataset Agent flow core.
+
+    - prepared-run type: the request/prepared dataclass pair building the
+      provider run for this service;
+    - decision type: the strict typed result class parsing the untrusted
+      provider decision;
+    - gate-result mapping: derives ``curator_gate_result`` for the
+      ``advisory_ready`` outcome from the parsed decision.
+
+    The remaining flags capture the divergence current tests pin: the curator
+    re-locks on the post-I/O guard, rejects a candidate that already persists a
+    curator run, and rolls back the DB transaction when the audit append fails;
+    the governance service does none of those.
+    """
+
+    agent_id: str
+    request_type: type
+    prepared_type: type
+    decision_type: type
+    ready_gate_result: Callable[[object], str]
+    post_io_guard_locks: bool = False
+    reject_existing_run: bool = False
+    rollback_on_audit_failure: bool = False
+
+
+class _DatasetAgentRuntimeFlow:
+    """Module-private shared Dataset Agent flow core (AD-011).
+
+    Owns the orchestration the two public services previously duplicated by
+    copy: command revalidation, prepare/scope/candidate guards, the provider
+    round trip, the post-I/O guard, rollback, and the sanitized audit append.
+    The two public service classes are thin adapters parameterizing this core
+    by prepared-run type, decision type, and gate-result mapping and supplying
+    only their service-specific advisory/gate step through ``ready``.
+    """
 
     def __init__(
         self,
-        session: Session,
         *,
-        model_executor: DatasetGovernanceModelExecutor | None = None,
-        repository: DatasetGovernanceRepository | None = None,
-        timeline_append: TimelineAppender | None = None,
-        clock: Clock | None = None,
+        session: Session,
+        repository: DatasetGovernanceRepository,
+        timeline_append: TimelineAppender,
+        clock: Clock,
     ) -> None:
         self._session = session
-        self._model_executor = model_executor
-        self._repository = repository or DatasetGovernanceRepository(session)
-        self._timeline_append = timeline_append or TimelineJsonlAppender()
-        self._clock = clock or _utc_now
+        self._repository = repository
+        self._timeline_append = timeline_append
+        self._clock = clock
 
-    def run(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
+    def run(
+        self,
+        command: DatasetAgentCommandV1,
+        *,
+        executor: (
+            DatasetGovernanceModelExecutor | TrainingDataCuratorModelExecutor | None
+        ),
+        spec: _RuntimeFlowSpec,
+        ready: Callable[
+            [DatasetAgentCommandV1, object, str | None, object, DatasetCandidate],
+            DatasetAgentRuntimeOutcomeV1,
+        ],
+    ) -> DatasetAgentRuntimeOutcomeV1:
         if (
             not isinstance(command, DatasetAgentCommandV1)
-            or command.agent_id != "dataset_governance"
+            or command.agent_id != spec.agent_id
         ):
             raise DatasetGovernanceValidationError()
 
-        prepared = self._prepare(command)
+        prepared = self._prepare(command, spec=spec)
         if isinstance(prepared, DatasetAgentRuntimeOutcomeV1):
             return prepared
 
         self._end_database_transaction()
-        executor = self._model_executor
         model_ref = _executor_model_ref(executor)
         if executor is None or model_ref is None:
             return self._audit(
@@ -130,6 +187,8 @@ class DatasetGovernanceRuntimeService:
                 error_code=DATASET_AGENT_RUNTIME_NOT_CONFIGURED,
                 provider_call_status="not_attempted",
                 validated_result=None,
+                curator_gate_result="not_applicable",
+                rollback_on_audit_failure=spec.rollback_on_audit_failure,
             )
 
         try:
@@ -145,10 +204,12 @@ class DatasetGovernanceRuntimeService:
                 error_code=DATASET_AGENT_PROVIDER_FAILED,
                 provider_call_status="failed",
                 validated_result=None,
+                curator_gate_result="not_applicable",
+                rollback_on_audit_failure=spec.rollback_on_audit_failure,
             )
 
         try:
-            result = DatasetGovernanceAssessmentV1.from_untrusted(
+            result = spec.decision_type.from_untrusted(
                 _execution_result(execution, expected_model_ref=model_ref),
                 request=prepared.request,
             )
@@ -163,11 +224,13 @@ class DatasetGovernanceRuntimeService:
                 error_code=DATASET_AGENT_OUTPUT_INVALID,
                 provider_call_status="completed",
                 validated_result=None,
+                curator_gate_result="not_applicable",
+                rollback_on_audit_failure=spec.rollback_on_audit_failure,
             )
 
         self._end_database_transaction()
         try:
-            self._post_io_guard(command, prepared)
+            candidate = self._post_io_guard(command, prepared, spec=spec)
         except _PostIoGuardDenied:
             return self._audit(
                 command,
@@ -179,32 +242,21 @@ class DatasetGovernanceRuntimeService:
                 error_code=DATASET_AGENT_POST_IO_GUARD_DENIED,
                 provider_call_status="completed",
                 validated_result=None,
+                curator_gate_result="not_applicable",
+                rollback_on_audit_failure=spec.rollback_on_audit_failure,
             )
-        self._end_database_transaction()
-
-        return self._audit(
-            command,
-            prepared=prepared,
-            model_ref=model_ref,
-            outcome_kind="advisory_ready",
-            status="advisory_ready",
-            reason_code="advisory_ready",
-            error_code=None,
-            provider_call_status="completed",
-            validated_result=result,
-        )
-
-    def invoke(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
-        return self.run(command)
+        return ready(command, prepared, model_ref, result, candidate)
 
     def _prepare(
         self,
         command: DatasetAgentCommandV1,
-    ) -> _PreparedRun | DatasetAgentRuntimeOutcomeV1:
+        *,
+        spec: _RuntimeFlowSpec,
+    ) -> _PreparedRun | _CuratorPreparedRun | DatasetAgentRuntimeOutcomeV1:
         """Revalidate current authority and build the strict provider request."""
         try:
-            scope = self._require_current_scope(command)
-            candidate = self._require_candidate(command, scope)
+            scope = self._require_current_scope(command, for_update=False)
+            candidate = self._require_candidate(command, scope, for_update=False)
         except _ContextDenied:
             return self._audit(
                 command,
@@ -216,9 +268,11 @@ class DatasetGovernanceRuntimeService:
                 error_code=DATASET_AGENT_CONTEXT_DENIED,
                 provider_call_status="not_attempted",
                 validated_result=None,
+                curator_gate_result="not_applicable",
+                rollback_on_audit_failure=spec.rollback_on_audit_failure,
             )
         try:
-            request = DatasetGovernanceProviderRequestV1(
+            request = spec.request_type(
                 run_id=command.run_id,
                 requested_at=command.requested_at,
                 plant_id=command.plant_id,
@@ -240,8 +294,10 @@ class DatasetGovernanceRuntimeService:
                 error_code=DATASET_AGENT_CONTEXT_DENIED,
                 provider_call_status="not_attempted",
                 validated_result=None,
+                curator_gate_result="not_applicable",
+                rollback_on_audit_failure=spec.rollback_on_audit_failure,
             )
-        return _PreparedRun(
+        return spec.prepared_type(
             request=request,
             candidate_record_version=candidate.record_version,
             candidate_ref=f"dataset_candidate:{candidate.candidate_id}",
@@ -250,11 +306,13 @@ class DatasetGovernanceRuntimeService:
     def _require_current_scope(
         self,
         command: DatasetAgentCommandV1,
+        *,
+        for_update: bool,
     ) -> CurrentDatasetScope:
         scope = self._repository.current_scope(
             command.actor_context,
             plant_id=command.plant_id,
-            for_update=False,
+            for_update=for_update,
         )
         if scope is None or scope.plant_status != "active":
             raise _ContextDenied()
@@ -264,10 +322,12 @@ class DatasetGovernanceRuntimeService:
         self,
         command: DatasetAgentCommandV1,
         scope: CurrentDatasetScope,
+        *,
+        for_update: bool,
     ) -> DatasetCandidate:
         candidate = self._repository.candidate(
             command.candidate_id,
-            for_update=False,
+            for_update=for_update,
         )
         if (
             candidate is None
@@ -280,21 +340,37 @@ class DatasetGovernanceRuntimeService:
     def _post_io_guard(
         self,
         command: DatasetAgentCommandV1,
-        prepared: _PreparedRun,
-    ) -> None:
+        prepared: _PreparedRun | _CuratorPreparedRun,
+        *,
+        spec: _RuntimeFlowSpec,
+    ) -> DatasetCandidate:
+        """Re-validate current authority and candidate after provider I/O.
+
+        Re-locks with ``FOR UPDATE`` when the service's guard requires it
+        (curator), revalidates the exact candidate version, and rejects a
+        candidate that already persists a curator run before any advisory or
+        gate write (curator stale/duplicate-run check).
+        """
         try:
-            scope = self._require_current_scope(command)
-            candidate = self._require_candidate(command, scope)
+            scope = self._require_current_scope(
+                command, for_update=spec.post_io_guard_locks
+            )
+            candidate = self._require_candidate(
+                command, scope, for_update=spec.post_io_guard_locks
+            )
         except _ContextDenied:
             raise _PostIoGuardDenied() from None
         if candidate.record_version != prepared.candidate_record_version:
             raise _PostIoGuardDenied()
+        if spec.reject_existing_run and candidate.curator_run_id is not None:
+            raise _PostIoGuardDenied()
+        return candidate
 
     def _audit(
         self,
         command: DatasetAgentCommandV1,
         *,
-        prepared: _PreparedRun | None,
+        prepared: _PreparedRun | _CuratorPreparedRun | None,
         model_ref: str | None,
         outcome_kind: str,
         status: str,
@@ -302,6 +378,10 @@ class DatasetGovernanceRuntimeService:
         error_code: str | None,
         provider_call_status: str,
         validated_result: object | None,
+        curator_gate_result: str,
+        advisory_persisted: bool = False,
+        lifecycle_changed: bool = False,
+        rollback_on_audit_failure: bool = False,
     ) -> DatasetAgentRuntimeOutcomeV1:
         if prepared is None:
             candidate_refs: list[str] = []
@@ -317,29 +397,24 @@ class DatasetGovernanceRuntimeService:
             reason_code=reason_code,
             error_code=error_code,
             provider_call_status=provider_call_status,
-            curator_gate_result="not_applicable",
+            curator_gate_result=curator_gate_result,
             candidate_refs=candidate_refs,
             candidate_ref_count=candidate_ref_count,
+            advisory_persisted=advisory_persisted,
+            lifecycle_changed=lifecycle_changed,
         )
         try:
             event_ref = self._timeline_append(event)
             if not _event_ref_is_valid(event_ref):
                 raise ValueError("Timeline append returned an invalid ref.")
         except Exception:
-            return DatasetAgentRuntimeOutcomeV1(
-                run_id=command.run_id,
-                agent_id=command.agent_id,
-                candidate_id=command.candidate_id,
-                outcome_kind="audit_failed",
-                status="failed",
-                reason_code="audit_failed",
-                error_code=DATASET_AGENT_AUDIT_FAILED,
-                validated_result=None,
-                event_ref=None,
+            if rollback_on_audit_failure:
+                self._end_database_transaction()
+            return _audit_failed_outcome(
+                command,
                 model_ref=model_ref,
                 provider_call_status=provider_call_status,
-                audit_status="failed",
-                curator_gate_result="not_applicable",
+                curator_gate_result=curator_gate_result,
             )
         return DatasetAgentRuntimeOutcomeV1(
             run_id=command.run_id,
@@ -354,7 +429,7 @@ class DatasetGovernanceRuntimeService:
             model_ref=model_ref,
             provider_call_status=provider_call_status,
             audit_status="appended",
-            curator_gate_result="not_applicable",
+            curator_gate_result=curator_gate_result,
         )
 
     def _end_database_transaction(self) -> None:
@@ -362,11 +437,83 @@ class DatasetGovernanceRuntimeService:
             self._session.rollback()
 
 
-@dataclass(frozen=True, slots=True)
-class _CuratorPreparedRun:
-    request: TrainingDataCuratorProviderRequestV1
-    candidate_record_version: int
-    candidate_ref: str
+_GOVERNANCE_RUNTIME_SPEC = _RuntimeFlowSpec(
+    agent_id="dataset_governance",
+    request_type=DatasetGovernanceProviderRequestV1,
+    prepared_type=_PreparedRun,
+    decision_type=DatasetGovernanceAssessmentV1,
+    ready_gate_result=lambda result: "not_applicable",
+    post_io_guard_locks=False,
+    reject_existing_run=False,
+    rollback_on_audit_failure=False,
+)
+
+
+_CURATOR_RUNTIME_SPEC = _RuntimeFlowSpec(
+    agent_id="training_data_curator",
+    request_type=TrainingDataCuratorProviderRequestV1,
+    prepared_type=_CuratorPreparedRun,
+    decision_type=TrainingDataCuratorDecisionV1,
+    ready_gate_result=lambda result: (
+        "confirmed" if result.curator_decision == "selected" else "not_requested"
+    ),
+    post_io_guard_locks=True,
+    reject_existing_run=True,
+    rollback_on_audit_failure=True,
+)
+
+
+class DatasetGovernanceRuntimeService:
+    """Runs one explicit internal Dataset Governance Agent attempt."""
+
+    def __init__(
+        self,
+        session: Session,
+        *,
+        model_executor: DatasetGovernanceModelExecutor | None = None,
+        repository: DatasetGovernanceRepository | None = None,
+        timeline_append: TimelineAppender | None = None,
+        clock: Clock | None = None,
+    ) -> None:
+        self._flow = _DatasetAgentRuntimeFlow(
+            session=session,
+            repository=repository or DatasetGovernanceRepository(session),
+            timeline_append=timeline_append or TimelineJsonlAppender(),
+            clock=clock or _utc_now,
+        )
+        self._model_executor = model_executor
+
+    def run(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
+        return self._flow.run(
+            command,
+            executor=self._model_executor,
+            spec=_GOVERNANCE_RUNTIME_SPEC,
+            ready=self._advisory_ready,
+        )
+
+    def invoke(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
+        return self.run(command)
+
+    def _advisory_ready(
+        self,
+        command: DatasetAgentCommandV1,
+        prepared: _PreparedRun,
+        model_ref: str | None,
+        result: DatasetGovernanceAssessmentV1,
+        candidate: DatasetCandidate,
+    ) -> DatasetAgentRuntimeOutcomeV1:
+        return self._flow._audit(
+            command,
+            prepared=prepared,
+            model_ref=model_ref,
+            outcome_kind="advisory_ready",
+            status="advisory_ready",
+            reason_code="advisory_ready",
+            error_code=None,
+            provider_call_status="completed",
+            validated_result=result,
+            curator_gate_result=_GOVERNANCE_RUNTIME_SPEC.ready_gate_result(result),
+        )
 
 
 class TrainingDataCuratorRuntimeService:
@@ -391,107 +538,42 @@ class TrainingDataCuratorRuntimeService:
         governance_service: DatasetGovernanceService | None = None,
     ) -> None:
         self._session = session
-        self._model_executor = model_executor
-        self._repository = repository or DatasetGovernanceRepository(session)
-        self._timeline_append = timeline_append or TimelineJsonlAppender()
         self._clock = clock or _utc_now
+        self._flow = _DatasetAgentRuntimeFlow(
+            session=session,
+            repository=repository or DatasetGovernanceRepository(session),
+            timeline_append=timeline_append or TimelineJsonlAppender(),
+            clock=self._clock,
+        )
+        self._model_executor = model_executor
         self._governance = governance_service or DatasetGovernanceService(
             session,
-            timeline_appender=self._timeline_append,
-            repository=self._repository,
+            timeline_appender=self._flow._timeline_append,
+            repository=self._flow._repository,
             clock=self._clock,
         )
 
     def run(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
-        if (
-            not isinstance(command, DatasetAgentCommandV1)
-            or command.agent_id != "training_data_curator"
-        ):
-            raise DatasetGovernanceValidationError()
+        return self._flow.run(
+            command,
+            executor=self._model_executor,
+            spec=_CURATOR_RUNTIME_SPEC,
+            ready=self._curator_ready,
+        )
 
-        prepared = self._prepare(command)
-        if isinstance(prepared, DatasetAgentRuntimeOutcomeV1):
-            return prepared
+    def invoke(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
+        return self.run(command)
 
-        self._end_database_transaction()
-        executor = self._model_executor
-        model_ref = _executor_model_ref(executor)
-        if executor is None or model_ref is None:
-            return self._audit(
-                command,
-                prepared=prepared,
-                model_ref=None,
-                outcome_kind="runtime_not_configured",
-                status="failed",
-                reason_code="runtime_not_configured",
-                error_code=DATASET_AGENT_RUNTIME_NOT_CONFIGURED,
-                provider_call_status="not_attempted",
-                validated_result=None,
-                curator_gate_result="not_applicable",
-                advisory_persisted=False,
-                lifecycle_changed=False,
-            )
-
-        try:
-            execution = executor.execute(prepared.request)
-        except Exception:
-            return self._audit(
-                command,
-                prepared=prepared,
-                model_ref=model_ref,
-                outcome_kind="provider_failed",
-                status="failed",
-                reason_code="provider_failed",
-                error_code=DATASET_AGENT_PROVIDER_FAILED,
-                provider_call_status="failed",
-                validated_result=None,
-                curator_gate_result="not_applicable",
-                advisory_persisted=False,
-                lifecycle_changed=False,
-            )
-
-        try:
-            result = TrainingDataCuratorDecisionV1.from_untrusted(
-                _execution_result(execution, expected_model_ref=model_ref),
-                request=prepared.request,
-            )
-        except DatasetGovernanceRuntimeValidationError:
-            return self._audit(
-                command,
-                prepared=prepared,
-                model_ref=model_ref,
-                outcome_kind="output_invalid",
-                status="blocked",
-                reason_code="output_invalid",
-                error_code=DATASET_AGENT_OUTPUT_INVALID,
-                provider_call_status="completed",
-                validated_result=None,
-                curator_gate_result="not_applicable",
-                advisory_persisted=False,
-                lifecycle_changed=False,
-            )
-
-        self._end_database_transaction()
-        try:
-            candidate = self._post_io_guard(command, prepared)
-        except _PostIoGuardDenied:
-            return self._audit(
-                command,
-                prepared=prepared,
-                model_ref=model_ref,
-                outcome_kind="post_io_guard_denied",
-                status="blocked",
-                reason_code="post_io_guard_denied",
-                error_code=DATASET_AGENT_POST_IO_GUARD_DENIED,
-                provider_call_status="completed",
-                validated_result=None,
-                curator_gate_result="not_applicable",
-                advisory_persisted=False,
-                lifecycle_changed=False,
-            )
-
+    def _curator_ready(
+        self,
+        command: DatasetAgentCommandV1,
+        prepared: _CuratorPreparedRun,
+        model_ref: str | None,
+        result: TrainingDataCuratorDecisionV1,
+        candidate: DatasetCandidate,
+    ) -> DatasetAgentRuntimeOutcomeV1:
         if result.curator_decision == "silent":
-            return self._audit(
+            return self._flow._audit(
                 command,
                 prepared=prepared,
                 model_ref=model_ref,
@@ -504,6 +586,7 @@ class TrainingDataCuratorRuntimeService:
                 curator_gate_result="not_requested",
                 advisory_persisted=False,
                 lifecycle_changed=False,
+                rollback_on_audit_failure=True,
             )
 
         try:
@@ -512,25 +595,16 @@ class TrainingDataCuratorRuntimeService:
                 self._apply_curator_gate(command, candidate)
             selected = result.curator_decision == "selected"
         except DatasetGovernanceError as governance_error:
-            self._end_database_transaction()
+            self._flow._end_database_transaction()
             if governance_error.code is DatasetGovernanceErrorCode.AUDIT_FAILED:
-                return DatasetAgentRuntimeOutcomeV1(
-                    run_id=command.run_id,
-                    agent_id=command.agent_id,
-                    candidate_id=command.candidate_id,
-                    outcome_kind="audit_failed",
-                    status="failed",
-                    reason_code="audit_failed",
-                    error_code=DATASET_AGENT_AUDIT_FAILED,
-                    validated_result=None,
-                    event_ref=None,
+                return _audit_failed_outcome(
+                    command,
                     model_ref=model_ref,
                     provider_call_status="completed",
-                    audit_status="failed",
-                    curator_gate_result="not_applicable",
+                    curator_gate_result="confirmed",
                 )
             if governance_error.code is DatasetGovernanceErrorCode.CONTEXT_FORBIDDEN:
-                return self._audit(
+                return self._flow._audit(
                     command,
                     prepared=prepared,
                     model_ref=model_ref,
@@ -543,8 +617,9 @@ class TrainingDataCuratorRuntimeService:
                     curator_gate_result="not_applicable",
                     advisory_persisted=False,
                     lifecycle_changed=False,
+                    rollback_on_audit_failure=True,
                 )
-            return self._audit(
+            return self._flow._audit(
                 command,
                 prepared=prepared,
                 model_ref=model_ref,
@@ -557,10 +632,11 @@ class TrainingDataCuratorRuntimeService:
                 curator_gate_result="policy_blocked",
                 advisory_persisted=False,
                 lifecycle_changed=False,
+                rollback_on_audit_failure=True,
             )
         except (SQLAlchemyError, TypeError, ValueError):
-            self._end_database_transaction()
-            return self._audit(
+            self._flow._end_database_transaction()
+            return self._flow._audit(
                 command,
                 prepared=prepared,
                 model_ref=model_ref,
@@ -573,9 +649,10 @@ class TrainingDataCuratorRuntimeService:
                 curator_gate_result="policy_blocked",
                 advisory_persisted=False,
                 lifecycle_changed=False,
+                rollback_on_audit_failure=True,
             )
 
-        return self._audit(
+        return self._flow._audit(
             command,
             prepared=prepared,
             model_ref=model_ref,
@@ -585,125 +662,11 @@ class TrainingDataCuratorRuntimeService:
             error_code=None,
             provider_call_status="completed",
             validated_result=result,
-            curator_gate_result="confirmed" if selected else "not_requested",
+            curator_gate_result=_CURATOR_RUNTIME_SPEC.ready_gate_result(result),
             advisory_persisted=True,
             lifecycle_changed=selected,
+            rollback_on_audit_failure=True,
         )
-
-    def invoke(self, command: DatasetAgentCommandV1) -> DatasetAgentRuntimeOutcomeV1:
-        return self.run(command)
-
-    def _prepare(
-        self,
-        command: DatasetAgentCommandV1,
-    ) -> _CuratorPreparedRun | DatasetAgentRuntimeOutcomeV1:
-        """Revalidate current authority and build the strict curator request."""
-        try:
-            scope = self._require_current_scope(command, for_update=False)
-            candidate = self._require_candidate(command, scope, for_update=False)
-        except _ContextDenied:
-            return self._audit(
-                command,
-                prepared=None,
-                model_ref=None,
-                outcome_kind="context_denied",
-                status="blocked",
-                reason_code="context_denied",
-                error_code=DATASET_AGENT_CONTEXT_DENIED,
-                provider_call_status="not_attempted",
-                validated_result=None,
-                curator_gate_result="not_applicable",
-                advisory_persisted=False,
-                lifecycle_changed=False,
-            )
-        try:
-            request = TrainingDataCuratorProviderRequestV1(
-                run_id=command.run_id,
-                requested_at=command.requested_at,
-                plant_id=command.plant_id,
-                candidate_id=candidate.candidate_id,
-                candidate=_candidate_snapshot(candidate),
-                policy_context=DatasetGovernancePolicyContextV1(
-                    strong_evidence_policy=STRONG_EVIDENCE_POLICY_V1,
-                    agent_labeled_guard=True,
-                ),
-            )
-        except DatasetGovernanceRuntimeValidationError:
-            return self._audit(
-                command,
-                prepared=None,
-                model_ref=None,
-                outcome_kind="context_denied",
-                status="blocked",
-                reason_code="context_denied",
-                error_code=DATASET_AGENT_CONTEXT_DENIED,
-                provider_call_status="not_attempted",
-                validated_result=None,
-                curator_gate_result="not_applicable",
-                advisory_persisted=False,
-                lifecycle_changed=False,
-            )
-        return _CuratorPreparedRun(
-            request=request,
-            candidate_record_version=candidate.record_version,
-            candidate_ref=f"dataset_candidate:{candidate.candidate_id}",
-        )
-
-    def _require_current_scope(
-        self,
-        command: DatasetAgentCommandV1,
-        *,
-        for_update: bool,
-    ) -> CurrentDatasetScope:
-        scope = self._repository.current_scope(
-            command.actor_context,
-            plant_id=command.plant_id,
-            for_update=for_update,
-        )
-        if scope is None or scope.plant_status != "active":
-            raise _ContextDenied()
-        return scope
-
-    def _require_candidate(
-        self,
-        command: DatasetAgentCommandV1,
-        scope: CurrentDatasetScope,
-        *,
-        for_update: bool,
-    ) -> DatasetCandidate:
-        candidate = self._repository.candidate(
-            command.candidate_id,
-            for_update=for_update,
-        )
-        if (
-            candidate is None
-            or candidate.farm_id != scope.farm_id
-            or candidate.plant_id != command.plant_id
-        ):
-            raise _ContextDenied()
-        return candidate
-
-    def _post_io_guard(
-        self,
-        command: DatasetAgentCommandV1,
-        prepared: _CuratorPreparedRun,
-    ) -> DatasetCandidate:
-        """Re-lock current authority/Plant and the candidate after provider I/O.
-
-        Uses ``FOR UPDATE`` locks, revalidates the exact candidate version, and
-        rejects a candidate that already persists a curator run (stale/
-        duplicate-run) before any advisory or gate write.
-        """
-        try:
-            scope = self._require_current_scope(command, for_update=True)
-            candidate = self._require_candidate(command, scope, for_update=True)
-        except _ContextDenied:
-            raise _PostIoGuardDenied() from None
-        if candidate.record_version != prepared.candidate_record_version:
-            raise _PostIoGuardDenied()
-        if candidate.curator_run_id is not None:
-            raise _PostIoGuardDenied()
-        return candidate
 
     def _persist_advisory(
         self,
@@ -744,83 +707,6 @@ class TrainingDataCuratorRuntimeService:
             curator_command_sha256=command.command_sha256,
         )
         self._governance.transition_candidate(transition)
-
-    def _audit(
-        self,
-        command: DatasetAgentCommandV1,
-        *,
-        prepared: _CuratorPreparedRun | None,
-        model_ref: str | None,
-        outcome_kind: str,
-        status: str,
-        reason_code: str,
-        error_code: str | None,
-        provider_call_status: str,
-        validated_result: object | None,
-        curator_gate_result: str,
-        advisory_persisted: bool,
-        lifecycle_changed: bool,
-    ) -> DatasetAgentRuntimeOutcomeV1:
-        if prepared is None:
-            candidate_refs: list[str] = []
-            candidate_ref_count = 0
-        else:
-            candidate_refs = [prepared.candidate_ref]
-            candidate_ref_count = 1
-        event = _runtime_event(
-            command=command,
-            model_ref=model_ref,
-            outcome_kind=outcome_kind,
-            status=status,
-            reason_code=reason_code,
-            error_code=error_code,
-            provider_call_status=provider_call_status,
-            curator_gate_result=curator_gate_result,
-            candidate_refs=candidate_refs,
-            candidate_ref_count=candidate_ref_count,
-            advisory_persisted=advisory_persisted,
-            lifecycle_changed=lifecycle_changed,
-        )
-        try:
-            event_ref = self._timeline_append(event)
-            if not _event_ref_is_valid(event_ref):
-                raise ValueError("Timeline append returned an invalid ref.")
-        except Exception:
-            self._end_database_transaction()
-            return DatasetAgentRuntimeOutcomeV1(
-                run_id=command.run_id,
-                agent_id=command.agent_id,
-                candidate_id=command.candidate_id,
-                outcome_kind="audit_failed",
-                status="failed",
-                reason_code="audit_failed",
-                error_code=DATASET_AGENT_AUDIT_FAILED,
-                validated_result=None,
-                event_ref=None,
-                model_ref=model_ref,
-                provider_call_status=provider_call_status,
-                audit_status="failed",
-                curator_gate_result=curator_gate_result,
-            )
-        return DatasetAgentRuntimeOutcomeV1(
-            run_id=command.run_id,
-            agent_id=command.agent_id,
-            candidate_id=command.candidate_id,
-            outcome_kind=outcome_kind,
-            status=status,
-            reason_code=reason_code,
-            error_code=error_code,
-            validated_result=validated_result,
-            event_ref=dict(event_ref),
-            model_ref=model_ref,
-            provider_call_status=provider_call_status,
-            audit_status="appended",
-            curator_gate_result=curator_gate_result,
-        )
-
-    def _end_database_transaction(self) -> None:
-        if self._session.in_transaction():
-            self._session.rollback()
 
 
 class _ContextDenied(RuntimeError):
@@ -884,6 +770,37 @@ def _runtime_event(
             "advisory_persisted": advisory_persisted,
             "lifecycle_changed": lifecycle_changed,
         },
+    )
+
+
+def _audit_failed_outcome(
+    command: DatasetAgentCommandV1,
+    *,
+    model_ref: str | None,
+    provider_call_status: str,
+    curator_gate_result: str,
+) -> DatasetAgentRuntimeOutcomeV1:
+    """Build the single ``audit_failed`` outcome.
+
+    ``curator_gate_result`` records the attempted gate-result value the failing
+    run would have recorded had the audit append succeeded, per the
+    ``audit_failed`` matrix row convention in
+    ``.memory-bank/contracts/dataset-agents-runtime.md``.
+    """
+    return DatasetAgentRuntimeOutcomeV1(
+        run_id=command.run_id,
+        agent_id=command.agent_id,
+        candidate_id=command.candidate_id,
+        outcome_kind="audit_failed",
+        status="failed",
+        reason_code="audit_failed",
+        error_code=DATASET_AGENT_AUDIT_FAILED,
+        validated_result=None,
+        event_ref=None,
+        model_ref=model_ref,
+        provider_call_status=provider_call_status,
+        audit_status="failed",
+        curator_gate_result=curator_gate_result,
     )
 
 

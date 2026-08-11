@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-08-11
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -126,7 +126,7 @@ source_of_truth:
 | REQ-008 | EP-002 | FT-004, FT-006 | verified: authorized daily check-in with observations/manual pH/EC plus Plant card/history access | verified |
 | REQ-009 | EP-002 | FT-005 | verified: photo file/catalog/sha256/manifest/timeline refs plus stable complete catalog continuation | verified |
 | REQ-010 | EP-002 | FT-006 | verified: PostgreSQL authority vs append-only timeline audit/export, retained history, and strict cursor behavior | verified |
-| REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | deterministic integration: strict provider-neutral schemas, fake/spy timeout/error paths, pre/post-I/O authorization, redaction, no production fake/fallback, and zero direct authority; future milestone: selected OpenAI-compatible endpoint. FT-014 full implementation adds the advisory-only Dataset Governance Agent and Training Data Curator runtimes; the remaining FT-007/FT-009/FT-010/FT-011/FT-012 mapped features keep this row `planned` | planned |
+| REQ-011 | EP-003, EP-004, EP-005, EP-006 | FT-007, FT-009, FT-010, FT-011, FT-012, FT-013, FT-014 | deterministic integration: strict provider-neutral schemas, fake/spy timeout/error paths, pre/post-I/O authorization, redaction, no production fake/fallback, and zero direct authority; future milestone: selected OpenAI-compatible endpoint. FT-014 full implementation adds the advisory-only Dataset Governance Agent and Training Data Curator runtimes and unifies their runtime flow core plus `curator_gate_result` convention; the remaining FT-007/FT-009/FT-010/FT-011/FT-012 mapped features keep this row `planned` | planned |
 | REQ-012 | EP-003 | FT-009 | integration: actual photo-byte integrity through outbound spy; unit: Plant trust-state promotion gates; future milestone: selected endpoint real-image run | planned |
 | REQ-013 | EP-003 | FT-007, FT-008 | verified: pending MessageEnvelope/classification, guarded Bus/UI publication, protected Feed reads, context isolation, and TASK-046 lazy missing-introduction materialization on authorized active-Plant Feed open with no create/startup/restore/archived-read writes, unchanged Feed/cursor schema, and retry after `FEED_PERSISTENCE_FAILED` | verified |
 | REQ-014 | EP-003, EP-004 | FT-010, FT-011 | verified FT-010 missing/stale-data policy plus completed FT-011 deterministic classification and Safety routing through pending human approval; lifecycle awaits explicit owner reconciliation | planned |
@@ -134,7 +134,7 @@ source_of_truth:
 | REQ-016 | EP-004 | FT-012 | e2e: check/measurement tasks, approval-to-human-action task, follow-up evidence, and archived-Plant transition guards | planned |
 | REQ-017 | EP-005 | FT-013 | verified: focus/attention/proposal lifecycle, derived conclusion, retained non-operative governance records, DecisionRecord creation, and explicit provider-neutral Companion proposal through deterministic fake/spy executors; real-provider tests remain a separate explicit future request | verified |
 | REQ-018 | EP-005, EP-004 | FT-013, FT-011, FT-012 | integration: closed atomic governance effects separated from Safety Gate/action authority and revalidated after restore | planned |
-| REQ-019 | EP-006 | FT-014 | unit: trainability default false; integration: evidence refs required. FT-014 fully implemented (candidate aggregate + sole creation seam, transition/trainability authority, photo/check-in/measurement/outcome candidate wiring, advisory Dataset Governance Agent, follow-up evidence association, Outcome composition, Training Data Curator with atomic selected gate); feature-level verification awaits the applicable feature/owner gate | implemented |
+| REQ-019 | EP-006 | FT-014 | unit: trainability default false; integration: evidence refs required. FT-014 fully implemented (candidate aggregate + sole creation seam, transition/trainability authority, photo/check-in/measurement/outcome candidate wiring, advisory Dataset Governance Agent, follow-up evidence association, Outcome composition, Training Data Curator with atomic selected gate, plus W6 remediation: shared dataset-evidence seam helper, explicit `PHOTO_DATASET_AUDIT_FAILED`/`OPERATION_DATASET_AUDIT_FAILED` taxonomy, and unified Dataset Agent runtime flow core); feature-level T2 completion gate recorded `SEMANTIC_VERDICT: semantic-pass` | implemented |
 | REQ-020 | EP-006 | FT-015 | integration: loopback/LAN controls, secret redaction, storage prompt | planned |
 | REQ-021 | EP-006 | FT-016 | e2e: first-demo PWA composition over available backend/agent/safety/governance seams plus safety/context checks | planned |
 | REQ-022 | EP-001, EP-004, EP-005, EP-006 | FT-001, FT-012, FT-013, FT-016 | integration: Consultant read/comment scope and no task mutation, governance approval, Companion invocation, or physical-action approval authority | planned |

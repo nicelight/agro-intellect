@@ -251,7 +251,7 @@ def test_ft014_ac005_audit_failure_rolls_back_photo_and_cleans_artifacts(
                 ),
             )
 
-    assert failure.value.code is PhotoIntakeErrorCode.PHOTO_PERSISTENCE_FAILED
+    assert failure.value.code is PhotoIntakeErrorCode.PHOTO_DATASET_AUDIT_FAILED
     from backend.app.photo_intake.models import PhotoCatalogItem
 
     with ft014_database.session() as session:

@@ -14,8 +14,8 @@ from ..dataset_governance import (
     DatasetGovernanceError,
     DatasetGovernanceErrorCode,
     DatasetGovernanceService,
-    RecordDatasetEvidenceCommandV1,
     SourceKind,
+    record_dataset_evidence,
 )
 from ..safety_gate.models import SafetyActionDecision, SafetyClassification
 from ..timeline.writer import TimelineAppendError, TimelineEvent, TimelineJsonlAppender
@@ -778,10 +778,14 @@ class TaskFollowUpService:
                 outcome.outcome_event_ref = self._append_outcome(outcome, command.actor_context)
                 self._session.add(outcome)
                 self._session.flush()
-                self._record_dataset_evidence(
-                    command.actor_context,
+                record_dataset_evidence(
+                    self._dataset_governance,
+                    session=self._session,
+                    timeline_appender=self._timeline,
+                    actor=command.actor_context,
                     plant_id=command.plant_id,
-                    outcome_id=outcome.outcome_id,
+                    source_kind=SourceKind.FOLLOW_UP_OUTCOME,
+                    source_ref=outcome.outcome_id,
                 )
                 self._associate_follow_up_evidence(
                     command.actor_context,
@@ -841,26 +845,6 @@ class TaskFollowUpService:
             return self._repository.list_approvals(
                 farm_id=scope.farm_id, plant_id=plant_id, status=status, limit=limit
             )
-
-    def _record_dataset_evidence(
-        self,
-        actor,
-        *,
-        plant_id: uuid.UUID,
-        outcome_id: uuid.UUID,
-    ) -> None:
-        governance = self._dataset_governance or DatasetGovernanceService(
-            self._session,
-            timeline_appender=self._timeline,
-        )
-        governance.record_dataset_evidence(
-            RecordDatasetEvidenceCommandV1(
-                actor_context=actor,
-                plant_id=plant_id,
-                source_kind=SourceKind.FOLLOW_UP_OUTCOME,
-                source_ref=outcome_id,
-            )
-        )
 
     def _associate_follow_up_evidence(
         self,

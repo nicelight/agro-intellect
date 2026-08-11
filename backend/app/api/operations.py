@@ -159,6 +159,10 @@ _ERROR_DEFINITIONS = {
         500,
         "Plant operation audit trail could not be recorded.",
     ),
+    PlantOperationErrorCode.OPERATION_DATASET_AUDIT_FAILED: _OperationErrorDefinition(
+        500,
+        "Plant operation dataset audit could not be recorded.",
+    ),
     PlantOperationErrorCode.OPERATION_PERSISTENCE_FAILED: _OperationErrorDefinition(
         500,
         "Plant operation could not be completed.",

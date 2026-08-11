@@ -539,6 +539,33 @@ def test_timeline_and_checksum_failures_are_safe_and_do_not_claim_success(
     }
     assert _photo_count(database) == 0
 
+    class DatasetAuditFailingService:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        def accept_photo(self, *_args, **_kwargs):
+            raise PhotoIntakeError(PhotoIntakeErrorCode.PHOTO_DATASET_AUDIT_FAILED)
+
+    monkeypatch.setattr(
+        "backend.app.api.photos.PhotoIntakeService",
+        DatasetAuditFailingService,
+    )
+    dataset_audit_failed = _upload(
+        client,
+        seed.plant_id,
+        seed.engineer,
+        request_id="req-ft005-dataset-audit-failed",
+    )
+    assert dataset_audit_failed.status_code == 500
+    assert dataset_audit_failed.headers["cache-control"] == "no-store"
+    assert dataset_audit_failed.json()["error"] == {
+        "code": "PHOTO_DATASET_AUDIT_FAILED",
+        "message": "Photo dataset audit could not be recorded.",
+        "request_id": "req-ft005-dataset-audit-failed",
+    }
+    assert _photo_count(database) == 0
+    assert not _has_files(artifact_root)
+
 
 def test_generated_openapi_contains_ft005_photo_contracts():
     database = build_database(AppSettings(database_url="sqlite+pysqlite:///:memory:"))
