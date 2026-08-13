@@ -1,0 +1,58 @@
+{
+  "id": "TASK-101-T3-FT-016-W3",
+  "title": "Present the paginated photo catalog in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": ["TASK-022-T3-FT-005-W2", "TASK-067-T3-FT-015-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/photo-intake/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/photo-catalog.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "photo_catalog_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/photo-catalog.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent active-Plant browser verification covers exact catalog/detail fields, stable pagination, wrong-Plant/malformed cursor denial, local-only wording, and zero mutation or path leakage."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/photo-intake-http.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/photo-intake.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-020 RED: no browser photo-catalog consumer exists; GREEN: exact protected catalog/detail pages render stable complete continuation and safe local-only fields while malformed/wrong-Plant/denied requests fail and no mutation/path/trainability inference occurs; decisive comparison: responses versus DOM/cursor/request transcript; artifact: catalog evidence under .tasks/TASK-101-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the photo catalog read result independently of multipart upload.",
+  "success_outcome": "Authorized active-Plant users can traverse exact safe photo catalog/detail projections with stable continuation and no mutation, filesystem, remote-upload, or Dataset-authority implication.",
+  "anti_goals": ["Do not upload photos, scan files, expose paths, mutate catalog/Dataset state, or imply remote sync.", "Do not recompute checksum, refs, local_only, or can_train_on."],
+  "runtime_context": {
+    "forbidden_scope": ["backend photo catalog/file/manifest/Dataset authority", "filesystem scanning or local-path exposure", "catalog/upload/trainability mutation"],
+    "stop_conditions": ["Catalog presentation needs a path or field outside Photo Intake HTTP.", "The PWA would need to derive pagination, local-only, or trainability authority."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-020",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/photo-intake-http.md#response-shapes",
+    ".memory-bank/contracts/photo-intake-http.md#catalog-pagination",
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/photo-intake.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Photo Intake owns catalog authority and cursor continuation.", "Render exact response values and treat cursor/refs as opaque safe values."],
+  "invariants": ["Catalog reads never scan storage or create/mutate a photo or Dataset Candidate.", "Paths, auth material, raw errors, and remote-server implications remain absent."],
+  "verification_targets": [
+    "FT-016-AC-020: exact catalog/detail presentation, complete pagination, denial/cursor failures, local-only wording, and zero mutation/path leakage.",
+    "T3 harm proof uses isolated catalog rows and verifies malformed/denied reads leave no state or artifact residue."
+  ]
+}

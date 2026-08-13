@@ -4,7 +4,7 @@ status: draft
 type: epic
 epic_id: EP-006
 lifecycle: planned
-last_updated: 2026-08-12
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -26,7 +26,11 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 
 - Dataset candidates remain non-trainable by default.
 - MVP sync status remains `local_only`.
-- Storage prompt appears over 200 MB without implying upload/server availability.
+- Storage prompt is absent at or below `209715200` accepted original photo
+  bytes and appears above that threshold without upload/server implication;
+  non-photo storage and duplicate refs do not affect eligibility.
+- Acknowledge/dismiss is transient to the current rendered prompt and Account,
+  persists no backend state, and leaves `sync.status=local_only`.
 - FT-016 composes the first-demo Boss/Engineer PWA journey over available
   Plant operations, agent, Safety Gate/task, Companion, dataset, and
   timeline/history seams without transferring ownership of those backend
@@ -37,6 +41,9 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 - Secrets/auth material do not enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context.
 - LAN mode, if present, is explicitly enabled and protected.
 - UI is role-aware and uses backend authorization as authority.
+- FT-015 owns photo-pressure eligibility and transient interaction semantics;
+  FT-016 consumes them for Svelte/PWA rendering and first-demo composition
+  without becoming storage or sync authority.
 - Web App/PWA owns the visible first-demo composition of Plant selection,
   check-in/photo/history, agent output, safety/task/approval/follow-up,
   Companion, dataset, timeline/export, and storage-prompt surfaces.
@@ -50,9 +57,12 @@ Deliver the first usable local Web App/PWA surface while preserving local privac
 
 ## Feature-Local Design Pressure
 
-- Exact local storage accounting.
-- Exact UI route/view set and PWA/offline boundary.
-- Exact LAN/CORS/session control shape.
+- FT-015 owns the protected status contract and authoritative Photo Catalog
+  aggregation; FT-016 consumes it without storage/sync authority.
+- FT-016 fixes the minimal route set and static-shell-only PWA cache boundary;
+  protected responses and mutations are never cached or queued.
+- The PWA uses a fixed loopback server-only backend client and introduces no
+  LAN/CORS mode. Backend session and authorization remain authoritative.
 
 ## FT-014 Implementation Status
 

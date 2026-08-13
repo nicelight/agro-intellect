@@ -1,0 +1,91 @@
+{
+  "id": "TASK-069-T3-FT-015-W2",
+  "title": "Close atomic Bus and UI Feed redaction",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-046-T3-FT-008-W3",
+    "TASK-064-T3-FT-015-W1"
+  ],
+  "touched_files": [
+    "backend/app/agent_chat/contracts.py",
+    "backend/app/agent_chat/publication.py",
+    "backend/app/agent_chat/feed.py",
+    "tests/backend/agent_chat/test_ft008_guarded_publication.py",
+    "tests/backend/api/test_ft008_feed_routes.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "bus_ui_redaction",
+      "command": ".venv/bin/python -m pytest tests/backend/agent_chat/test_ft008_guarded_publication.py tests/backend/api/test_ft008_feed_routes.py -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent security verification drives the actual guarded publication transaction with the configured corpus and proves both Bus and UI Feed projections are sanitized or rejected before persistence with unchanged consumability and context isolation."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/ui-feed.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-009 RED/GREEN: drive the actual GuardedAgentPublicationService transaction with the configured corpus; RED is any raw value persisted/serialized or unprovable unsafe branch, GREEN is sanitation/rejection before the atomic Bus/UI write with exact visible/consumable flags and context isolation preserved; decisive comparison: stored Bus/UI rows, serialized Feed values, call result, and unchanged source value; artifact: focused transcript under .tasks/TASK-069-T3-FT-015-W2/."
+  ],
+  "purpose": "Close the one current publication result that derives Bus and UI Feed output from the same candidate copy and commits both projections atomically.",
+  "success_outcome": "The guarded publication transaction never persists or serializes the configured secret/auth corpus in Agent Chat Bus or UI Feed, while exact payload shapes, consumability flags, and context isolation remain unchanged.",
+  "anti_goals": [
+    "Do not change classification/routing, Feed schemas/cursors, roster introductions, context authority, frontend code, or screenshot tooling.",
+    "Do not split the current atomic publication write into separate services or transactions."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-009",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/agent-chat-bus.md#publication-rule",
+    ".memory-bank/contracts/ui-feed.md#rules",
+    ".memory-bank/testing/agent-chat-ui-feed.md",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Sanitize or reject before the existing atomic persistence boundary and retain strict typed payload/flag shapes.",
+    "Preserve the one service-owned Bus/UI transaction; its shared completion is the accepted merge fact."
+  ],
+  "invariants": [
+    "Neither Bus nor UI Feed output contains the forbidden corpus.",
+    "UI Feed remains presentation-only and unavailable to agent context."
+  ],
+  "verification_targets": [
+    "FT-015-AC-009: actual atomic Bus/UI RED/GREEN, both stored-output corpus checks, source-value integrity, and unchanged context/consumability."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Frontend/Svelte/PWA, screenshot tooling, Feed contract redesign, classification/Safety/Task behavior, provider request assembly, or sync."
+    ],
+    "stop_conditions": [
+      "Redaction requires changing a public Bus/UI schema or classified publication route.",
+      "The current Bus/UI writes no longer share one transaction and independently completable owners are discovered."
+    ]
+  }
+}

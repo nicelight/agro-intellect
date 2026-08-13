@@ -1,0 +1,57 @@
+{
+  "id": "TASK-106-T3-FT-016-W3",
+  "title": "Compose follow-up Outcome recording in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-039-T3-FT-012-W1", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/task-follow-up/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/follow-up-outcome.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "follow_up_outcome_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/follow-up-outcome.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent Outcome verification covers exact eligible completed-Task input/evidence, success/retry/transition/version/permission/archive failures, authoritative reread, and no frontend-derived Dataset authority."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/testing/task-follow-up.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-028 RED: no browser follow-up Outcome consumer exists; GREEN: exact authorized Outcome/evidence input commits for an eligible completed Task while retry/transition/version/permission/archive failures remain truthful and non-mutating; decisive comparison: request, response/DOM, authoritative Task/Outcome/Dataset reread; artifact: Outcome evidence under .tasks/TASK-106-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose follow-up Outcome recording independently of Task reads, approval, and completion.",
+  "success_outcome": "An authorized Boss/Engineer can record the exact Outcome/evidence for an eligible completed Task while rejected/retried requests leave Task, Outcome, Dataset, and audit authority consistent.",
+  "anti_goals": ["Do not implement reads, Safety approval, Task completion, arbitrary Outcome/Task creation, or Dataset mutation controls.", "Do not derive attribution, evidence authority, follow-up eligibility, or trainability in the PWA."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Task/Outcome/Dataset/audit authority", "frontend-derived evidence/attribution/eligibility", "arbitrary Outcome or Task creation"],
+    "stop_conditions": ["Outcome recording requires a command outside Task And Approval HTTP.", "The PWA would need to infer evidence, transition, attribution, or Dataset state."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-028",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/task-approval-http.md#follow-up-outcome-command",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/task-follow-up.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Task & Follow-Up owns Outcome transition and evidence composition.", "Send only registered Outcome fields and render backend response/refs."],
+  "invariants": ["Outcome presentation cannot grant Dataset trainability or create follow-up authority.", "Denied/retried requests preserve one authoritative Task/Outcome/evidence state."],
+  "verification_targets": [
+    "FT-016-AC-028: exact Outcome/evidence success plus retry/transition/version/permission/archive failures and authoritative reread.",
+    "T3 harm proof uses isolated Tasks/Outcomes and confirms safe rerun/denial leaves no duplicate or unauthorized Dataset/audit effect."
+  ]
+}

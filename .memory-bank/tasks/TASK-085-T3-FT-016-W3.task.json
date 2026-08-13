@@ -1,0 +1,98 @@
+{
+  "id": "TASK-085-T3-FT-016-W3",
+  "title": "Compose the authoritative Plant card in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-027-T3-FT-006-W3",
+    "TASK-071-T3-FT-015-W2",
+    "TASK-081-T3-FT-016-W2"
+  ],
+  "touched_files": [
+    "frontend/src/lib/plant-history/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/plant-history-card.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "plant_history_card_browser",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/plant-history-card.spec.ts",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent browser/API verification covers only the active and retained-authorized Plant card, safe fields/errors, and absence of direct Timeline/path access."
+  ],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/plant-history-http.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/plant-history.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-021 RED: no PWA Plant-card consumer exists; GREEN: active and archived-authorized card responses render exact refs, freshness, counts, permissions, and retained-history mode while denied/inconsistent cases fail safely; decisive comparison: protected response versus DOM plus direct-Timeline/path/auth absence; artifact: card evidence under .tasks/TASK-085-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the safe authoritative Plant card through its owning projection instead of giving the PWA Timeline or storage access.",
+  "success_outcome": "Authorized users can view the active or retained-authorized Plant card with exact safe refs, freshness, counts, permissions, and mode while the PWA performs no history or Timeline mutation.",
+  "anti_goals": [
+    "Do not implement paginated history, read or replay timeline.jsonl, query PostgreSQL directly, expose local paths, or build an export package.",
+    "Do not make archived retained-history access operational or materialize new work."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "backend Plant History/Timeline/data authority",
+      "timeline replay or direct file access",
+      "archived Plant state advancement",
+      "raw export packaging"
+    ],
+    "stop_conditions": [
+      "Required history data is absent from Plant History HTTP and would require a direct Timeline/data bypass.",
+      "Archived presentation would create or advance operational state."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-021",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/plant-history-http.md",
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/testing/plant-history.md"
+  ],
+  "constraints": [
+    "Primary owner is Operator PWA; Plant History is the sole presentation provider for card/history/timeline refs.",
+    "Use backend-selected active versus retained-history authority and canonical cursor behavior."
+  ],
+  "invariants": [
+    "Timeline remains append-only audit/export and never becomes PWA runtime authority.",
+    "Archived history is retained presentation only and creates no new rows or operational transition."
+  ],
+  "verification_targets": [
+    "FT-016-AC-021: exact active/retained-authorized Plant card and safe denial with no direct Timeline/path surface.",
+    "T3 harm proof uses isolated history state and confirms denied/malformed/archived reads leave no mutation residue."
+  ]
+}

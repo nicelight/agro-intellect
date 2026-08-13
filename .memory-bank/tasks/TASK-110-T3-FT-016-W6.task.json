@@ -1,0 +1,86 @@
+{
+  "id": "TASK-110-T3-FT-016-W6",
+  "title": "Prove complete FT-016 surface composition and no fallback",
+  "status": "planned",
+  "wave": "W6",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": [
+    "TASK-083-T3-FT-016-W3",
+    "TASK-084-T3-FT-016-W3",
+    "TASK-085-T3-FT-016-W3",
+    "TASK-086-T3-FT-016-W3",
+    "TASK-087-T3-FT-016-W3",
+    "TASK-088-T3-FT-016-W3",
+    "TASK-089-T3-FT-016-W3",
+    "TASK-091-T2-FT-016-W3",
+    "TASK-092-T3-FT-016-W3",
+    "TASK-093-T3-FT-016-W4",
+    "TASK-094-T3-FT-016-W4",
+    "TASK-095-T3-FT-016-W5",
+    "TASK-096-T3-FT-016-W3",
+    "TASK-097-T3-FT-016-W3",
+    "TASK-098-T3-FT-016-W3",
+    "TASK-099-T3-FT-016-W3",
+    "TASK-100-T3-FT-016-W3",
+    "TASK-101-T3-FT-016-W3",
+    "TASK-102-T3-FT-016-W3",
+    "TASK-103-T3-FT-016-W3",
+    "TASK-104-T3-FT-016-W3",
+    "TASK-105-T3-FT-016-W3",
+    "TASK-106-T3-FT-016-W3",
+    "TASK-107-T3-FT-016-W3",
+    "TASK-108-T3-FT-016-W3",
+    "TASK-109-T3-FT-016-W3"
+  ],
+  "touched_files": [
+    "frontend/tests/e2e/first-demo-composition.spec.ts",
+    "frontend/tests/e2e/support/first-demo-fixture.ts",
+    "frontend/playwright.config.ts",
+    "tests/backend/local_privacy/test_ft016_unbound_production.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "frontend_build", "command": "cd frontend && npm run build", "required": true},
+    {"name": "ft016_browser_suite", "command": "cd frontend && npm run test:e2e", "required": true},
+    {"name": "unbound_production_probe", "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_ft016_unbound_production.py tests/backend/agent_runtime/test_ft007_runtime.py -q", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent isolated UAT composes every named FT-016 surface after the actor journey, captures only safe evidence, and separately proves unbound production fails before network I/O with no fake/canned fallback."],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-003 RED: no PWA currently composes every named first-demo surface; GREEN: the isolated suite exercises each registered provider consumer including FT-015 prompt and Dataset fields while production-unbound composition has zero fake/fallback/network I/O; decisive comparison: surface coverage matrix, request/evidence refs, safe captures, and unbound spy; artifact: composition matrix and anti-fallback report under .tasks/TASK-110-T3-FT-016-W6/."
+  ],
+  "purpose": "Close only the complete cross-surface composition and production-unbound no-fallback result after the independent actor journey and every provider/security consumer are complete.",
+  "success_outcome": "A reproducible local suite composes every accepted FT-016 surface over backend authority with safe browser evidence and proves unbound production has no fake/canned fallback or network I/O.",
+  "anti_goals": ["Do not reimplement or re-prove dependency-owned provider/actor behavior, select/live-call a provider, add Consultant UI, LAN/cloud sync, or automated actuation.", "Do not close/promote FT-016 or any task; verification and lifecycle ownership remain separate."],
+  "runtime_context": {
+    "forbidden_scope": ["new product/provider/backend authority beyond accepted FT-016 contracts", "external provider/network/credential access", "production fake/canned/fallback output", "Consultant UI, LAN/cloud sync, product capture, or automated actuation"],
+    "stop_conditions": ["Any named surface dependency is failing rather than the FT-016 composition delta.", "The composition requires external provider access, production fallback, permission expansion, or unsafe capture."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-003",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md#first-demo-composition",
+    ".memory-bank/testing/operator-pwa-first-demo.md#reproducible-test-state",
+    ".memory-bank/testing/operator-pwa-first-demo.md#first-demo-gate",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/product-surface-redaction.md#verification-target"
+  ],
+  "constraints": ["Use isolated PostgreSQL/photo/timeline/browser state and explicit test-only deterministic provider fakes/spies; production probe stays unbound.", "This task owns only FT-016-AC-003 cross-surface composition and no-fallback proof; all dependency outcomes remain prerequisites."],
+  "invariants": ["Frontend remains presentation-only and backend authorization, Safety, governance, Dataset, storage, audit, and agent contracts remain authoritative.", "No external provider success, Consultant path, LAN/cloud sync, product capture, or automated physical action is claimed."],
+  "verification_targets": [
+    "FT-016-AC-003: every named provider/FT-015 surface composed after the actor journey, safe evidence captured, and unbound production fails before network I/O with no fallback.",
+    "T3 harm proof records isolated initial state, safe rerun identities, observed composition result, and cleanup without permissions/external-state expansion."
+  ]
+}

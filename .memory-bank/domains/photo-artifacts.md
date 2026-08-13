@@ -2,7 +2,7 @@
 description: Photo artifact authority, catalog, local storage layout, and capture manifest contract for MVP v2.
 status: active
 type: domain
-last_updated: 2026-07-15
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/requirements.md
@@ -122,6 +122,32 @@ Rules:
 - Existing accepted original files and initial capture manifests must not be
   overwritten. A new upload creates a new `photo_id`.
 
+## Farm photo storage pressure
+
+FT-015 derives one Farm-wide presentation input from PostgreSQL Photo Catalog
+authority:
+
+- `accepted_original_photo_bytes` is `COALESCE(SUM(size_bytes), 0)` over all
+  `photo_catalog_items` for the authorized `farm_id`;
+- every accepted Photo Catalog row contributes exactly once;
+- retained rows for archived Plants remain included because archive does not
+  remove their accepted local original or catalog authority;
+- `prompt_threshold_bytes` is the constant `209715200`;
+- `prompt_eligible` is true only when
+  `accepted_original_photo_bytes > prompt_threshold_bytes`.
+
+The aggregation reads no filesystem path and performs no disk scan. Initial
+manifests, PostgreSQL storage size, Timeline, logs, caches, temporary/failed/
+orphan files, screenshots, application assets, derived/export artifacts, and
+Dataset Candidate refs are excluded. Duplicate references to a photo cannot
+increase the total because the query aggregates only the authoritative catalog
+row once.
+
+This is a read projection, not mutable sync or prompt state. It creates no
+table, migration, acknowledgment row, cooldown, episode, Timeline event, or
+upload authority. Database failure fails closed through the owning HTTP error;
+filesystem scanning is forbidden as a fallback.
+
 ## Initial capture manifest v1
 
 Initial capture manifests are immutable JSON artifacts adjacent to the stored
@@ -206,6 +232,8 @@ reasoning.
   governance rules; it is non-trainable by default.
 - Manifests, logs, timeline events, UI Feed, exports, and agent context must not
   include secrets or auth material.
+- Storage pressure MUST use the Farm-scoped Photo Catalog aggregation above and
+  MUST NOT infer authority from filesystem contents or Dataset Candidate refs.
 
 ## Edge Cases And Errors
 
@@ -216,6 +244,9 @@ reasoning.
 - If cleanup is needed after partial failure, it must not delete unrelated local
   data or retained authorized history.
 - Archived Plant photo access requires explicit retained-history authorization.
+- An archived Plant's retained accepted bytes still contribute to the
+  Farm-wide pressure total; archive is not a storage deletion operation.
+- Aggregation failure must not return a partial total or scan local roots.
 
 ## Verification
 
@@ -227,3 +258,6 @@ Tests must prove:
 - Photo artifacts cannot override PostgreSQL/read-model Plant state.
 - Unauthorized or archived-normal-operation access is filtered correctly.
 - Dataset trainability remains false unless dataset governance later changes it.
+- Farm pressure tests prove empty/below/exact/above threshold totals, cross-Farm
+  isolation, retained archived-Plant bytes, one count per catalog row, and all
+  named exclusions.

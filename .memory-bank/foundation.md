@@ -1,7 +1,7 @@
 ---
 description: Foundation Dev Path evidence and feature pressure map.
 status: active
-last_updated: 2026-08-10
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/spec-backbone.md
   - .memory-bank/architecture/system-architecture.md
@@ -74,6 +74,13 @@ were created by `/foundation-to-tasks`. The final foundation gate is
   product contracts over the already verified provider/redaction/database/
   timeline substrate; they do not change the Foundation work path or require a
   new FT-000 task. `TASK-004-T2-FT-000-W0` remains the concrete final gate.
+- Post-Revision-4 `/foundation-to-tasks` audit confirmed that Product Surface
+  Redaction and its cross-module dependency topology introduce no executable
+  substrate gap. The existing `backend/app/core/redaction.py` primitive,
+  canonical Foundation specs, targeted substrate checks, and verified final
+  gate remain sufficient; capability-owned product coverage is a downstream
+  planning delta. `TASK-004-T2-FT-000-W0` and all FT-000 history are preserved,
+  with no new Foundation work.
 
 ## Foundation Substrate Specs
 

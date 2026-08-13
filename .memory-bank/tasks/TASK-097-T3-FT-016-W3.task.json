@@ -1,0 +1,56 @@
+{
+  "id": "TASK-097-T3-FT-016-W3",
+  "title": "Compose Plant lifecycle administration in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": ["TASK-014-T3-FT-002-W3", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/admin/",
+    "frontend/src/routes/admin/+page.server.ts",
+    "frontend/src/routes/admin/+page.svelte",
+    "frontend/tests/e2e/admin-plant-lifecycle.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "admin_plant_lifecycle_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/admin-plant-lifecycle.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent Boss/non-Boss browser verification covers Plant list/create/rename/archive/restore, no-op/conflict behavior, authoritative status, and no grant mutation."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-014 RED: no Boss browser surface manages Plant lifecycle; GREEN: exact list/create/rename/archive/restore actions show backend-authoritative states while non-Boss, conflict, and safe-retry paths remain correct and grant rows are unchanged; decisive comparison: request/response/DOM plus Plant and grant reread; artifact: Plant-lifecycle evidence under .tasks/TASK-097-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the accepted Plant lifecycle as one entity-lifecycle result without adopting Plant-access-grant administration.",
+  "success_outcome": "A Boss can list and manage Plant create/name/archive/restore state through Plant Management HTTP with authoritative no-op/conflict results and no grant mutation.",
+  "anti_goals": ["Do not create/update/revoke PlantAccessGrant, manage Accounts/roles, or add new Plant states.", "Do not make archived Plants operative or normally readable."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Farm/Plant/lifecycle/audit authority", "PlantAccessGrant mutation", "new Plant lifecycle states or restore side effects"],
+    "stop_conditions": ["A lifecycle control needs a route outside Plant Management HTTP.", "The UI would make archived state operative or infer conflict resolution."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-014",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/farm/plant-management-http.md#routes",
+    ".memory-bank/states/plants/plant-and-access-lifecycle.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Access & Admin owns Plant lifecycle and audit writes.", "Use exact lifecycle request fields and backend-selected current status."],
+  "invariants": ["Archived Plant remains non-operative until backend restore commits.", "Lifecycle failure leaves Plant, grant, and audit state consistent."],
+  "verification_targets": [
+    "FT-016-AC-014: Plant list/create/rename/archive/restore with authoritative no-op/conflict/non-Boss behavior and no grant mutation.",
+    "T3 harm proof uses isolated Plants and proves rejected/retried transitions leave no unintended state or audit effect."
+  ]
+}

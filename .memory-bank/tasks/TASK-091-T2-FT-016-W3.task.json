@@ -1,0 +1,97 @@
+{
+  "id": "TASK-091-T2-FT-016-W3",
+  "title": "Render the read-only Dataset Governance projection",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-081-T3-FT-016-W2",
+    "TASK-090-T3-FT-016-W2"
+  ],
+  "touched_files": [
+    "frontend/src/lib/dataset-governance/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/dataset-governance.spec.ts"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "dataset_presentation_browser",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/dataset-governance.spec.ts",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent browser/request verification compares every rendered Dataset field with the protected response, covers pagination/retained history, and proves zero review/transition/evidence/curator/trainability mutation request or UI-derived inference."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/dataset-governance-http.md",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-010 RED: no PWA Dataset consumer exists; GREEN: exact protected response values render read-only and no UI/network path sets or infers status/evidence/split/confirmation/curator_decision/can_train_on; decisive comparison: response-to-DOM equality, request log, controls/route scan, and unchanged authority state; artifact: Dataset UI evidence under .tasks/TASK-091-T2-FT-016-W3/."
+  ],
+  "purpose": "Show the minimum traceable Dataset authority fields in the first demo while keeping every lifecycle and trainability decision in Dataset Governance.",
+  "success_outcome": "The PWA renders exact authorized Dataset Candidate values and pagination with no mutation control, request, local inference, or authority promotion from other UI/evidence surfaces.",
+  "anti_goals": [
+    "Do not add Dataset review/edit/transition/split/evidence/curator/trainability controls or client-side derived can_train_on.",
+    "Do not infer Dataset state from photo, manifest, Timeline, Feed, or browser state."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "backend Dataset API/data/lifecycle authority",
+      "Dataset mutations or client-derived trainability",
+      "full dataset registry/export/training UI"
+    ],
+    "stop_conditions": [
+      "The view requires a Dataset mutation or field outside the registered read response.",
+      "The PWA cannot display the values without inferring lifecycle/trainability from a non-authoritative surface."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-010",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md#dataset-governance-surface",
+    ".memory-bank/contracts/dataset-governance-http.md#response-shape",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/operator-pwa-first-demo.md#context-and-literal-text-matrix"
+  ],
+  "constraints": [
+    "Primary owner is Operator PWA; Dataset Governance remains the provider and sole mutable authority.",
+    "Render exact server values and canonical pagination without adding state-changing controls."
+  ],
+  "invariants": [
+    "UI Feed, photo, manifests, Timeline, raw agent output, and UI state never grant trainability.",
+    "can_train_on is copied from the protected response and never recomputed."
+  ],
+  "verification_targets": [
+    "FT-016-AC-010: response-to-DOM parity, authorized pagination, retained history, zero Dataset mutation request/control, and no authority inference.",
+    "Dataset presentation spec locator remains one read-only result; provider task proof stays with TASK-090."
+  ]
+}

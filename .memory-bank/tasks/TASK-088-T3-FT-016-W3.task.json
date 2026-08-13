@@ -1,0 +1,97 @@
+{
+  "id": "TASK-088-T3-FT-016-W3",
+  "title": "Compose Task and Approval reads in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-039-T3-FT-012-W1",
+    "TASK-081-T3-FT-016-W2"
+  ],
+  "touched_files": [
+    "frontend/src/lib/task-follow-up/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/task-follow-up.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "task_follow_up_browser",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/task-follow-up.spec.ts",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent browser verification covers only exact Task and Approval read projections, filters, role/archive behavior, canonical request paths, and absence of write/arbitrary-Task capability."
+  ],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/testing/task-follow-up.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-025 RED: no browser Task/Approval read consumer exists; GREEN: authorized lists render exact filtered projections while denied/archive/canonical-path failures stay safe and no write or arbitrary-Task request is emitted; decisive comparison: protected responses versus DOM plus request allowlist; artifact: Task/Approval read evidence under .tasks/TASK-088-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the exact Task and Approval projections without transferring action clearance, mutation, or Task authority to the PWA.",
+  "success_outcome": "Authorized users can read exact filtered Task and Approval lists with truthful denial/archive behavior while the PWA emits no lifecycle mutation or arbitrary Task request.",
+  "anti_goals": [
+    "Do not add Safety approval, Task completion, Outcome recording, arbitrary Task creation, schedulers/reminders, or device commands.",
+    "Do not treat UI state or governance approval as Safety approval."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "backend Safety, Approval, Task, Outcome, and Dataset authority",
+      "arbitrary Task/action creation or device execution",
+      "frontend-derived evidence/freshness/permission/attribution",
+      "archived record advancement"
+    ],
+    "stop_conditions": [
+      "A required user action is outside Task And Approval HTTP.",
+      "The PWA would need to infer Safety clearance, evidence freshness, permission, or lifecycle state."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-025",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/testing/task-follow-up.md"
+  ],
+  "constraints": [
+    "Primary owner is Operator PWA; Task & Follow-Up owns all lifecycle and mutation authority.",
+    "Use exact read filters and backend-derived permission/status results; emit no command body."
+  ],
+  "invariants": [
+    "Read presentation grants no Safety clearance, completion, Outcome, or device authority.",
+    "Archived or denied records remain retained and non-operative without a write request."
+  ],
+  "verification_targets": [
+    "FT-016-AC-025: exact Task and Approval read fields/filters, role/archive handling, canonical paths, and zero mutation request.",
+    "T3 harm proof uses isolated records and verifies denied/malformed reads leave no transition or device effect."
+  ]
+}

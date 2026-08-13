@@ -1,0 +1,58 @@
+{
+  "id": "TASK-107-T3-FT-016-W3",
+  "title": "Compose explicit Companion invocation in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-043-T3-FT-013-W3", "TASK-078-T3-FT-015-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/companion-governance/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/companion-invocation.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "companion_invocation_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/companion-invocation.spec.ts", "required": true},
+    {"name": "companion_unbound_probe", "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_ft016_companion_unbound.py -q", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent invocation verification covers exact explicit POST, success/duplicate/non-governable shapes, zero-call GET/refresh, role/archive denial, request-field exclusion, and unbound production zero-fallback/network behavior."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/contracts/companion-runtime.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-030 RED: no browser explicit Companion run consumer exists; GREEN: only the exact POST reaches the provider-neutral runtime with valid success/duplicate/non-governable presentation, GET/refresh emits zero call, denied/archive paths do not invoke, and production-unbound fails before network I/O without fake fallback; decisive comparison: request allowlist, DOM, provider spy, and unbound network spy; artifact: invocation evidence under .tasks/TASK-107-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose explicit Companion invocation independently of reads, proposal decision, and issue close.",
+  "success_outcome": "Authorized Boss/Engineer users can invoke only the exact provider-neutral run action while refresh/GET/UI text never triggers it and denied/archive/unbound paths remain safe without fallback.",
+  "anti_goals": ["Do not implement Issue reads, proposal decision, issue close, arbitrary prompt/chat input, automatic triggers, or provider selection.", "Do not read browser/CLI/IDE credentials or add a production fake/canned fallback."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Companion/provider/classification/governance authority", "arbitrary prompt/chat or automatic invocation", "external provider/network/credential access or production fallback"],
+    "stop_conditions": ["The UI needs fields or triggers outside the exact Companion run contract.", "The proof requires external provider access, credential discovery, or production fallback."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-030",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/companion-governance-http.md#post-apiplantsplant_idcompanionruns",
+    ".memory-bank/contracts/companion-runtime.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/companion-governance.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Companion Governance/Runtime owns input, model call, classification, persistence, and response.", "Use only the strict run request and test-only deterministic fake/spy setup."],
+  "invariants": ["Only explicit authorized POST can invoke Companion; GET/refresh/events never do.", "Production remains unbound and fails closed before network I/O without fake/canned fallback."],
+  "verification_targets": [
+    "FT-016-AC-030: explicit run success/duplicate/non-governable paths, zero-call GET/refresh, role/archive denial, and strict field exclusion.",
+    "FT-016-AC-030 T3 harm proof uses isolated issues and proves production-unbound zero-network/no-fallback behavior with safe rerun."
+  ]
+}

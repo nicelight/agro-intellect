@@ -1,0 +1,98 @@
+{
+  "id": "TASK-064-T3-FT-015-W1",
+  "title": "Close runtime log and API-error redaction",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-017-T3-FT-003-W2"
+  ],
+  "touched_files": [
+    "backend/app/core/redaction.py",
+    "backend/app/core/security.py",
+    "backend/app/config.py",
+    "backend/app/access_admin/errors.py",
+    "tests/backend/local_privacy/test_runtime_redaction.py",
+    "tests/backend/test_foundation_redaction.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "runtime_redaction",
+      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_redaction.py tests/backend/test_foundation_redaction.py tests/backend/api/test_ft001_session_routes.py -q",
+      "required": true
+    },
+    {
+      "name": "deterministic_regression",
+      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent security verification injects the same configured corpus through actual settings/log and API-error paths, observes no raw value, preserves source credentials, and confirms stable safe errors."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/contracts/evidence-redaction.md",
+    ".memory-bank/contracts/api-guidelines.md",
+    ".memory-bank/contracts/auth/session-http.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-003 RED: at least one actual log/error serialization path exposes or cannot decisively sanitize the configured corpus before this task; GREEN: all actual current log/error owners omit every raw corpus value and sanitizer failure returns only a stable safe error; decisive comparison: captured output before/after and unchanged source secret; artifact: focused redaction transcript under .tasks/TASK-064-T3-FT-015-W1/. If exact preflight is already GREEN, preserve it and avoid an unneeded production edit."
+  ],
+  "purpose": "Close the shared runtime output redaction result for application logs and safe API errors without turning the sanitizer into product authority.",
+  "success_outcome": "Actual current runtime log/settings summaries and API error serialization remove the configured secret/auth corpus before output, never mutate source credentials, and fail safely without echoing rejected values.",
+  "anti_goals": [
+    "Do not redesign every product payload, add logging infrastructure, persist redaction state, or weaken stable error catalogs.",
+    "Do not adopt manifest, Timeline/history, Bus/UI, or agent-context ACs owned by sibling tasks."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-003",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/api-guidelines.md#error-and-response-rules",
+    ".memory-bank/contracts/auth/session-http.md#error-envelope-and-catalog",
+    ".memory-bank/contracts/evidence-redaction.md#rules",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Use one configured secret corpus and actual serializers, not pattern-only unit assertions.",
+    "Sanitize output copies before emission; authentication/provider source values remain unchanged."
+  ],
+  "invariants": [
+    "No runtime log or safe API error contains the forbidden corpus.",
+    "Sanitization grants no runtime, audit, UI, agent, upload, or sync authority."
+  ],
+  "verification_targets": [
+    "FT-015-AC-003: actual log/error RED/GREEN or preserved pre-GREEN with corpus absence, safe failure, and source-value integrity.",
+    "Full deterministic backend regression after any shared sanitizer change."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Manifest, Timeline/history, Bus/UI, provider-request semantics, database schema, frontend, and historical evidence."
+    ],
+    "stop_conditions": [
+      "A fix requires changing a public error code/shape or credential lifecycle.",
+      "One shared primitive cannot be changed without an unresolved incompatible consumer contract."
+    ]
+  }
+}

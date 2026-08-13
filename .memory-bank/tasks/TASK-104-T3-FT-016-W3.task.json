@@ -1,0 +1,57 @@
+{
+  "id": "TASK-104-T3-FT-016-W3",
+  "title": "Compose human Safety approval in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-039-T3-FT-012-W1", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/task-follow-up/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/safety-approval.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "safety_approval_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/safety-approval.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent approval verification covers authorize approve/reject, permission/freshness/version/archive failures, exact request allowlist, authoritative reread, and no device effect."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/testing/task-follow-up.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-026 RED: no browser human Safety approval consumer exists; GREEN: exact authorized approve/reject changes only the owning backend lifecycle while permission/freshness/version/archive cases fail without transition or device effect; decisive comparison: request allowlist, response/DOM, and authoritative decision/task reread; artifact: Safety-approval evidence under .tasks/TASK-104-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose human Safety approval as a completion independent of Task reads, completion, and Outcome recording.",
+  "success_outcome": "An authorized current approver can submit the exact decision while denied, stale, expired, conflict, or archived requests leave Safety/Task state and devices unchanged.",
+  "anti_goals": ["Do not implement Task/Approval lists, Task completion, Outcome recording, expiry extension, or arbitrary Task creation.", "Do not treat UI/governance state as Safety clearance or execute a device."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Safety/Approval/Task/device authority", "frontend-derived evidence freshness or permission", "approval expiry extension or arbitrary action"],
+    "stop_conditions": ["The user action is outside the exact human approval route.", "The PWA would need to infer clearance/freshness or trigger a device."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-026",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/task-approval-http.md#human-approval-command",
+    ".memory-bank/states/safety-action-lifecycle.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/task-follow-up.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Safety Gate and Task & Follow-Up own clearance and lifecycle mutation.", "Use exact registered decision fields and backend-derived current guards."],
+  "invariants": ["Physical action remains human-performed after fresh evidence, Safety pass, and authorized approval.", "Consultant, denied, stale, expired, conflict, and archived approval attempts remain non-mutating."],
+  "verification_targets": [
+    "FT-016-AC-026: exact human approve/reject plus permission/freshness/version/archive failures and authoritative reread.",
+    "T3 harm proof uses isolated decisions/tasks and confirms safe rerun/denial causes no transition or device effect."
+  ]
+}

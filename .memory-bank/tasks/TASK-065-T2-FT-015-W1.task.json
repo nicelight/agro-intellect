@@ -1,0 +1,90 @@
+{
+  "id": "TASK-065-T2-FT-015-W1",
+  "title": "Implement authoritative Farm photo-pressure aggregation",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-021-T3-FT-005-W1",
+    "TASK-061-T1-FT-014-W6"
+  ],
+  "touched_files": [
+    "backend/app/photo_intake/repository.py",
+    "backend/app/photo_intake/service.py",
+    "backend/app/photo_intake/contracts.py",
+    "backend/app/photo_intake/__init__.py",
+    "tests/backend/local_privacy/test_storage_pressure.py",
+    "tests/backend/photo_intake/test_ft005_service.py"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "photo_pressure",
+      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_storage_pressure.py tests/backend/photo_intake/test_ft005_service.py -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent verification proves one Farm-scoped SUM over authoritative Photo Catalog size_bytes, exact strict threshold behavior, archived retention, cross-Farm isolation, named exclusions, and safe database failure without disk scan."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/domains/photo-artifacts.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-005 RED_NOT_APPLICABLE: no Farm photo-pressure query/service exists, so the accepted result cannot be invoked before its task-owned read projection is created; alternative proof: preflight absence plus GREEN empty/209715199/209715200/209715201, cross-Farm, archived-retained, and database-failure matrix; decisive comparison: returned total and eligibility against authoritative catalog fixtures; artifact: focused pytest transcript under .tasks/TASK-065-T2-FT-015-W1/."
+  ],
+  "purpose": "Create the single Photo-Intake-owned read projection that calculates prompt eligibility from accepted original photo metadata without scanning storage or creating prompt state.",
+  "success_outcome": "An internal Farm-scoped service returns accepted_original_photo_bytes and prompt_eligible from COALESCE(SUM(photo_catalog_items.size_bytes),0), counts each catalog row once, includes retained archived-Plant photos, and fails closed on database error.",
+  "anti_goals": [
+    "Do not add an HTTP route, prompt interaction, table/migration, filesystem scanner, Timeline event, or UI code.",
+    "Do not count manifests, database size, logs, cache/temp/orphans, exports/derivatives, screenshots/assets, or Dataset refs."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-005",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/domains/photo-artifacts.md#farm-photo-storage-pressure",
+    ".memory-bank/contracts/boundary-map.md#actorcontext-gate",
+    ".memory-bank/testing/local-privacy-storage.md#photo-pressure-matrix"
+  ],
+  "constraints": [
+    "Aggregate only authoritative PhotoCatalogItem.size_bytes filtered by farm_id.",
+    "Use constant 209715200 and strict greater-than; equality is false.",
+    "Repository owns the query; service owns the result policy. No transport behavior in this task."
+  ],
+  "invariants": [
+    "Every accepted photo contributes once and only once.",
+    "Filesystem contents and duplicate refs cannot influence the result.",
+    "Archive is retention, not storage deletion."
+  ],
+  "verification_targets": [
+    "FT-015-AC-005: focused repository/service matrix proves exact totals, threshold, Farm isolation, archived retention, exclusions by query shape, and fail-closed database behavior."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "HTTP/API/OpenAPI, frontend, migrations, artifact deletion, Dataset lifecycle, Timeline, or remote sync."
+    ],
+    "stop_conditions": [
+      "The accepted total cannot be derived solely from Photo Catalog size_bytes.",
+      "Implementation requires a new persistence model, migration, disk scanner, or product decision."
+    ]
+  }
+}

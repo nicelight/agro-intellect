@@ -1,0 +1,57 @@
+{
+  "id": "TASK-105-T3-FT-016-W3",
+  "title": "Compose Task completion in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-039-T3-FT-012-W1", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/task-follow-up/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/task-completion.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "task_completion_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/task-completion.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent completion verification covers exact existing-Task command, success/duplicate/conflict/permission/archive behavior, authoritative reread, and absence of arbitrary Task/device paths."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/task-approval-http.md",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/testing/task-follow-up.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-027 RED: no browser Task-completion consumer exists; GREEN: exact authorized completion advances only the selected eligible Task while duplicate/conflict/permission/archive cases remain truthful and no arbitrary Task/device request exists; decisive comparison: request allowlist, response/DOM, and authoritative Task reread; artifact: completion evidence under .tasks/TASK-105-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose existing-Task completion independently of reads, Safety approval, and follow-up Outcome recording.",
+  "success_outcome": "An authorized Boss/Engineer can complete only an eligible existing Task while denied/conflict/archive paths remain non-mutating and no arbitrary work or device capability is introduced.",
+  "anti_goals": ["Do not implement lists, Safety approval, Outcome recording, arbitrary Task creation, editable task text, or device commands.", "Do not derive task kind, scope, attribution, or lifecycle in the PWA."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Task/Outcome/Safety/device authority", "arbitrary Task creation or editable kind/text", "frontend-derived scope/attribution/lifecycle"],
+    "stop_conditions": ["Completion requires a command outside Task And Approval HTTP.", "The PWA would need to create work, infer eligibility, or execute a device."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-027",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/task-approval-http.md#task-completion-command",
+    ".memory-bank/states/task-follow-up-lifecycle.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/task-follow-up.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Task & Follow-Up owns Task identity, eligibility, transition, and audit.", "Submit only the exact completion body and trust backend results."],
+  "invariants": ["Completion creates no device execution or arbitrary Task authority.", "Denied/conflict/archive/duplicate handling preserves authoritative Task state."],
+  "verification_targets": [
+    "FT-016-AC-027: exact completion, duplicate/conflict/permission/archive behavior, authoritative reread, and no arbitrary Task/device path.",
+    "T3 harm proof uses isolated Tasks and confirms safe rerun/denial leaves no unintended transition or device effect."
+  ]
+}

@@ -2,7 +2,7 @@
 description: Foundation data substrate for DB handle, session lifetime, Alembic baseline, and local runtime roots.
 status: active
 type: domain
-last_updated: 2026-06-30
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/foundation.md
   - .memory-bank/domains/runtime-data-model.md
@@ -35,7 +35,7 @@ Settings substrate:
 - `LOCAL_TIMELINE_ROOT`
 - `LOCAL_TEMP_ROOT`
 - `LOCAL_SMOKE_ROOT`
-- `SYNC_STATUS=local_only`
+- `SYNC_STATUS=local_only`, validated as the only accepted MVP value
 
 Database substrate:
 
@@ -57,6 +57,9 @@ Migration substrate:
 - PostgreSQL/read model remains the mutable runtime authority selected for product features, but FT-000 only proves the DB/session/migration substrate.
 - Foundation MUST NOT create Account, Farm, Plant, task, photo, agent, Safety Gate, governance, dataset, or UI projection tables.
 - Runtime roots are local filesystem paths and MUST keep `local_only` semantics.
+- `AppSettings` MUST reject every `SYNC_STATUS` value except the literal
+  `local_only` before application startup. `server_verified`, upload lifecycle
+  values, aliases, and silent fallback to another status are forbidden.
 - Test sessions MUST roll back state and must not leak product data assumptions into Foundation.
 - Future product migrations must use this substrate instead of inventing a parallel DB/session/Alembic path.
 
@@ -65,9 +68,13 @@ Migration substrate:
 - SQLite may be used in tests only when the tested boundary does not claim PostgreSQL product behavior.
 - Local PostgreSQL setup failures must be redacted and actionable.
 - Missing local runtime directories are created by bootstrap/runbook flow, not by product features guessing paths.
+- Invalid sync configuration fails settings validation without printing the
+  rejected environment value as command evidence.
 
 ## Verification Target
 
 - `tests/backend/test_database_harness.py` verifies DB handle/session and Alembic config builders.
 - `tests/backend/test_foundation_database_contract.py` verifies DB readiness, redacted DB failures, Alembic baseline, and no product table creation.
 - `tests/backend/test_foundation_bootstrap_contract.py` verifies local runtime root settings and `local_only`.
+- FT-015 settings tests additionally prove explicit `local_only` acceptance
+  and fail-closed rejection of every representative future/server status.

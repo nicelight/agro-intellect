@@ -1,0 +1,57 @@
+{
+  "id": "TASK-103-T3-FT-016-W3",
+  "title": "Compose explicit Plant State human review",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-035-T3-FT-009-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/plant-state/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/plant-state-review.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "plant_state_review_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/plant-state-review.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent review verification covers exact decision/expected_version bodies, Boss/Engineer success, Consultant/read-only/archive denial, version/conflict failures, and post-request authority state."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/plant-state-http.md",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/testing/vision-observation-plant-state.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-024 RED: no browser Plant State review consumer exists; GREEN: exact authorized confirm/reject succeeds while version/conflict/Consultant/read-only/archive requests fail without changing the authoritative record; decisive comparison: strict request body, response/DOM, and post-request record/version; artifact: Plant State review evidence under .tasks/TASK-103-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the versioned human trust-review mutation independently of Plant State list presentation.",
+  "success_outcome": "Authorized Boss/Engineer users can submit only decision and expected_version while every conflict or denied path leaves backend trust authority unchanged.",
+  "anti_goals": ["Do not implement the list projection, accept trust/evidence/agent/Safety fields, or add batch review.", "Do not auto-resolve conflicts, create Tasks, or approve physical actions."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Plant State/Vision/trust/Safety authority", "client-selected trust/evidence/attribution fields", "batch review or conflict auto-resolution"],
+    "stop_conditions": ["The PWA needs a trust mutation outside the exact review contract.", "A conflict or archived path cannot fail without optimistic/client-owned trust state."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-024",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/plant-state-http.md#review-record",
+    ".memory-bank/states/plant-state-trust.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/vision-observation-plant-state.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Plant State owns records, conflicts, evidence, and review transitions.", "Client bodies contain only decision and expected_version."],
+  "invariants": ["Plant state is never confirmed by model or UI presentation alone.", "Consultant/read-only/archived/stale requests never mutate trust records."],
+  "verification_targets": [
+    "FT-016-AC-024: exact versioned review success and conflict/role/read-only/archive denial with post-request authoritative comparison.",
+    "T3 harm proof uses isolated records and verifies safe rerun/denial leaves no unintended trust transition."
+  ]
+}

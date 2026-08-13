@@ -1,0 +1,89 @@
+{
+  "id": "TASK-071-T3-FT-015-W2",
+  "title": "Close Plant History and export secret redaction",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-027-T3-FT-006-W3",
+    "TASK-064-T3-FT-015-W1"
+  ],
+  "touched_files": [
+    "backend/app/plant_history/service.py",
+    "tests/backend/plant_history/test_ft006_service.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "plant_history_redaction",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_history/test_ft006_service.py tests/backend/api/test_ft006_history_routes.py -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent security verification exercises actual Plant History and retained-history/export serialization with the configured corpus, observes no raw value, preserves safe refs and response shapes, and confirms failure output leaks nothing."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/domains/plant-history.md",
+    ".memory-bank/contracts/plant-history-http.md",
+    ".memory-bank/testing/plant-history.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-012 RED/GREEN: exercise actual Plant History and retained-history/export serialization with the configured corpus; RED is any raw value or unprovable unsafe serialization branch, GREEN is corpus absence or safe rejection before response/export with existing refs, paths, and cursor behavior preserved; decisive comparison: serialized card/history payloads, safe failure output, and unchanged source value; artifact: focused transcript under .tasks/TASK-071-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+  ],
+  "purpose": "Close the Plant-History-owned serialization result independently from Timeline append behavior.",
+  "success_outcome": "Plant History and retained-history/export serialization remove or reject the forbidden corpus before output, retain registered safe refs and public response compatibility, and fail without echoing rejected data.",
+  "anti_goals": [
+    "Do not change history response schemas, cursors, authorization/retention, PostgreSQL projection authority, or Timeline append behavior.",
+    "Do not adopt manifest, Bus/UI, provider-context, or browser-capture claims."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-012",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/domains/plant-history.md#response-safe-string-projection",
+    ".memory-bank/contracts/plant-history-http.md#response-shapes",
+    ".memory-bank/testing/plant-history.md#required-evidence",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Apply the existing response-safe projection before serialization and preserve URL-first safe-ref behavior.",
+    "Keep PostgreSQL as projection authority and Timeline independent."
+  ],
+  "invariants": [
+    "No Plant History or retained-history/export output contains the forbidden corpus.",
+    "History serialization cannot mutate PostgreSQL state or Timeline audit."
+  ],
+  "verification_targets": [
+    "FT-015-AC-012: actual Plant History/export RED/GREEN or preserved pre-GREEN, corpus absence, safe failure, source-value integrity, and response/cursor compatibility."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Timeline writer or registry, history schema/cursor redesign, mutable state repair, manifest, Bus/UI, agent runtime, frontend, or sync."
+    ],
+    "stop_conditions": [
+      "Redaction requires changing a public history response or accepted URL/path policy.",
+      "The Plant History owner cannot fail safely without a new shared/global decision."
+    ]
+  }
+}

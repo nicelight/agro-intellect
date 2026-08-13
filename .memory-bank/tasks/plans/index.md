@@ -24,3 +24,7 @@ status: active
   DecisionRecords.
 - [IMPL-FT-014](IMPL-FT-014.md): Dataset Candidate aggregate, transition
   authority, evidence-flow wiring, and dataset-agents runtime.
+- [IMPL-FT-015](IMPL-FT-015.md): local-only runtime, product redaction,
+  authoritative photo storage pressure, and stateless prompt handoff.
+- [IMPL-FT-016](IMPL-FT-016.md): SvelteKit Operator PWA, read-only backend
+  consumers, FT-015 prompt/capture handoff, and first-demo composition.

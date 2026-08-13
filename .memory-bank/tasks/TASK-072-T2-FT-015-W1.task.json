@@ -1,0 +1,83 @@
+{
+  "id": "TASK-072-T2-FT-015-W1",
+  "title": "Preserve the FT-016 browser-capture redaction handoff",
+  "status": "planned",
+  "wave": "W1",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020",
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0"
+  ],
+  "touched_files": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md"
+  ],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent source and dependency inspection proves FT-015 adds no frontend or browser-capture path and FT-016 directly retains both Product Surface Redaction and the protected photo-storage status contract."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/contracts/photo-intake-http.md",
+    ".memory-bank/contracts/boundary-map.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-011 RED_NOT_APPLICABLE: the current brownfield tree has no Operator PWA or screenshot/browser-capture implementation, so runtime capture behavior cannot be invoked without implementing FT-016; alternative proof: source/dependency absence plus exact FT-016 canonical links to Product Surface Redaction and Photo Intake storage status; decisive comparison: no FT-015 frontend/capture owner and durable FT-016 handoff present; artifact: static scope report under .tasks/TASK-072-T2-FT-015-W1/."
+  ],
+  "purpose": "Keep the absent browser-capture surface out of FT-015 while making its future FT-016 security and storage-status inputs independently verifiable.",
+  "success_outcome": "FT-015 contains no frontend or browser-capture implementation, and FT-016 directly consumes Product Surface Redaction plus the protected photo-storage status contract without gaining backend storage or sync authority.",
+  "anti_goals": [
+    "Do not create Svelte/SvelteKit code, screenshot tooling, a placeholder frontend, browser storage, prompt rendering, or capture tests before FT-016.",
+    "Do not move photo accounting, prompt state, authorization, upload, or sync authority into FT-016."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-011",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/photo-intake-http.md#storage-status-behavior",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#normative-backbone-links",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Use source/dependency inspection and canonical links only; no absent runtime is fabricated.",
+    "Preserve FT-016 as the sole presentation/capture owner."
+  ],
+  "invariants": [
+    "FT-015 creates no competing frontend or capture surface.",
+    "A future browser capture must sanitize or omit forbidden values before capture.",
+    "Operator PWA never owns backend storage or sync state."
+  ],
+  "verification_targets": [
+    "FT-015-AC-011: current capture non-applicability plus exact FT-016 redaction/status consumer links and no FT-015 frontend scope."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Frontend/Svelte/PWA implementation, screenshot tooling, backend storage/status behavior, prompt persistence, upload/server/sync lifecycle, or historical evidence."
+    ],
+    "stop_conditions": [
+      "A current browser-capture implementation is discovered.",
+      "FT-016 cannot retain the canonical inputs without changing accepted ownership."
+    ]
+  }
+}

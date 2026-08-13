@@ -1,0 +1,56 @@
+{
+  "id": "TASK-098-T3-FT-016-W3",
+  "title": "Compose Plant access-grant administration in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-004", "REQ-021"],
+  "depends_on": ["TASK-014-T3-FT-002-W3", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/admin/",
+    "frontend/src/routes/admin/+page.server.ts",
+    "frontend/src/routes/admin/+page.svelte",
+    "frontend/tests/e2e/admin-plant-access.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "admin_plant_access_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/admin-plant-access.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent grant browser verification covers list/create/update/revoke, approval-flag role constraints, archived administration, resulting Engineer selector access, and non-Boss denial."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/contracts/access/actor-context.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-015 RED: no Boss browser surface manages PlantAccessGrant; GREEN: exact grant list/create/update/revoke actions enforce target-role and approval-flag rules, remain administrable for archived Plant, and drive Engineer selector access only after backend commit; decisive comparison: request/response/DOM plus grant and Engineer-session reread; artifact: access-grant evidence under .tasks/TASK-098-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose Plant access-grant administration independently of Account role and Plant lifecycle implementation.",
+  "success_outcome": "A Boss can manage an Engineer Plant grant and approval flag through backend authority while invalid/non-Boss/Consultant cases remain non-mutating and selector access follows the committed grant.",
+  "anti_goals": ["Do not create Accounts, assign roles, mutate Plant lifecycle, or derive permissions in the browser.", "Do not grant Consultant action approval or treat approval flag as Safety clearance."],
+  "runtime_context": {
+    "forbidden_scope": ["backend PlantAccessGrant/permission/audit authority", "new role or permission semantics", "frontend-derived access or Safety approval"],
+    "stop_conditions": ["Grant behavior needs a route or permission outside Plant Management HTTP.", "The browser would need to infer access or bypass archived/current membership rules."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-015",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/farm/plant-management-http.md#routes",
+    ".memory-bank/contracts/access/actor-context.md#scope",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/farm/plant-lifecycle-and-access.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Access & Admin owns grant, permission, and audit state.", "Use exact membership/Plant identities and backend-returned permission summaries."],
+  "invariants": ["Frontend visibility never grants Plant access or action approval.", "Rejected/retried grant commands leave one authoritative stable grant state."],
+  "verification_targets": [
+    "FT-016-AC-015: exact grant lifecycle, approval-role constraints, archived administration, Engineer selector effect, and non-Boss denial.",
+    "T3 harm proof uses isolated memberships/Plants and confirms no unintended access, Safety authority, or duplicate grant effect after rerun."
+  ]
+}

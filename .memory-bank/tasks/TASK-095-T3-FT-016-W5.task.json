@@ -1,0 +1,100 @@
+{
+  "id": "TASK-095-T3-FT-016-W5",
+  "title": "Prove the Boss and Engineer tomato_001 journey",
+  "status": "planned",
+  "wave": "W5",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-081-T3-FT-016-W2",
+    "TASK-082-T3-FT-016-W3",
+    "TASK-098-T3-FT-016-W3"
+  ],
+  "touched_files": [
+    "frontend/tests/e2e/first-demo-actors.spec.ts",
+    "frontend/tests/e2e/support/first-demo-actors.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "frontend_build",
+      "command": "cd frontend && npm run build",
+      "required": true
+    },
+    {
+      "name": "first_demo_actor_journey",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/first-demo-actors.spec.ts",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent isolated UAT proves only that a Boss-created Engineer can authenticate and enter the granted tomato_001 workspace through the PWA."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/contracts/farm/plant-management-http.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-002 RED: no browser journey currently covers both Boss and Engineer on tomato_001; GREEN: one isolated journey proves Boss provisioning and authorized Engineer entry through the PWA; decisive comparison: actor/session/Plant route transcript and backend Account/grant authority records; artifact: actor-journey evidence under .tasks/TASK-095-T3-FT-016-W5/."
+  ],
+  "purpose": "Close only the accepted two-actor tomato_001 journey after provisioning and access-grant consumers are complete, without adopting full surface-composition claims.",
+  "success_outcome": "A reproducible local browser journey demonstrates Boss provisioning and the granted Engineer entering tomato_001 through backend-authoritative session and Plant access results.",
+  "anti_goals": [
+    "Do not exercise or claim the complete provider-surface matrix, production-unbound no-fallback result, external provider access, Consultant UI, LAN/cloud sync, or automated actuation.",
+    "Do not re-prove provisioning, grant, session, or Plant-provider dependency claims and do not close/promote FT-016."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "new product/provider/backend authority beyond accepted FT-016 contracts",
+      "external provider/network/credential access",
+      "complete surface-composition or no-fallback proof",
+      "Consultant UI, LAN/cloud sync, product capture, or automated actuation"
+    ],
+    "stop_conditions": [
+      "Provisioning, grant, session, or Plant access dependency behavior is failing rather than the actor-journey integration delta.",
+      "The journey requires external provider access, permission expansion, or unsafe capture."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-002",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md#first-demo-composition",
+    ".memory-bank/testing/operator-pwa-first-demo.md#reproducible-test-state",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/farm/plant-management-http.md#routes"
+  ],
+  "constraints": [
+    "Use isolated PostgreSQL and browser state with safe rerun/cleanup; no provider-dependent records or external network are required.",
+    "This task owns only FT-016-AC-002 actor/session/Plant integration; provisioning and grant outcomes remain dependency claims."
+  ],
+  "invariants": [
+    "Frontend remains presentation-only and backend Account, session, grant, and Plant access authority remains decisive.",
+    "No complete surface composition, production no-fallback proof, external provider success, Consultant path, LAN/cloud sync, product capture, or automated physical action is claimed."
+  ],
+  "verification_targets": [
+    "FT-016-AC-002: Boss plus granted Engineer tomato_001 actor/session/Plant journey only.",
+    "T3 harm proof records isolated initial Account/grant/browser state, safe rerun identities, observed access result, and cleanup without permission expansion."
+  ]
+}

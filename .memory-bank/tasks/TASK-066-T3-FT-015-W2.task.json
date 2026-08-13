@@ -1,0 +1,96 @@
+{
+  "id": "TASK-066-T3-FT-015-W2",
+  "title": "Expose protected storage status and stateless prompt handoff",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020",
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-022-T3-FT-005-W2",
+    "TASK-065-T2-FT-015-W1"
+  ],
+  "touched_files": [
+    "backend/app/api/photos.py",
+    "backend/app/photo_intake/service.py",
+    "backend/app/photo_intake/__init__.py",
+    "tests/backend/api/test_ft015_storage_status.py",
+    "tests/backend/local_privacy/test_prompt_consumer.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "storage_status_api",
+      "command": ".venv/bin/python -m pytest tests/backend/api/test_ft015_storage_status.py tests/backend/local_privacy/test_prompt_consumer.py tests/backend/api/test_ft005_photos_routes.py -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent auth/security verification covers Boss/Engineer/Consultant, invalid/disabled session, exact OpenAPI/response/no-store behavior, safe aggregation failure, two-Account consumer isolation, fresh-load reappearance, and zero mutation surface."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/photo-intake-http.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-004 RED_NOT_APPLICABLE: no protected Farm storage-status boundary exists for the future FT-016 consumer; alternative proof: route/OpenAPI preflight absence plus GREEN exact PhotoStorageStatus and owner/dependency inspection; decisive comparison: registered route/schema and absence of duplicate FT-016 authority; artifact: API transcript under .tasks/TASK-066-T3-FT-015-W2/.",
+    "FT-015-AC-006 RED_NOT_APPLICABLE: FT-015 intentionally has no backend prompt-action lifecycle to invoke before the read contract exists; alternative proof: GREEN two-Account consumer model closes acknowledge/dismiss only locally while repeated GET stays eligible and no mutation route/table/event/sync change exists; decisive comparison: response sequence, account-local state, route/schema scan, and unchanged local_only; artifact: consumer transcript."
+  ],
+  "purpose": "Publish the Photo-Intake-owned status as one authenticated Farm-wide read and prove FT-016 can keep prompt actions transient without acquiring backend storage/sync authority.",
+  "success_outcome": "GET /api/photos/storage-status returns the exact no-store PhotoStorageStatus for any active Farm member, maps aggregation failure safely, exposes no mutation route/state, and supports independent transient acknowledge/dismiss behavior for multiple Accounts with fresh-request reappearance.",
+  "anti_goals": [
+    "Do not create POST/PATCH/DELETE prompt routes, persistence, Timeline events, cooldowns, episodes, uploads, server fields, or UI code.",
+    "Do not require PlantAccessGrant or redefine the aggregation."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-004",
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-006",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/photo-intake-http.md#storage-status-behavior",
+    ".memory-bank/contracts/access/actor-context.md#scope",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/local-privacy-storage.md#protected-status-and-consumer-matrix"
+  ],
+  "constraints": [
+    "Resolve existing cookie ActorContext and active Account/FarmMembership; the route is Farm-wide and Plant-independent.",
+    "Response has only farm_id, literal local_only, total, literal threshold, and eligibility; Cache-Control is no-store.",
+    "Consumer proof may use a deterministic model/harness, not a new frontend scaffold."
+  ],
+  "invariants": [
+    "Backend authorization remains authoritative.",
+    "Prompt actions never write or change sync authority.",
+    "FT-016 may render/compose but not redefine the status contract."
+  ],
+  "verification_targets": [
+    "FT-015-AC-004: protected exact status/OpenAPI/owner-boundary proof.",
+    "FT-015-AC-006: two-Account transient actions, reload reappearance, no mutation route/state/event, and unchanged local_only."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Svelte/PWA/frontend, prompt persistence/migration, upload/server/sync lifecycle, Plant permission redesign, or agent context."
+    ],
+    "stop_conditions": [
+      "A protected Farm-wide read cannot reuse current ActorContext without a new auth decision.",
+      "Consumer semantics require any backend write or frontend scaffold.",
+      "An error requires a new public envelope or status outside the accepted contract."
+    ]
+  }
+}

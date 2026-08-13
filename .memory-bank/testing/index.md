@@ -1,7 +1,7 @@
 ---
 description: Router for active testing strategy and subject verification specifications.
 status: active
-last_updated: 2026-07-28
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/testing/strategy.md
@@ -57,6 +57,12 @@ source_of_truth:
 - [Dataset Governance Verification](dataset-governance.md): Dataset Candidate
   aggregate, transition policy, evidence-flow wiring, and provider-neutral
   dataset-agents runtime with the curator gate.
+- [Local Privacy And Storage Verification](local-privacy-storage.md):
+  `local_only`/loopback policy, product-surface redaction, authoritative photo
+  pressure, protected status, and transient prompt-consumer semantics.
+- [Operator PWA First-Demo Verification](operator-pwa-first-demo.md): SvelteKit
+  PWA scaffold, role/provider surfaces, FT-015 consumer behavior, browser
+  security, and first-demo composition.
 
 ## Archive
 

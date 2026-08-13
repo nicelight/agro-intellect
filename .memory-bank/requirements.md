@@ -3,7 +3,7 @@ description: Требования (REQ-IDs) + traceability matrix (RTM).
 status: active
 type: requirements
 owner: product
-last_updated: 2026-08-12
+last_updated: 2026-08-14
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -81,8 +81,27 @@ source_of_truth:
 - `REQ-017` Companion typed governance: Companion MUST use explicit Plant-scoped state for IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord; parallel pending proposals for the same Plant issue are forbidden. Archived-Plant governance records MUST remain retained but non-operative until a new request passes current owning guards after restore.
 - `REQ-018` DecisionRecord authority boundary: DecisionRecord MAY direct Plant-scoped workflow or safe task requests through backend rules but MUST NOT mutate Plant state, create `action_task`, authorize physical action, replace Safety Gate approval, or turn raw chat/proposal content into fact. Any allowed workflow effect MUST respect the current Plant lifecycle and MUST NOT replay automatically after restore.
 - `REQ-019` Dataset governance: dataset candidates MUST be non-trainable by default and require evidence refs before any future trainability change.
-- `REQ-020` Local privacy, exposure, and storage: MVP data/artifacts MUST remain local/private by default; sync status MUST be `local_only`; secrets/auth material MUST NOT enter logs, timeline, manifests, Bus, UI Feed, screenshots, exports, or agent context; local storage prompt MUST appear over 200 MB without implying upload/server availability.
-- `REQ-021` Web App/PWA first demo: first demo MUST include Boss and Engineer paths, `tomato_001`, Plant selector access checks, daily check-in, photo upload, pH/EC, real agent outputs, Vision Observation, Plant State trust statuses, Hydroponics Advisor missing-data behavior, Task & Follow-up behavior, Safety Gate, Companion HumanAttentionNeeded/proposal/decision path, dataset fields, timeline audit/export, and local storage prompt.
+- `REQ-020` Local privacy, exposure, and storage: MVP data/artifacts MUST remain
+  local/private by default; sync status MUST be `local_only`; secrets/auth
+  material MUST NOT enter logs, timeline, manifests, Bus, UI Feed, screenshots,
+  exports, or agent context. The Farm-wide storage prompt MUST be absent at or
+  below `209715200` accepted original photo bytes and eligible strictly above
+  that value; each accepted photo counts once from authoritative Photo Catalog
+  `size_bytes`, while non-photo/non-authoritative storage and duplicate refs do
+  not count. For each Account, acknowledge/dismiss MUST close only the current
+  rendered prompt, persist no backend state, MAY reappear on a fresh load while
+  pressure remains above threshold, MUST NOT affect another Account, and MUST
+  NOT imply upload, server availability, or sync-status change.
+- `REQ-021` Web App/PWA first demo: first code-phase demo MUST include Boss and
+  Engineer paths, `tomato_001`, Plant selector access checks, daily check-in,
+  photo upload, pH/EC, provider-neutral product-agent and Vision Observation
+  boundaries over actual scoped data, Plant State trust statuses, Hydroponics
+  Advisor missing-data behavior, Task & Follow-up behavior, Safety Gate,
+  Companion HumanAttentionNeeded/proposal/decision path, dataset fields,
+  timeline audit/export, and the FT-015 local storage prompt. Deterministic
+  fake/spy executors remain test-only, unbound production fails closed without
+  fake/canned output, and real endpoint behavior belongs to the separate future
+  integration milestone.
 - `REQ-022` Consultant advisory scope: Consultant, when present, MUST remain limited to authorized advisory/read/comment context and MUST NOT create domain task/recommendation records, governance approvals by default, or physical-action approvals.
 
 ## Durable requirement clarifications
@@ -135,6 +154,6 @@ source_of_truth:
 | REQ-017 | EP-005 | FT-013 | verified: focus/attention/proposal lifecycle, derived conclusion, retained non-operative governance records, DecisionRecord creation, and explicit provider-neutral Companion proposal through deterministic fake/spy executors; real-provider tests remain a separate explicit future request | verified |
 | REQ-018 | EP-005, EP-004 | FT-013, FT-011, FT-012 | integration: closed atomic governance effects separated from Safety Gate/action authority and revalidated after restore | planned |
 | REQ-019 | EP-006 | FT-014 | unit: trainability default false; integration: evidence refs required. FT-014 fully implemented (candidate aggregate + sole creation seam, transition/trainability authority, photo/check-in/measurement/outcome candidate wiring, advisory Dataset Governance Agent, follow-up evidence association, Outcome composition, Training Data Curator with atomic selected gate, plus W6 remediation: shared dataset-evidence seam helper, explicit `PHOTO_DATASET_AUDIT_FAILED`/`OPERATION_DATASET_AUDIT_FAILED` taxonomy, and unified Dataset Agent runtime flow core); feature-level T2 completion gate recorded `SEMANTIC_VERDICT: semantic-pass` | implemented |
-| REQ-020 | EP-006 | FT-015 | integration: loopback/LAN controls, secret redaction, storage prompt | planned |
-| REQ-021 | EP-006 | FT-016 | e2e: first-demo PWA composition over available backend/agent/safety/governance seams plus safety/context checks | planned |
+| REQ-020 | EP-006 | FT-015, FT-016 | verification: loopback/LAN controls, secret redaction, exact photo-only threshold/exclusions, transient per-Account prompt actions, no sync mutation, and FT-016 server-only browser transport plus pre-capture secret/auth exclusion | planned |
+| REQ-021 | EP-006 | FT-016 | planned TASK-080..110: SvelteKit scaffold and authorized shell; atomic Boss/Engineer provider consumers; protected read-only Dataset projection; FT-015 status/transient-prompt/capture consumers; context isolation; separate actor-journey and full-composition/no-fallback gates | planned |
 | REQ-022 | EP-001, EP-004, EP-005, EP-006 | FT-001, FT-012, FT-013, FT-016 | integration: Consultant read/comment scope and no task mutation, governance approval, Companion invocation, or physical-action approval authority | planned |

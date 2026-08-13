@@ -1,0 +1,104 @@
+{
+  "id": "TASK-090-T3-FT-016-W2",
+  "title": "Expose the protected read-only Dataset Candidate projection",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-010-T3-FT-001-W3",
+    "TASK-061-T1-FT-014-W6"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/contracts.py",
+    "backend/app/dataset_governance/repository.py",
+    "backend/app/dataset_governance/service.py",
+    "backend/app/api/dataset_governance.py",
+    "backend/app/main.py",
+    "tests/backend/api/test_ft016_dataset_candidates.py",
+    "tests/backend/dataset_governance/test_dataset_candidate_reads.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "dataset_read_api",
+      "command": ".venv/bin/python -m pytest tests/backend/api/test_ft016_dataset_candidates.py tests/backend/dataset_governance/test_dataset_candidate_reads.py -q",
+      "required": true
+    },
+    {
+      "name": "dataset_regression",
+      "command": ".venv/bin/python -m pytest tests/backend/dataset_governance -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent API/OpenAPI verification covers exact fields, Boss/granted Engineer/Consultant, revoked/disabled/wrong-Farm, active/retained-history, stable complete pagination, no-store, safe failure, authority parity, and absence of Dataset mutation routes."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/dataset-governance-http.md",
+    ".memory-bank/domains/dataset-governance.md",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-009 RED: Dataset Governance has no protected HTTP read projection; GREEN: the exact Plant-scoped paginated list returns authority values for authorized active/retained-history reads and no mutation route; decisive comparison: OpenAPI/response/cursor/auth matrix plus route scan and post-read DB snapshot; artifact: Dataset API evidence under .tasks/TASK-090-T3-FT-016-W2/."
+  ],
+  "purpose": "Supply the minimum backend-owned Dataset fields required by the first-demo PWA without introducing review, lifecycle, evidence, curator, or trainability mutation authority.",
+  "success_outcome": "GET /api/plants/{plant_id}/dataset-candidates returns the exact safe no-store read-only projection with complete canonical pagination and backend authorization, while every read is non-mutating and fail-closed.",
+  "anti_goals": [
+    "Do not add Dataset POST/PATCH/DELETE, review, transition, split, evidence association, curator invocation, or can_train_on mutation.",
+    "Do not derive from Timeline, manifest, filesystem, UI Feed, or provider output, and do not expose internal notes/run hashes/event refs."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Dataset lifecycle/trainability/evidence/curator mutation behavior",
+      "frontend implementation",
+      "Timeline/manifest/filesystem/provider fallback",
+      "new database schema or migration"
+    ],
+    "stop_conditions": [
+      "The read cannot be implemented from existing Dataset Candidate authority without changing its schema or lifecycle.",
+      "Authorization/retained-history ownership is missing or a new mutable endpoint is required."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-009",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/dataset-governance-http.md",
+    ".memory-bank/domains/dataset-governance.md#dataset_candidates",
+    ".memory-bank/states/dataset-governance.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/access/actor-context.md#scope",
+    ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
+  ],
+  "constraints": [
+    "Primary owner is Dataset Governance; the HTTP handler remains transport-only and business/query ownership stays in its service/repository.",
+    "The response copies authoritative fields and omits internal/secret data; pagination is canonical keyset continuation."
+  ],
+  "invariants": [
+    "Dataset can_train_on remains derived only by Dataset Governance lifecycle authority.",
+    "Read access creates no row, event, review, transition, repair, or retained-history mutation.",
+    "Unauthorized Plant data is not enumerable."
+  ],
+  "verification_targets": [
+    "FT-016-AC-009: exact route/shape/auth/pagination/no-store/safe-failure and zero mutation route/state.",
+    "T3 harm proof uses isolated candidates/Farms/Plants, captures pre/post database state, and confirms denied/failure/rerun paths create no write."
+  ]
+}

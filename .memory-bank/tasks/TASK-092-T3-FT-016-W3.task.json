@@ -1,0 +1,101 @@
+{
+  "id": "TASK-092-T3-FT-016-W3",
+  "title": "Consume the FT-015 transient storage prompt",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-062-T3-FT-015-W1",
+    "TASK-066-T3-FT-015-W2",
+    "TASK-072-T2-FT-015-W1",
+    "TASK-081-T3-FT-016-W2"
+  ],
+  "touched_files": [
+    "frontend/src/lib/storage-prompt/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/storage-prompt.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "storage_prompt_browser",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/storage-prompt.spec.ts",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent two-Account browser verification covers exact status use, eligible-only display, acknowledge/dismiss equivalence, fresh-load reappearance, Account/auth reset, no browser/backend persistence or mutation, and unchanged local_only/no-server wording."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/photo-intake-http.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-007 RED: no Svelte storage-status/prompt consumer exists; GREEN: exact prompt_eligible drives display and both actions close only the current component, reset on fresh load/auth change, persist nothing, and leave local_only/no-server semantics unchanged; decisive comparison: two-Account browser sequence, request/storage scan, and repeated status response; artifact: prompt evidence under .tasks/TASK-092-T3-FT-016-W3/."
+  ],
+  "purpose": "Implement only the FT-016-owned mechanical presentation and transient interaction state over the FT-015 provider contract.",
+  "success_outcome": "The PWA shows the exact eligible FT-015 storage warning and keeps acknowledge/dismiss component-local, Account-isolated, resettable, non-persistent, and incapable of changing storage or sync authority.",
+  "anti_goals": [
+    "Do not calculate storage totals/thresholds, scan files, add prompt mutation endpoints/events, or persist state in cookies/localStorage/sessionStorage/IndexedDB.",
+    "Do not imply upload, remote server, cooldown, storage episode, growth delta, or sync-status change."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "backend Photo Intake/storage-pressure/status authority",
+      "browser or backend durable prompt state",
+      "upload/server/sync authority or wording",
+      "filesystem/storage scanning"
+    ],
+    "stop_conditions": [
+      "The component needs to recalculate eligibility or persist an action.",
+      "The accepted status/interaction behavior cannot be rendered without redefining FT-015."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-007",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md#storage-prompt-consumer",
+    ".memory-bank/contracts/photo-intake-http.md#storage-status-behavior",
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-006",
+    ".memory-bank/testing/local-privacy-storage.md#protected-status-and-consumer-matrix",
+    ".memory-bank/testing/operator-pwa-first-demo.md#ft-015-consumer-matrix"
+  ],
+  "constraints": [
+    "Primary owner is Operator PWA only for Svelte rendering and transient component state; FT-015/Photo Intake retains every provider rule.",
+    "Use exact response values; no threshold or sync logic is duplicated in the client."
+  ],
+  "invariants": [
+    "Both actions close only the current rendered instance and persist nothing.",
+    "Fresh load or Account/auth change discards prompt state and local_only never changes."
+  ],
+  "verification_targets": [
+    "FT-016-AC-007: eligible-only exact status display, both transient actions, fresh-load/account reset, zero persistence/mutation, and no server/upload implication.",
+    "T3 harm proof uses isolated browser contexts/accounts and confirms storage status, backend rows, Timeline, and browser storage remain unchanged."
+  ]
+}

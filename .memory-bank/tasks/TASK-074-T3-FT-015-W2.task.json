@@ -1,0 +1,92 @@
+{
+  "id": "TASK-074-T3-FT-015-W2",
+  "title": "Close Plant State context redaction",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-035-T3-FT-009-W2",
+    "TASK-064-T3-FT-015-W1"
+  ],
+  "touched_files": [
+    "backend/app/plant_state/contracts.py",
+    "backend/app/plant_state/runtime.py",
+    "tests/backend/plant_state/test_runtime.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "plant_state_context_redaction",
+      "command": ".venv/bin/python -m pytest tests/backend/plant_state -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent adversarial verification injects the configured corpus and forbidden context classes through Plant State request assembly and the provider spy, proving zero outbound leakage or unsafe I/O with the exact request contract and trust authority unchanged."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/contracts/plant-state-runtime.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/testing/vision-observation-plant-state.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-014 RED/GREEN: inject configured secrets plus raw ActorContext/cookie/header/UI/provider-history sentinels through Plant State request assembly and the provider spy; RED is any outbound occurrence or missing decisive coverage, GREEN is zero forbidden values, zero I/O on rejected unsafe input, exact allowed-field/source-ref parity, and unchanged source values; decisive comparison: captured request/call count and source values; artifact: focused transcript under .tasks/TASK-074-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+  ],
+  "purpose": "Close the Plant-State-owned provider request privacy result without changing trust or human-promotion authority.",
+  "success_outcome": "PlantStateProviderRequestV1 contains only registered authorized Plant-state records and excludes secrets/auth/UI/provider-history values before provider I/O while trust and promotion semantics remain unchanged.",
+  "anti_goals": [
+    "Do not change Plant State result schemas, trust transitions, human review, provider selection, or real-endpoint scope.",
+    "Do not adopt generic Agent Runtime or another competence request claim."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-014",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/plant-state-runtime.md#provider-request-version-1",
+    ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
+    ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
+    ".memory-bank/testing/vision-observation-plant-state.md#current-code-phase-executor-evidence",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Retain the strict latest-record selection and request shape; sanitize or reject output copies only.",
+    "Use a test-only spy; no real endpoint, credentials, network call, or expanded permission."
+  ],
+  "invariants": [
+    "Forbidden values never cross the Plant State provider boundary.",
+    "Model input/output cannot confirm Plant state or bypass human review.",
+    "Production remains unbound and fail closed."
+  ],
+  "verification_targets": [
+    "FT-015-AC-014: Plant State request RED/GREEN or preserved pre-GREEN with corpus absence, zero unsafe I/O, allowed-field/ref parity, source-value integrity, and trust regression."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Generic or other competence requests, provider/model/credential/egress selection, trust lifecycle or public API changes, frontend, remote sync, or live network."
+    ],
+    "stop_conditions": [
+      "Safety requires changing the accepted Plant State request or trust contract.",
+      "Any probe would require real credentials, network access, or expanded permission."
+    ]
+  }
+}

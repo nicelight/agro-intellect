@@ -1,10 +1,11 @@
 ---
 description: Canonical module inventory, dependency graph, and inline ownership contracts for the MVP modular monolith.
 status: active
-last_updated: 2026-08-10
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/architecture/system-architecture.md
   - .memory-bank/invariants.md
+  - .memory-bank/contracts/product-surface-redaction.md
   - .memory-bank/spec-index.md
 ---
 # Boundary Map
@@ -19,6 +20,7 @@ Code roots are discovery locations, not task hard write boundaries.
 
 | Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |
 |---|---|---|---|
+| Runtime Substrate | [Foundation Runtime Substrate](../architecture/foundation-runtime-substrate.md#substrate-shape) | `backend/app/config.py`; `backend/app/core/`; `scripts/` | Own validated local runtime settings, the supported loopback launch path, and shared redaction primitives; never product/domain state. |
 | Access & Admin | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/access_admin/`; `backend/app/api/session.py`; `backend/app/api/admin.py`; `backend/app/api/plants.py` | Own Account, Farm, Membership, LocalSession, ActorContext, Plant lifecycle, PlantAccessGrant, and admin audit authority. |
 | Plant Operations | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/plant_operations/`; `backend/app/api/operations.py` | Own daily check-ins, observations, and manual pH/EC commands and rows. |
 | Photo Intake | [Main Modules / Bounded Contexts](../architecture/system-architecture.md#main-modules-bounded-contexts) | `backend/app/photo_intake/`; `backend/app/api/photos.py` | Own accepted photo files, catalog identity, hash, capture manifest, and upload transaction. |
@@ -39,6 +41,14 @@ Code roots are discovery locations, not task hard write boundaries.
 
 | Consumer | Provider | Contract |
 |---|---|---|
+| Photo Intake | Runtime Substrate | [Local Runtime Policy](#local-runtime-policy) |
+| Access & Admin | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
+| Photo Intake | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
+| Plant History | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
+| Timeline Audit | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
+| Agent Runtime Core | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
+| Agent Chat & UI Feed | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
+| Operator PWA | Runtime Substrate | [Product Surface Redaction](#product-surface-redaction) |
 | Plant Operations | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
 | Photo Intake | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
 | Plant History | Access & Admin | [ActorContext Gate](#actorcontext-gate) |
@@ -72,10 +82,30 @@ Code roots are discovery locations, not task hard write boundaries.
 | Operator PWA | Photo Intake | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
 | Operator PWA | Plant History | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
 | Operator PWA | Agent Chat & UI Feed | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Plant State | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
 | Operator PWA | Task & Follow-Up | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
 | Operator PWA | Companion Governance | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
+| Operator PWA | Dataset Governance | [Presentation Calls Backend Authority](#presentation-calls-backend-authority) |
 
 ## Inline Contracts
+
+### Local Runtime Policy
+
+Product modules may read only validated local settings from Runtime Substrate.
+For FT-015, `sync_status` is the literal `local_only`, the supported start path
+is loopback, and no LAN mode is implemented. Consumers cannot invent another
+sync status, host/exposure mode, upload/server state, or fallback. See
+[Foundation Data Substrate](../domains/foundation-data-substrate.md#rules) and
+[Foundation Local Runtime](../runbooks/foundation-local-runtime.md#command-path).
+
+### Product Surface Redaction
+
+Consumers retain ownership of their strict output schemas and call or
+equivalently enforce the shared redaction primitive before persistence,
+append, serialization, publication, export, or capture. Runtime Substrate never
+becomes domain/output authority, and consumers never pass raw credential
+objects through it. See
+[Product Surface Redaction](product-surface-redaction.md#surface-rules).
 
 ### ActorContext Gate
 
@@ -153,4 +183,8 @@ and never accepts a caller-selected lifecycle or trainability result. See
 The Operator PWA may invoke registered HTTP/read boundaries and render their
 results, but it never owns backend authorization, mutable domain state, agent
 context, Safety approval, or dataset trainability. See
-[API / Contract Boundaries](../architecture/system-architecture.md#api--contract-boundaries).
+[API / Contract Boundaries](../architecture/system-architecture.md#api--contract-boundaries)
+and the exact [Operator PWA](operator-pwa.md) presentation contract. Plant
+State and Dataset Governance remain backend providers; their PWA edges add
+only protected read/review calls already owned by their registered HTTP
+contracts and never direct database or lifecycle writes.

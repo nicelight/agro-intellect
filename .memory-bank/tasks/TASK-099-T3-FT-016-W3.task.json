@@ -1,0 +1,56 @@
+{
+  "id": "TASK-099-T3-FT-016-W3",
+  "title": "Present the safe admin audit projection",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": ["TASK-014-T3-FT-002-W3", "TASK-017-T3-FT-003-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/admin/",
+    "frontend/src/routes/admin/+page.server.ts",
+    "frontend/src/routes/admin/+page.svelte",
+    "frontend/tests/e2e/admin-audit.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "admin_audit_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/admin-audit.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent Boss/non-Boss browser verification covers safe audit fields, filters, stable cursor continuation, no-store, and absence of presentation-origin writes."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/admin/boss-admin-http.md",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-016 RED: no Boss browser surface reads admin audit; GREEN: exact safe filtered pages render with complete cursor continuation while non-Boss access fails and page interaction emits no audit/domain mutation; decisive comparison: protected response versus DOM, request transcript, and audit-row count; artifact: admin-audit evidence under .tasks/TASK-099-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the admin audit read result independently of the mutations that produce its records.",
+  "success_outcome": "A Boss can traverse the safe admin audit projection while non-Boss users are denied and presentation creates no audit or mutable-domain record.",
+  "anti_goals": ["Do not implement Account/role/Plant/grant mutations or create client-authored audit records.", "Do not expose passwords, auth/session material, raw database errors, or provider data."],
+  "runtime_context": {
+    "forbidden_scope": ["backend AdminAuditRecord authority", "presentation-origin audit/domain mutation", "secret/auth/raw-error exposure"],
+    "stop_conditions": ["The read needs fields outside the Boss Admin audit contract.", "Safe pagination cannot avoid exposing protected/raw backend data."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-016",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/admin/boss-admin-http.md#routes",
+    ".memory-bank/domains/admin/admin-audit.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/admin/boss-admin-and-audit.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Access & Admin owns audit persistence/query.", "Render exact safe summaries and treat the cursor as opaque."],
+  "invariants": ["Audit presentation is read-only and cannot become agent context or domain authority.", "Non-Boss users cannot enumerate audit records."],
+  "verification_targets": [
+    "FT-016-AC-016: exact safe admin audit fields/filters/pagination, non-Boss denial, and zero presentation-origin write.",
+    "T3 harm proof uses isolated audit rows and proves denied/malformed reads leave no record or secret residue."
+  ]
+}

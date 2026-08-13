@@ -1,0 +1,125 @@
+{
+  "id": "TASK-094-T3-FT-016-W4",
+  "title": "Enforce redacted browser capture artifacts",
+  "status": "planned",
+  "wave": "W4",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-020",
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-064-T3-FT-015-W1",
+    "TASK-067-T3-FT-015-W2",
+    "TASK-068-T3-FT-015-W2",
+    "TASK-069-T3-FT-015-W2",
+    "TASK-071-T3-FT-015-W2",
+    "TASK-072-T2-FT-015-W1",
+    "TASK-082-T3-FT-016-W3",
+    "TASK-083-T3-FT-016-W3",
+    "TASK-084-T3-FT-016-W3",
+    "TASK-085-T3-FT-016-W3",
+    "TASK-086-T3-FT-016-W3",
+    "TASK-087-T3-FT-016-W3",
+    "TASK-088-T3-FT-016-W3",
+    "TASK-089-T3-FT-016-W3",
+    "TASK-091-T2-FT-016-W3",
+    "TASK-092-T3-FT-016-W3",
+    "TASK-096-T3-FT-016-W3",
+    "TASK-097-T3-FT-016-W3",
+    "TASK-098-T3-FT-016-W3",
+    "TASK-099-T3-FT-016-W3",
+    "TASK-100-T3-FT-016-W3",
+    "TASK-101-T3-FT-016-W3",
+    "TASK-102-T3-FT-016-W3",
+    "TASK-103-T3-FT-016-W3",
+    "TASK-104-T3-FT-016-W3",
+    "TASK-105-T3-FT-016-W3",
+    "TASK-106-T3-FT-016-W3",
+    "TASK-107-T3-FT-016-W3",
+    "TASK-108-T3-FT-016-W3",
+    "TASK-109-T3-FT-016-W3"
+  ],
+  "touched_files": [
+    "frontend/tests/e2e/support/safe-capture.ts",
+    "frontend/tests/e2e/browser-capture.spec.ts",
+    "frontend/playwright.config.ts",
+    "frontend/src/lib/"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "browser_capture_redaction",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/browser-capture.spec.ts",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent corpus verification exercises screenshot/trace/video/DOM artifacts through one helper, proves raw secret/auth absence and source-fixture integrity, validates safe failure, and rejects direct capture calls or a product screenshot feature."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-008 / REQ-020 RED: no frontend/capture helper currently exists to exercise the browser boundary; GREEN: every registered capture artifact omits the configured secret/auth corpus, source fixtures remain unchanged, unsafe capture fails with a stable safe error, and no direct capture/product feature exists; decisive comparison: artifact corpus scan, source-value probe, helper-usage scan, and failure transcript; artifact: capture evidence under .tasks/TASK-094-T3-FT-016-W4/."
+  ],
+  "purpose": "Apply the FT-015/AD-012 Product Surface Redaction handoff to the actual FT-016 browser evidence surface without creating product screenshot functionality.",
+  "success_outcome": "All FT-016 Playwright browser artifacts are created through one safe helper and contain no configured secret/auth value, while source values remain unchanged and direct/product capture paths are absent.",
+  "anti_goals": [
+    "Do not add a user-facing screenshot button, upload endpoint, production capture service, generic free-text pipeline, or secret-bearing browser configuration.",
+    "Do not mutate source credentials or clean an artifact only after unsafe capture."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "product screenshot/capture functionality",
+      "secret/auth values in browser config/page data/artifacts",
+      "post-capture cleanup as acceptance",
+      "source credential mutation or external upload"
+    ],
+    "stop_conditions": [
+      "A raw configured secret/auth value reaches any capture input or artifact.",
+      "Safe capture requires exposing backend/provider credentials to the browser or adding product capture authority."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-008",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md#browser-capture-redaction",
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/boundary-map.md#product-surface-redaction",
+    ".memory-bank/testing/operator-pwa-first-demo.md#browser-capture-matrix"
+  ],
+  "constraints": [
+    "Primary owner is Operator PWA browser verification; Runtime Substrate remains the shared backend sanitizer owner only.",
+    "Redact or omit before capture, preserve source values, and route every artifact through one registered helper."
+  ],
+  "invariants": [
+    "Secrets, tokens, cookies, auth headers, passwords, private env, backend origin, and provider credentials never enter browser artifacts.",
+    "Capture redaction grants no upload, sync, UI, agent, or domain authority."
+  ],
+  "verification_targets": [
+    "FT-016-AC-008 / REQ-020: configured auth/secret corpus absence across screenshot/trace/video/DOM, source integrity, safe failure, helper exclusivity, and no product capture.",
+    "T3 harm proof uses disposable fixtures/browser artifacts, safe rerun, and cleanup that preserves only required redacted evidence."
+  ]
+}

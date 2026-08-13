@@ -1,0 +1,58 @@
+{
+  "id": "TASK-096-T3-FT-016-W3",
+  "title": "Assign an Account membership role in Boss Admin",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": ["TASK-017-T3-FT-003-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/admin/",
+    "frontend/src/routes/admin/+page.server.ts",
+    "frontend/src/routes/admin/+page.svelte",
+    "frontend/tests/e2e/admin-role.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "admin_role_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/admin-role.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent Boss/non-Boss browser verification covers exact membership role assignment, invalid role, last-Boss protection, and authoritative reread."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/admin/boss-admin-http.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-013 RED: no Boss browser action assigns a membership role; GREEN: the registered role action changes exactly the selected membership while invalid/non-Boss/last-Boss requests fail without mutation; decisive comparison: request body, response/DOM, and authoritative membership/audit reread; artifact: role evidence under .tasks/TASK-096-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose the accepted membership-role action without combining it with Account creation, Plant grants, lifecycle, or audit presentation.",
+  "success_outcome": "A Boss can assign one registered membership role through backend authority while invalid, non-Boss, and last-Boss paths remain non-mutating.",
+  "anti_goals": [
+    "Do not create Accounts, manage Plants/grants, read audit, invent roles, or alter session/password state.",
+    "Do not weaken last-active-Boss or Consultant authority rules."
+  ],
+  "runtime_context": {
+    "forbidden_scope": ["backend Account/Membership/audit authority", "new roles or permission semantics", "Plant lifecycle/access-grant behavior"],
+    "stop_conditions": ["The UI requires a role or permission outside Boss Admin HTTP.", "Role assignment cannot preserve last-Boss protection and same-transaction audit authority."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-013",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/admin/boss-admin-http.md#routes",
+    ".memory-bank/contracts/admin/boss-admin-http.md#authorization-and-safety",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Access & Admin owns membership and audit mutation.", "Send only role_preset and trust the safe backend result."],
+  "invariants": ["Frontend role visibility grants no authority.", "A rejected role request changes neither membership nor audit state."],
+  "verification_targets": [
+    "FT-016-AC-013: exact membership-role assignment with invalid/non-Boss/last-Boss rejection and authoritative reread.",
+    "T3 harm proof uses isolated memberships and verifies safe rerun cannot demote the last active Boss or grant unintended authority."
+  ]
+}

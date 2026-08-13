@@ -1,7 +1,7 @@
 ---
 description: Pre-PRD spec framing, global SDD backbone state, and foundation routing.
 status: active
-last_updated: 2026-08-10
+last_updated: 2026-08-14
 ---
 # SDD Spec Backbone
 
@@ -55,6 +55,16 @@ last_updated: 2026-08-10
   Dependency Graph, and Inline Contracts structure. It records Dataset
   evidence creation, follow-up evidence association, and the advisory-only
   runtime edge without promoting code roots to task write boundaries.
+- `AD-012` closes the shared Product Surface Redaction branch. Runtime
+  Substrate owns one sanitization primitive, while each product capability
+  retains its strict payload, safe-error, and fail-closed output authority
+  before persistence, append, publication, serialization, export, provider
+  egress, or browser capture.
+- Brownfield current-state evidence is narrower than the accepted target:
+  `backend/app/core/redaction.py` plus existing auth, Timeline, and Plant
+  History usage prove the reusable substrate and some owner coverage. The
+  remaining product surfaces are downstream implementation/planning deltas;
+  they neither redefine the target nor require new Foundation work.
 
 ## FT-013 Shared Design Decisions
 
@@ -74,26 +84,33 @@ last_updated: 2026-08-10
 | Dataset Timeline matrix | [Timeline Event](contracts/timeline-event.md#dataset-candidate-payload-summaries), [Dataset Agent event](contracts/timeline-event.md#dataset_agent_runtime_decided-payload-summary) | Candidate create/evidence-link/review events and every accepted Dataset Agent attempt have exact registered identities, redacted summaries, cardinality, failure behavior, and non-authoritative audit-noise semantics. |
 | Detailed module topology | [Boundary Map](contracts/boundary-map.md#modules), [Dependency Graph](contracts/boundary-map.md#dependency-graph) | Dataset source owners call the Dataset Governance creation/association seams; Dataset Governance consumes Agent Runtime Core only through the registered advisory exception and owns all mutable Dataset state. |
 
+## FT-015 Shared Design Decisions
+
+| Concern | Canonical sources | Durable decision |
+|---|---|---|
+| Product output redaction ownership | [AD-012](architecture/system-architecture.md#ad-012---product-output-redaction-is-owner-enforced-through-one-shared-substrate), [Product Surface Redaction](contracts/product-surface-redaction.md#surface-rules), [Boundary Map](contracts/boundary-map.md#product-surface-redaction) | Runtime Substrate owns the shared primitive only. Every semantic owner keeps its strict schema/allowlist and sanitizes or rejects the output copy before crossing its boundary; source credentials and domain authority never move into the helper. |
+| FT-015 backend and FT-016 presentation handoff | [Photo Intake HTTP](contracts/photo-intake-http.md#storage-status-behavior), [Product Surface Redaction](contracts/product-surface-redaction.md#surface-rules), [FT-015](features/FT-015-local-security-privacy-storage-prompt.md), [FT-016](features/FT-016-web-app-pwa-operator-surface-first-demo.md) | FT-015 owns photo-pressure accounting and the protected stateless status contract. FT-016 owns transient Svelte presentation and future browser capture, consumes both canonical contracts directly, and gains no storage, upload, or sync authority. |
+
 ## Backbone Area Matrix
 | Area | Status | Authoritative source | Notes |
 |---|---|---|---|
 | architecture_style | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/constitution.md](constitution.md) | Local modular monolith with Svelte 5/SvelteKit Operator PWA under strict shared-boundary architecture guardrails; FT-000 runtime substrate defined. |
 | source_of_truth | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/foundation.md](foundation.md) | Design precedence, runtime authority layers, verified FT-000 brownfield executable baseline gate, and substrate data boundaries defined. |
-| module_boundaries | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | Bounded modules defined inside one deployable monolith; Agent Runtime owns roster metadata, Plant create owns no introduction work, and Agent Chat Bus & UI Feed owns missing-row materialization only at the protected active Feed boundary. |
+| module_boundaries | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md) | Bounded modules remain inside one deployable monolith. Runtime Substrate owns shared settings/redaction primitives only; product consumers retain payload, safe-error, persistence, publication, export, provider-request, and capture authority through explicit Product Surface Redaction edges. |
 | user_scenarios | authoritative | [.memory-bank/user-scenarios.md](user-scenarios.md), [.memory-bank/requirements.md](requirements.md) | Boss setup, Engineer operations, Safety Gate flow, and Companion governance covered. |
 | constraints | authoritative | [.memory-bank/constitution.md](constitution.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | Local-first, low-maintenance, safety, data authority, context hygiene, and no automated actuation. |
 | non_goals | authoritative | [.memory-bank/prd.md](prd.md), [.memory-bank/requirements.md](requirements.md), [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md) | SaaS, hosted sync, enterprise identity, multi-Farm, microservices, full dataset registry, and actuation excluded. |
 | domain_model | authoritative | [.memory-bank/domains/core-domain.md](domains/core-domain.md), [.memory-bank/domains/index.md](domains/index.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/domains/plant-history.md](domains/plant-history.md), [.memory-bank/states/index.md](states/index.md) | Global entities, shared native-UUID/non-cascading relation compatibility, foundation substrate, photo authority, Plant history projections, archived-Plant operational guard, and dataset lifecycle/trainability ownership are defined; exact feature fields live in registered subject specs. |
-| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md), [.memory-bank/foundation.md](foundation.md) | Existing generic agent/Safety/task/governance flow remains; roster introductions keep the separate active-Feed route, while the two Dataset Agents use a separate registered advisory-only provider/outcome/audit route with zero MessageEnvelope/Bus/UI/Safety effect. |
-| storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/agent-chat-ui-feed-storage.md](domains/agent-chat-ui-feed-storage.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/foundation.md](foundation.md) | Existing UI rows and uniqueness remain; forward migration removes only presentation batch metadata/table and adds no replacement lifecycle state. Other PostgreSQL/artifact/audit boundaries are unchanged. |
-| api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md), [.memory-bank/contracts/task-approval-http.md](contracts/task-approval-http.md) | Plant create/201 remains free of introduction work; protected active Feed GET owns missing-row materialization without changing response/order/cursor/error grammar. |
+| data_flow | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/architecture/foundation-runtime-substrate.md](architecture/foundation-runtime-substrate.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md), [.memory-bank/foundation.md](foundation.md) | Existing agent/Safety/task/governance, active-Feed introduction, and Dataset advisory flows remain. AD-012 additionally requires each semantic owner to sanitize or reject the output copy before persistence, append, publication, serialization, export, provider egress, or capture. |
+| storage | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/domains/runtime-data-model.md](domains/runtime-data-model.md), [.memory-bank/domains/foundation-data-substrate.md](domains/foundation-data-substrate.md), [.memory-bank/domains/agent-chat-ui-feed-storage.md](domains/agent-chat-ui-feed-storage.md), [.memory-bank/domains/photo-artifacts.md](domains/photo-artifacts.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/foundation.md](foundation.md) | PostgreSQL, local artifacts, Timeline, and UI storage ownership are unchanged. FT-015 photo-pressure accounting reads authoritative accepted-photo metadata and creates no sync, upload, acknowledgment, or replacement lifecycle state. |
+| api_contracts | authoritative | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md), [.memory-bank/contracts/photo-intake-http.md](contracts/photo-intake-http.md), [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md), [.memory-bank/contracts/farm/plant-management-http.md](contracts/farm/plant-management-http.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md), [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md), [.memory-bank/contracts/task-approval-http.md](contracts/task-approval-http.md) | Existing API authority remains. Safe errors redact before emission, and FT-015 adds one protected read-only storage-status contract consumed by FT-016 without a prompt-mutation endpoint. |
 | event_message_contracts | authoritative | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/ui-feed.md](contracts/ui-feed.md), [.memory-bank/contracts/timeline-event.md](contracts/timeline-event.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | Generic MessageEnvelope/Bus/Safety/UI rules remain; introductions are presentation-only, and the Dataset advisory exception uses only its dedicated Timeline attempt event plus candidate audit events. |
-| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Agent Runtime owns canonical roster/provider composition; AD-011 registers exactly two advisory-only Dataset requests/results without widening generic AgentRuntimeOutcomeV1 or MessageEnvelope. Fail-closed unbound production remains unchanged. |
-| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-008 remains; AD-010 additionally requires current identity/grant/active-Plant locks in the same transaction as lazy introduction writes and keeps archived reads/restore write-free. |
-| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md), [.memory-bank/testing/dataset-governance.md](testing/dataset-governance.md), [.memory-bank/testing/plant-operations.md](testing/plant-operations.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Existing deterministic runtime acceptance remains; FT-014 additionally proves the advisory outcome/current-guard/audit matrices and zero generic publication/direct Dataset authority. |
-| deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md), [.memory-bank/foundation.md](foundation.md) | Local loopback path remains; application startup performs no introduction reconciliation and recovery is an authorized active Feed retry. |
-| risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/prd.md](prd.md) | Lazy Feed persistence may fail or race archive/revocation; same-transaction current guards plus `FEED_PERSISTENCE_FAILED` and retry are the accepted bounded recovery. |
-| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md) | No unresolved global/shared blocker remains; Finding 4, the FT-013 provider-input policy, and AD-011 are authoritative. FT-014 curator reachability is also closed: positive `curator_auto` is required and the production association route is feature-local Dataset Governance authority. |
+| agent_io_contracts | authoritative | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md), [.memory-bank/contracts/companion-runtime.md](contracts/companion-runtime.md), [.memory-bank/contracts/agent-roster-bootstrap.md](contracts/agent-roster-bootstrap.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md) | Existing runtime/provider composition remains. Every competence request keeps its exact typed allowlist and excludes credentials, raw ActorContext, cookies, headers, UI text, and provider history before provider I/O. |
+| security_safety | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/invariants.md](invariants.md), [.memory-bank/contracts/evidence-redaction.md](contracts/evidence-redaction.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md), [.memory-bank/contracts/auth/session-security.md](contracts/auth/session-security.md), [.memory-bank/contracts/message-envelope.md](contracts/message-envelope.md), [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md), [.memory-bank/states/plants/plant-and-access-lifecycle.md](states/plants/plant-and-access-lifecycle.md) | AD-012 extends the verified Foundation redaction baseline across product outputs while preserving every owner schema and source credential. Existing Safety, authorization, archive, and no-authority rules remain unchanged. |
+| testing_strategy | authoritative | [.memory-bank/testing/strategy.md](testing/strategy.md), [.memory-bank/testing/local-privacy-storage.md](testing/local-privacy-storage.md), [.memory-bank/testing/agent-runtime.md](testing/agent-runtime.md), [.memory-bank/testing/agent-chat-ui-feed.md](testing/agent-chat-ui-feed.md), [.memory-bank/testing/dataset-governance.md](testing/dataset-governance.md), [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | Risk-based deterministic acceptance remains. One configured corpus proves actual owner outputs, unchanged source credentials, stable safe failures, exact photo-pressure boundaries, and future FT-016 capture compliance. |
+| deployment | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md), [.memory-bank/foundation.md](foundation.md) | Supported deployment remains loopback with `local_only`; optional LAN is not introduced by FT-015. Startup performs no introduction or prompt-state reconciliation. |
+| risks | authoritative | [.memory-bank/architecture/system-architecture.md](architecture/system-architecture.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md), [.memory-bank/prd.md](prd.md) | Cross-surface auth leakage and accidental sanitizer authority are addressed by strict owner allowlists, one shared primitive, pre-output enforcement, source immutability, and fail-closed safe errors. Existing Feed-race recovery remains unchanged. |
+| open_questions | authoritative | [.memory-bank/spec-backbone.md](spec-backbone.md), [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md), [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md), [.memory-bank/contracts/dataset-agents-runtime.md](contracts/dataset-agents-runtime.md) | No unresolved global/shared blocker remains. AD-012 and the FT-015/FT-016 consumer boundary are authoritative; provider/model selection remains intentionally deferred to its existing future milestone. |
 
 ## Handoff To /prd-to-features
 - Ready: yes
@@ -104,7 +121,8 @@ last_updated: 2026-08-10
 - Global Backbone Status: complete; the FT-013 typed governance-input decision,
   ordinary-task UoW phase, Finding 4 active-Feed materialization boundary,
   AD-011 Dataset advisory route, Dataset Timeline matrix, and current Boundary
-  Map topology are authoritative.
+  Map topology are authoritative. AD-012 now also governs shared product-output
+  redaction and the FT-015/FT-016 consumer boundary.
 - Backbone areas decided: architecture_style, source_of_truth, module_boundaries, ActorContext/authz, Farm/Plant data authority, photo artifact storage, timeline audit/export, Agent Chat Bus, MessageEnvelope, UI Feed, Plant state trust, Safety Gate/action lifecycle, Companion governance, dataset governance, testing, deployment.
 - Authoritative specs: see .memory-bank/spec-index.md Spec Registry.
 - L1-L3 context: [.memory-bank/requirements.md](requirements.md), [.memory-bank/epics/index.md](epics/index.md), and [.memory-bank/features/index.md](features/index.md).
@@ -112,12 +130,15 @@ last_updated: 2026-08-10
 ## Handoff To /foundation-to-tasks
 - Decision: required.
 - Status: complete and verified; [.memory-bank/foundation.md](foundation.md) owns the current gate state and executable-baseline evidence.
+- Post-revision audit: complete on 2026-08-13. `/foundation-to-tasks` found no
+  executable substrate gap, preserved TASK-004 and existing FT-000 history,
+  and created no Foundation task.
 - Downstream rule: product tasking must honor the Foundation gate recorded in the authoritative Foundation document.
 
 ## Handoff To /feature-to-tasks
-- Ready: yes for feature tasking when the selected feature satisfies its
-  current review and workflow gates; this handoff does not authorize execution
-  or lifecycle transitions.
+- Ready: yes; the required post-revision `/foundation-to-tasks` audit completed
+  without a substrate gap. This handoff does not authorize execution or
+  lifecycle transitions.
 - FT-013 shared and feature-local design is complete. The single ordinary-task
   source union, caller-owned UoW phase, classification-only Companion
   governance hold, derived approved summary, and typed non-authoritative
@@ -135,13 +156,25 @@ last_updated: 2026-08-10
   fully executed to terminal `done`; the W6 remediation cards
   (TASK-058/059/060) are likewise terminal `done` and the feature-level T2
   completion gate recorded `SEMANTIC_VERDICT: semantic-pass`.
+- FT-016 feature-local design is complete for Planning Revision 4. The
+  registered Operator PWA presentation contract, read-only Dataset Governance
+  HTTP contract, two leaf presentation edges, FT-015 status/prompt/capture
+  consumer handoffs, and deterministic first-demo testing matrix ground the
+  rebuilt planned TASK-080..110 queue without moving backend authority into
+  the PWA. Provider commands/reads and the two final gates have atomic claim
+  ownership; fresh task-plan review remains required before execution.
+- Planning Revision 4 makes every indexed product task-plan review through
+  Revision 3 stale while preserving every task status and historical evidence.
+  Run `/feature-to-tasks --all` to reconcile all product planning against
+  AD-012, including FT-015 execution cohesion/direct handoffs and the FT-016
+  canonical consumer links, then run `/review-tasks-plan --all`.
 - Stop conditions: PRD scope changes, a new shared/global gap appears, or a
   feature design conflicts with the authoritative global backbone; route the
   shared decision back through `/spec-design`.
 
 ## Global Backbone Status
 - Status: complete
-- Planning Revision: 3
+- Planning Revision: 4
 - Mode: strict_architecture_scaffold
 - Architecture artifact strategy: single-file
 - Not applicable areas:
@@ -150,10 +183,10 @@ last_updated: 2026-08-10
   - automated_device_actuation: not_applicable - physical actions create only human-performed tasks in MVP.
   - production_saas_sync: not_applicable - MVP remains local-first with `local_only` sync status.
 - Notes: Foundation remains verified and its gate/status are unchanged.
-  Planning Revision advanced exactly once from 2 to 3 on 2026-08-10 because
-  AD-011 registers a durable global Agent Runtime/provider/Timeline route and
-  the canonical Boundary Map topology used by downstream task planning.
-  Historical task lifecycle/evidence remains unchanged; every product
-  task-plan approval for Revision 2 is now stale until the applicable
-  reconciliation/review route records Revision 3. FT-014 is the current
-  bounded repair target. No unresolved global/shared ambiguity remains.
+  Planning Revision advanced exactly once from 3 to 4 on 2026-08-13 because
+  AD-012 promotes Product Surface Redaction and its cross-module Runtime
+  Substrate dependency topology into the durable global target used by task
+  planning. Historical task lifecycle/evidence remains unchanged; every
+  product task-plan review through Revision 3 is stale until all-feature
+  reconciliation and fresh review complete.
+  No unresolved global/shared ambiguity remains.

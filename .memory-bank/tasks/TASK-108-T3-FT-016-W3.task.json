@@ -1,0 +1,57 @@
+{
+  "id": "TASK-108-T3-FT-016-W3",
+  "title": "Compose Companion proposal decision in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-043-T3-FT-013-W3", "TASK-078-T3-FT-015-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/companion-governance/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/companion-decision.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "companion_decision_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/companion-decision.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent decision verification covers exact approve/reject, duplicate, superseded/version/role/archive failures, authoritative DecisionRecord/effect reread, and Safety-authority absence."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-031 RED: no browser current-proposal decision consumer exists; GREEN: exact authorized approve/reject returns the backend DecisionRecord/effect while duplicate, superseded, version, role, and archive paths fail safely and no response grants Safety authority; decisive comparison: strict request, response/DOM, and authoritative proposal/DecisionRecord/Task reread; artifact: decision evidence under .tasks/TASK-108-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose current-proposal decision independently of Companion reads, invocation, and issue close.",
+  "success_outcome": "Authorized Boss/Engineer users can decide only the current versioned proposal while superseded/denied/archive paths leave governance state unchanged and Safety authority remains absent.",
+  "anti_goals": ["Do not implement reads, invoke Companion, close/reopen issues, replace proposal effect/text, or approve a superseded proposal.", "Do not treat governance approval as Safety approval or create action_task/device authority."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Companion/DecisionRecord/Task/Safety authority", "caller-selected proposal effect or Task text", "superseded/archived governance transition"],
+    "stop_conditions": ["Decision needs a field or command outside Companion Governance HTTP.", "The PWA would need to replace an effect or equate governance with Safety approval."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-031",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/companion-governance-http.md#post-apiplantsplant_idcompanionproposalsproposal_iddecision",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/companion-governance.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Companion Governance owns proposal, DecisionRecord, effect, and Task transaction.", "Submit only the exact versioned decision body and render authoritative results."],
+  "invariants": ["DecisionRecord never grants Safety authority or creates action_task by itself.", "Superseded, denied, stale, or archived proposal state cannot advance."],
+  "verification_targets": [
+    "FT-016-AC-031: exact approve/reject/duplicate plus superseded/version/role/archive failure and authoritative effect reread.",
+    "T3 harm proof uses isolated proposals and verifies safe rerun/denial causes no unauthorized Task, Plant, or Safety effect."
+  ]
+}

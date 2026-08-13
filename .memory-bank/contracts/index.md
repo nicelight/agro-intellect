@@ -1,7 +1,7 @@
 ---
 description: Router for active canonical interface, API, event, security, presentation, and audit contracts.
 status: active
-last_updated: 2026-07-28
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/spec-index.md
   - .memory-bank/architecture/system-architecture.md
@@ -14,6 +14,11 @@ source_of_truth:
 - [API Guidelines](api-guidelines.md): HTTP/auth/error/origin guardrails.
 - [Foundation Smoke API](foundation-smoke-api.md): `/health` and `/ready`.
 - [Evidence Redaction](evidence-redaction.md): secret/evidence redaction.
+- [Product Surface Redaction](product-surface-redaction.md): product runtime
+  secret/auth redaction across persisted, serialized, exported, and captured
+  surfaces.
+- [Operator PWA](operator-pwa.md): SvelteKit presentation, backend-consumer,
+  transient prompt, context-isolation, and browser-capture boundary.
 - [Agent Chat Bus](agent-chat-bus.md): agent-consumable event boundary.
 - [Agent Runtime Adapter](agent-runtime-adapter.md): provider-neutral model invocation,
   typed input, runtime decision, failure, audit, and envelope handoff.
@@ -56,11 +61,14 @@ source_of_truth:
   ordinary-task source union.
 - [Companion Governance HTTP](companion-governance-http.md): protected
   IssueStack/detail reads, explicit model run, proposal decision, and close.
-- [Photo Intake HTTP](photo-intake-http.md): photo upload and catalog API.
+- [Photo Intake HTTP](photo-intake-http.md): photo upload/catalog plus the
+  protected Farm-wide accepted-photo storage-status API.
 - [Plant History HTTP](plant-history-http.md): Plant history card/list API and archived retained-history reads.
 - [Plant Feed HTTP](plant-feed-http.md): protected UI Feed pagination, lazy
   active-Plant introduction materialization, and read-only archived history.
 - [Plant State HTTP](plant-state-http.md): protected Plant trust records and human review.
+- [Dataset Governance HTTP](dataset-governance-http.md): protected read-only
+  Dataset Candidate projection for the Operator PWA.
 
 ## Routing
 

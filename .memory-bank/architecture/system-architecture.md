@@ -2,7 +2,7 @@
 description: Global MVP v2 system architecture backbone and implementation guardrails.
 status: active
 type: architecture
-last_updated: 2026-08-10
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -12,6 +12,7 @@ source_of_truth:
   - .memory-bank/contracts/foundation-smoke-api.md
   - .memory-bank/domains/foundation-data-substrate.md
   - .memory-bank/contracts/evidence-redaction.md
+  - .memory-bank/contracts/product-surface-redaction.md
   - .memory-bank/contracts/ui-feed.md
   - .memory-bank/contracts/timeline-event.md
   - .memory-bank/states/safety-action-lifecycle.md
@@ -54,6 +55,10 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   without a binding and has no fake/canned/fallback output.
 - Safety Gate and authorized human approval are required before physical-action wording can become a human-performed action task.
 - MVP data remains local/private by default with `local_only` sync status.
+- Every persisted, appended, published, serialized, exported, or captured
+  product output applies its owning strict schema/allowlist and the shared
+  redaction contract before emission; uncertain output fails closed without
+  mutating the source credential.
 - Operator frontend uses Svelte 5 with SvelteKit as the Web App/PWA framework;
   alternative and mixed frontend stacks are outside the active MVP design.
 
@@ -275,6 +280,30 @@ Agro Intellect MVP v2 is a local-first Farm workspace and Web App/PWA for safe, 
   and
   [.memory-bank/contracts/dataset-agents-runtime.md](../contracts/dataset-agents-runtime.md).
 
+#### AD-012 - Product output redaction is owner-enforced through one shared substrate
+- Binds: Runtime Substrate; application log and HTTP error owners; Timeline
+  Audit; Plant History; Photo Intake; Agent Chat & UI Feed; Agent Runtime Core
+  and competence request owners; Operator PWA capture; FT-015 and FT-016.
+- Prevents: secrets or auth material reaching persisted, appended, published,
+  serialized, exported, provider-bound, or captured output; a generic
+  sanitizer becoming product/output authority; cleanup-after-emission; source
+  credential mutation.
+- Rule: Runtime Substrate owns the shared sanitization primitive and marker.
+  Each product boundary retains its strict payload and safe-error authority,
+  applies the shared primitive or an equivalent stricter allowlist before the
+  output boundary, and fails closed with its registered safe error whenever
+  safety cannot be proved. Operator PWA applies the same contract before any
+  future browser capture; it receives no backend storage or sync authority.
+- Verification: one configured corpus crosses actual owner serializers,
+  writers, publications, provider-request spies, and future capture tests;
+  output contains no raw corpus value, source credentials remain unchanged,
+  and sanitizer failure exposes only the registered safe error.
+- Source: [.memory-bank/requirements.md](../requirements.md),
+  [.memory-bank/invariants.md](../invariants.md),
+  [.memory-bank/contracts/product-surface-redaction.md](../contracts/product-surface-redaction.md),
+  [.memory-bank/contracts/boundary-map.md](../contracts/boundary-map.md), and
+  [.memory-bank/testing/local-privacy-storage.md](../testing/local-privacy-storage.md).
+
 ## Architecture Style
 
 Use a local modular monolith:
@@ -376,6 +405,12 @@ only missing UIFeedEvent rows -> unchanged ordered Feed page`. It has no
 Plant-create, startup, Agent Chat Bus, provider, timeline, or agent-context
 edge.
 
+Every product output edge is also constrained by AD-012: the semantic owner
+builds the strict payload, then sanitizes or rejects the output copy before it
+crosses persistence, append, publication, serialization, export, provider, or
+capture boundaries. Runtime Substrate supplies the shared primitive but never
+owns the product payload or mutable domain state.
+
 ## External Integrations
 
 - No external model endpoint is selected or required for current code-phase
@@ -450,6 +485,9 @@ Shared state/data guardrails:
   Plant-scoped workflows; restore never implies automatic resumption.
 - Dataset candidates are non-trainable by default and require evidence refs for
   any future trainability transition.
+- Secrets and structured auth material are removed or rejected before every
+  registered product output boundary; a post-emission cleanup pass is never
+  acceptance.
 
 ## Testing Strategy
 
@@ -467,6 +505,9 @@ Use risk-based testing:
   fallback, fake/spy executors remain test-only, candidate text is never
   promoted into instruction channels, and UI Feed/raw chat never enter agent
   context.
+- Cross-surface redaction tests inject one configured corpus into actual owner
+  serializers/writers and provider-request spies, prove source credentials are
+  unchanged, and require safe fail-closed errors.
 
 The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 
@@ -484,6 +525,9 @@ The testing router is [.memory-bank/testing/index.md](../testing/index.md).
 - Governance approval could be confused with Safety Gate approval.
 - Raw agent/model output could bypass project-owned adapters.
 - UI Feed or governance content outside a registered typed provider allowlist could leak into agent context.
+- A product owner could bypass the shared redaction route, or the shared helper
+  could be mistaken for payload/domain authority; AD-012 keeps schema authority
+  with each owner and requires pre-output fail-closed enforcement.
 - Future endpoint selection adds integration, privacy, timeout, and cost risk;
   that risk is deferred to the provider-integration milestone.
 - Accounts/Farm/Admin scope could expand into broad farm management.

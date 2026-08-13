@@ -1,0 +1,92 @@
+{
+  "id": "TASK-077-T3-FT-015-W2",
+  "title": "Close Task and Follow-Up context redaction",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-040-T3-FT-012-W2",
+    "TASK-064-T3-FT-015-W1"
+  ],
+  "touched_files": [
+    "backend/app/task_follow_up/runtime_contracts.py",
+    "backend/app/task_follow_up/runtime.py",
+    "tests/backend/task_follow_up/test_runtime.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "task_follow_up_context_redaction",
+      "command": ".venv/bin/python -m pytest tests/backend/task_follow_up/test_runtime.py -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent adversarial verification injects the configured corpus and forbidden context classes through Task and Follow-Up request assembly and the provider spy, proving zero outbound leakage or unsafe I/O with ordinary-task authority and lifecycle behavior unchanged."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/contracts/task-follow-up-runtime.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/testing/task-follow-up.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-017 RED/GREEN: inject configured secrets plus raw ActorContext/cookie/header/UI/provider-history sentinels through Task and Follow-Up request assembly and the provider spy; RED is any outbound occurrence or missing decisive coverage, GREEN is zero forbidden values, zero I/O on rejected unsafe input, exact allowed-field/ref parity, and unchanged source values; decisive comparison: captured request/call count and source values; artifact: focused transcript under .tasks/TASK-077-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+  ],
+  "purpose": "Close the Task-and-Follow-Up-owned provider request privacy result without changing the sole ordinary-task writer or lifecycle authority.",
+  "success_outcome": "TaskFollowUpProviderRequestV1 contains only registered authorized Task/Outcome/evidence values and excludes secrets/auth/UI/provider-history values before provider I/O while ordinary-task creation and follow-up authority remain unchanged.",
+  "anti_goals": [
+    "Do not change Task/Outcome selection, result schemas, classification, ordinary-task creation, lifecycle/idempotency, provider selection, or real-endpoint scope.",
+    "Do not adopt generic Agent Runtime or another competence request claim."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-017",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/task-follow-up-runtime.md#provider-request-version-1",
+    ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
+    ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
+    ".memory-bank/testing/task-follow-up.md#task-and-follow-up-agent-matrix",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Retain the strict Task/Outcome record union and canonical ordinary-task command boundary.",
+    "Use a test-only spy; no real endpoint, credentials, network call, or expanded permission."
+  ],
+  "invariants": [
+    "Forbidden values never cross the Task and Follow-Up provider boundary.",
+    "Model output cannot create action authority or bypass the canonical Task writer.",
+    "Production remains unbound and fail closed."
+  ],
+  "verification_targets": [
+    "FT-015-AC-017: Task/Follow-Up request RED/GREEN or preserved pre-GREEN with corpus absence, zero unsafe I/O, allowed-field/ref parity, source-value integrity, and lifecycle/ordinary-task regression."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Generic or other competence requests, provider/model/credential/egress selection, Task/Approval/Outcome lifecycle or public API changes, frontend, remote sync, or live network."
+    ],
+    "stop_conditions": [
+      "Safety requires changing the accepted Task and Follow-Up request or lifecycle contract.",
+      "Any probe would require real credentials, network access, or expanded permission."
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 ---
 description: Registry and discovery map for active subject-based SDD specifications.
 status: active
-last_updated: 2026-08-07
+last_updated: 2026-08-13
 source_of_truth:
   - .memory-bank/constitution.md
   - .memory-bank/prd.md
@@ -49,6 +49,8 @@ source_of_truth:
 | api_guidelines | [.memory-bank/contracts/api-guidelines.md](contracts/api-guidelines.md) | active | Global HTTP/auth/error/origin rules | `/spec-design` |
 | api_contract | [.memory-bank/contracts/foundation-smoke-api.md](contracts/foundation-smoke-api.md) | active | `/health` and `/ready` substrate boundary | `/foundation-to-tasks` or `/spec-design` |
 | evidence_contract | [.memory-bank/contracts/evidence-redaction.md](contracts/evidence-redaction.md) | active | Secret/evidence redaction | `/foundation-to-tasks` or `/spec-design` |
+| security_contract | [.memory-bank/contracts/product-surface-redaction.md](contracts/product-surface-redaction.md) | active | Product logs/errors, audit/export, manifests, Bus/UI, agent context, and capture redaction | `/spec-design` |
+| presentation_contract | [.memory-bank/contracts/operator-pwa.md](contracts/operator-pwa.md) | active | SvelteKit Operator PWA routes, backend-consumer surfaces, transient prompt, context isolation, and browser capture | `/feature-to-tasks` or `/spec-design` |
 | event_contract | [.memory-bank/contracts/agent-chat-bus.md](contracts/agent-chat-bus.md) | active | Agent-consumable event boundary | `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-runtime-adapter.md](contracts/agent-runtime-adapter.md) | active | Authorized typed model invocation, runtime decision, failure, audit, and envelope handoff | `/feature-to-tasks` or `/spec-design` |
 | interface_contract | [.memory-bank/contracts/agent-model-provider-profiles.md](contracts/agent-model-provider-profiles.md) | active | Provider-neutral binding, typed egress, fail-closed production, and future OpenAI-compatible selection | `/feature-to-tasks` or `/spec-design` |
@@ -71,10 +73,11 @@ source_of_truth:
 | api_contract | [.memory-bank/contracts/plant-operations-http.md](contracts/plant-operations-http.md) | active | Daily check-in and manual measurement HTTP boundary | `/feature-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/task-approval-http.md](contracts/task-approval-http.md) | active | Protected Task/Approval/Outcome HTTP plus canonical internal ordinary-task source union | `/feature-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/companion-governance-http.md](contracts/companion-governance-http.md) | active | Protected Companion IssueStack reads, explicit run, proposal decision, and close boundary | `/feature-to-tasks` or `/spec-design` |
-| api_contract | [.memory-bank/contracts/photo-intake-http.md](contracts/photo-intake-http.md) | active | Photo upload and catalog HTTP boundary | `/feature-to-tasks` or `/spec-design` |
+| api_contract | [.memory-bank/contracts/photo-intake-http.md](contracts/photo-intake-http.md) | active | Photo upload/catalog plus Farm-wide accepted-photo storage-status HTTP boundary | `/feature-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-history-http.md](contracts/plant-history-http.md) | active | Plant history card/list HTTP boundary and archived retained-history reads | `/feature-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-feed-http.md](contracts/plant-feed-http.md) | active | Protected Plant UI Feed pagination and retained-history read boundary | `/feature-to-tasks` or `/spec-design` |
 | api_contract | [.memory-bank/contracts/plant-state-http.md](contracts/plant-state-http.md) | active | Protected Plant trust-record list and human review boundary | `/feature-to-tasks` or `/spec-design` |
+| api_contract | [.memory-bank/contracts/dataset-governance-http.md](contracts/dataset-governance-http.md) | active | Protected read-only Dataset Candidate projection for Operator PWA | `/feature-to-tasks` or `/spec-design` |
 | state_spec | [.memory-bank/states/plant-state-trust.md](states/plant-state-trust.md) | active | Plant evidence trust promotion | `/spec-design` |
 | state_spec | [.memory-bank/states/safety-action-lifecycle.md](states/safety-action-lifecycle.md) | active | Safety/action lifecycle plus evidence-only classification consumer routing | `/spec-design` |
 | state_spec | [.memory-bank/states/task-follow-up-lifecycle.md](states/task-follow-up-lifecycle.md) | active | Human Approval, Task completion, automatic follow-up, and Outcome transitions | `/feature-to-tasks` or `/spec-design` |
@@ -99,6 +102,8 @@ source_of_truth:
 | testing_spec | [.memory-bank/testing/task-follow-up.md](testing/task-follow-up.md) | active | Approval/task/outcome transactions, HTTP, archive/concurrency, and provider-neutral Task and Follow-Up verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/companion-governance.md](testing/companion-governance.md) | active | Companion governance authority, atomic effects, projections, HTTP, runtime triggers, and provider-neutral verification | `/feature-to-tasks` or `/spec-design` |
 | testing_spec | [.memory-bank/testing/dataset-governance.md](testing/dataset-governance.md) | active | Dataset aggregate, transition policy, evidence wiring, and dataset-agents runtime verification | `/feature-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/local-privacy-storage.md](testing/local-privacy-storage.md) | active | Local-only runtime, redaction, photo-pressure status, and prompt-consumer verification | `/feature-to-tasks` or `/spec-design` |
+| testing_spec | [.memory-bank/testing/operator-pwa-first-demo.md](testing/operator-pwa-first-demo.md) | active | SvelteKit PWA, role/provider surfaces, FT-015 consumer, browser security, and first-demo verification | `/feature-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/foundation-local-runtime.md](runbooks/foundation-local-runtime.md) | active | Local Foundation setup/start/smoke | `/foundation-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/first-boss-local-bootstrap.md](runbooks/first-boss-local-bootstrap.md) | active | First Boss one-shot local bootstrap command | `/feature-to-tasks` or `/spec-design` |
 | runbook | [.memory-bank/runbooks/agent-runtime-providers.md](runbooks/agent-runtime-providers.md) | active | Provider-neutral fail-closed operation and deferred selected-endpoint integration milestone | `/feature-to-tasks` or `/spec-design` |

@@ -1,0 +1,100 @@
+{
+  "id": "TASK-089-T3-FT-016-W3",
+  "title": "Compose Companion IssueStack and detail reads",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-043-T3-FT-013-W3",
+    "TASK-078-T3-FT-015-W2",
+    "TASK-081-T3-FT-016-W2"
+  ],
+  "touched_files": [
+    "frontend/src/lib/companion-governance/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/companion-governance.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "companion_browser",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/companion-governance.spec.ts",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent browser verification covers only IssueStack/detail, attention, proposals, DecisionRecords, conclusion, pagination/order, retained archive, literal text, and absence of command capability."
+  ],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-029 RED: no browser Companion IssueStack/detail consumer exists; GREEN: exact active and retained-authorized projections render in canonical order with literal presentation text while denied/inconsistent cases fail safely and no run/decision/close request is emitted; decisive comparison: protected responses versus DOM plus request allowlist; artifact: Companion read evidence under .tasks/TASK-089-T3-FT-016-W3/."
+  ],
+  "purpose": "Make the typed Companion governance projection visible without turning UI text or retained records into Safety, Plant, Task, or provider authority.",
+  "success_outcome": "Authorized users can read exact IssueStack/detail, attention, proposal, DecisionRecord, and conclusion projections while denied/retained paths remain safe and no Companion command is emitted.",
+  "anti_goals": [
+    "Do not invoke Companion, decide a proposal, close an issue, post raw UI text, create Safety approval, mutate Plant state, or create action_task.",
+    "Do not copy proposal/rationale/chat into agent context or expose a retained command capability."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "backend Companion, DecisionRecord, Task, Safety, Bus, or Plant authority",
+      "arbitrary prompt/chat submission and production fake/fallback",
+      "superseded/archived governance transition",
+      "raw governance text in agent context"
+    ],
+    "stop_conditions": [
+      "The UI requires a Companion command outside Companion Governance HTTP.",
+      "The path cannot distinguish governance decision from Safety approval or keep UI text out of provider input."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-029",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/testing/companion-governance.md"
+  ],
+  "constraints": [
+    "Primary owner is Operator PWA; Companion Governance owns issues, proposals, DecisionRecords, effects, and invocation input.",
+    "Reads use only the protected IssueStack/detail routes and expose no command control in retained mode."
+  ],
+  "invariants": [
+    "DecisionRecord presentation is not Safety Gate approval and cannot mutate Plant or create action_task.",
+    "UI text/proposal/rationale remains presentation data and never becomes agent fact or arbitrary provider input."
+  ],
+  "verification_targets": [
+    "FT-016-AC-029: exact IssueStack/detail shapes, ordering, continuation, retained access, literal text, and zero command request.",
+    "T3 harm proof uses isolated issues/proposals and confirms denied/inconsistent/retained reads leave no unauthorized effect."
+  ]
+}

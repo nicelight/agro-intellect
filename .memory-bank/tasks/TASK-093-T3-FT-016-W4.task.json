@@ -1,0 +1,137 @@
+{
+  "id": "TASK-093-T3-FT-016-W4",
+  "title": "Prove Operator PWA context and authority isolation",
+  "status": "planned",
+  "wave": "W4",
+  "feature": "FT-016",
+  "reqs": [
+    "REQ-013",
+    "REQ-021"
+  ],
+  "depends_on": [
+    "TASK-070-T3-FT-015-W2",
+    "TASK-073-T3-FT-015-W2",
+    "TASK-074-T3-FT-015-W2",
+    "TASK-075-T3-FT-015-W2",
+    "TASK-076-T3-FT-015-W2",
+    "TASK-077-T3-FT-015-W2",
+    "TASK-078-T3-FT-015-W2",
+    "TASK-079-T3-FT-015-W2",
+    "TASK-082-T3-FT-016-W3",
+    "TASK-083-T3-FT-016-W3",
+    "TASK-084-T3-FT-016-W3",
+    "TASK-085-T3-FT-016-W3",
+    "TASK-086-T3-FT-016-W3",
+    "TASK-087-T3-FT-016-W3",
+    "TASK-088-T3-FT-016-W3",
+    "TASK-089-T3-FT-016-W3",
+    "TASK-091-T2-FT-016-W3",
+    "TASK-092-T3-FT-016-W3",
+    "TASK-096-T3-FT-016-W3",
+    "TASK-097-T3-FT-016-W3",
+    "TASK-098-T3-FT-016-W3",
+    "TASK-099-T3-FT-016-W3",
+    "TASK-100-T3-FT-016-W3",
+    "TASK-101-T3-FT-016-W3",
+    "TASK-102-T3-FT-016-W3",
+    "TASK-103-T3-FT-016-W3",
+    "TASK-104-T3-FT-016-W3",
+    "TASK-105-T3-FT-016-W3",
+    "TASK-106-T3-FT-016-W3",
+    "TASK-107-T3-FT-016-W3",
+    "TASK-108-T3-FT-016-W3",
+    "TASK-109-T3-FT-016-W3"
+  ],
+  "touched_files": [
+    "frontend/src/lib/server/backend.ts",
+    "frontend/src/lib/",
+    "frontend/src/routes/",
+    "frontend/tests/e2e/context-isolation.spec.ts",
+    "tests/backend/local_privacy/test_ft016_context_isolation.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "browser_context_isolation",
+      "command": "cd frontend && npm run test:e2e -- tests/e2e/context-isolation.spec.ts",
+      "required": true
+    },
+    {
+      "name": "provider_context_isolation",
+      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_ft016_context_isolation.py -q",
+      "required": true
+    },
+    {
+      "name": "frontend_check",
+      "command": "cd frontend && npm run check",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent browser request capture plus existing provider spies prove Feed/model/admin/prompt/DOM/history text and transient UI state never enter backend authority, MessageEnvelope, Bus, Dataset, Safety, generic or competence-specific provider requests."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-005 RED: absent PWA means no end-to-end browser/request proof that UI and prompt state stay out of authority/agent inputs; GREEN: injected UI-only values appear only in presentation and are absent from all captured command bodies, authority records, Bus/MessageEnvelope/Dataset/Safety inputs, and provider spies; decisive comparison: unique corpus presence matrix and authoritative-state snapshot; artifact: context-isolation evidence under .tasks/TASK-093-T3-FT-016-W4/."
+  ],
+  "purpose": "Close the cross-surface security claim that a complete Operator PWA remains presentation-only and never promotes its rendered or transient state into agent or backend authority channels.",
+  "success_outcome": "All FT-016 surfaces accept only registered action fields; UI-only values remain absent from every authority and provider-input channel while allowed backend interactions still work.",
+  "anti_goals": [
+    "Do not re-prove or adopt the implementation claims of dependency tasks.",
+    "Do not add a generic sanitizer that becomes request/domain authority or weaken any provider allowlist to make the probe pass."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "provider/model contract widening",
+      "UI Feed or raw UI text as agent/Dataset/Safety/Task/governance input",
+      "backend authority or lifecycle redesign",
+      "external provider/network/credential access"
+    ],
+    "stop_conditions": [
+      "A UI-only value reaches any registered authority or provider request.",
+      "Fixing isolation requires changing an accepted provider/API/data contract or broadening permissions."
+    ]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-005",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md#ui-context-isolation",
+    ".memory-bank/contracts/ui-feed.md#rules",
+    ".memory-bank/contracts/message-envelope.md",
+    ".memory-bank/contracts/agent-chat-bus.md",
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/testing/operator-pwa-first-demo.md#context-and-literal-text-matrix"
+  ],
+  "constraints": [
+    "This task owns only the FT-016 integration delta; dependency tasks retain their provider/output proof.",
+    "Use unique harmless corpus values, isolated test state, safe rerun, and no external network."
+  ],
+  "invariants": [
+    "UI Feed, prompt state, admin notices, DOM/history, and raw UI text are never authority or agent working context.",
+    "Server actions accept only registered backend shapes and cannot manufacture hidden authority fields."
+  ],
+  "verification_targets": [
+    "FT-016-AC-005: browser/request/provider-spy matrix proves zero UI-origin value in authority or agent-input channels.",
+    "T3 harm proof records initial isolated state, safe rerun identities, observed channel matrix, and cleanup with no permission or external-I/O expansion."
+  ]
+}

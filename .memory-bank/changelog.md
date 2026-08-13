@@ -4,6 +4,66 @@ status: active
 ---
 # Changelog
 
+## [2026-08-14] FT-016 queue rebuilt after Planning Revision 4 review
+
+- Repaired product traceability so FT-016 browser transport and pre-capture
+  secret/auth exclusion are governed by REQ-020 as well as the REQ-021 demo
+  surface; added exact feature AC ownership for every independently material
+  Operator PWA provider result.
+- Rebuilt the rejected broad TASK-082..085, TASK-087..089, and TASK-095
+  boundaries into atomic sibling outcomes while preserving their primary IDs
+  for the first result and adding TASK-096..110. TASK-095 now owns only the
+  Boss/Engineer `tomato_001` journey; TASK-110 independently owns complete
+  surface composition and production-unbound no-fallback proof.
+- The resulting TASK-080..110 queue contains 31 `planned` cards across W1..W6.
+  Architecture, Operator PWA routes, backend ownership, canonical specs,
+  Planning Revision `4`, and all lifecycle states remain unchanged. No
+  implementation, execution, promotion, or closure occurred.
+- Immediate route: fresh `/review-tasks-plan FT-016`; conditional doctor and
+  execution remain downstream of that review.
+
+## [2026-08-13] FT-016 Operator PWA queue created for Planning Revision 4
+
+- Completed FT-016 feature-local design as an Operator PWA consumer of the
+  accepted FT-015 photo-storage status, transient prompt, and browser-capture
+  redaction contracts. Photo accounting, storage, upload, sync, backend
+  authorization, agent context, Safety, governance, Dataset, and audit
+  authority remain with their existing owners.
+- Registered the minimal SvelteKit presentation contract and three route
+  families, one fixed-loopback server-only transport, one protected read-only
+  Dataset Candidate API, and two leaf Boundary Map presentation edges to Plant
+  State and Dataset Governance. No LAN/CORS, cloud/sync, Dataset mutation,
+  product screenshot, or new global ownership boundary was added; Planning
+  Revision remains `4`.
+- Created the sixteen-card `planned` queue TASK-080 through TASK-095: scaffold,
+  authorized shell, independently provable provider surfaces, Dataset
+  provider/consumer, FT-015 prompt, context isolation, capture redaction, and
+  final Boss/Engineer composition. No implementation, promotion, execution,
+  lifecycle transition, or provider/live-network claim occurred.
+- Immediate route: fresh `/review-tasks-plan FT-016`; conditional doctor and
+  execution remain downstream of that review.
+
+## [2026-08-13] Global Product Surface Redaction backbone reconciled
+
+- Added AD-012 and promoted Product Surface Redaction into the authoritative
+  global security/topology backbone: Runtime Substrate owns one shared
+  sanitization primitive, while each capability retains strict payload,
+  safe-error, persistence/publication/export/provider/capture authority and
+  must sanitize or reject before output.
+- Added the explicit Operator PWA redaction dependency and direct FT-015/FT-016
+  links to Product Surface Redaction and the protected photo storage-status
+  contract. Existing local-only, no-upload, transient prompt, provider-neutral,
+  safety, and runtime-authority decisions are unchanged.
+- Advanced Global Backbone Planning Revision exactly once from 3 to 4. The
+  verified Foundation gate TASK-004 and existing core redaction primitive
+  remain sufficient; no new FT-000 work, product TASK record, implementation
+  plan, lifecycle transition, or historical-evidence rewrite was created.
+- The required post-Revision-4 `/foundation-to-tasks` audit found no executable
+  substrate gap and preserved TASK-004 plus all FT-000 history. All indexed
+  product task-plan reviews through Revision 3 remain stale; the next route is
+  `/feature-to-tasks --all`, then `/review-tasks-plan --all` and the applicable
+  readiness gate.
+
 ## [2026-08-12] FT-014 tech-debt remediation wave W6 reconciled
 
 - Reconciled the scheduler-written `done` decisions for the W6 wave:

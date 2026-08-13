@@ -1,0 +1,56 @@
+{
+  "id": "TASK-100-T3-FT-016-W3",
+  "title": "Compose manual pH and EC measurement in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": ["TASK-025-T3-FT-004-W3", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/plant-operations/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/manual-measurement.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "manual_measurement_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/manual-measurement.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent browser/API verification covers standalone pH/EC input, normalization, freshness reread, invalid ranges, permission/archive denial, and no optimistic residue."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/plant-operations-http.md",
+    ".memory-bank/testing/plant-operations.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-018 RED: no standalone manual pH/EC browser consumer exists; GREEN: exact authorized measurement input returns and renders normalized PostgreSQL values/freshness while invalid-range, permission, and archive cases remain non-mutating; decisive comparison: request, response/DOM, measurement/latest reread, and denial state; artifact: measurement evidence under .tasks/TASK-100-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose standalone manual pH/EC as a completion independent of daily check-in/observation.",
+  "success_outcome": "An authorized Engineer can submit exact manual pH/EC and view authoritative normalized/freshness results while invalid or denied requests leave no optimistic or backend residue.",
+  "anti_goals": ["Do not implement daily check-in, sensor runtime, advice generation, or frontend-derived freshness.", "Do not change backend normalization, Timeline, Dataset, or measurement authority."],
+  "runtime_context": {
+    "forbidden_scope": ["backend measurement/freshness/Timeline/Dataset authority", "sensor or automated-actuation behavior", "frontend-derived normalization or attribution"],
+    "stop_conditions": ["A required field/result is outside Plant Operations HTTP.", "The PWA would need to infer normalized values, freshness, authorization, or attribution."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-018",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/plant-operations-http.md#routes",
+    ".memory-bank/contracts/plant-operations-http.md#verification",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/plant-operations.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Plant Operations owns measurement, normalization, freshness, and audit.", "Send only registered measurement fields and render backend values."],
+  "invariants": ["Rejected/archived measurement requests write no measurement, Timeline, or Dataset record.", "Frontend display never becomes measurement or freshness authority."],
+  "verification_targets": [
+    "FT-016-AC-018: standalone pH/EC success, normalization/freshness, invalid ranges, permission/archive denial, and authoritative reread.",
+    "T3 harm proof uses isolated Plant state and confirms safe rerun/denial leaves no duplicate or optimistic measurement residue."
+  ]
+}

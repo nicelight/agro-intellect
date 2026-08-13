@@ -4,7 +4,7 @@ status: draft
 type: prd
 clarification_status: complete
 constitution_checked: true
-last_updated: 2026-07-28
+last_updated: 2026-08-12
 ---
 # PRD
 
@@ -18,6 +18,11 @@ last_updated: 2026-07-28
   from [SIMPLIFICATION.md](../SIMPLIFICATION.md): retain the canonical
   eight-agent roster while materializing missing presentation-only
   introductions lazily on authorized active-Plant Feed access.
+- Operator decisions on 2026-08-12 recorded in
+  [FT-015 clarification](../.protocols/FT-015/clarification.md): storage
+  pressure counts only accepted original photo binaries, the threshold is
+  strictly over 200 MiB, and acknowledge/dismiss remain transient per-Account
+  presentation actions with no durable state.
 
 ## Product Summary
 
@@ -146,7 +151,20 @@ does not replace backend rules, and cannot authorize physical actions.
 - Approved governance summary MAY become agent-consumable only as compact typed facts derived from a valid DecisionRecord: decision, decision summary, allowed workflow effect, role/time attribution, source refs, Plant/issue/proposal refs, and explicit `safety_gate_authority=not_granted`.
 - Approved governance summary MUST NOT include raw proposal text, raw rationale, raw chat, or UI markdown. Separately, an owning agent-specific provider contract MAY supply authorized typed unapproved governance context as non-authoritative input.
 - Dataset governance MUST keep candidates non-trainable by default and require evidence refs before any future trainability change.
-- Local storage prompt MUST appear when local dataset/photo storage exceeds 200 MB and MUST NOT imply upload or server availability.
+- The local storage prompt MUST become eligible only when the Farm-wide sum of
+  accepted original photo binary `size_bytes` is strictly greater than
+  `209715200` bytes (200 MiB). Each accepted photo MUST be counted once from
+  its authoritative Photo Catalog item. Manifests, PostgreSQL storage,
+  Timeline, logs, caches, temporary/failed/orphan files, screenshots,
+  application assets, derived/export artifacts, and Dataset Candidate refs
+  MUST NOT contribute to this threshold.
+- For the authenticated Account, both `acknowledge` and `dismiss` MUST close
+  only the currently rendered storage prompt. Neither action creates durable
+  backend state, upload approval, server availability, or sync-status change;
+  the prompt MAY reappear on the next page or fresh status load while the
+  threshold remains exceeded. Account/auth changes MUST discard this
+  transient presentation state, and one Account's action MUST NOT affect
+  another Account.
 
 ## Non-functional Requirements
 
@@ -198,7 +216,11 @@ First working flow:
 8. Provider-neutral product-agent adapters process actual scoped Plant data
    through strict schemas; deterministic code-phase flows use test-only
    fake/spy executors, while unconfigured production composition fails closed.
-9. UI Feed shows human-facing messages, cards, prompts, tasks, approvals, and local storage status without becoming agent context.
+9. UI Feed shows human-facing messages, cards, prompts, tasks, approvals, and
+   local storage status without becoming agent context. When accepted original
+   photo bytes exceed 200 MiB, the current Account may acknowledge or dismiss
+   the storage prompt for the current rendered instance; a later page or fresh
+   status load may show it again while pressure remains above the threshold.
 10. Safety Gate blocks or routes physical-action wording.
 11. Boss or an Engineer with `plant_approve_actions` may approve a physical-action proposal only after fresh data and Safety Gate pass.
 12. Approved physical action creates only a human-performed `action_task`, never automated execution.
@@ -249,7 +271,16 @@ from first demo.
 - A lazy introduction persistence failure MUST use the existing
   `FEED_PERSISTENCE_FAILED` response. A later authorized Feed retry MAY complete
   the idempotent materialization without a background repair lifecycle.
-- Local storage warnings MUST allow acknowledge/dismiss and MUST NOT imply upload/server availability.
+- Exactly `209715200` accepted original photo bytes MUST NOT make the storage
+  prompt eligible; eligibility starts only above that value.
+- Manifest, database, Timeline, log, cache, temporary/failed/orphan,
+  screenshot, application, derived/export, and Dataset Candidate-ref growth
+  MUST NOT make the photo-storage prompt eligible.
+- Storage-prompt acknowledge/dismiss MUST remain transient to the current
+  rendered instance and authenticated Account. It MUST NOT persist a
+  preference, cooldown, storage episode, growth delta, Timeline event, upload
+  approval, or sync mutation, and MUST NOT affect another Account.
+- Local storage warnings MUST NOT imply upload or server availability.
 - LAN mode, if enabled, MUST add exposure controls and MUST NOT weaken local auth/authz.
 - Agent output MUST NOT promote hypotheses to confirmed Plant state without human review or follow-up evidence.
 - Dataset candidates MUST remain non-trainable until dataset governance rules allow otherwise.
@@ -294,7 +325,12 @@ from first demo.
 - Creating a new CompanionProposal for the same Plant issue supersedes the previous pending proposal; only the current proposal can be approved/rejected.
 - After valid DecisionRecord, Agent Chat Bus consumers receive compact approved governance summary facts and refs. This approved Bus fact is separate from typed governance input supplied directly by an owning agent-specific provider contract.
 - Dataset items are non-trainable by default.
-- Local storage prompt appears at the 200 MB threshold without server/upload implication.
+- The local storage prompt is absent at or below `209715200` accepted original
+  photo bytes and appears above that threshold without server/upload
+  implication. Non-photo storage and duplicate refs do not affect eligibility.
+- For each Account, acknowledge and dismiss close only the current prompt,
+  persist no backend state, leave `sync.status=local_only`, may reappear after
+  a fresh page/status load, and do not affect another Account.
 
 ## Verification Strategy
 
@@ -312,6 +348,11 @@ from first demo.
   Feed/cursor contracts, `FEED_PERSISTENCE_FAILED` recovery by retry, and no
   introduction path into agent context.
 - Storage/export tests later MUST cover photo file/catalog/manifest/timeline refs and secret redaction.
+- Storage-prompt tests later MUST cover below/exact/above `209715200` photo-byte
+  boundaries, one-count-per-accepted-photo aggregation, exclusion of every
+  non-photo/non-authoritative storage category named by the Functional
+  Requirements, per-Account transient interaction isolation, reappearance
+  after fresh load, and zero backend/sync mutation from acknowledge/dismiss.
 - Agent runtime tests MUST keep fake/spy executors explicitly test-only and
   prove that production composition has no fake/canned/fallback path. A future
   integration milestone separately verifies a selected endpoint over real
@@ -389,6 +430,25 @@ from first demo.
   state, startup scan, or reconciliation lifecycle. Existing
   `FEED_PERSISTENCE_FAILED` behavior plus a later authorized Feed retry is
   sufficient recovery.
+
+### Session 2026-08-12
+
+- Q: What storage contributes to the local prompt threshold? -> A: Only the
+  original binary of each accepted photo, counted once from authoritative
+  Photo Catalog `size_bytes`. Manifests, PostgreSQL, Timeline, logs, caches,
+  temporary/failed/orphan files, screenshots, application assets,
+  derived/export artifacts, and Dataset Candidate refs are excluded.
+- Q: What is the exact threshold? -> A: The Farm-wide total must be strictly
+  greater than `209715200` bytes (200 MiB). Equality does not show the prompt.
+- Q: How are acknowledge and dismiss scoped? -> A: Apply KISS: for the current
+  authenticated Account, both close only the currently rendered prompt and
+  persist nothing. A page or fresh status load may show it again while pressure
+  remains above threshold; Account/auth changes discard transient state, and
+  one Account's action never affects another. Neither action implies upload,
+  server availability, or a change from `sync.status=local_only`.
+- Constitution check: passed. The decision narrows an existing local warning,
+  adds no sync lifecycle or infrastructure, preserves private-by-default and
+  `local_only` constraints, and follows the low-maintenance KISS principle.
 
 ## Unresolved Blockers
 

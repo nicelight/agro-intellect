@@ -3,7 +3,7 @@ description: Product brief (C4 L1): что это, для кого, core value, 
 status: active
 type: product
 owner: product
-last_updated: 2026-07-28
+last_updated: 2026-08-12
 source_of_truth:
   - .memory-bank/prd.md
   - .memory-bank/constitution.md
@@ -42,7 +42,9 @@ The system is also an AI-first agentic development training ground: product agen
    MessageEnvelope, project-owned classification, and only then applicable
    Agent Chat Bus/UI boundaries. Production fails closed until a future
    OpenAI-compatible endpoint is explicitly selected.
-7. UI Feed presents human-facing messages, cards, prompts, tasks, approvals, history, and local storage status without becoming agent context.
+7. UI Feed presents human-facing messages, cards, prompts, tasks, approvals,
+   history, and local storage status without becoming agent context. Photo
+   pressure above 200 MiB may show a transient prompt for the current Account.
 8. Safety Gate blocks or routes physical-action wording until fresh data, Safety Gate pass, authorized human approval, and task/action tracking exist.
 9. Companion may coordinate Plant-scoped discussion through IssueStack, HumanAttentionNeeded, CompanionProposal, CompanionConclusion, and DecisionRecord, without replacing backend rules or Safety Gate approval.
 10. Follow-up outcomes and dataset evidence remain traceable and non-trainable by default.
@@ -63,6 +65,10 @@ prove that a model ran.
   JSONL timeline export, Svelte 5/SvelteKit Web App/PWA frontend, and Agno as
   agent execution layer only; installing it does not prove external integration.
 - Local-first and private by default. Default exposure is loopback; LAN mode may exist only when explicitly enabled with authentication, authorization, token/session protection, and CORS/origin controls.
+- Local storage pressure counts only accepted original photo bytes, once per
+  authoritative Photo Catalog item, and becomes prompt-eligible strictly above
+  `209715200` bytes. Acknowledge/dismiss is transient to the current Account
+  and rendered instance; it creates no durable state or sync/upload authority.
 - No production SaaS, hosted cloud sync as an MVP requirement, billing, enterprise identity, multi-Farm tenancy, microservices, broad farm management, full dataset registry, real fine-tuning, sensor runtime dependency, automated physical actuation, or fake/stubbed production agent fallback.
 - `timeline.jsonl`, photo files, manifests, UI Feed, raw chat, raw model reasoning, and unapproved Companion proposals are never mutable runtime authority.
 - Authorized typed Plant context may be sent only after a future explicit

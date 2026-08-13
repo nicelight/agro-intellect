@@ -1,0 +1,58 @@
+{
+  "id": "TASK-102-T3-FT-016-W3",
+  "title": "Present paginated retained Plant history",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021"],
+  "depends_on": ["TASK-027-T3-FT-006-W3", "TASK-071-T3-FT-015-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/plant-history/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/plant-history-list.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "plant_history_list_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/plant-history-list.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent active/archived browser verification covers complete history continuation, source filtering, safe refs, cursor/authorization failures, and no Timeline replay/write or local-path behavior."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/plant-history-http.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/testing/plant-history.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-022 RED: no PWA paginated Plant-history consumer exists; GREEN: active and archived-authorized pages render complete stable history and safe audit/export refs while invalid cursor/filter and denied access fail with no write/replay edge; decisive comparison: response/DOM/cursor transcript plus Timeline/path/request inspection; artifact: retained-history evidence under .tasks/TASK-102-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose complete paginated retained Plant history independently of the current Plant card.",
+  "success_outcome": "Authorized users can traverse exact active or archived-retained history and safe refs with canonical continuation/errors while the PWA has no Timeline replay/write or storage access.",
+  "anti_goals": ["Do not implement the Plant card, read/replay timeline.jsonl, query PostgreSQL directly, or build export packages.", "Do not make archived retained-history operational or materialize new rows/work."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Plant History/Timeline/data authority", "Timeline replay/write or direct file access", "archived Plant state advancement"],
+    "stop_conditions": ["Required history data is absent from Plant History HTTP and would require a direct data bypass.", "Retained presentation would create or advance operational state."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-022",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/plant-history-http.md#routes",
+    ".memory-bank/contracts/plant-history-http.md#verification",
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/plant-history.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Plant History owns projection, retained authorization, and cursor behavior.", "Use backend-selected active/retained mode and opaque cursor values."],
+  "invariants": ["Timeline remains append-only audit/export and never becomes PWA runtime authority.", "Archived history presentation creates no write or operational transition."],
+  "verification_targets": [
+    "FT-016-AC-022: stable complete history pagination, source filters, retained authorization, safe refs, cursor failures, and zero write/replay edge.",
+    "T3 harm proof uses isolated history rows and verifies denied/malformed reads leave no mutation or local-path/auth residue."
+  ]
+}

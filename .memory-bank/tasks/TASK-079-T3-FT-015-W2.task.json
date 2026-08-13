@@ -1,0 +1,95 @@
+{
+  "id": "TASK-079-T3-FT-015-W2",
+  "title": "Close Dataset Agents context redaction",
+  "status": "planned",
+  "wave": "W2",
+  "feature": "FT-015",
+  "reqs": [
+    "REQ-020"
+  ],
+  "depends_on": [
+    "TASK-004-T2-FT-000-W0",
+    "TASK-060-T2-FT-014-W6",
+    "TASK-064-T3-FT-015-W1"
+  ],
+  "touched_files": [
+    "backend/app/dataset_governance/runtime_contracts.py",
+    "backend/app/dataset_governance/runtime.py",
+    "tests/backend/dataset_governance/test_governance_agent_runtime.py",
+    "tests/backend/dataset_governance/test_curator_agent_runtime.py"
+  ],
+  "tier": "T3",
+  "gates": [
+    {
+      "name": "dataset_agents_context_redaction",
+      "command": ".venv/bin/python -m pytest tests/backend/dataset_governance/test_governance_agent_runtime.py tests/backend/dataset_governance/test_curator_agent_runtime.py -q",
+      "required": true
+    },
+    {
+      "name": "memory_bank_lint",
+      "command": "node scripts/mb-lint.mjs",
+      "required": true
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "required": true
+    }
+  ],
+  "verify": [
+    "Independent adversarial verification drives both Dataset Agent thin adapters through the shared post-TASK-060 runtime flow with the configured corpus, distinguishes both strict captured requests, proves zero forbidden outbound values or unsafe I/O, and preserves advisory-only no-MessageEnvelope/Bus/UI/Safety authority."
+  ],
+  "docs": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+    ".memory-bank/contracts/product-surface-redaction.md",
+    ".memory-bank/contracts/dataset-agents-runtime.md",
+    ".memory-bank/contracts/agent-model-provider-profiles.md",
+    ".memory-bank/testing/dataset-governance.md",
+    ".memory-bank/testing/local-privacy-storage.md",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "evidence_required": [
+    "FT-015-AC-019 RED/GREEN: inject configured secrets plus raw ActorContext/cookie/header/UI/provider-history sentinels through both Dataset Agent thin adapters and their shared provider-call flow; RED is any forbidden outbound occurrence or missing decisive request coverage, GREEN distinguishes DatasetGovernanceProviderRequestV1 and TrainingDataCuratorProviderRequestV1 with zero forbidden values, zero I/O on rejected unsafe input, exact allowed-field parity, unchanged source values, and no generic downstream effect; decisive comparison: both captured requests/call counts and source values; artifact: focused transcript under .tasks/TASK-079-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+  ],
+  "purpose": "Close the one shared Dataset Agent runtime-flow privacy result while proving both registered strict advisory requests independently inside that inseparable flow.",
+  "success_outcome": "Both Dataset Agent strict requests exclude secrets/auth/UI/provider-history values before their shared provider call, preserve their exact allowed fields, and retain advisory-only behavior with no MessageEnvelope, Safety, Bus, UI, or direct trainability authority.",
+  "anti_goals": [
+    "Do not split or duplicate the post-TASK-060 shared runtime flow, change Dataset Candidate lifecycle/trainability, select a provider, or add real-endpoint scope.",
+    "Do not adopt generic Agent Runtime or non-Dataset competence request claims."
+  ],
+  "source_artifacts": [
+    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-019",
+    ".memory-bank/tasks/plans/IMPL-FT-015.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+    ".memory-bank/contracts/dataset-agents-runtime.md#provider-requests-version-1",
+    ".memory-bank/contracts/dataset-agents-runtime.md#invocation-flow-and-curator-gate",
+    ".memory-bank/contracts/agent-model-provider-profiles.md#registered-advisory-only-result-route",
+    ".memory-bank/contracts/boundary-map.md#dataset-advisory-runtime-exception",
+    ".memory-bank/testing/dataset-governance.md#dataset-agents-runtime-matrix",
+    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+  ],
+  "constraints": [
+    "Retain both thin adapters over the one shared runtime flow and distinguish both request results in the same probe.",
+    "Use test-only spies; no real endpoint, credentials, network call, or expanded permission."
+  ],
+  "invariants": [
+    "Forbidden values never cross either Dataset Agent provider boundary.",
+    "Dataset Agent output remains advisory-only and grants no lifecycle/trainability or generic downstream authority.",
+    "Production remains unbound and fail closed."
+  ],
+  "verification_targets": [
+    "FT-015-AC-019: both Dataset Agent request results through the shared flow, with RED/GREEN or preserved pre-GREEN, corpus absence, zero unsafe I/O, allowed-field parity, source-value integrity, and advisory-only regression."
+  ],
+  "runtime_context": {
+    "forbidden_scope": [
+      "Generic or non-Dataset competence requests, provider/model/credential/egress selection, Dataset lifecycle/trainability/public API changes, frontend, remote sync, or live network."
+    ],
+    "stop_conditions": [
+      "The two Dataset Agent adapters no longer share one inseparable runtime/provider-call flow.",
+      "Safety requires changing the accepted Dataset Agent request or advisory-only contract.",
+      "Any probe would require real credentials, network access, or expanded permission."
+    ]
+  }
+}

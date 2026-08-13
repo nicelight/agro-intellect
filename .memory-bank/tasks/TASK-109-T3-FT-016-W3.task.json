@@ -1,0 +1,57 @@
+{
+  "id": "TASK-109-T3-FT-016-W3",
+  "title": "Compose Companion issue close in the PWA",
+  "status": "planned",
+  "wave": "W3",
+  "feature": "FT-016",
+  "reqs": ["REQ-021", "REQ-022"],
+  "depends_on": ["TASK-043-T3-FT-013-W3", "TASK-078-T3-FT-015-W2", "TASK-081-T3-FT-016-W2"],
+  "touched_files": [
+    "frontend/src/lib/companion-governance/",
+    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+    "frontend/src/routes/plants/[plant_id]/+page.svelte",
+    "frontend/tests/e2e/companion-close.spec.ts"
+  ],
+  "tier": "T3",
+  "gates": [
+    {"name": "companion_close_browser", "command": "cd frontend && npm run test:e2e -- tests/e2e/companion-close.spec.ts", "required": true},
+    {"name": "frontend_check", "command": "cd frontend && npm run check", "required": true},
+    {"name": "memory_bank_lint", "command": "node scripts/mb-lint.mjs", "required": true},
+    {"name": "diff_check", "command": "git diff --check", "required": true}
+  ],
+  "verify": ["Independent issue-close verification covers resolved close/duplicate, open/version/permission/archive failures, authoritative issue reread, and absence of reopen/client-derived resolution."],
+  "docs": [
+    ".memory-bank/contracts/operator-pwa.md",
+    ".memory-bank/contracts/companion-governance-http.md",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/testing/companion-governance.md",
+    ".memory-bank/testing/operator-pwa-first-demo.md",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "evidence_required": [
+    "FT-016-AC-032 RED: no browser Companion issue-close consumer exists; GREEN: exact authorized close/duplicate succeeds only for current resolved issue while open/version/permission/archive cases fail without changing authoritative state and no reopen path exists; decisive comparison: strict request, response/DOM, and issue/proposal/DecisionRecord reread; artifact: close evidence under .tasks/TASK-109-T3-FT-016-W3/."
+  ],
+  "purpose": "Expose resolved-issue close independently of Companion reads, invocation, and proposal decision.",
+  "success_outcome": "Authorized Boss/Engineer users can close only a current resolved issue while open/stale/denied/archive paths remain non-mutating and no reopen or client-derived resolution exists.",
+  "anti_goals": ["Do not implement reads, invoke Companion, decide proposals, reopen issues, or derive issue resolution in the client.", "Do not create Safety, Plant, Task, or provider effects from close."],
+  "runtime_context": {
+    "forbidden_scope": ["backend Companion/DecisionRecord/Task/Safety/Plant authority", "reopen or client-derived issue resolution", "open/stale/archived issue advancement"],
+    "stop_conditions": ["Close needs a command outside Companion Governance HTTP.", "The UI would need to infer resolution or reopen/advance an ineligible issue."]
+  },
+  "source_artifacts": [
+    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-032",
+    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  ],
+  "normative_inputs": [
+    ".memory-bank/contracts/companion-governance-http.md#post-apiplantsplant_idcompanionissuesissue_idclose",
+    ".memory-bank/states/companion-governance.md",
+    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/testing/companion-governance.md"
+  ],
+  "constraints": ["Primary owner is Operator PWA; Companion Governance owns issue status/version and close mutation.", "Submit only request_id/expected_version and render backend result."],
+  "invariants": ["Only a current resolved issue may close; no reopen path exists.", "Denied/stale/archive close attempts produce no Task, Safety, Plant, or governance side effect."],
+  "verification_targets": [
+    "FT-016-AC-032: close/duplicate plus open/version/permission/archive failures, authoritative reread, and no reopen path.",
+    "T3 harm proof uses isolated issues and confirms safe rerun/denial leaves no unauthorized governance or downstream effect."
+  ]
+}
