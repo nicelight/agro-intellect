@@ -82,6 +82,7 @@
   ],
   "normative_inputs": [
     ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+    ".memory-bank/contracts/admin/boss-admin-http.md",
     ".memory-bank/contracts/admin/boss-admin-http.md#presentation-boundary",
     ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
     ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"

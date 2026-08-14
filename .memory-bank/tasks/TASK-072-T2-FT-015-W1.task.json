@@ -53,6 +53,7 @@
     ".memory-bank/tasks/plans/IMPL-FT-015.md"
   ],
   "normative_inputs": [
+    ".memory-bank/contracts/product-surface-redaction.md",
     ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
     ".memory-bank/contracts/photo-intake-http.md#storage-status-behavior",
     ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",

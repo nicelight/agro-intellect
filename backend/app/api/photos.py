@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from email import policy as email_policy
 from email.parser import BytesParser
+from typing import Literal
 import uuid
 
 from fastapi import APIRouter, Depends, Query, Request, Response
@@ -13,6 +14,7 @@ from pydantic import BaseModel
 from ..access_admin.actor_context import ActorContext
 from ..access_admin.dependencies import (
     AuthorizedPlantRequest,
+    require_actor_context,
     require_plant_permission,
 )
 from ..access_admin.errors import request_id_for
@@ -67,6 +69,14 @@ class PhotoCatalogList(BaseModel):
     next_cursor: str | None = None
 
 
+class PhotoStorageStatus(BaseModel):
+    farm_id: uuid.UUID
+    sync_status: Literal["local_only"]
+    accepted_original_photo_bytes: int
+    prompt_threshold_bytes: int
+    prompt_eligible: bool
+
+
 @dataclass(frozen=True, slots=True)
 class _PhotoErrorDefinition:
     status_code: int
@@ -117,6 +127,10 @@ _ERROR_DEFINITIONS = {
     PhotoIntakeErrorCode.PHOTO_PERSISTENCE_FAILED: _PhotoErrorDefinition(
         500,
         "Photo intake could not be completed.",
+    ),
+    PhotoIntakeErrorCode.PHOTO_STORAGE_STATUS_FAILED: _PhotoErrorDefinition(
+        500,
+        "Photo storage status could not be read.",
     ),
     PhotoIntakeErrorCode.VALIDATION_FAILED: _PhotoErrorDefinition(
         422,
@@ -274,6 +288,41 @@ def get_photo(
         return result
     _no_store(response)
     return _photo_summary(result)
+
+
+@router.get(
+    "/photos/storage-status",
+    response_model=PhotoStorageStatus,
+    responses=_ERROR_RESPONSES,
+)
+def get_storage_status(
+    request: Request,
+    response: Response,
+    actor: ActorContext = Depends(require_actor_context),
+) -> PhotoStorageStatus | JSONResponse:
+    try:
+        with request.app.state.database.session() as session:
+            pressure = PhotoIntakeService(session).farm_storage_pressure(
+                farm_id=actor.farm_id
+            )
+    except PhotoIntakeError:
+        return _photo_error_response(
+            request,
+            PhotoIntakeErrorCode.PHOTO_STORAGE_STATUS_FAILED,
+        )
+    except Exception:
+        return _photo_error_response(
+            request,
+            PhotoIntakeErrorCode.PHOTO_STORAGE_STATUS_FAILED,
+        )
+    _no_store(response)
+    return PhotoStorageStatus(
+        farm_id=actor.farm_id,
+        sync_status="local_only",
+        accepted_original_photo_bytes=pressure.accepted_original_photo_bytes,
+        prompt_threshold_bytes=pressure.prompt_threshold_bytes,
+        prompt_eligible=pressure.prompt_eligible,
+    )
 
 
 async def _parse_multipart_upload(request: Request) -> _ParsedUpload:

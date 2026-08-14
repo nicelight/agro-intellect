@@ -1,91 +1,122 @@
 {
-  "id": "TASK-063-T3-FT-015-W1",
-  "title": "Lock the supported loopback-only exposure path",
-  "status": "planned",
-  "wave": "W1",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0"
-  ],
-  "touched_files": [
-    "scripts/bootstrap-local.sh",
-    ".env.example",
-    ".memory-bank/runbooks/foundation-local-runtime.md",
-    "tests/backend/local_privacy/test_runtime_policy.py",
-    "tests/backend/test_foundation_bootstrap_contract.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "loopback_runtime",
-      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_policy.py tests/backend/test_foundation_bootstrap_contract.py tests/backend/test_baseline.py -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent verification proves the documented executable start uses 127.0.0.1, local smoke remains healthy, no host/LAN/CORS/bearer mode is exposed, and public smoke responses contain no product/auth data."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/architecture/foundation-runtime-substrate.md",
-    ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/contracts/auth/session-security.md",
-    ".memory-bank/runbooks/foundation-local-runtime.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-002 RED/GREEN: establish honest pre-implementation evidence for the supported launch/config surface; GREEN requires the executable runbook/bootstrap contract to bind 127.0.0.1, expose no LAN/host/CORS/bearer setting, and keep public smoke product/auth-free; decisive comparison: launch/config scan plus local smoke results; artifact: runtime-policy transcript under .tasks/TASK-063-T3-FT-015-W1/. Pre-implementation GREEN is preserved without unnecessary production change."
-  ],
-  "purpose": "Make the accepted absence of optional LAN mode an executable security result while retaining the one supported loopback runtime.",
-  "success_outcome": "The supported local launch is unambiguously loopback-only, health/readiness work locally, and the current product exposes no configurable LAN/CORS/bearer access mode; future LAN work must return to design.",
-  "anti_goals": [
-    "Do not implement LAN, host override, CORS middleware/config, bearer transport, TLS, certificate handling, or remote smoke.",
-    "Do not broaden public health/readiness data."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-002",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/architecture/foundation-runtime-substrate.md#rules",
-    ".memory-bank/contracts/api-guidelines.md#cors-and-exposure",
-    ".memory-bank/contracts/auth/session-security.md#optional-bearer-transport",
-    ".memory-bank/runbooks/foundation-local-runtime.md#command-path",
-    ".memory-bank/testing/local-privacy-storage.md#runtime-policy-matrix"
-  ],
-  "constraints": [
-    "Treat LAN as not applicable for FT-015, not as an untested hidden mode.",
-    "Use local deterministic smoke only; no external interface/network authorization is granted."
-  ],
-  "invariants": [
-    "Every supported first-demo backend launch binds loopback.",
-    "Optional LAN controls cannot be claimed until an explicit implementation/design task exists."
-  ],
-  "verification_targets": [
-    "FT-015-AC-002: source/config/runbook plus local smoke prove loopback-only support and absence of LAN mode.",
-    "Public /health and /ready remain product/auth-material-free."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "LAN/CORS/TLS/bearer implementation, remote network probing, frontend, server sync, or provider egress."
-    ],
-    "stop_conditions": [
-      "Current production code already exposes a non-loopback mode requiring a product/security decision.",
-      "Proof would require probing another machine or changing host firewall/network state."
-    ]
+ "id": "TASK-063-T3-FT-015-W1",
+ "title": "Lock the supported loopback-only exposure path",
+ "status": "done",
+ "wave": "W1",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0"
+ ],
+ "touched_files": [
+  "scripts/bootstrap-local.sh",
+  ".env.example",
+  ".memory-bank/runbooks/foundation-local-runtime.md",
+  "tests/backend/local_privacy/test_runtime_policy.py",
+  "tests/backend/test_foundation_bootstrap_contract.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "loopback_runtime",
+   "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_policy.py tests/backend/test_foundation_bootstrap_contract.py tests/backend/test_baseline.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent verification proves the documented executable start uses 127.0.0.1, local smoke remains healthy, no host/LAN/CORS/bearer mode is exposed, and public smoke responses contain no product/auth data.",
+  {
+   "stage": "functional_verification",
+   "mode": "delegated_reviewer",
+   "attempt": "01",
+   "verdict": "PASS",
+   "verified_at": "2026-08-14T04:10:00+05:00",
+   "basis": "Independent T3 verification of FT-015-AC-002: fresh rerun of loopback_runtime gate (38 passed), memory_bank_lint (229 files), git diff --check (exit 0); fresh local smoke of the documented launch path bound 127.0.0.1:8000 only (ss LISTEN loopback), /health {'status':'ok'} and /ready {'status':'ready'} both HTTP 200 with no product/auth material; independent source scan found no CORS middleware, no host/bind/cors/bearer settings or env keys, no server host config in bootstrap; runbook documents loopback-only; pre-implementation GREEN claim independently confirmed TRUE (production already conformant, no production change made); no forbidden surface added and no public data broadened.",
+   "evidence": [
+    ".protocols/TASK-063-T3-FT-015-W1/verification.md",
+    ".tasks/TASK-063-T3-FT-015-W1/verify-smoke-transcript.txt",
+    ".tasks/TASK-063-T3-FT-015-W1/runtime-policy-transcript.txt",
+    ".tasks/TASK-063-T3-FT-015-W1/gate-loopback-runtime.txt"
+   ],
+   "gate_summary": {
+    "loopback_runtime": "PASS: 38 passed (verifier rerun 0.81s)",
+    "memory_bank_lint": "PASS: 229 files",
+    "diff_check": "PASS: exit 0",
+    "local_smoke": "PASS: 127.0.0.1:8000 LISTEN loopback only; /health + /ready 200, product/auth-free"
+   },
+   "findings": [],
+   "next_owner": "Scheduler: per-task /red-verify TASK-063-T3-FT-015-W1 is required before T3 closure; lifecycle left unchanged (in_progress)."
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-063-T3-FT-015-W1 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probes: only supported launch path is uvicorn --host 127.0.0.1 (no uvicorn.run/config/Makefile/Docker/HOST/PORT/CORS/BEARER keys); live smoke loopback-only, /health /ready product/auth-free; live OPTIONS from foreign origin 405 no CORS header; Authorization fail-closed 403/401; no surface creep (diff = runbook + tests only); LAN not-applicable grounded in canonical disposition; no findings.",
+   "evidence": ".protocols/TASK-063-T3-FT-015-W1/red-verification.md, .tasks/TASK-063-T3-FT-015-W1/TASK-063-T3-FT-015-W1-S-RED-VERIFY-final-report-docs-01.md"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/architecture/foundation-runtime-substrate.md",
+  ".memory-bank/contracts/api-guidelines.md",
+  ".memory-bank/contracts/auth/session-security.md",
+  ".memory-bank/runbooks/foundation-local-runtime.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-002 RED: no current executable launch/config surface proves loopback-only binding or the absence of LAN/host/CORS/bearer mode; GREEN: the executable runbook/bootstrap contract binds 127.0.0.1, exposes no LAN/host/CORS/bearer setting, and keeps public smoke product/auth-free; decisive comparison: launch/config scan plus local smoke results; artifact: runtime-policy transcript under .tasks/TASK-063-T3-FT-015-W1/. Pre-implementation GREEN is preserved without unnecessary production change."
+ ],
+ "purpose": "Make the accepted absence of optional LAN mode an executable security result while retaining the one supported loopback runtime.",
+ "success_outcome": "The supported local launch is unambiguously loopback-only, health/readiness work locally, and the current product exposes no configurable LAN/CORS/bearer access mode; future LAN work must return to design.",
+ "anti_goals": [
+  "Do not implement LAN, host override, CORS middleware/config, bearer transport, TLS, certificate handling, or remote smoke.",
+  "Do not broaden public health/readiness data."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-002",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/architecture/foundation-runtime-substrate.md#rules",
+  ".memory-bank/contracts/api-guidelines.md#cors-and-exposure",
+  ".memory-bank/contracts/auth/session-security.md#optional-bearer-transport",
+  ".memory-bank/runbooks/foundation-local-runtime.md#command-path",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/testing/local-privacy-storage.md#runtime-policy-matrix"
+ ],
+ "constraints": [
+  "Treat LAN as not applicable for FT-015, not as an untested hidden mode.",
+  "Use local deterministic smoke only; no external interface/network authorization is granted."
+ ],
+ "invariants": [
+  "Every supported first-demo backend launch binds loopback.",
+  "Optional LAN controls cannot be claimed until an explicit implementation/design task exists."
+ ],
+ "verification_targets": [
+  "FT-015-AC-002: source/config/runbook plus local smoke prove loopback-only support and absence of LAN mode.",
+  "Public /health and /ready remain product/auth-material-free."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "LAN/CORS/TLS/bearer implementation, remote network probing, frontend, server sync, or provider egress."
+  ],
+  "stop_conditions": [
+   "Current production code already exposes a non-loopback mode requiring a product/security decision.",
+   "Proof would require probing another machine or changing host firewall/network state."
+  ]
+ }
 }

@@ -41,6 +41,7 @@ from .storage import (
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 PHOTO_TYPES = {"whole_plant", "leaf_closeup", "roots", "problem_area", "other"}
+PROMPT_THRESHOLD_BYTES = 209715200
 
 
 class PhotoIntakeErrorCode(StrEnum):
@@ -55,6 +56,7 @@ class PhotoIntakeErrorCode(StrEnum):
     TIMELINE_APPEND_FAILED = "TIMELINE_APPEND_FAILED"
     PHOTO_DATASET_AUDIT_FAILED = "PHOTO_DATASET_AUDIT_FAILED"
     PHOTO_PERSISTENCE_FAILED = "PHOTO_PERSISTENCE_FAILED"
+    PHOTO_STORAGE_STATUS_FAILED = "PHOTO_STORAGE_STATUS_FAILED"
     VALIDATION_FAILED = "VALIDATION_FAILED"
 
 
@@ -85,6 +87,13 @@ class PhotoAcceptanceResult:
 class PhotoCatalogPage:
     items: list[PhotoCatalogItem]
     next_cursor: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class PhotoStoragePressure:
+    accepted_original_photo_bytes: int
+    prompt_threshold_bytes: int
+    prompt_eligible: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -347,6 +356,24 @@ class PhotoIntakeService:
         if item is None:
             raise PhotoIntakeError(PhotoIntakeErrorCode.PHOTO_NOT_FOUND)
         return item
+
+    def farm_storage_pressure(self, *, farm_id: uuid.UUID) -> PhotoStoragePressure:
+        if not isinstance(farm_id, uuid.UUID):
+            raise PhotoIntakeError(PhotoIntakeErrorCode.VALIDATION_FAILED)
+        try:
+            repository = self._repository_factory(self._session)
+            accepted_bytes = repository.sum_farm_photo_bytes(farm_id=farm_id)
+        except PhotoIntakeError:
+            raise
+        except Exception:
+            raise PhotoIntakeError(
+                PhotoIntakeErrorCode.PHOTO_PERSISTENCE_FAILED
+            ) from None
+        return PhotoStoragePressure(
+            accepted_original_photo_bytes=accepted_bytes,
+            prompt_threshold_bytes=PROMPT_THRESHOLD_BYTES,
+            prompt_eligible=accepted_bytes > PROMPT_THRESHOLD_BYTES,
+        )
 
     def _write_original(
         self,
@@ -726,10 +753,12 @@ def _now() -> datetime:
 __all__ = [
     "MAX_UPLOAD_BYTES",
     "PHOTO_TYPES",
+    "PROMPT_THRESHOLD_BYTES",
     "PhotoAcceptanceResult",
     "PhotoCatalogPage",
     "PhotoIntakeError",
     "PhotoIntakeErrorCode",
     "PhotoIntakeService",
+    "PhotoStoragePressure",
     "PhotoUploadInput",
 ]

@@ -1,98 +1,129 @@
 {
-  "id": "TASK-064-T3-FT-015-W1",
-  "title": "Close runtime log and API-error redaction",
-  "status": "planned",
-  "wave": "W1",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0",
-    "TASK-017-T3-FT-003-W2"
-  ],
-  "touched_files": [
-    "backend/app/core/redaction.py",
-    "backend/app/core/security.py",
-    "backend/app/config.py",
-    "backend/app/access_admin/errors.py",
-    "tests/backend/local_privacy/test_runtime_redaction.py",
-    "tests/backend/test_foundation_redaction.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "runtime_redaction",
-      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_redaction.py tests/backend/test_foundation_redaction.py tests/backend/api/test_ft001_session_routes.py -q",
-      "required": true
-    },
-    {
-      "name": "deterministic_regression",
-      "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent security verification injects the same configured corpus through actual settings/log and API-error paths, observes no raw value, preserves source credentials, and confirms stable safe errors."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/contracts/evidence-redaction.md",
-    ".memory-bank/contracts/api-guidelines.md",
-    ".memory-bank/contracts/auth/session-http.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-003 RED: at least one actual log/error serialization path exposes or cannot decisively sanitize the configured corpus before this task; GREEN: all actual current log/error owners omit every raw corpus value and sanitizer failure returns only a stable safe error; decisive comparison: captured output before/after and unchanged source secret; artifact: focused redaction transcript under .tasks/TASK-064-T3-FT-015-W1/. If exact preflight is already GREEN, preserve it and avoid an unneeded production edit."
-  ],
-  "purpose": "Close the shared runtime output redaction result for application logs and safe API errors without turning the sanitizer into product authority.",
-  "success_outcome": "Actual current runtime log/settings summaries and API error serialization remove the configured secret/auth corpus before output, never mutate source credentials, and fail safely without echoing rejected values.",
-  "anti_goals": [
-    "Do not redesign every product payload, add logging infrastructure, persist redaction state, or weaken stable error catalogs.",
-    "Do not adopt manifest, Timeline/history, Bus/UI, or agent-context ACs owned by sibling tasks."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-003",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/contracts/api-guidelines.md#error-and-response-rules",
-    ".memory-bank/contracts/auth/session-http.md#error-envelope-and-catalog",
-    ".memory-bank/contracts/evidence-redaction.md#rules",
-    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
-  ],
-  "constraints": [
-    "Use one configured secret corpus and actual serializers, not pattern-only unit assertions.",
-    "Sanitize output copies before emission; authentication/provider source values remain unchanged."
-  ],
-  "invariants": [
-    "No runtime log or safe API error contains the forbidden corpus.",
-    "Sanitization grants no runtime, audit, UI, agent, upload, or sync authority."
-  ],
-  "verification_targets": [
-    "FT-015-AC-003: actual log/error RED/GREEN or preserved pre-GREEN with corpus absence, safe failure, and source-value integrity.",
-    "Full deterministic backend regression after any shared sanitizer change."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Manifest, Timeline/history, Bus/UI, provider-request semantics, database schema, frontend, and historical evidence."
-    ],
-    "stop_conditions": [
-      "A fix requires changing a public error code/shape or credential lifecycle.",
-      "One shared primitive cannot be changed without an unresolved incompatible consumer contract."
-    ]
+ "id": "TASK-064-T3-FT-015-W1",
+ "title": "Close runtime log and API-error redaction",
+ "status": "done",
+ "wave": "W1",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0",
+  "TASK-017-T3-FT-003-W2"
+ ],
+ "touched_files": [
+  "backend/app/core/redaction.py",
+  "backend/app/core/security.py",
+  "backend/app/config.py",
+  "backend/app/access_admin/errors.py",
+  "tests/backend/local_privacy/test_runtime_redaction.py",
+  "tests/backend/test_foundation_redaction.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "runtime_redaction",
+   "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_redaction.py tests/backend/test_foundation_redaction.py tests/backend/api/test_ft001_session_routes.py -q",
+   "required": true
+  },
+  {
+   "name": "deterministic_regression",
+   "command": ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent security verification injects the same configured corpus through actual settings/log and API-error paths, observes no raw value, preserves source credentials, and confirms stable safe errors.",
+  "VERDICT: PASS (2026-08-14, /verify scheduler mode). Verifier-owned probe with fresh corpus: 64/64 checks pass through actual serializers (redacted_for_log, auth_error_response for every AuthErrorCode, real ASGI 422/401/403/500 paths) - no raw corpus value, source database_url unchanged, failures stable; pre-implementation GREEN claim independently reproduced (TRUE, no production change needed); only gate-required test file added, no forbidden surface touched, no public error code/shape changed. Gates rerun: runtime_redaction 37 passed, deterministic_regression 789 passed, mb-lint passed, diff_check exit 0. Evidence: .protocols/TASK-064-T3-FT-015-W1/verification.md; .tasks/TASK-064-T3-FT-015-W1/verify-probe.{py,txt}.",
+  "VERDICT: PASS (2026-08-14, /verify ATTEMPT 02 scheduler mode, fresh context). Prior red-verify HIGH finding CLOSED: verifier-owned fresh-corpus probe (vv2-*) 14/14 GREEN - all five admitted hostile DB-password shapes (slash /, space, @, multiple @, trailing @tail) fully masked through actual AppSettings.redacted_for_log() AND redact_url_credentials directly, source database_url byte-identical, clean-URL regression worker:***@localhost/db intact, sanitizer failure yields stable safe error (ValueError: redaction failed: value cannot be rendered as text, no raw echo), all 26 AuthErrorCode catalog codes unchanged vs HEAD 5f5c158; rerun of the ATTEMPT 01 red-verify probe 45/45 GREEN (formerly failing A-slash/A-space/F checks now pass). Gates rerun fresh: runtime_redaction 50 passed, deterministic_regression 802 passed, mb-lint passed (229 files), diff_check exit 0. Change surface: backend/app/core/redaction.py only production change; hostile tests in test_foundation_redaction.py + local_privacy/test_runtime_redaction.py. Evidence: .protocols/TASK-064-T3-FT-015-W1/verification.md (ATTEMPT 02 section); .tasks/TASK-064-T3-FT-015-W1/vv2-verify-attempt02-probe.{py,txt}, vv2-redverify-probe-rerun.txt. Recommended: per-task /red-verify TASK-064-T3-FT-015-W1 for the semantic side.",
+  "VERDICT: PASS (2026-08-14, /verify ATTEMPT 03 scheduler mode, fresh context). CRITICAL adjudication of the 16 residual rvs9 rerun failures CONFIRMED as executor claimed: 0/16 true leaks, 16/16 false positives - for all 8 `://`-password URLs (x2 serializers) make_url accepts the password and the output is EXACTLY the fully-masked skeleton postgresql+psycopg://***@db/agro (skeleton-exact passed 16/16, full password absent, source byte-identical); the residual flagged fragments are only `://` (the output's own scheme delimiter) and `postgresql` scheme-name substrings - mandatory output syntax, not raw secret material. Verifier-owned fresh hostile corpus (vrf3-*, 13 new `://`-family shapes incl. mixed-case scheme names, ports/IPv4, ?/#/%40, multi-URL cursor guard) 183/183 GREEN: all admitted shapes fully masked through redact_url_credentials AND AppSettings.redacted_for_log(), source database_url byte-identical, clean-URL regression intact (worker:***@localhost/agro), sanitizer failure stable safe error (no raw echo), errors.py + security.py zero diff vs HEAD, all 26 AuthErrorCode codes present. Executor probes rerun fresh: attempt03 90/90, attempt02 7/7, red-verify 45/45, rvs9 66/82 (residual 16 = the adjudicated false-positive class). Gates rerun fresh: runtime_redaction 63 passed, deterministic_regression 815 passed, mb-lint passed (229 files), diff_check exit 0. Change surface: backend/app/core/redaction.py only production change (window logic); tests +7 foundation / +5 runtime `://` cases. Evidence: .protocols/TASK-064-T3-FT-015-W1/verification.md (ATTEMPT 03 section); .tasks/TASK-064-T3-FT-015-W1/vrf3-adjudicate-probe.{py,txt}. Recommended: scheduler -> per-task /red-verify TASK-064-T3-FT-015-W1 (T3 semantic side; not run in this call).",
+  "VERDICT: PASS (2026-08-14, /verify ATTEMPT 04 scheduler mode, fresh context). CRITICAL adjudication of the 2 residual rv4 rerun failures CONFIRMED as executor claimed: 0/2 true leaks, 2/2 stale B-control expectations encoding the banned skip-and-reinterpret shape - residual 1 expected postgresql://pw://rv4u:***@db/agro and https://rd4user:***@example.com/path but actual output is the fully-masked postgresql://***@db/agro and https://rd4user:***@example.com/path (make_url password //rv4u:rv4p fully absent; the only flagged fragment //r is a substring of the second URL's mandatory retained syntax https://rd4user, public text); residual 2 expected postgresql://pw://***@db/agro for input postgresql://pw://rv4u:rv4p://z@db/agro but actual output is postgresql://***@db/agro (password //rv4u:rv4p://z fully absent, 0 fragments under strictest check). Verifier-owned fresh hostile corpus (zr5-*/username vd9user, prefix-disjoint from all 8 prior corpora) 237/237 GREEN, 0 skipped, all 28 URLs make_url-accepted: every password fragment >=3 absent from BOTH redact_url_credentials output and actual AppSettings.redacted_for_log() summary across the no-colon pseudo-scheme family (pw://x:y@db, http://user:pass, u://, :extra, mixed-case Pw:///PW://, postgres:// pseudo, ports, IPv4/IPv6, ?/#/%40 tails), the colon-preceded word:// class, and the slash/space/@ classes; 12 exact-skeleton checks (full-mask skeleton postgresql://***@db/agro), clean vd9user:***@localhost:5432/agro preserved, hostless/uncredentialed byte-identical, multi-URL cursor guard 5 checks, sanitizer failure stable safe error at all 3 call sites, source byte-identical per shape, errors.py+security.py zero diff vs HEAD, forbidden scope untouched. Executor probes rerun fresh: attempt04 186/186, rv4 162/164 (2 adjudicated residuals, 0 true leaks), attempt03 90/90, attempt02 7/7, red-verify 45/45. Honest RED confirmed (rv4-semantic-final-probe.txt pre-fix postgresql://pw://rv4u:***@db/agro raw //rv4u surviving; attempt04-red.txt 144/186 all 42 no-colon class). Gates rerun fresh: runtime_redaction 80 passed, deterministic_regression 832 passed, mb-lint passed (229 files), diff_check exit 0. Change surface: backend/app/core/redaction.py only production change (skip-rule); tests +12 foundation no-colon / +1 multi-URL / +4 runtime no-colon. Evidence: .protocols/TASK-064-T3-FT-015-W1/verification.md (ATTEMPT 04 section); .tasks/TASK-064-T3-FT-015-W1/vr5-attempt04-adjudicate-probe.{py,txt}. Recommended: scheduler -> per-task /red-verify TASK-064-T3-FT-015-W1 (T3 semantic side; not run in this call).",
+  "VERDICT: FAIL (2026-08-14, /verify ATTEMPT 05 scheduler mode, fresh context, FINAL retry adjudication). Pseudo-scheme class is NOT fully closed: a NEW untested member leaks raw credentials. Root cause: _URL_SCHEME_RE `\\b[a-z][a-z0-9+.-]*://` cannot match scheme names the app's own make_url parser accepts (`[\\w\\+]+` in sqlalchemy/engine/url.py:868-870): digit-leading (2dhz, 9x), underscore-leading (_dhz), and embedded-underscore (dhz_2, d_hz, sqlite_driver) schemes are make_url-ACCEPTED with a password but get NO scheme match (digit/underscore are word chars so \\b cannot fire before the letter run; `_` not in the class run) - raw user:password@ survives verbatim. Verifier-owned fresh hostile corpus (xh7-* username xh7user/password xh7pw9, prefix-disjoint from all prior corpora) 298 passed / 48 failed: leaks confirmed on EVERY shared function AND the actual runtime serializer - redact_url_credentials, redact_text, redact_mapping, AppSettings.redacted_for_log() all emit raw `xh7user:xh7pw9@` for 2dhz://, _dhz://, dhz_2://, d_hz://, 9x://, sqlite_driver:// (make_url password >=3 chars) and for space/tab-prefixed pseudo-scheme family members postgresql 2dhz://, postgresql\\t_dhz://, postgresql dhz_2://, postgresql d_hz://, text 2mysql://. All previously admitted classes stay closed (all letter-led members fully masked, source byte-identical, clean-URL regression postgresql+psycopg://cleanuser:***@localhost:5432/agro intact, sanitizer failure stable safe error no raw echo, AuthErrorCode catalog 26/26 identical vs HEAD, security.py/errors.py/dependencies.py zero diff, forbidden scope untouched). Prior corpora + new gate tests are letter-led only (nzx/pw/x/zr5/rv4/qb8 families) - the residual class was structurally untested. Gates rerun fresh by verifier: runtime_redaction 112 passed, deterministic_regression 864 passed, mb-lint passed (229 files), diff_check exit 0; executor attempt05-probe.py rerun 200/200 (corpus gap). Evidence: .protocols/TASK-064-T3-FT-015-W1/verification.md (ATTEMPT 05 section); .tasks/TASK-064-T3-FT-015-W1/xh7-verify-attempt05-probe.{py,txt}. Recommended: scheduler - FAIL for ATTEMPT 05; minimal correction = align scheme regex with parser class [\\w\\+]+ (mask whenever a password-bearing @ follows), add digit/underscore scheme gate tests; per-task /red-verify remains the T3 semantic gate. Lifecycle untouched (in_progress).",
+  "VERDICT: PASS (2026-08-14, /verify ATTEMPT 06 scheduler mode, fresh context, owner-authorized single recovery attempt). Scheme-class mismatch fully CLOSED: `_URL_SCHEME_RE` is now exactly the parser class `(?<![\\w])[\\w\\+]+://` (sqlalchemy make_url `_parse_url` scheme group `[\\w\\+]+`, url.py:868-870; one-line root-cause change, structural span logic untouched). Exhaustive verifier enumeration over alphabet {a,b,z,0,9,_,+,A}, scheme lengths 1-3: 584/584 parser-accepted schemes -> exact skeleton `scheme://u:***@dbhost/agro`, 0 mismatches (artifact vrf6-scheme-class-equivalence.txt). Fresh verifier hostile corpus (zr9user/zr9pw8 + kq-family schemes incl. digit-led 9kq/2kq3, underscore-led _kq, embedded underscore kq_7/9k_q, plus-led +kq, embedded plus k+q/kq+7, mixed case KQ7/kQz9, single-char 9/_/+/a, space/tab-prefixed, ports/IPv4/IPv6/?/#/%40, multi-URL) -> 965/965 GREEN on EVERY shared function AND actual AppSettings.redacted_for_log(): no make_url-accepted password fragment >=3 survives (full + stripped), source byte-identical, clean-URL regression intact, sanitizer failure stable safe error at all 3 call sites, AuthErrorCode catalog 26/26 vs HEAD, errors.py/security.py/dependencies.py zero diff, forbidden scope untouched. All five previously admitted HIGH classes stay closed (fresh reruns: xh7 298/298 [was 298/48], attempt06 926/926, attempt05 200/200, attempt04 186/186, attempt03 90/90, attempt02 7/7, red-verify 45/45, qb8 138/138). Residual adjudication: rv4 162/164 (2/2 stale B-control expectations encoding the banned skip-and-reinterpret shape; actual outputs fully-masked `postgresql://***@db/agro`, make_url passwords `//rv4u:rv4p`/`//rv4u:rv4p://z` absent — 0 true leaks); rvs9 66/82 (16/16 output-syntax false positives: output exactly `postgresql+psycopg://***@db/agro`, flagged fragment only the mandatory `://` delimiter — 0 true leaks). Gates rerun fresh: runtime_redaction 155 passed, deterministic_regression 907 passed, mb-lint passed (230 files), diff_check exit 0. Evidence: .protocols/TASK-064-T3-FT-015-W1/verification.md (ATTEMPT 06 section); .tasks/TASK-064-T3-FT-015-W1/vrf6-verify-attempt06-probe.{py,txt}, vrf6-scheme-class-equivalence.txt. Recommended: scheduler -> functional PASS for ATTEMPT 06; then per-task /red-verify TASK-064-T3-FT-015-W1 (T3 semantic side, not run in this call). Lifecycle untouched (status failed with owner-authorized attempt 6 in progress; not closed).",
+  {
+   "stage": "owner_disposition",
+   "decision": "failed",
+   "attempt": "05",
+   "date": "2026-08-14",
+   "basis": "5/5 attempts unsuccessful (ATTEMPT 01-04 semantic-fail HIGH redaction leaks; ATTEMPT 05 functional FAIL): residual credential-leak class in _URL_SCHEME_RE (letter-led \\b[a-z][a-z0-9+.-]*:// cannot match app parser scheme class [\\w\\\\+]+), digit/underscore scheme names (9x://, _dhz://, dhz_2://, sqlite_driver://) leak raw user:password@ in redact_url_credentials, redact_text, redact_mapping and actual AppSettings.redacted_for_log(); make_url accepts them; gate suite letter-led only (112/864 green blind). Budget max_attempts_per_task 5, max_consecutive_failures 5 exhausted. Minimal correction known (align _URL_SCHEME_RE with parser [\\w\\\\+]+ + digit/underscore gate cases) but requires owner recovery exception.",
+   "evidence": ".tasks/TASK-064-T3-FT-015-W1/xh7-verify-attempt05-probe.{py,txt}, .protocols/TASK-064-T3-FT-015-W1/red-verification.md, .protocols/TASK-064-T3-FT-015-W1/verification.md"
+  },
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-064-T3-FT-015-W1 ATTEMPT 06 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Scheme-class closure PROVED by exhaustive enumeration 584/584 parser-accepted schemes -> exact skeleton; fresh corpus zr9/kq 965/965 GREEN on every shared function + actual serializer; residuals 0 true leaks; all five prior HIGH classes closed (xh7 298/298 etc.); runtime_redaction 155, deterministic 907/0, mb-lint 0, diff_check 0.",
+   "evidence": ".protocols/TASK-064-T3-FT-015-W1/verification.md, .tasks/TASK-064-T3-FT-015-W1/vrf6-verify-attempt06-probe.{py,txt}"
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-064-T3-FT-015-W1 ATTEMPT 06 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Fresh hostile corpus zp7 1585 checks 0 failures; _URL_SCHEME_RE semantically equivalent to parser (unicode \\w parity); structural invariant mask-to-host-@ always covers parser password; all five previously admitted HIGH classes re-challenged and closed; stable safe error, source byte-identity, catalog 26/26, cross-spec consistent with updated product-surface-redaction.md; no findings.",
+   "evidence": ".protocols/TASK-064-T3-FT-015-W1/red-verification.md, .tasks/TASK-064-T3-FT-015-W1/zp7-semantic-final-probe.{py,txt}"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/evidence-redaction.md",
+  ".memory-bank/contracts/api-guidelines.md",
+  ".memory-bank/contracts/auth/session-http.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-003 RED: at least one actual log/error serialization path exposes or cannot decisively sanitize the configured corpus before this task; GREEN: all actual current log/error owners omit every raw corpus value and sanitizer failure returns only a stable safe error; decisive comparison: captured output before/after and unchanged source secret; artifact: focused redaction transcript under .tasks/TASK-064-T3-FT-015-W1/. If exact preflight is already GREEN, preserve it and avoid an unneeded production edit."
+ ],
+ "purpose": "Close the shared runtime output redaction result for application logs and safe API errors without turning the sanitizer into product authority.",
+ "success_outcome": "Actual current runtime log/settings summaries and API error serialization remove the configured secret/auth corpus before output, never mutate source credentials, and fail safely without echoing rejected values.",
+ "anti_goals": [
+  "Do not redesign every product payload, add logging infrastructure, persist redaction state, or weaken stable error catalogs.",
+  "Do not adopt manifest, Timeline/history, Bus/UI, or agent-context ACs owned by sibling tasks."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-003",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/contracts/api-guidelines.md#error-and-response-rules",
+  ".memory-bank/contracts/auth/session-http.md#error-envelope-and-catalog",
+  ".memory-bank/contracts/evidence-redaction.md#rules",
+  ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+ ],
+ "constraints": [
+  "Use one configured secret corpus and actual serializers, not pattern-only unit assertions.",
+  "Sanitize output copies before emission; authentication/provider source values remain unchanged."
+ ],
+ "invariants": [
+  "No runtime log or safe API error contains the forbidden corpus.",
+  "Sanitization grants no runtime, audit, UI, agent, upload, or sync authority."
+ ],
+ "verification_targets": [
+  "FT-015-AC-003: actual log/error RED/GREEN or preserved pre-GREEN with corpus absence, safe failure, and source-value integrity.",
+  "Full deterministic backend regression after any shared sanitizer change."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Manifest, Timeline/history, Bus/UI, provider-request semantics, database schema, frontend, and historical evidence."
+  ],
+  "stop_conditions": [
+   "A fix requires changing a public error code/shape or credential lifecycle.",
+   "One shared primitive cannot be changed without an unresolved incompatible consumer contract."
+  ]
+ }
 }

@@ -1,120 +1,120 @@
 {
-  "id": "TASK-081-T3-FT-016-W2",
-  "title": "Build the authorized session and Plant workspace shell",
-  "status": "planned",
-  "wave": "W2",
-  "feature": "FT-016",
-  "reqs": [
-    "REQ-003",
-    "REQ-004",
-    "REQ-020",
-    "REQ-021"
-  ],
-  "depends_on": [
-    "TASK-009-T3-FT-001-W2",
-    "TASK-014-T3-FT-002-W3",
-    "TASK-063-T3-FT-015-W1",
-    "TASK-064-T3-FT-015-W1",
-    "TASK-080-T2-FT-016-W1"
-  ],
-  "touched_files": [
-    "frontend/src/lib/server/backend.ts",
-    "frontend/src/lib/session/",
-    "frontend/src/routes/+layout.server.ts",
-    "frontend/src/routes/+layout.svelte",
-    "frontend/src/routes/login/+page.server.ts",
-    "frontend/src/routes/login/+page.svelte",
-    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
-    "frontend/src/routes/plants/[plant_id]/+page.svelte",
-    "frontend/tests/e2e/auth-shell.spec.ts"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "auth_shell_browser",
-      "command": "cd frontend && npm run test:e2e -- tests/e2e/auth-shell.spec.ts",
-      "required": true
-    },
-    {
-      "name": "frontend_check",
-      "command": "cd frontend && npm run check",
-      "required": true
-    },
-    {
-      "name": "frontend_build",
-      "command": "cd frontend && npm run build",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent browser and source verification covers login/logout, Account and Plant changes, role navigation, denied/revoked/disabled/archived states, cookie forwarding, safe errors, and server-only import isolation."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/contracts/auth/session-http.md",
-    ".memory-bank/contracts/farm/plant-management-http.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
-  ],
-  "evidence_required": [
-    "FT-016-AC-004 RED: no browser shell currently resolves session identity and authorized Plants while backend auth remains decisive; GREEN: Boss/Engineer shell paths match backend allow/deny outcomes and discard state on auth/Plant change; decisive comparison: browser route/request transcript and authoritative backend results; artifact: role-aware shell evidence under .tasks/TASK-081-T3-FT-016-W2/.",
-    "FT-016-AC-011 / REQ-020 RED: no server-only browser transport exists; GREEN: fixed-loopback loads/actions forward only the allowed cookie/headers and expose no configured token, raw cookie, auth header, backend origin, provider credential, or raw error in page data, logs, errors, or capture inputs; decisive comparison: transport source inspection plus browser/server transcript and corpus scan; artifact: transport-privacy evidence under .tasks/TASK-081-T3-FT-016-W2/."
-  ],
-  "purpose": "Establish the one security-sensitive PWA transport and navigation boundary reused by every provider-specific surface.",
-  "success_outcome": "The SvelteKit server loads and actions call only the fixed loopback backend, keep cookies/tokens/backend origin out of page data, and render role/Plant navigation that never substitutes for backend authorization.",
-  "anti_goals": [
-    "Do not add a browser-selected target origin, generic external proxy, CORS/LAN mode, token JSON, or client-side authorization authority.",
-    "Do not implement provider-specific Plant/Admin product surfaces beyond the reusable shell."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "backend session, ActorContext, Plant permission, or lifecycle authority",
-      "browser-visible secrets, raw cookies, auth headers, or backend origin",
-      "generic proxy, CORS, LAN, or hosted deployment",
-      "provider-specific domain mutations"
-    ],
-    "stop_conditions": [
-      "The shell cannot preserve backend authorization without duplicating it in the frontend.",
-      "The transport requires exposing tokens/origin or accepting an arbitrary proxy target.",
-      "A shared/global session or deployment decision is missing."
-    ]
+ "id": "TASK-081-T3-FT-016-W2",
+ "title": "Build the authorized session and Plant workspace shell",
+ "status": "planned",
+ "wave": "W2",
+ "feature": "FT-016",
+ "reqs": [
+  "REQ-003",
+  "REQ-004",
+  "REQ-020",
+  "REQ-021"
+ ],
+ "depends_on": [
+  "TASK-009-T3-FT-001-W2",
+  "TASK-014-T3-FT-002-W3",
+  "TASK-063-T3-FT-015-W1",
+  "TASK-064-T3-FT-015-W1",
+  "TASK-080-T2-FT-016-W1"
+ ],
+ "touched_files": [
+  "frontend/src/lib/server/backend.ts",
+  "frontend/src/lib/session/",
+  "frontend/src/routes/+layout.server.ts",
+  "frontend/src/routes/+layout.svelte",
+  "frontend/src/routes/login/+page.server.ts",
+  "frontend/src/routes/login/+page.svelte",
+  "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+  "frontend/src/routes/plants/[plant_id]/+page.svelte",
+  "frontend/tests/e2e/auth-shell.spec.ts"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "auth_shell_browser",
+   "command": "cd frontend && npm run test:e2e -- tests/e2e/auth-shell.spec.ts",
+   "required": true
   },
-  "source_artifacts": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-004",
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-011",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  {
+   "name": "frontend_check",
+   "command": "cd frontend && npm run check",
+   "required": true
+  },
+  {
+   "name": "frontend_build",
+   "command": "cd frontend && npm run build",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "Independent browser and source verification covers login/logout, Account and Plant changes, role navigation, denied/revoked/disabled/archived states, cookie forwarding, safe errors, and server-only import isolation."
+ ],
+ "docs": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/contracts/auth/session-http.md",
+  ".memory-bank/contracts/farm/plant-management-http.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "evidence_required": [
+  "FT-016-AC-004 RED: no browser shell currently resolves session identity and authorized Plants while backend auth remains decisive; GREEN: Boss/Engineer shell paths match backend allow/deny outcomes and discard state on auth/Plant change; decisive comparison: browser route/request transcript and authoritative backend results; artifact: role-aware shell evidence under .tasks/TASK-081-T3-FT-016-W2/.",
+  "FT-016-AC-011 / REQ-020 RED: no server-only browser transport exists; GREEN: fixed-loopback loads/actions forward only the allowed cookie/headers and expose no configured token, raw cookie, auth header, backend origin, provider credential, or raw error in page data, logs, errors, or capture inputs; decisive comparison: transport source inspection plus browser/server transcript and corpus scan; artifact: transport-privacy evidence under .tasks/TASK-081-T3-FT-016-W2/."
+ ],
+ "purpose": "Establish the one security-sensitive PWA transport and navigation boundary reused by every provider-specific surface.",
+ "success_outcome": "The SvelteKit server loads and actions call only the fixed loopback backend, keep cookies/tokens/backend origin out of page data, and render role/Plant navigation that never substitutes for backend authorization.",
+ "anti_goals": [
+  "Do not add a browser-selected target origin, generic external proxy, CORS/LAN mode, token JSON, or client-side authorization authority.",
+  "Do not implement provider-specific Plant/Admin product surfaces beyond the reusable shell."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "backend session, ActorContext, Plant permission, or lifecycle authority",
+   "browser-visible secrets, raw cookies, auth headers, or backend origin",
+   "generic proxy, CORS, LAN, or hosted deployment",
+   "provider-specific domain mutations"
   ],
-  "normative_inputs": [
-    ".memory-bank/contracts/operator-pwa.md#authorized-session-and-plant-shell",
-    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
-    ".memory-bank/contracts/auth/session-http.md",
-    ".memory-bank/contracts/auth/session-security.md",
-    ".memory-bank/contracts/farm/plant-management-http.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
-  ],
-  "constraints": [
-    "Use SvelteKit server load for initial data and server actions for forms; private transport code stays server-only.",
-    "Protected responses remain no-store and errors remain stable safe backend results."
-  ],
-  "invariants": [
-    "Frontend visibility never grants Farm/Plant authority.",
-    "Logout, Account/auth change, and invalid session discard all transient selected-Plant and prompt state.",
-    "Backend ActorContext and Plant permission results remain authoritative."
-  ],
-  "verification_targets": [
-    "FT-016-AC-004: authorized, unauthorized, revoked, disabled, and archived browser results agree with backend outcomes.",
-    "FT-016-AC-011 / REQ-020: fixed-loopback server-only forwarding, no-store handling, and configured auth/secret corpus absence from browser-visible transport state.",
-    "T3 transport harm proof uses isolated Accounts/browser contexts and confirms safe rerun leaves no secret or unauthorized state residue."
+  "stop_conditions": [
+   "The shell cannot preserve backend authorization without duplicating it in the frontend.",
+   "The transport requires exposing tokens/origin or accepting an arbitrary proxy target.",
+   "A shared/global session or deployment decision is missing."
   ]
+ },
+ "source_artifacts": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-004",
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-011",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/operator-pwa.md#authorized-session-and-plant-shell",
+  ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+  ".memory-bank/contracts/auth/session-http.md",
+  ".memory-bank/contracts/auth/session-security.md",
+  ".memory-bank/contracts/farm/plant-management-http.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
+ ],
+ "constraints": [
+  "Use SvelteKit server load for initial data and server actions for forms; private transport code stays server-only.",
+  "Protected responses remain no-store and errors remain stable safe backend results."
+ ],
+ "invariants": [
+  "Frontend visibility never grants Farm/Plant authority.",
+  "Logout, Account/auth change, and invalid session discard all transient selected-Plant and prompt state.",
+  "Backend ActorContext and Plant permission results remain authoritative."
+ ],
+ "verification_targets": [
+  "FT-016-AC-004: authorized, unauthorized, revoked, disabled, and archived browser results agree with backend outcomes.",
+  "FT-016-AC-011 / REQ-020: fixed-loopback server-only forwarding, no-store handling, and configured auth/secret corpus absence from browser-visible transport state.",
+  "T3 transport harm proof uses isolated Accounts/browser contexts and confirms safe rerun leaves no secret or unauthorized state residue."
+ ]
 }

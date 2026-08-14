@@ -80,6 +80,7 @@
     ".memory-bank/tasks/plans/IMPL-FT-016.md"
   ],
   "normative_inputs": [
+    ".memory-bank/contracts/operator-pwa.md",
     ".memory-bank/contracts/operator-pwa.md#storage-prompt-consumer",
     ".memory-bank/contracts/photo-intake-http.md#storage-status-behavior",
     ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-006",

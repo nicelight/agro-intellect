@@ -1,87 +1,117 @@
 {
-  "id": "TASK-062-T3-FT-015-W1",
-  "title": "Enforce immutable local-only runtime configuration",
-  "status": "planned",
-  "wave": "W1",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0"
-  ],
-  "touched_files": [
-    "backend/app/config.py",
-    ".env.example",
-    "tests/backend/local_privacy/test_runtime_policy.py",
-    "tests/backend/test_foundation_bootstrap_contract.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "local_only_policy",
-      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_policy.py tests/backend/test_foundation_bootstrap_contract.py -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent verification proves only literal local_only starts, representative future/server statuses fail before app startup, and safe failure output contains no rejected secret/config value."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/domains/foundation-data-substrate.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-001 RED: AppSettings currently accepts an arbitrary SYNC_STATUS such as server_verified; GREEN: only literal local_only validates and representative server/upload values fail before create_app; decisive comparison: settings/app construction result and safe error text; artifact: focused pytest transcript under .tasks/TASK-062-T3-FT-015-W1/."
-  ],
-  "purpose": "Turn the documented local_only invariant into fail-closed executable configuration so no MVP startup can silently accept a future server/upload sync state.",
-  "success_outcome": "AppSettings accepts the default or explicit literal local_only and rejects every other sync status before application startup without leaking the rejected value; existing local runtime roots and Foundation smoke behavior remain compatible.",
-  "anti_goals": [
-    "Do not add a sync lifecycle, server target, upload state, migration, API, frontend, or remote I/O.",
-    "Do not change local runtime roots or Foundation health/readiness behavior."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-001",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md",
-    ".memory-bank/requirements.md#req-list"
-  ],
-  "normative_inputs": [
-    ".memory-bank/domains/foundation-data-substrate.md#rules",
-    ".memory-bank/invariants.md#must",
-    ".memory-bank/testing/local-privacy-storage.md#runtime-policy-matrix",
-    ".memory-bank/workflows/tier-policy.md#claim-linked-red--green-for-t2t3"
-  ],
-  "constraints": [
-    "Use the smallest settings-level literal validation; no enum/lifecycle abstraction beyond the one accepted value.",
-    "Preserve AppSettings test injection and redacted_for_log behavior."
-  ],
-  "invariants": [
-    "MVP sync authority is always local_only.",
-    "Invalid configuration fails before product routes can serve."
-  ],
-  "verification_targets": [
-    "FT-015-AC-001: focused settings/app tests compare arbitrary-status pre-RED with literal-only GREEN and prove no sync mutation surface.",
-    "Foundation bootstrap/settings regression stays green."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Remote/server sync, upload orchestration, database schema, PWA/frontend, provider configuration, or historical task evidence."
-    ],
-    "stop_conditions": [
-      "Rejecting non-local_only requires a new product lifecycle or changes an existing public response.",
-      "The supported Foundation start/settings injection path cannot be preserved."
-    ]
+ "id": "TASK-062-T3-FT-015-W1",
+ "title": "Enforce immutable local-only runtime configuration",
+ "status": "done",
+ "wave": "W1",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0"
+ ],
+ "touched_files": [
+  "backend/app/config.py",
+  ".env.example",
+  "tests/backend/local_privacy/test_runtime_policy.py",
+  "tests/backend/test_foundation_bootstrap_contract.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "local_only_policy",
+   "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_policy.py tests/backend/test_foundation_bootstrap_contract.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent verification proves only literal local_only starts, representative future/server statuses fail before app startup, and safe failure output contains no rejected secret/config value.",
+  {
+   "stage": "verify",
+   "mode": "scheduler",
+   "verdict": "VERDICT: PASS",
+   "verified_at": "2026-08-14",
+   "evidence": [
+    ".protocols/TASK-062-T3-FT-015-W1/verification.md",
+    ".tasks/TASK-062-T3-FT-015-W1/verify_probe.py",
+    ".tasks/TASK-062-T3-FT-015-W1/red-ft015-ac001.txt",
+    ".tasks/TASK-062-T3-FT-015-W1/green-ft015-ac001.txt"
+   ],
+   "commands": [
+    ".venv/bin/python -m pytest tests/backend/local_privacy/test_runtime_policy.py tests/backend/test_foundation_bootstrap_contract.py -q",
+    ".venv/bin/python -m pytest tests -m \"not real_model\" -q",
+    "node scripts/mb-lint.mjs",
+    "git diff --check",
+    ".venv/bin/python /tmp/opencode/verify-062-probe.py"
+   ],
+   "summary": "Independent verification PASS. Fresh verifier-owned reruns: local_only_policy gate 25 passed (EXIT=0), full deterministic suite 776 passed (EXIT=0), mb-lint passed (229 files), git diff --check EXIT=0. New verifier probe: literal local_only accepted default/explicit kwargs/from_env (4/4); server_verified/upload_pending/upload_complete/synced plus malicious EVIL_VALUE_3f9a2c, 'local_only;rm -rf /', empty string rejected via kwargs and from_env (14/14) with rejected value never in str(exc); pydantic 2.13.4 semantics empirically confirmed (RuntimeError propagates unwrapped with static message; ValueError would be wrapped into ValidationError leaking input_value); fail-before-startup proven via main.py module-level create_app resolving from_env (settings construction precedes routes); frozen model and redacted_for_log unchanged. Honest claim-linked RED (8 violations, EXIT=1) then GREEN (EXIT=0) with unchanged probe. Production diff minimal: backend/app/config.py only (+10/-1), new test file, bootstrap contract and .env.example unchanged (SYNC_STATUS=local_only already documented); no sync/server/upload/migration/API/frontend/remote-I/O surface. No findings.",
+   "recommended_next_action": "scheduler: per-task /red-verify TASK-062-T3-FT-015-W1 (T3); do not close/fail/block"
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-062-T3-FT-015-W1 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probes: hostile/coerced/env-injected values all rejected via kwargs+from_env, value never in str/repr/traceback; subprocess import fails before routes; no model_construct/parse bypass; all script paths use from_env (same validator); no surface creep (config.py +10/-1 + new test); invariants and Constitution fit; no admitted findings.",
+   "evidence": ".protocols/TASK-062-T3-FT-015-W1/red-verification.md, .tasks/TASK-062-T3-FT-015-W1/TASK-062-T3-FT-015-W1-S-RED-VERIFY-final-report-docs-01.md"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/domains/foundation-data-substrate.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-001 RED: AppSettings currently accepts an arbitrary SYNC_STATUS such as server_verified; GREEN: only literal local_only validates and representative server/upload values fail before create_app; decisive comparison: settings/app construction result and safe error text; artifact: focused pytest transcript under .tasks/TASK-062-T3-FT-015-W1/."
+ ],
+ "purpose": "Turn the documented local_only invariant into fail-closed executable configuration so no MVP startup can silently accept a future server/upload sync state.",
+ "success_outcome": "AppSettings accepts the default or explicit literal local_only and rejects every other sync status before application startup without leaking the rejected value; existing local runtime roots and Foundation smoke behavior remain compatible.",
+ "anti_goals": [
+  "Do not add a sync lifecycle, server target, upload state, migration, API, frontend, or remote I/O.",
+  "Do not change local runtime roots or Foundation health/readiness behavior."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-001",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md",
+  ".memory-bank/requirements.md#req-list"
+ ],
+ "normative_inputs": [
+  ".memory-bank/domains/foundation-data-substrate.md#rules",
+  ".memory-bank/invariants.md#must",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/testing/local-privacy-storage.md#runtime-policy-matrix",
+  ".memory-bank/workflows/tier-policy.md#claim-linked-red--green-for-t2t3"
+ ],
+ "constraints": [
+  "Use the smallest settings-level literal validation; no enum/lifecycle abstraction beyond the one accepted value.",
+  "Preserve AppSettings test injection and redacted_for_log behavior."
+ ],
+ "invariants": [
+  "MVP sync authority is always local_only.",
+  "Invalid configuration fails before product routes can serve."
+ ],
+ "verification_targets": [
+  "FT-015-AC-001: focused settings/app tests compare arbitrary-status pre-RED with literal-only GREEN and prove no sync mutation surface.",
+  "Foundation bootstrap/settings regression stays green."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Remote/server sync, upload orchestration, database schema, PWA/frontend, provider configuration, or historical task evidence."
+  ],
+  "stop_conditions": [
+   "Rejecting non-local_only requires a new product lifecycle or changes an existing public response.",
+   "The supported Foundation start/settings injection path cannot be preserved."
+  ]
+ }
 }

@@ -1,93 +1,94 @@
 {
-  "id": "TASK-073-T3-FT-015-W2",
-  "title": "Close Vision Observation context redaction",
-  "status": "planned",
-  "wave": "W2",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0",
-    "TASK-034-T3-FT-009-W1",
-    "TASK-064-T3-FT-015-W1"
-  ],
-  "touched_files": [
-    "backend/app/vision_observation/contracts.py",
-    "backend/app/vision_observation/service.py",
-    "tests/backend/vision_observation/test_service.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "vision_context_redaction",
-      "command": ".venv/bin/python -m pytest tests/backend/vision_observation -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent adversarial verification injects the configured corpus and forbidden context classes through Vision request assembly and the provider/media spy, proving exact safe payload/media identity, zero forbidden outbound values, and no unsafe I/O or authority widening."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/contracts/vision-observation-runtime.md",
-    ".memory-bank/contracts/agent-model-provider-profiles.md",
-    ".memory-bank/testing/vision-observation-plant-state.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-013 RED/GREEN: inject configured secrets plus raw ActorContext/cookie/header/UI/provider-history sentinels through Vision request assembly and the provider/media spy; RED is any forbidden outbound occurrence or missing decisive coverage, GREEN is zero forbidden values, exact accepted-photo bytes/content-type/ref/hash identity, zero I/O on rejected unsafe input, allowed-field parity, and unchanged source values; decisive comparison: captured request/media/call count and source values; artifact: focused transcript under .tasks/TASK-073-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
-  ],
-  "purpose": "Close the Vision-owned provider request and verified-media privacy result independently from generic and other competence requests.",
-  "success_outcome": "VisionProviderRequestV1 and its verified media handoff contain only the registered authorized values and exact accepted-photo media identity; secrets/auth/UI/provider-history values are sanitized or rejected before provider I/O.",
-  "anti_goals": [
-    "Do not change Vision result semantics, media integrity authority, Plant-state handoff, provider selection, or real-endpoint scope.",
-    "Do not adopt generic Agent Runtime or another competence request claim."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-013",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/contracts/vision-observation-runtime.md#input-shape",
-    ".memory-bank/contracts/vision-observation-runtime.md#assembly-and-file-integrity",
-    ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
-    ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
-    ".memory-bank/testing/vision-observation-plant-state.md#current-code-phase-executor-evidence",
-    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
-  ],
-  "constraints": [
-    "Keep the strict Vision request and sole verified in-memory media exception; no adjacent metadata.",
-    "Use a test-only spy and current local artifacts; no real endpoint, credentials, network call, or expanded permission."
-  ],
-  "invariants": [
-    "Forbidden values never cross the Vision provider boundary.",
-    "Media bytes remain bound to the authorized catalog ref and hash.",
-    "Vision output gains no Plant-state, Safety, Task, Bus/UI, or actuation authority."
-  ],
-  "verification_targets": [
-    "FT-015-AC-013: Vision request/media RED/GREEN or preserved pre-GREEN with corpus absence, exact media identity, zero unsafe I/O, allowed-field parity, source-value integrity, and unbound-production regression."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Generic or other competence requests, provider/model/credential/egress selection, public API, Plant-state semantics, frontend, remote sync, or live network."
-    ],
-    "stop_conditions": [
-      "Safety requires changing the accepted Vision request/media contract.",
-      "Any probe would require real credentials, network access, or expanded permission."
-    ]
+ "id": "TASK-073-T3-FT-015-W2",
+ "title": "Close Vision Observation context redaction",
+ "status": "planned",
+ "wave": "W2",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0",
+  "TASK-034-T3-FT-009-W1",
+  "TASK-064-T3-FT-015-W1"
+ ],
+ "touched_files": [
+  "backend/app/vision_observation/contracts.py",
+  "backend/app/vision_observation/service.py",
+  "tests/backend/vision_observation/test_service.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "vision_context_redaction",
+   "command": ".venv/bin/python -m pytest tests/backend/vision_observation -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through Vision request assembly and the provider/media spy, proving exact safe payload/media identity, zero forbidden outbound values, and no unsafe I/O or authority widening."
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/vision-observation-runtime.md",
+  ".memory-bank/contracts/agent-model-provider-profiles.md",
+  ".memory-bank/testing/vision-observation-plant-state.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-013 RED: any forbidden value reaches Vision request/media output or decisive coverage is missing; GREEN: zero forbidden values, exact accepted-photo bytes/content-type/ref/hash identity, zero I/O on rejected unsafe input, allowed-field parity, and unchanged source values; decisive comparison: captured request/media/call count and source values; artifact: focused transcript under .tasks/TASK-073-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+ ],
+ "purpose": "Close the Vision-owned provider request and verified-media privacy result independently from generic and other competence requests.",
+ "success_outcome": "VisionProviderRequestV1 and its verified media handoff contain only the registered authorized values and exact accepted-photo media identity; secrets/auth/UI/provider-history values are sanitized or rejected before provider I/O.",
+ "anti_goals": [
+  "Do not change Vision result semantics, media integrity authority, Plant-state handoff, provider selection, or real-endpoint scope.",
+  "Do not adopt generic Agent Runtime or another competence request claim."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-013",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/contracts/vision-observation-runtime.md",
+  ".memory-bank/contracts/vision-observation-runtime.md#input-shape",
+  ".memory-bank/contracts/vision-observation-runtime.md#assembly-and-file-integrity",
+  ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
+  ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
+  ".memory-bank/testing/vision-observation-plant-state.md#current-code-phase-executor-evidence",
+  ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+ ],
+ "constraints": [
+  "Keep the strict Vision request and sole verified in-memory media exception; no adjacent metadata.",
+  "Use a test-only spy and current local artifacts; no real endpoint, credentials, network call, or expanded permission."
+ ],
+ "invariants": [
+  "Forbidden values never cross the Vision provider boundary.",
+  "Media bytes remain bound to the authorized catalog ref and hash.",
+  "Vision output gains no Plant-state, Safety, Task, Bus/UI, or actuation authority."
+ ],
+ "verification_targets": [
+  "FT-015-AC-013: Vision request/media RED/GREEN or preserved pre-GREEN with corpus absence, exact media identity, zero unsafe I/O, allowed-field parity, source-value integrity, and unbound-production regression."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Generic or other competence requests, provider/model/credential/egress selection, public API, Plant-state semantics, frontend, remote sync, or live network."
+  ],
+  "stop_conditions": [
+   "Safety requires changing the accepted Vision request/media contract.",
+   "Any probe would require real credentials, network access, or expanded permission."
+  ]
+ }
 }

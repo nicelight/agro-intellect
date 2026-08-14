@@ -1,89 +1,106 @@
 {
-  "id": "TASK-067-T3-FT-015-W2",
-  "title": "Close photo-manifest secret redaction",
-  "status": "planned",
-  "wave": "W2",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0",
-    "TASK-021-T3-FT-005-W1",
-    "TASK-064-T3-FT-015-W1"
-  ],
-  "touched_files": [
-    "backend/app/photo_intake/storage.py",
-    "backend/app/photo_intake/service.py",
-    "tests/backend/local_privacy/test_manifest_redaction.py",
-    "tests/backend/photo_intake/test_ft005_storage.py",
-    "tests/backend/photo_intake/test_ft005_service.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "manifest_redaction",
-      "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_manifest_redaction.py tests/backend/photo_intake/test_ft005_storage.py tests/backend/photo_intake/test_ft005_service.py -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent security verification injects the shared corpus through actual manifest serialization, observes redaction/rejection before atomic write, proves safe failure cleanup, and confirms source values are unchanged."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/domains/photo-artifacts.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-007 RED/GREEN: inject the configured corpus through the actual manifest writer; RED is any raw secret written or lack of decisive pre-write rejection, GREEN is sanitized/blocked output before atomic rename with no accepted unsafe manifest and unchanged source credential; decisive comparison: parsed file/failure artifacts and source value; artifact: focused transcript under .tasks/TASK-067-T3-FT-015-W2/. Preserve exact pre-implementation GREEN if already satisfied."
-  ],
-  "purpose": "Make the accepted photo manifest an explicitly safe product output without changing Photo Catalog/artifact authority.",
-  "success_outcome": "Actual manifest serialization removes or rejects all configured secret/auth values before atomic persistence; sanitizer/write failure leaves no accepted unsafe manifest and existing cleanup/Photo Intake behavior remains intact.",
-  "anti_goals": [
-    "Do not change manifest schema, photo identity/layout, upload limits, catalog persistence, Timeline/Dataset behavior, or source credentials.",
-    "Do not adopt log/error or other output-owner ACs."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-007",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/domains/photo-artifacts.md#initial-capture-manifest-v1",
-    ".memory-bank/domains/photo-artifacts.md#acceptance-sequence",
-    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
-  ],
-  "constraints": [
-    "Apply sanitization before bytes reach the atomic writer; never clean up after acceptance as proof.",
-    "Preserve strict allowed manifest shape and existing rollback cleanup."
-  ],
-  "invariants": [
-    "Accepted manifests contain no forbidden corpus.",
-    "Redaction does not mutate authentication/provider source values or grant artifact/runtime authority."
-  ],
-  "verification_targets": [
-    "FT-015-AC-007: actual writer RED/GREEN or preserved pre-GREEN, safe failure/cleanup, parsed manifest corpus absence, and source integrity."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Manifest schema expansion, Photo Catalog migration, Timeline/history, Bus/UI, agent runtime, frontend, or sync."
-    ],
-    "stop_conditions": [
-      "Safety requires changing the accepted manifest schema/product fields.",
-      "The writer cannot fail safely without altering upload transaction semantics beyond this AC."
-    ]
+ "id": "TASK-067-T3-FT-015-W2",
+ "title": "Close photo-manifest secret redaction",
+ "status": "done",
+ "wave": "W2",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0",
+  "TASK-021-T3-FT-005-W1",
+  "TASK-064-T3-FT-015-W1"
+ ],
+ "touched_files": [
+  "backend/app/photo_intake/storage.py",
+  "backend/app/photo_intake/service.py",
+  "tests/backend/local_privacy/test_manifest_redaction.py",
+  "tests/backend/photo_intake/test_ft005_storage.py",
+  "tests/backend/photo_intake/test_ft005_service.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "manifest_redaction",
+   "command": ".venv/bin/python -m pytest tests/backend/local_privacy/test_manifest_redaction.py tests/backend/photo_intake/test_ft005_storage.py tests/backend/photo_intake/test_ft005_service.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-067-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Verifier probe 10/10: corpus absent from persisted manifest via actual write_manifest, 6 *** markers, source database_url unchanged, sanitizer failure -> storage error with no manifest/parent/temp/raw value, rollback cleanup intact; manifest_redaction 18 passed, full deterministic 939/0, mb-lint 0, diff_check 0; service.py not-editing decision legitimate (single writer seam); findings none.",
+   "evidence": ".protocols/TASK-067-T3-FT-015-W2/verification.md, .tasks/TASK-067-T3-FT-015-W2/verify_probe_transcript.txt"
+  },
+  "Independent security verification injects the shared corpus through actual manifest serialization, observes redaction/rejection before atomic write, proves safe failure cleanup, and confirms source values are unchanged.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-067-T3-FT-015-W2 (scheduler mode; operator-fixed restricted corpus)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probes: all corpus forms (whole env values, DSN/URL, key=value, Bearer, unicode, JSON-escaped, nested, non-string, secret-as-key) removed through actual writer before atomic write; safe failure no file/temp/raw; source unchanged; forbidden scope untouched. Q1 operator decision (KISS): RESTRICTED corpus reading (whole env values + URL/assignment/auth grammars per TASK-064; bare credential substrings out of scope; X-Request-ID user input, not secret source); no code repair authorized. semantic-pass under the fixed reading.",
+   "evidence": ".protocols/TASK-067-T3-FT-015-W2/red-verification.md, .tasks/TASK-067-T3-FT-015-W2/TASK-067-T3-FT-015-W2-S-RED-VERIFY-final-report-docs-01.md"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/domains/photo-artifacts.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-007 RED: a raw secret reaches the actual manifest writer or decisive pre-write rejection is absent; GREEN: sanitized/blocked output before atomic rename with no accepted unsafe manifest and unchanged source credential; decisive comparison: parsed file/failure artifacts and source value; artifact: focused transcript under .tasks/TASK-067-T3-FT-015-W2/. Preserve exact pre-implementation GREEN if already satisfied."
+ ],
+ "purpose": "Make the accepted photo manifest an explicitly safe product output without changing Photo Catalog/artifact authority.",
+ "success_outcome": "Actual manifest serialization removes or rejects all configured secret/auth values before atomic persistence; sanitizer/write failure leaves no accepted unsafe manifest and existing cleanup/Photo Intake behavior remains intact.",
+ "anti_goals": [
+  "Do not change manifest schema, photo identity/layout, upload limits, catalog persistence, Timeline/Dataset behavior, or source credentials.",
+  "Do not adopt log/error or other output-owner ACs."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-007",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/domains/photo-artifacts.md#initial-capture-manifest-v1",
+  ".memory-bank/domains/photo-artifacts.md#acceptance-sequence",
+  ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+ ],
+ "constraints": [
+  "Apply sanitization before bytes reach the atomic writer; never clean up after acceptance as proof.",
+  "Preserve strict allowed manifest shape and existing rollback cleanup."
+ ],
+ "invariants": [
+  "Accepted manifests contain no forbidden corpus.",
+  "Redaction does not mutate authentication/provider source values or grant artifact/runtime authority."
+ ],
+ "verification_targets": [
+  "FT-015-AC-007: actual writer RED/GREEN or preserved pre-GREEN, safe failure/cleanup, parsed manifest corpus absence, and source integrity."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Manifest schema expansion, Photo Catalog migration, Timeline/history, Bus/UI, agent runtime, frontend, or sync."
+  ],
+  "stop_conditions": [
+   "Safety requires changing the accepted manifest schema/product fields.",
+   "The writer cannot fail safely without altering upload transaction semantics beyond this AC."
+  ]
+ }
 }

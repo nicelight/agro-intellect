@@ -1,92 +1,93 @@
 {
-  "id": "TASK-078-T3-FT-015-W2",
-  "title": "Close Companion context redaction",
-  "status": "planned",
-  "wave": "W2",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0",
-    "TASK-043-T3-FT-013-W3",
-    "TASK-064-T3-FT-015-W1"
-  ],
-  "touched_files": [
-    "backend/app/companion_governance/runtime_contracts.py",
-    "backend/app/companion_governance/runtime.py",
-    "tests/backend/companion_governance/test_runtime.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "companion_context_redaction",
-      "command": ".venv/bin/python -m pytest tests/backend/companion_governance/test_runtime.py -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent adversarial verification injects the configured corpus and forbidden context classes through Companion request assembly and the provider spy, proving only the registered typed governance subset may cross, zero forbidden values leave, and governance/Safety/Task authority remains unchanged."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/contracts/companion-runtime.md",
-    ".memory-bank/contracts/agent-model-provider-profiles.md",
-    ".memory-bank/testing/companion-governance.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-018 RED/GREEN: inject configured secrets plus raw ActorContext/cookie/header/UI/provider-history/unregistered-governance sentinels through Companion request assembly and the provider spy; RED is any forbidden outbound occurrence or missing decisive coverage, GREEN is zero forbidden values, exact registered typed-governance parity, zero I/O on rejected unsafe input, and unchanged source values; decisive comparison: captured request/call count and source values; artifact: focused transcript under .tasks/TASK-078-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
-  ],
-  "purpose": "Close the Companion-owned provider request privacy result while retaining its one explicit typed, untrusted governance-input exception.",
-  "success_outcome": "CompanionProviderRequestV1 contains only registered authorized Plant and typed governance values, excludes secrets/auth/UI/provider-history and unregistered governance metadata before I/O, and grants no DecisionRecord, Plant-state, Safety, Task, or publication authority.",
-  "anti_goals": [
-    "Do not remove the accepted typed governance subset, widen it, change proposal/decision state, alter Safety/Task effects, select a provider, or add real-endpoint scope.",
-    "Do not adopt generic Agent Runtime or another competence request claim."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-018",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/contracts/companion-runtime.md#companionproviderrequestv1",
-    ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
-    ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
-    ".memory-bank/testing/companion-governance.md#current-code-phase-executor-integration",
-    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
-  ],
-  "constraints": [
-    "Preserve the exact registered typed governance subset as untrusted and non-authoritative.",
-    "Use a test-only spy; no real endpoint, credentials, network call, or expanded permission."
-  ],
-  "invariants": [
-    "Forbidden values never cross the Companion provider boundary.",
-    "Typed governance input grants no DecisionRecord, Plant-state, Task, Safety, publication, or actuation authority.",
-    "Production remains unbound and fail closed."
-  ],
-  "verification_targets": [
-    "FT-015-AC-018: Companion request RED/GREEN or preserved pre-GREEN with corpus absence, typed-governance parity, zero unsafe I/O, source-value integrity, and governance/Safety/Task regression."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Generic or other competence requests, provider/model/credential/egress selection, Companion lifecycle/effects or public API changes, frontend, remote sync, or live network."
-    ],
-    "stop_conditions": [
-      "Safety requires changing the accepted Companion request or governance-input decision.",
-      "Any probe would require real credentials, network access, or expanded permission."
-    ]
+ "id": "TASK-078-T3-FT-015-W2",
+ "title": "Close Companion context redaction",
+ "status": "planned",
+ "wave": "W2",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0",
+  "TASK-043-T3-FT-013-W3",
+  "TASK-064-T3-FT-015-W1"
+ ],
+ "touched_files": [
+  "backend/app/companion_governance/runtime_contracts.py",
+  "backend/app/companion_governance/runtime.py",
+  "tests/backend/companion_governance/test_runtime.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "companion_context_redaction",
+   "command": ".venv/bin/python -m pytest tests/backend/companion_governance/test_runtime.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through Companion request assembly and the provider spy, proving only the registered typed governance subset may cross, zero forbidden values leave, and governance/Safety/Task authority remains unchanged."
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/companion-runtime.md",
+  ".memory-bank/contracts/agent-model-provider-profiles.md",
+  ".memory-bank/testing/companion-governance.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-018 RED: any forbidden or unregistered governance value reaches Companion request output or decisive coverage is missing; GREEN: zero forbidden values, exact registered typed-governance parity, zero I/O on rejected unsafe input, and unchanged source values; decisive comparison: captured request/call count and source values; artifact: focused transcript under .tasks/TASK-078-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+ ],
+ "purpose": "Close the Companion-owned provider request privacy result while retaining its one explicit typed, untrusted governance-input exception.",
+ "success_outcome": "CompanionProviderRequestV1 contains only registered authorized Plant and typed governance values, excludes secrets/auth/UI/provider-history and unregistered governance metadata before I/O, and grants no DecisionRecord, Plant-state, Safety, Task, or publication authority.",
+ "anti_goals": [
+  "Do not remove the accepted typed governance subset, widen it, change proposal/decision state, alter Safety/Task effects, select a provider, or add real-endpoint scope.",
+  "Do not adopt generic Agent Runtime or another competence request claim."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-018",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/contracts/companion-runtime.md",
+  ".memory-bank/contracts/companion-runtime.md#companionproviderrequestv1",
+  ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
+  ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
+  ".memory-bank/testing/companion-governance.md#current-code-phase-executor-integration",
+  ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+ ],
+ "constraints": [
+  "Preserve the exact registered typed governance subset as untrusted and non-authoritative.",
+  "Use a test-only spy; no real endpoint, credentials, network call, or expanded permission."
+ ],
+ "invariants": [
+  "Forbidden values never cross the Companion provider boundary.",
+  "Typed governance input grants no DecisionRecord, Plant-state, Task, Safety, publication, or actuation authority.",
+  "Production remains unbound and fail closed."
+ ],
+ "verification_targets": [
+  "FT-015-AC-018: Companion request RED/GREEN or preserved pre-GREEN with corpus absence, typed-governance parity, zero unsafe I/O, source-value integrity, and governance/Safety/Task regression."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Generic or other competence requests, provider/model/credential/egress selection, Companion lifecycle/effects or public API changes, frontend, remote sync, or live network."
+  ],
+  "stop_conditions": [
+   "Safety requires changing the accepted Companion request or governance-input decision.",
+   "Any probe would require real credentials, network access, or expanded permission."
+  ]
+ }
 }

@@ -71,9 +71,12 @@ def append_timeline_event(
 
     timeline_event_id = uuid.uuid4()
     created_at = datetime.now(timezone.utc)
-    source_refs, source_redacted = _sanitize_json(event.source_refs)
-    payload_summary, payload_redacted = _sanitize_json(event.payload_summary)
-    actor_ref, actor_redacted = _sanitize_json(event.actor_ref or {})
+    try:
+        source_refs, source_redacted = _sanitize_json(event.source_refs)
+        payload_summary, payload_redacted = _sanitize_json(event.payload_summary)
+        actor_ref, actor_redacted = _sanitize_json(event.actor_ref or {})
+    except ValueError:
+        raise TimelineAppendError from None
     record = {
         "timeline_event_id": str(timeline_event_id),
         "created_at": created_at.isoformat(),

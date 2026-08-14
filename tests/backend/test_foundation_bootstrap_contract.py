@@ -9,6 +9,7 @@ from backend.app import AppSettings
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_SCRIPT = PROJECT_ROOT / "scripts" / "bootstrap-local.sh"
 ENV_EXAMPLE = PROJECT_ROOT / ".env.example"
+RUNBOOK = PROJECT_ROOT / ".memory-bank" / "runbooks" / "foundation-local-runtime.md"
 
 
 def test_settings_expose_local_runtime_roots_by_default():
@@ -87,3 +88,25 @@ def test_bootstrap_script_does_not_trace_or_print_env_contents():
 
     for fragment in forbidden_fragments:
         assert fragment not in text
+
+
+def test_runbook_launch_command_binds_loopback_only():
+    text = RUNBOOK.read_text(encoding="utf-8")
+
+    assert "--host 127.0.0.1 --port 8000" in text
+    assert "--host 0.0.0.0" not in text
+    assert "0.0.0.0" not in text
+
+
+def test_runbook_documents_loopback_only_exposure():
+    text = RUNBOOK.read_text(encoding="utf-8").lower()
+
+    assert "loopback-only" in text
+    assert "no lan mode" in text
+
+
+def test_bootstrap_script_configures_no_server_host():
+    text = BOOTSTRAP_SCRIPT.read_text(encoding="utf-8")
+
+    assert "--host" not in text
+    assert "0.0.0.0" not in text

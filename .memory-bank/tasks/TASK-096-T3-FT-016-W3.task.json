@@ -44,6 +44,7 @@
     ".memory-bank/tasks/plans/IMPL-FT-016.md"
   ],
   "normative_inputs": [
+    ".memory-bank/contracts/admin/boss-admin-http.md",
     ".memory-bank/contracts/admin/boss-admin-http.md#routes",
     ".memory-bank/contracts/admin/boss-admin-http.md#authorization-and-safety",
     ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",

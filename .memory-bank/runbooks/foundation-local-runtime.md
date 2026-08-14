@@ -43,6 +43,10 @@ Smoke endpoints:
 - `GET /health`
 - `GET /ready`
 
+Exposure: the supported launch binds `127.0.0.1` only (loopback-only). The MVP
+exposes no LAN mode, host override, CORS configuration, or bearer-LAN transport;
+any future LAN capability requires an explicit design task before it is added.
+
 Dry-run checks:
 
 ```bash

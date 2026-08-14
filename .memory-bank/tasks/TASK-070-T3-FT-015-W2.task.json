@@ -1,92 +1,93 @@
 {
-  "id": "TASK-070-T3-FT-015-W2",
-  "title": "Close generic Agent Runtime context redaction",
-  "status": "planned",
-  "wave": "W2",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0",
-    "TASK-045-T3-FT-007-W3",
-    "TASK-064-T3-FT-015-W1"
-  ],
-  "touched_files": [
-    "backend/app/agent_runtime/contracts.py",
-    "backend/app/agent_runtime/service.py",
-    "tests/backend/agent_runtime/test_ft007_runtime.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "generic_agent_context_redaction",
-      "command": ".venv/bin/python -m pytest tests/backend/agent_runtime/test_ft007_runtime.py -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent adversarial verification injects the configured corpus and forbidden context classes through the generic Agent Runtime assembler and provider spy, proves zero outbound leakage or unsafe I/O, and preserves the exact ProviderRequestV1 contract and unbound production behavior."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/contracts/agent-runtime-adapter.md",
-    ".memory-bank/contracts/agent-model-provider-profiles.md",
-    ".memory-bank/testing/agent-runtime.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-010 RED/GREEN: inject configured secrets plus raw ActorContext/cookie/header/UI/provider-history sentinels through the generic ProviderRequestV1 assembler and provider spy; RED is any outbound occurrence or missing decisive coverage, GREEN is zero forbidden outbound values, zero I/O on rejected unsafe input, exact allowed-field parity, and unchanged source values; decisive comparison: captured request/call count and source values; artifact: focused transcript under .tasks/TASK-070-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
-  ],
-  "purpose": "Close the generic Agent Runtime outbound privacy result without adopting independently completable competence request owners.",
-  "success_outcome": "Generic ProviderRequestV1 excludes secrets/auth material, raw ActorContext, cookies, headers, UI content, provider history, and unregistered metadata before I/O while allowed typed Plant evidence and unbound fail-closed production remain intact.",
-  "anti_goals": [
-    "Do not select a provider/model/endpoint, add credentials/egress, or change competence-specific request/result schemas.",
-    "Do not change MessageEnvelope, Safety, Bus/UI, Task, Plant-state, governance, dataset, or actuation authority."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-010",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/contracts/agent-runtime-adapter.md#invocation-input",
-    ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
-    ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
-    ".memory-bank/testing/agent-runtime.md#integration-matrix",
-    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
-  ],
-  "constraints": [
-    "Use the existing strict generic assembler and provider boundary; do not create a parallel context layer.",
-    "Use only test spies; no external endpoint, credential, network call, or expanded permission."
-  ],
-  "invariants": [
-    "Forbidden auth/secret/UI/provider-history values never cross the generic provider boundary.",
-    "No request or model output gains domain, Safety, Task, governance, publication, dataset, or actuation authority.",
-    "Production remains unbound and has no fake/canned fallback."
-  ],
-  "verification_targets": [
-    "FT-015-AC-010: generic ProviderRequestV1 RED/GREEN or preserved pre-GREEN with corpus absence, zero unsafe I/O, allowed-field parity, source-value integrity, and unbound production regression."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Competence-specific request owners, provider/model/endpoint/credential/egress selection, public API, database migrations, authority/lifecycle changes, frontend, or remote sync."
-    ],
-    "stop_conditions": [
-      "Closing leakage requires changing a competence-specific or shared global request contract.",
-      "Any probe would require real credentials, network access, or expanded permission."
-    ]
+ "id": "TASK-070-T3-FT-015-W2",
+ "title": "Close generic Agent Runtime context redaction",
+ "status": "planned",
+ "wave": "W2",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0",
+  "TASK-045-T3-FT-007-W3",
+  "TASK-064-T3-FT-015-W1"
+ ],
+ "touched_files": [
+  "backend/app/agent_runtime/contracts.py",
+  "backend/app/agent_runtime/service.py",
+  "tests/backend/agent_runtime/test_ft007_runtime.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "generic_agent_context_redaction",
+   "command": ".venv/bin/python -m pytest tests/backend/agent_runtime/test_ft007_runtime.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through the generic Agent Runtime assembler and provider spy, proves zero outbound leakage or unsafe I/O, and preserves the exact ProviderRequestV1 contract and unbound production behavior."
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/agent-runtime-adapter.md",
+  ".memory-bank/contracts/agent-model-provider-profiles.md",
+  ".memory-bank/testing/agent-runtime.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-010 RED: any forbidden value reaches the generic ProviderRequestV1 or decisive coverage is missing; GREEN: zero forbidden outbound values, zero I/O on rejected unsafe input, exact allowed-field parity, and unchanged source values; decisive comparison: captured request/call count and source values; artifact: focused transcript under .tasks/TASK-070-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+ ],
+ "purpose": "Close the generic Agent Runtime outbound privacy result without adopting independently completable competence request owners.",
+ "success_outcome": "Generic ProviderRequestV1 excludes secrets/auth material, raw ActorContext, cookies, headers, UI content, provider history, and unregistered metadata before I/O while allowed typed Plant evidence and unbound fail-closed production remain intact.",
+ "anti_goals": [
+  "Do not select a provider/model/endpoint, add credentials/egress, or change competence-specific request/result schemas.",
+  "Do not change MessageEnvelope, Safety, Bus/UI, Task, Plant-state, governance, dataset, or actuation authority."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-010",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/contracts/agent-runtime-adapter.md",
+  ".memory-bank/contracts/agent-runtime-adapter.md#invocation-input",
+  ".memory-bank/contracts/agent-model-provider-profiles.md#typed-egress",
+  ".memory-bank/contracts/boundary-map.md#registered-runtime-composition",
+  ".memory-bank/testing/agent-runtime.md#integration-matrix",
+  ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+ ],
+ "constraints": [
+  "Use the existing strict generic assembler and provider boundary; do not create a parallel context layer.",
+  "Use only test spies; no external endpoint, credential, network call, or expanded permission."
+ ],
+ "invariants": [
+  "Forbidden auth/secret/UI/provider-history values never cross the generic provider boundary.",
+  "No request or model output gains domain, Safety, Task, governance, publication, dataset, or actuation authority.",
+  "Production remains unbound and has no fake/canned fallback."
+ ],
+ "verification_targets": [
+  "FT-015-AC-010: generic ProviderRequestV1 RED/GREEN or preserved pre-GREEN with corpus absence, zero unsafe I/O, allowed-field parity, source-value integrity, and unbound production regression."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Competence-specific request owners, provider/model/endpoint/credential/egress selection, public API, database migrations, authority/lifecycle changes, frontend, or remote sync."
+  ],
+  "stop_conditions": [
+   "Closing leakage requires changing a competence-specific or shared global request contract.",
+   "Any probe would require real credentials, network access, or expanded permission."
+  ]
+ }
 }

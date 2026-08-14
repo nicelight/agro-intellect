@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 import uuid
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from ..access_admin.models import Account, FarmMembership, Plant, PlantAccessGrant
@@ -158,6 +158,13 @@ class PhotoIntakeRepository:
                 PhotoCatalogItem.farm_id == farm_id,
                 PhotoCatalogItem.plant_id == plant_id,
                 PhotoCatalogItem.photo_id == photo_id,
+            )
+        )
+
+    def sum_farm_photo_bytes(self, *, farm_id: uuid.UUID) -> int:
+        return self.session.scalar(
+            select(func.coalesce(func.sum(PhotoCatalogItem.size_bytes), 0)).where(
+                PhotoCatalogItem.farm_id == farm_id
             )
         )
 

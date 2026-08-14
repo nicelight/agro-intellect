@@ -14,10 +14,9 @@ _SENSITIVE_KEY_RE = re.compile(
     r"private[_-]?key)(?:$|[_-])",
     re.IGNORECASE,
 )
-_URL_WITH_CREDS_RE = re.compile(
-    r"(?P<scheme>\b[a-z][a-z0-9+.-]*://)(?P<userinfo>[^@\s/]+)@",
-    re.IGNORECASE,
-)
+_URL_SCHEME_RE = re.compile(r"(?<!\w)[\w\+]+://")
+_CLEAN_USERINFO_RE = re.compile(r"[^@\s/]+")
+_USERINFO_AT_RE = re.compile(r"[^:/]*:[^@]*@")
 _AUTH_HEADER_RE = re.compile(
     r"\b(?P<key>Authorization\s*[:=]\s*)(?:Bearer|Basic)\s+[^\s,;]+",
     re.IGNORECASE,
@@ -38,21 +37,70 @@ _ASSIGNMENT_RE = re.compile(
 )
 
 
+_RENDER_FAILURE = "redaction failed: value cannot be rendered as text"
+
+
+def _render_text(value: Any) -> str:
+    try:
+        return str(value)
+    except Exception:
+        raise ValueError(_RENDER_FAILURE) from None
+
+
 def is_sensitive_key(key: str) -> bool:
     return bool(_SENSITIVE_KEY_RE.search(key.strip()))
 
 
+def _host_qualified_at(text: str, start: int, window_end: int) -> int:
+    """Return the first '@' whose following host region contains no further '@'.
+
+    Mirrors the app's own URL parser (username/password end at the separator
+    '@' whose tail runs to the path delimiter), while treating any earlier
+    '@' as part of a hostile userinfo span.
+    """
+    pos = text.find("@", start, window_end)
+    while pos >= 0:
+        host_end = len(text)
+        for delim in ("/", "?", "#"):
+            idx = text.find(delim, pos + 1, window_end)
+            if idx >= 0 and idx < host_end:
+                host_end = idx
+        if text.find("@", pos + 1, host_end) < 0:
+            return pos
+        pos = text.find("@", pos + 1, window_end)
+    return -1
+
+
+def _mask_userinfo(userinfo: str) -> str:
+    if ":" not in userinfo:
+        return REDACTION
+    username, _, password = userinfo.partition(":")
+    if _CLEAN_USERINFO_RE.fullmatch(password) and _CLEAN_USERINFO_RE.fullmatch(username):
+        return f"{username}:{REDACTION}"
+    return REDACTION
+
+
 def redact_url_credentials(value: Any) -> str:
-    text = str(value)
-
-    def replace(match: re.Match[str]) -> str:
-        userinfo = match.group("userinfo")
-        if ":" in userinfo:
-            username = userinfo.split(":", 1)[0]
-            return f"{match.group('scheme')}{username}:{REDACTION}@"
-        return f"{match.group('scheme')}{REDACTION}@"
-
-    return _URL_WITH_CREDS_RE.sub(replace, text)
+    text = _render_text(value)
+    parts: list[str] = []
+    cursor = 0
+    for scheme in _URL_SCHEME_RE.finditer(text):
+        if scheme.start() < cursor:
+            continue
+        scheme_end = scheme.end()
+        if _USERINFO_AT_RE.match(text, scheme_end) is None:
+            continue
+        sep = _host_qualified_at(text, scheme_end, len(text))
+        if sep < 0:
+            continue
+        userinfo = text[scheme_end:sep]
+        parts.append(text[cursor:scheme.start()])
+        parts.append(scheme.group(0))
+        parts.append(_mask_userinfo(userinfo))
+        parts.append("@")
+        cursor = sep + 1
+    parts.append(text[cursor:])
+    return "".join(parts)
 
 
 def _iter_secret_values(
@@ -72,7 +120,7 @@ def _iter_secret_values(
 
 
 def _redactable_value(value: Any) -> bool:
-    text = str(value)
+    text = _render_text(value)
     return bool(text) and text != REDACTION and len(text) >= 3
 
 
@@ -104,7 +152,7 @@ def _redact_assignment(match: re.Match[str]) -> str:
 
 def redact_mapping(mapping: Mapping[str, Any]) -> dict[str, Any]:
     redacted: dict[str, Any] = {}
-    string_mapping = {key: str(value) for key, value in mapping.items()}
+    string_mapping = {key: _render_text(value) for key, value in mapping.items()}
     for key, value in mapping.items():
         if is_sensitive_key(key):
             redacted[key] = REDACTION if _redactable_value(value) else value

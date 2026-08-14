@@ -1,85 +1,95 @@
 {
-  "id": "TASK-068-T3-FT-015-W2",
-  "title": "Close Timeline append secret redaction",
-  "status": "planned",
-  "wave": "W2",
-  "feature": "FT-015",
-  "reqs": [
-    "REQ-020"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0",
-    "TASK-019-T3-FT-004-W1",
-    "TASK-064-T3-FT-015-W1"
-  ],
-  "touched_files": [
-    "backend/app/timeline/writer.py",
-    "tests/backend/plant_operations/test_ft004_timeline_writer.py"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "timeline_redaction",
-      "command": ".venv/bin/python -m pytest tests/backend/plant_operations/test_ft004_timeline_writer.py -q",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent security verification exercises the actual Timeline append writer with the configured corpus, observes no raw value, preserves the registered event shape and refs, and confirms safe append failure leaks nothing."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/contracts/timeline-event.md",
-    ".memory-bank/testing/local-privacy-storage.md",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "evidence_required": [
-    "FT-015-AC-008 RED/GREEN: exercise the actual Timeline append writer with the configured corpus; RED is any raw value or unprovable unsafe append branch, GREEN is corpus absence or safe rejection before append with registered refs and summary behavior preserved; decisive comparison: appended JSONL plus safe failure output and unchanged source value; artifact: focused transcript under .tasks/TASK-068-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
-  ],
-  "purpose": "Close Timeline-owned append redaction without adopting the independently completable Plant History/export result or changing audit authority.",
-  "success_outcome": "Timeline append removes or rejects the forbidden corpus before output, retains registered safe summaries and references, and fails without echoing rejected data.",
-  "anti_goals": [
-    "Do not change the event registry, cardinality, append transaction semantics, PostgreSQL authority, replay behavior, or Plant History serialization.",
-    "Do not adopt manifest, Bus/UI, provider-context, or browser-capture claims."
-  ],
-  "source_artifacts": [
-    ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-008",
-    ".memory-bank/tasks/plans/IMPL-FT-015.md"
-  ],
-  "normative_inputs": [
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/contracts/timeline-event.md#append-writer-seam",
-    ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
-  ],
-  "constraints": [
-    "Use the registered summary first, then redact or fail closed before append.",
-    "Keep Timeline append-only and non-authoritative; sanitize only the output copy."
-  ],
-  "invariants": [
-    "No Timeline append output contains the forbidden corpus.",
-    "Timeline output cannot mutate PostgreSQL authority or publish to Bus/UI."
-  ],
-  "verification_targets": [
-    "FT-015-AC-008: actual append RED/GREEN or preserved pre-GREEN, safe failure, corpus absence, source-value integrity, and event compatibility."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "Plant History/export, new event types, mutable state repair, manifest, Bus/UI, agent runtime, frontend, or sync."
-    ],
-    "stop_conditions": [
-      "Redaction requires changing a registered event payload or append authority.",
-      "The Timeline owner cannot fail safely without a new shared/global contract decision."
-    ]
+ "id": "TASK-068-T3-FT-015-W2",
+ "title": "Close Timeline append secret redaction",
+ "status": "done",
+ "wave": "W2",
+ "feature": "FT-015",
+ "reqs": [
+  "REQ-020"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0",
+  "TASK-019-T3-FT-004-W1",
+  "TASK-064-T3-FT-015-W1"
+ ],
+ "touched_files": [
+  "backend/app/timeline/writer.py",
+  "tests/backend/plant_operations/test_ft004_timeline_writer.py"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "timeline_redaction",
+   "command": ".venv/bin/python -m pytest tests/backend/plant_operations/test_ft004_timeline_writer.py -q",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
   }
+ ],
+ "verify": [
+  "Independent security verification exercises the actual Timeline append writer with the configured corpus, observes no raw value, preserves the registered event shape and refs, and confirms safe append failure leaks nothing.",
+  "VERIFY 2026-08-14 PASS (attempt 1, scheduler mode): focused gate rerun 3 passed; probe_red.py rerun GREEN 13/13 (corpus absent from appended JSONL, registered shape/refs preserved, source unchanged, safe failures -> TimelineAppendError with no echo, no file write); pre-fix reproduction 8/8 (corpus already absent pre-fix = pre-implementation GREEN confirmed; unrenderable branch escaped as raw ValueError pre-fix = honest RED confirmed; fix wraps _sanitize_json ValueError -> TimelineAppendError from None, minimal); full deterministic suite rerun 941 passed; mb-lint passed; diff-check exit 0. Evidence: .tasks/TASK-068-T3-FT-015-W2/verify-evidence.md.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-068-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probe 20/20: nested/unicode/JSON-metachar corpus absent from appended JSONL, sanitize strictly before open/write, unrenderable+OSError -> registered TimelineAppendError no echo no file, all 13 emitter fail-safes work, diff only 11-line ValueError wrap, registry/cardinality/PG authority/replay/Plant History/Bus-UI untouched, no authority granted; no findings.",
+   "evidence": ".protocols/TASK-068-T3-FT-015-W2/red-verification.md, .tasks/TASK-068-T3-FT-015-W2/TASK-068-T3-FT-015-W2-S-RED-VERIFY-final-report-docs-01.md"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/contracts/timeline-event.md",
+  ".memory-bank/testing/local-privacy-storage.md",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "evidence_required": [
+  "FT-015-AC-008 RED: any raw corpus value reaches the actual Timeline append writer or an unsafe append branch cannot be disproved; GREEN: corpus absence or safe rejection before append with registered refs and summary behavior preserved; decisive comparison: appended JSONL plus safe failure output and unchanged source value; artifact: focused transcript under .tasks/TASK-068-T3-FT-015-W2/. Preserve exact pre-implementation GREEN when present."
+ ],
+ "purpose": "Close Timeline-owned append redaction without adopting the independently completable Plant History/export result or changing audit authority.",
+ "success_outcome": "Timeline append removes or rejects the forbidden corpus before output, retains registered safe summaries and references, and fails without echoing rejected data.",
+ "anti_goals": [
+  "Do not change the event registry, cardinality, append transaction semantics, PostgreSQL authority, replay behavior, or Plant History serialization.",
+  "Do not adopt manifest, Bus/UI, provider-context, or browser-capture claims."
+ ],
+ "source_artifacts": [
+  ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md#FT-015-AC-008",
+  ".memory-bank/tasks/plans/IMPL-FT-015.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/contracts/timeline-event.md",
+  ".memory-bank/contracts/timeline-event.md#append-writer-seam",
+  ".memory-bank/testing/local-privacy-storage.md#redaction-matrix"
+ ],
+ "constraints": [
+  "Use the registered summary first, then redact or fail closed before append.",
+  "Keep Timeline append-only and non-authoritative; sanitize only the output copy."
+ ],
+ "invariants": [
+  "No Timeline append output contains the forbidden corpus.",
+  "Timeline output cannot mutate PostgreSQL authority or publish to Bus/UI."
+ ],
+ "verification_targets": [
+  "FT-015-AC-008: actual append RED/GREEN or preserved pre-GREEN, safe failure, corpus absence, source-value integrity, and event compatibility."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "Plant History/export, new event types, mutable state repair, manifest, Bus/UI, agent runtime, frontend, or sync."
+  ],
+  "stop_conditions": [
+   "Redaction requires changing a registered event payload or append authority.",
+   "The Timeline owner cannot fail safely without a new shared/global contract decision."
+  ]
+ }
 }

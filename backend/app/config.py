@@ -2,7 +2,7 @@ from os import environ as os_environ
 from pathlib import Path
 from typing import Mapping
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .core.redaction import redact_url_credentials
 
@@ -23,6 +23,15 @@ class AppSettings(BaseModel):
     local_temp_root: Path = Field(default=Path("data/tmp"))
     local_smoke_root: Path = Field(default=Path("data/smoke"))
     sync_status: str = Field(default="local_only")
+
+    @model_validator(mode="after")
+    def _reject_non_local_only_sync_status(self) -> "AppSettings":
+        if self.sync_status != "local_only":
+            raise RuntimeError(
+                "SYNC_STATUS must be the literal 'local_only' in the MVP; "
+                "no other sync status is accepted."
+            )
+        return self
 
     @classmethod
     def from_env(

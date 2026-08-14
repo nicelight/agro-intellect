@@ -37,6 +37,13 @@ The shared runtime marker is `***`. Exact configured secret values and
 structured auth fields are authoritative fixtures. Pattern-based detection is
 defense in depth and must not be the only proof for configured values.
 
+Credential-bearing URLs MUST be redacted structurally, following the grammar of
+the application's accepted URL parser (`make_url`): locate the scheme
+terminator, then the host-qualified `@`, and mask the entire userinfo span
+between them regardless of embedded schemes, `://`, or separator characters.
+Scheme recognition MUST use the parser's scheme character class; pattern
+heuristics must never truncate the mask before the host-qualified `@`.
+
 ## Surface rules
 
 | Surface | Owning boundary | Required behavior |

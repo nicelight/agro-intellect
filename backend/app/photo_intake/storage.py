@@ -10,6 +10,7 @@ from typing import Any
 import uuid
 
 from ..config import AppSettings
+from ..core.redaction import redact_text
 
 
 CONTENT_TYPE_EXTENSIONS = {
@@ -86,12 +87,15 @@ class PhotoArtifactStore:
     ) -> str:
         ref = self.manifest_ref(plant_id=plant_id, photo_id=photo_id)
         path = self._path_for_ref(ref)
-        data = json.dumps(
-            _json_ready(manifest),
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
+        try:
+            data = json.dumps(
+                _json_ready(_sanitize_manifest(manifest)),
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        except (TypeError, ValueError):
+            raise PhotoArtifactStorageError from None
         try:
             self._write_atomic(path, data)
         except OSError:
@@ -189,6 +193,16 @@ def _json_ready(value: Any) -> Any:
         return str(value)
     if isinstance(value, datetime):
         return value.isoformat()
+    return value
+
+
+def _sanitize_manifest(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _sanitize_manifest(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_sanitize_manifest(item) for item in value]
+    if isinstance(value, str):
+        return redact_text(value)
     return value
 
 

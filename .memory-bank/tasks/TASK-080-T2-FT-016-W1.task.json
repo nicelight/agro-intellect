@@ -86,6 +86,7 @@
   ],
   "normative_inputs": [
     ".memory-bank/architecture/system-architecture.md#ad-009---operator-frontend-uses-svelte-5-and-sveltekit",
+    ".memory-bank/contracts/operator-pwa.md",
     ".memory-bank/contracts/operator-pwa.md#sveltekit-pwa-scaffold",
     ".memory-bank/testing/operator-pwa-first-demo.md#scaffold-and-routing-matrix",
     ".agents/rules/svelte5.md"
