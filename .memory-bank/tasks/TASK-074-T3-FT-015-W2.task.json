@@ -1,7 +1,7 @@
 {
  "id": "TASK-074-T3-FT-015-W2",
  "title": "Close Plant State context redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -36,7 +36,16 @@
   }
  ],
  "verify": [
-  "Independent adversarial verification injects the configured corpus and forbidden context classes through Plant State request assembly and the provider spy, proving zero outbound leakage or unsafe I/O with the exact request contract and trust authority unchanged."
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through Plant State request assembly and the provider spy, proving zero outbound leakage or unsafe I/O with the exact request contract and trust authority unchanged.",
+  "VERDICT: PASS (2026-08-15, scheduler mode). Verifier-owned probe verify01-probe.py GREEN 54/54 (distinct corpus; actual assembler + spy; zero forbidden values in payload/repr/timeline, allowlist/source-ref parity, source unchanged, fail-closed zero I/O, trust regression, unbound fail-closed). Executor pre-implementation GREEN 56/56 reproduced (attempt01-probe.py, exit 0, transcript sha256 verified). Gates: plant_state_context_redaction 32 passed; mb-lint passed; git diff --check exit 0; full deterministic suite 959 passed. No production change (plant_state diff empty); forbidden scope untouched. Evidence: .protocols/TASK-074-T3-FT-015-W2/verification.md.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-074-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probe 70/70 (unicode/escaped/nested corpus, confirmation-column leak vectors, hostile refs, latest-4 interleaved, guard failure, alien model refs -> output_invalid, corpus in model summary -> pending envelope only, unbound runtime_not_configured zero I/O); strict allowlists, no free-text channel, rejected before I/O, trust authority preserved, production diff empty; no findings.",
+   "evidence": ".protocols/TASK-074-T3-FT-015-W2/red-verification.md, .tasks/TASK-074-T3-FT-015-W2/rv074-redverify-probe.py"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

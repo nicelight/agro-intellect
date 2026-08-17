@@ -30,6 +30,35 @@ from tests.backend.plant_operations.conftest import (
     revoke_access,
 )
 
+CORPUS_DB_PASSWORD = "corpus-ft079-db-pw-7h2k"
+CORPUS_BEARER = "corpus-ft079-bearer-5c3m"
+CORPUS_COOKIE = "corpus-ft079-cookie-8p1t"
+CORPUS_SESSION = "corpus-ft079-session-3m6z"
+CORPUS_TOKEN = "corpus-ft079-token-9x4f"
+CORPUS_API_KEY = "corpus-ft079-api-key-2v8n"
+FORBIDDEN_HEADERS = [
+    f"session={CORPUS_COOKIE}; HttpOnly",
+    f"Authorization: Bearer {CORPUS_BEARER}",
+    "corpus-ft079-ui-feed-entry-4q1r",
+    "corpus-ft079-provider-history-6t9c",
+]
+ALL_SECRETS = [
+    CORPUS_DB_PASSWORD,
+    CORPUS_BEARER,
+    CORPUS_COOKIE,
+    CORPUS_SESSION,
+    CORPUS_TOKEN,
+    CORPUS_API_KEY,
+    *FORBIDDEN_HEADERS,
+]
+
+HOSTILE_KIND = (
+    f"photo note=dbpw:{CORPUS_DB_PASSWORD} bearer:{CORPUS_BEARER} "
+    f"cookieval:{CORPUS_COOKIE} sess:{CORPUS_SESSION} "
+    f"token={CORPUS_TOKEN} key={CORPUS_API_KEY} "
+    + " ".join(FORBIDDEN_HEADERS)
+)
+
 
 class _Executor:
     model_ref = "test_provider:governance_v1"
@@ -562,3 +591,118 @@ def _manual_fingerprint(command: DatasetAgentCommandV1) -> str:
         separators=(",", ":"),
     )
     return hashlib.sha256(compact.encode("utf-8")).hexdigest()
+
+
+def _poison_candidate(database, candidate_id: uuid.UUID) -> None:
+    with database.session() as session, session.begin():
+        row = session.get(DatasetCandidate, candidate_id)
+        row.evidence_refs = [
+            {"kind": "photo", "ref": str(uuid.uuid4())},
+            {"kind": HOSTILE_KIND, "ref": str(uuid.uuid4())},
+        ]
+
+
+def _auth_context_values(actor) -> list[str]:
+    return [
+        str(actor.account_id),
+        str(actor.session_id),
+        str(actor.membership_id),
+        str(actor.farm_id),
+        actor.role_preset.value,
+    ]
+
+
+def test_ft015_ac019_corpus_never_reaches_governance_request_with_source_unchanged(
+    ft014_database,
+    ft014_seed,
+):
+    _farm, boss, _membership, plant = ft014_seed
+    candidate_id = _create_candidate(ft014_database, boss, plant)
+    _poison_candidate(ft014_database, candidate_id)
+    command = _command(boss, candidate_id=candidate_id, plant_id=plant.plant_id)
+    recorder = TimelineRecorder()
+    executor = _Executor(_assessment(command.run_id))
+
+    with ft014_database.session() as session:
+        outcome = DatasetGovernanceRuntimeService(
+            session,
+            model_executor=executor,
+            timeline_append=recorder,
+            secret_values=tuple(ALL_SECRETS),
+        ).invoke(command)
+
+    assert outcome.outcome_kind == "advisory_ready"
+    assert len(executor.requests) == 1
+    payload = executor.requests[0].as_provider_payload()
+    assert list(payload) == [
+        "schema_version",
+        "run_id",
+        "requested_at",
+        "agent_id",
+        "plant_id",
+        "candidate_id",
+        "candidate",
+        "policy_context",
+    ]
+    payload_text = json.dumps(payload, sort_keys=True)
+    for raw in ALL_SECRETS:
+        assert raw not in payload_text
+    for attr_value in _auth_context_values(boss):
+        assert attr_value not in payload_text
+    for forbidden in (
+        "actor",
+        "account_id",
+        "session_id",
+        "membership_id",
+        "role_preset",
+        "evidence_refs",
+        "provider_history",
+        "ui_feed",
+    ):
+        assert forbidden not in payload_text
+    assert "***" in str(payload["candidate"]["evidence_kinds"])
+    assert payload["agent_id"] == "dataset_governance"
+
+    with ft014_database.session() as session:
+        row = session.get(DatasetCandidate, candidate_id)
+    assert row.evidence_refs == [
+        {"kind": "photo", "ref": row.evidence_refs[0]["ref"]},
+        {"kind": HOSTILE_KIND, "ref": row.evidence_refs[1]["ref"]},
+    ]
+    assert row.evidence_refs[1]["kind"] == HOSTILE_KIND
+    assert row.record_version == 1
+    assert row.candidate_status == "candidate"
+    assert row.can_train_on is False
+
+
+def test_ft015_ac019_hostile_kind_collapse_is_context_denied_with_zero_io(
+    ft014_database,
+    ft014_seed,
+):
+    _farm, boss, _membership, plant = ft014_seed
+    candidate_id = _create_candidate(ft014_database, boss, plant)
+    with ft014_database.session() as session, session.begin():
+        row = session.get(DatasetCandidate, candidate_id)
+        row.evidence_refs = [
+            {"kind": CORPUS_TOKEN, "ref": str(uuid.uuid4())},
+            {"kind": FORBIDDEN_HEADERS[2], "ref": str(uuid.uuid4())},
+        ]
+    command = _command(boss, candidate_id=candidate_id, plant_id=plant.plant_id)
+    recorder = TimelineRecorder()
+    executor = _Executor(_assessment(command.run_id))
+
+    with ft014_database.session() as session:
+        outcome = DatasetGovernanceRuntimeService(
+            session,
+            model_executor=executor,
+            timeline_append=recorder,
+            secret_values=tuple(ALL_SECRETS),
+        ).invoke(command)
+
+    assert outcome.outcome_kind == "context_denied"
+    assert outcome.status == "blocked"
+    assert outcome.provider_call_status == "not_attempted"
+    assert outcome.error_code == "dataset_agent_context_denied"
+    assert executor.requests == []
+    assert len(recorder.events) == 1
+    assert recorder.events[0].source_refs == {"candidate_refs": []}

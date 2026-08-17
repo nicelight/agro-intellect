@@ -1,7 +1,7 @@
 {
  "id": "TASK-069-T3-FT-015-W2",
  "title": "Close atomic Bus and UI Feed redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -38,7 +38,38 @@
   }
  ],
  "verify": [
-  "Independent security verification drives the actual guarded publication transaction with the configured corpus and proves both Bus and UI Feed projections are sanitized or rejected before persistence with unchanged consumability and context isolation."
+  "Independent security verification drives the actual guarded publication transaction with the configured corpus and proves both Bus and UI Feed projections are sanitized or rejected before persistence with unchanged consumability and context isolation.",
+  {
+   "stage": "functional_verification",
+   "mode": "delegated_reviewer",
+   "attempt": "01",
+   "verdict": "PASS",
+   "verified_at": "2026-08-14T13:55:00+00:00",
+   "basis": "Independent T3 verification: verifier-owned corpus probe drove the ACTUAL GuardedAgentPublicationService.publish atomic Bus/UI transaction (own synthetic corpus via sensitive-key env vars); no raw corpus value in stored AgentBusEvent.payload or UIFeedEvent.display_payload, nor in the serialized GET /api/plants/{id}/feed body; *** marker present; both projections derive from the same sanitized copy; source envelope.candidate_output byte-identical; exact payload kinds quoted_candidate/agent_message; bus.consumable_by_agents=True and ui.visible_to_agents=consumable_by_agents=False preserved; sanitizer-failure probe returned the registered failed/persistence_failed safe error with zero persisted rows (fail-closed before the atomic write, no partial/unsplit write); UI Feed remains outside agent context (context_builders reads only AgentBusEvent consumable_by_agents=True); single session.begin() transaction unchanged; classification/routing/Feed schema/cursors/roster/context/frontend untouched (git diff limited to publication.py + 2 gate test files).",
+   "evidence": [
+    ".protocols/TASK-069-T3-FT-015-W2/verification.md",
+    ".protocols/TASK-069-T3-FT-015-W2/handoff.md",
+    ".tasks/TASK-069-T3-FT-015-W2/attempt01-red.txt",
+    ".tasks/TASK-069-T3-FT-015-W2/attempt01-green.txt"
+   ],
+   "gate_summary": {
+    "bus_ui_redaction": "PASS: 26 passed (fresh verifier rerun)",
+    "full_deterministic_suite": "PASS: 943 passed, 232 warnings (fresh verifier rerun)",
+    "memory_bank_lint": "PASS: 231 files, 3 historical unrelated deprecation warnings",
+    "diff_check": "PASS: exit 0",
+    "verifier_probes": "PASS: 3/3 (stored-rows corpus, serialized Feed corpus, sanitizer-failure fail-closed atomicity)"
+   },
+   "findings": [],
+   "next_owner": "Scheduler: functional PASS; per-task /red-verify TASK-069-T3-FT-015-W2 still required; task remains in_progress."
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-069-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probe on real guarded publication + Feed route: hostile corpus absent from stored Bus/UI rows and Feed body, one sanitized copy both projections, source byte-identical, flags preserved, sanitizer/write failure fail-closed zero rows, one transaction not split, context reads only consumable Bus rows; other Bus/UI writers carry structured summaries only; no findings.",
+   "evidence": ".protocols/TASK-069-T3-FT-015-W2/red-verification.md, .tasks/TASK-069-T3-FT-015-W2/TASK-069-T3-FT-015-W2-S-RED-VERIFY-final-report-docs-01.md"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

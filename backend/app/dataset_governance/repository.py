@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import column, select, table, text
+from sqlalchemy import and_, column, or_, select, table, text
 from sqlalchemy.orm import Session
 
 from ..access_admin.actor_context import ActorContext
@@ -85,6 +85,98 @@ class DatasetGovernanceRepository:
         plant_id: uuid.UUID,
         for_update: bool,
     ) -> CurrentDatasetScope | None:
+        resolved = self._resolve_identity(actor, plant_id=plant_id, for_update=for_update)
+        if resolved is None:
+            return None
+        _account, membership, plant = resolved
+
+        grant_id: uuid.UUID | None = None
+        permission_source = "boss_role"
+        if membership.role_preset != "boss":
+            grant_query = select(PlantAccessGrant).where(
+                PlantAccessGrant.membership_id == membership.membership_id,
+                PlantAccessGrant.plant_id == plant_id,
+                PlantAccessGrant.status == "active",
+            )
+            if for_update:
+                grant_query = grant_query.with_for_update()
+            grant = self.session.scalar(
+                grant_query.execution_options(populate_existing=True)
+            )
+            if grant is None:
+                return None
+            grant_id = grant.grant_id
+            permission_source = "plant_access_grant"
+
+        return CurrentDatasetScope(
+            farm_id=actor.farm_id,
+            plant_id=plant_id,
+            plant_status=plant.status,
+            role_preset=membership.role_preset,
+            permission_source=permission_source,
+            grant_id=grant_id,
+            can_operate=(
+                plant.status == "active"
+                and membership.role_preset in {"boss", "engineer"}
+            ),
+        )
+
+    def current_read_scope(
+        self,
+        actor: ActorContext,
+        *,
+        plant_id: uuid.UUID,
+    ) -> CurrentDatasetScope | None:
+        """Read-only authority for the protected Dataset Candidate projection.
+
+        Active Plants use normal-read authority; archived Plants use the
+        retained-history read path. The read performs no mutation and never
+        reveals whether an unauthorized Plant exists (no-enumeration denial).
+        """
+        resolved = self._resolve_identity(actor, plant_id=plant_id, for_update=False)
+        if resolved is None:
+            return None
+        _account, membership, plant = resolved
+        if plant.status not in {"active", "archived"}:
+            return None
+
+        grant_id: uuid.UUID | None = None
+        permission_source = "boss_role"
+        if membership.role_preset != "boss":
+            grant = self.session.scalar(
+                select(PlantAccessGrant)
+                .where(
+                    PlantAccessGrant.membership_id == membership.membership_id,
+                    PlantAccessGrant.plant_id == plant_id,
+                    PlantAccessGrant.status == "active",
+                )
+                .execution_options(populate_existing=True)
+            )
+            if grant is None:
+                return None
+            grant_id = grant.grant_id
+            permission_source = "plant_access_grant"
+
+        return CurrentDatasetScope(
+            farm_id=actor.farm_id,
+            plant_id=plant_id,
+            plant_status=plant.status,
+            role_preset=membership.role_preset,
+            permission_source=permission_source,
+            grant_id=grant_id,
+            can_operate=(
+                plant.status == "active"
+                and membership.role_preset in {"boss", "engineer"}
+            ),
+        )
+
+    def _resolve_identity(
+        self,
+        actor: ActorContext,
+        *,
+        plant_id: uuid.UUID,
+        for_update: bool,
+    ) -> tuple[object, object, object] | None:
         now = datetime.now(timezone.utc)
         session_query = select(LocalSession).where(
             LocalSession.session_id == actor.session_id
@@ -130,37 +222,7 @@ class DatasetGovernanceRepository:
             or membership.role_preset not in {"boss", "engineer", "consultant"}
         ):
             return None
-
-        grant_id: uuid.UUID | None = None
-        permission_source = "boss_role"
-        if membership.role_preset != "boss":
-            grant_query = select(PlantAccessGrant).where(
-                PlantAccessGrant.membership_id == membership.membership_id,
-                PlantAccessGrant.plant_id == plant_id,
-                PlantAccessGrant.status == "active",
-            )
-            if for_update:
-                grant_query = grant_query.with_for_update()
-            grant = self.session.scalar(
-                grant_query.execution_options(populate_existing=True)
-            )
-            if grant is None:
-                return None
-            grant_id = grant.grant_id
-            permission_source = "plant_access_grant"
-
-        return CurrentDatasetScope(
-            farm_id=actor.farm_id,
-            plant_id=plant_id,
-            plant_status=plant.status,
-            role_preset=membership.role_preset,
-            permission_source=permission_source,
-            grant_id=grant_id,
-            can_operate=(
-                plant.status == "active"
-                and membership.role_preset in {"boss", "engineer"}
-            ),
-        )
+        return account, membership, plant
 
     def candidate_by_source_identity(
         self,
@@ -191,6 +253,47 @@ class DatasetGovernanceRepository:
         if for_update:
             query = query.with_for_update()
         return self.session.scalar(query.execution_options(populate_existing=True))
+
+    def list_candidates(
+        self,
+        *,
+        farm_id: uuid.UUID,
+        plant_id: uuid.UUID,
+        limit: int,
+        after: tuple[datetime, uuid.UUID] | None,
+    ) -> list[DatasetCandidate]:
+        """Plant-scoped canonical keyset page in ``(updated_at DESC,
+        candidate_id DESC)`` order.
+
+        Fetches at most ``limit`` rows plus one lookahead row so the caller can
+        decide whether another page exists. Pure read: no locking and no
+        mutation. ``farm_id`` is a defensive same-Farm filter on top of the
+        authorized Plant scope.
+        """
+        query = select(DatasetCandidate).where(
+            DatasetCandidate.farm_id == farm_id,
+            DatasetCandidate.plant_id == plant_id,
+        )
+        if after is not None:
+            updated_at, candidate_id = after
+            query = query.where(
+                or_(
+                    DatasetCandidate.updated_at < updated_at,
+                    and_(
+                        DatasetCandidate.updated_at == updated_at,
+                        DatasetCandidate.candidate_id < candidate_id,
+                    ),
+                )
+            )
+        query = query.order_by(
+            DatasetCandidate.updated_at.desc(),
+            DatasetCandidate.candidate_id.desc(),
+        ).limit(limit + 1)
+        return list(
+            self.session.scalars(
+                query.execution_options(populate_existing=True)
+            )
+        )
 
     def evidence_refs_resolve(
         self,

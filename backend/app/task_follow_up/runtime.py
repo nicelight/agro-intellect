@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import re
@@ -21,6 +21,7 @@ from ..agent_runtime.contracts import (
     RuntimeDecision,
 )
 from ..agent_runtime.service import DatabaseRuntimeAuthorizationGuard, ModelExecution
+from ..core.redaction import redact_text
 from ..safety_gate import (
     SafetyClassificationOutcomeV1,
     SafetyGateClassificationCommandV1,
@@ -110,9 +111,11 @@ class DatabaseTaskFollowUpInputAssembler:
         session: Session,
         *,
         repository: TaskFollowUpRepository | None = None,
+        secret_values: Iterable[str] = (),
     ) -> None:
         self._session = session
         self._repository = repository or TaskFollowUpRepository(session)
+        self._secret_values = tuple(secret_values)
 
     def assemble(
         self,
@@ -183,7 +186,10 @@ class DatabaseTaskFollowUpInputAssembler:
             request = TaskFollowUpProviderRequestV1(
                 trigger_kind=trigger_kind,
                 allowed_task_kinds=tuple(allowed),
-                records=tuple(records),
+                records=tuple(
+                    _sanitized_record(record, secret_values=self._secret_values)
+                    for record in records
+                ),
             )
         except (TaskFollowUpRuntimeValidationError, TypeError, ValueError):
             raise TaskFollowUpInputDenied("input_contract_violation") from None
@@ -727,6 +733,30 @@ def _result_for_runtime_outcome(
             failure_stage=None,
         )
     return _failed_run(run_id, outcome, stage="runtime")
+
+
+def _sanitized_record(
+    record: TaskFollowUpInputRecordV1,
+    *,
+    secret_values: tuple[str, ...],
+) -> TaskFollowUpInputRecordV1:
+    """Return the outbound record copy with configured secret values removed.
+
+    Only the outbound copy is sanitized; the service-side source payload and
+    the persisted rows remain unchanged. A sanitizer failure fails closed.
+    """
+
+    payload = {
+        key: redact_text(value, extra_secrets=secret_values)
+        if isinstance(value, str)
+        else value
+        for key, value in record.payload.items()
+    }
+    return TaskFollowUpInputRecordV1(
+        record_type=record.record_type,
+        source_ref=record.source_ref,
+        payload=payload,
+    )
 
 
 def _task_record(task: Task) -> TaskFollowUpInputRecordV1:

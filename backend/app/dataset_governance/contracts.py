@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 import re
 import uuid
@@ -74,6 +75,10 @@ class DatasetGovernanceErrorCode(StrEnum):
     AUDIT_FAILED = "dataset_audit_failed"
     PERSISTENCE_FAILED = "dataset_persistence_failed"
     INTERNAL_ERROR = "dataset_internal_error"
+    CURSOR_INVALID = "DATASET_CURSOR_INVALID"
+    LIMIT_INVALID = "DATASET_LIMIT_INVALID"
+    READ_FAILED = "DATASET_READ_FAILED"
+    VALIDATION_FAILED = "VALIDATION_FAILED"
 
 
 #: Outcome source ref shape (`kind:uuid`) validated by Task & Follow-Up.
@@ -337,6 +342,103 @@ class AssociateFollowUpEvidenceResultV1:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class DatasetCandidateViewV1:
+    """Safe read-only projection of one authoritative candidate row.
+
+    Copies authoritative fields only; internal/secret material (farm id,
+    curator notes, curator run/command identity, Timeline event refs, raw
+    labels/provider output, filesystem paths, credentials, auth material) is
+    structurally absent. ``can_train_on`` is copied from Dataset Governance
+    authority and never recomputed by the read path.
+    """
+
+    candidate_id: uuid.UUID
+    plant_id: uuid.UUID
+    source_kind: str
+    source_ref: uuid.UUID
+    candidate_status: str
+    quality_tier: str
+    split: str | None
+    confirmation_source: str | None
+    evidence_refs: tuple[Mapping[str, object], ...]
+    curator_decision: str | None
+    corrected: bool
+    follow_up_seen: bool
+    can_train_on: bool
+    record_version: int
+    created_at: datetime
+    updated_at: datetime
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.candidate_id, uuid.UUID)
+            or not isinstance(self.plant_id, uuid.UUID)
+            or not isinstance(self.source_kind, str)
+            or not isinstance(self.source_ref, uuid.UUID)
+            or not isinstance(self.candidate_status, str)
+            or not isinstance(self.quality_tier, str)
+            or not (self.split is None or isinstance(self.split, str))
+            or not (
+                self.confirmation_source is None
+                or isinstance(self.confirmation_source, str)
+            )
+            or not isinstance(self.evidence_refs, tuple)
+            or not all(isinstance(item, Mapping) for item in self.evidence_refs)
+            or not (
+                self.curator_decision is None
+                or isinstance(self.curator_decision, str)
+            )
+            or not isinstance(self.corrected, bool)
+            or not isinstance(self.follow_up_seen, bool)
+            or not isinstance(self.can_train_on, bool)
+            or not isinstance(self.record_version, int)
+            or not isinstance(self.created_at, datetime)
+            or not isinstance(self.updated_at, datetime)
+        ):
+            raise DatasetGovernanceValidationError()
+
+    def as_value(self) -> dict[str, object]:
+        return {
+            "candidate_id": str(self.candidate_id),
+            "plant_id": str(self.plant_id),
+            "source_kind": self.source_kind,
+            "source_ref": str(self.source_ref),
+            "candidate_status": self.candidate_status,
+            "quality_tier": self.quality_tier,
+            "split": self.split,
+            "confirmation_source": self.confirmation_source,
+            "evidence_refs": [dict(item) for item in self.evidence_refs],
+            "curator_decision": self.curator_decision,
+            "corrected": self.corrected,
+            "follow_up_seen": self.follow_up_seen,
+            "can_train_on": self.can_train_on,
+            "record_version": self.record_version,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetCandidatePageV1:
+    """One canonical keyset page of the safe Dataset Candidate projection."""
+
+    items: tuple[DatasetCandidateViewV1, ...]
+    next_cursor: str | None
+    schema_version: int = 1
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema_version != 1
+            or not isinstance(self.items, tuple)
+            or not all(
+                isinstance(item, DatasetCandidateViewV1) for item in self.items
+            )
+            or not (self.next_cursor is None or isinstance(self.next_cursor, str))
+        ):
+            raise DatasetGovernanceValidationError()
+
+
 __all__ = [
     "AssociateFollowUpEvidenceCommandV1",
     "AssociateFollowUpEvidenceResultV1",
@@ -345,6 +447,8 @@ __all__ = [
     "CandidateTransition",
     "ConfirmationSource",
     "CuratorDecision",
+    "DatasetCandidatePageV1",
+    "DatasetCandidateViewV1",
     "DatasetGovernanceError",
     "DatasetGovernanceErrorCode",
     "DatasetGovernanceValidationError",

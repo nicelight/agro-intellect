@@ -850,3 +850,219 @@ def test_unbound_invalid_and_physical_paths_create_no_governance(
     if expected_status == "not_governable":
         assert result.reason_code == "physical_action_not_allowed"
     assert _counts(ft013_database)["proposals"] == 0
+
+
+CORPUS_DB_PASSWORD = "corpus-ft078-db-pw-4h9k"
+CORPUS_BEARER = "corpus-ft078-bearer-7q2m"
+CORPUS_COOKIE = "corpus-ft078-cookie-1p5t"
+CORPUS_SESSION = "corpus-ft078-session-8v3r"
+CORPUS_SECRETS = [
+    CORPUS_DB_PASSWORD,
+    CORPUS_BEARER,
+    CORPUS_COOKIE,
+    CORPUS_SESSION,
+]
+
+CORPUS_OBSERVATION = (
+    f"Watered 2L. dbpw={CORPUS_DB_PASSWORD} bearer={CORPUS_BEARER} "
+    f"cookieval={CORPUS_COOKIE} sess={CORPUS_SESSION}"
+)
+CORPUS_SUMMARY = (
+    f"Итог: dbpw={CORPUS_DB_PASSWORD} bearer={CORPUS_BEARER} "
+    f"cookieval={CORPUS_COOKIE} sess={CORPUS_SESSION}"
+)
+
+
+def _corpus_assembler(session):
+    return DatabaseCompanionInputAssembler(
+        session,
+        secret_values=tuple(CORPUS_SECRETS),
+    )
+
+
+def _seed_corpus_check_in(database, farm, actor, plant):
+    with database.session() as session, session.begin():
+        check_in = DailyCheckIn(
+            farm_id=farm.farm_id,
+            plant_id=plant.plant_id,
+            actor_account_id=actor.account_id,
+            actor_membership_id=actor.membership_id,
+            check_in_state="completed",
+            observed_at=FT013_NOW,
+            recorded_at=FT013_NOW,
+            observation_state="observed",
+            observation_text=CORPUS_OBSERVATION,
+            source_refs={},
+            event_refs={},
+        )
+        session.add(check_in)
+        return check_in.check_in_id
+
+
+def _seed_corpus_issue(database, farm, plant):
+    with database.session() as session, session.begin():
+        issue = CompanionIssue(
+            issue_id=uuid.uuid4(),
+            farm_id=farm.farm_id,
+            plant_id=plant.plant_id,
+            status="open",
+            is_focused=True,
+            summary_text=CORPUS_SUMMARY,
+            record_version=1,
+            created_by_run_id=uuid.uuid4(),
+            opened_event_ref={},
+        )
+        session.add(issue)
+        return issue.issue_id
+
+
+def test_companion_request_removes_configured_corpus_before_provider_boundary(
+    ft013_database,
+    ft013_seed,
+):
+    farm, actor, _membership, plant = ft013_seed
+    _seed_corpus_check_in(ft013_database, farm, actor, plant)
+    companion = _Executor(_proposal, "test_provider:companion_v1")
+    safety = _Executor(_safety, "test_provider:safety_v1")
+    with ft013_database.session() as session:
+        result = CompanionRuntimeService(
+            session,
+            model_executor=companion,
+            safety_classifier_executor=safety,
+            input_assembler=_corpus_assembler(session),
+            timeline_append=TimelineRecorder(),
+            clock=lambda: FT013_NOW,
+        ).run(_command(actor, plant))
+
+    assert result.route_status == "proposal_created"
+    assert len(companion.requests) == len(safety.requests) == 1
+    request = companion.requests[0]
+    payload_text = str(request.as_provider_payload())
+    record_text = repr(request)
+    for raw in CORPUS_SECRETS:
+        assert raw not in payload_text
+        assert raw not in record_text
+    assert "***" in payload_text
+    check_in = request.records[1]
+    assert check_in.record_type == "daily_checkin"
+    assert "***" in check_in.payload["observation_text"]
+
+
+def test_companion_request_keeps_source_values_unchanged_and_safe_parity(
+    ft013_database,
+    ft013_seed,
+):
+    farm, actor, _membership, plant = ft013_seed
+    _seed_corpus_check_in(ft013_database, farm, actor, plant)
+    companion = _Executor(_proposal, "test_provider:companion_v1")
+    with ft013_database.session() as session:
+        result = CompanionRuntimeService(
+            session,
+            model_executor=companion,
+            safety_classifier_executor=_Executor(_safety, "test_provider:safety_v1"),
+            input_assembler=_corpus_assembler(session),
+            timeline_append=TimelineRecorder(),
+            clock=lambda: FT013_NOW,
+        ).run(_command(actor, plant))
+
+    assert result.route_status == "proposal_created"
+    request = companion.requests[0]
+    payload = request.as_provider_payload()
+    assert list(payload) == [
+        "schema_version",
+        "agent_definition",
+        "trigger_kind",
+        "target_mode",
+        "records",
+        "source_refs",
+    ]
+    assert payload["schema_version"] == 1
+    assert [record["record_type"] for record in payload["records"]] == [
+        "plant",
+        "daily_checkin",
+    ]
+    plant_payload = payload["records"][0]["payload"]
+    assert set(plant_payload) == {"plant_id", "status"}
+    assert plant_payload["status"] == "active"
+    check_in_payload = payload["records"][1]["payload"]
+    assert set(check_in_payload) == {
+        "check_in_id",
+        "observed_at",
+        "recorded_at",
+        "observation_state",
+        "observation_text",
+    }
+    with ft013_database.session() as session:
+        stored = session.scalar(
+            select(DailyCheckIn).where(DailyCheckIn.plant_id == plant.plant_id)
+        )
+        assert stored is not None
+        assert stored.observation_text == CORPUS_OBSERVATION
+
+
+def test_companion_issue_summary_corpus_removed_before_provider_boundary(
+    ft013_database,
+    ft013_seed,
+):
+    _farm, actor, _membership, plant = ft013_seed
+    issue_id = _seed_corpus_issue(ft013_database, _farm, plant)
+    companion = _Executor(_proposal, "test_provider:companion_v1")
+    with ft013_database.session() as session:
+        result = CompanionRuntimeService(
+            session,
+            model_executor=companion,
+            safety_classifier_executor=_Executor(_safety, "test_provider:safety_v1"),
+            input_assembler=_corpus_assembler(session),
+            timeline_append=TimelineRecorder(),
+            clock=lambda: FT013_NOW,
+        ).run(_command(actor, plant, issue_id=issue_id, version=1))
+
+    assert result.route_status == "proposal_created"
+    request = companion.requests[0]
+    assert [record.record_type for record in request.records] == [
+        "plant",
+        "companion_issue",
+    ]
+    issue_record = request.records[1]
+    assert "***" in issue_record.payload["summary_text"]
+    for raw in CORPUS_SECRETS:
+        assert raw not in str(request.as_provider_payload())
+    with ft013_database.session() as session:
+        stored = session.get(CompanionIssue, issue_id)
+        assert stored is not None
+        assert stored.summary_text == CORPUS_SUMMARY
+
+
+def test_companion_rejected_unsafe_input_zero_io_and_regression_counts(
+    ft013_database,
+    ft013_seed,
+):
+    _farm, actor, _membership, plant = ft013_seed
+    companion = _Executor(_proposal, "test_provider:companion_v1")
+    safety = _Executor(_safety, "test_provider:safety_v1")
+    with ft013_database.session() as session:
+        denied = CompanionRuntimeService(
+            session,
+            model_executor=companion,
+            safety_classifier_executor=safety,
+            input_assembler=_corpus_assembler(session),
+            timeline_append=TimelineRecorder(),
+            clock=lambda: FT013_NOW,
+        ).run(
+            _command(
+                actor,
+                plant,
+                issue_id=uuid.UUID("00000000-0000-4000-8000-0000000000ff"),
+                version=1,
+            )
+        )
+    assert denied.route_status == "failed"
+    assert denied.failure_code == "COMPANION_COMMAND_FORBIDDEN"
+    assert companion.requests == safety.requests == []
+    assert _counts(ft013_database) == {
+        "issues": 0,
+        "attentions": 0,
+        "proposals": 0,
+        "classifications": 0,
+        "tasks": 0,
+    }

@@ -1,102 +1,102 @@
 {
-  "id": "TASK-082-T3-FT-016-W3",
-  "title": "Provision the demo Engineer through Boss Admin",
-  "status": "planned",
-  "wave": "W3",
-  "feature": "FT-016",
-  "reqs": [
-    "REQ-020",
-    "REQ-021"
-  ],
-  "depends_on": [
-    "TASK-017-T3-FT-003-W2",
-    "TASK-081-T3-FT-016-W2"
-  ],
-  "touched_files": [
-    "frontend/src/lib/admin/",
-    "frontend/src/routes/admin/+page.server.ts",
-    "frontend/src/routes/admin/+page.svelte",
-    "frontend/tests/e2e/boss-engineer-provisioning.spec.ts"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "boss_engineer_provisioning_browser",
-      "command": "cd frontend && npm run test:e2e -- tests/e2e/boss-engineer-provisioning.spec.ts",
-      "required": true
-    },
-    {
-      "name": "frontend_check",
-      "command": "cd frontend && npm run check",
-      "required": true
-    },
-    {
-      "name": "frontend_build",
-      "command": "cd frontend && npm run build",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent browser verification covers direct Engineer creation, non-Boss denial, Engineer login, and write-only password handling only."
-  ],
-  "docs": [
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/contracts/admin/boss-admin-http.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
-  ],
-  "evidence_required": [
-    "FT-016-AC-012 / REQ-020 RED: no Boss browser path can directly create the demo Engineer; GREEN: an isolated Boss creates one Engineer through Boss Admin HTTP, the Engineer authenticates, non-Boss creation fails, and password/auth material is absent from response, page state, logs, storage, and capture input; decisive comparison: browser/API/auth transcript plus configured corpus scan; artifact: provisioning evidence under .tasks/TASK-082-T3-FT-016-W3/."
-  ],
-  "purpose": "Expose only direct Engineer provisioning required by the first demo while identity and password authority remain in Access & Admin.",
-  "success_outcome": "A Boss can create the demo Engineer through the registered backend action, the Engineer can authenticate, non-Boss creation is denied, and password/auth material remains write-only.",
-  "anti_goals": [
-    "Do not add invitations/email, recovery, enterprise identity, role reassignment, Plant/grant management, audit presentation, or frontend-owned authorization state.",
-    "Do not retain the initial password in page state, logs, browser storage, or captures."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "backend Account, Membership, PlantAccessGrant, and audit authority",
-      "password/session persistence or capture",
-      "new identity, role, or permission semantics",
-      "Consultant first-demo UI expansion"
-    ],
-    "stop_conditions": [
-      "The UI requires a backend route or permission outside registered Boss Admin/Plant Management contracts.",
-      "A safe Boss journey cannot be completed without exposing or retaining password/auth material."
-    ]
+ "id": "TASK-082-T3-FT-016-W3",
+"title": "Provision the demo Engineer through Boss Admin",
+  "status": "in_progress",
+ "wave": "W3",
+ "feature": "FT-016",
+ "reqs": [
+  "REQ-020",
+  "REQ-021"
+ ],
+ "depends_on": [
+  "TASK-017-T3-FT-003-W2",
+  "TASK-081-T3-FT-016-W2"
+ ],
+ "touched_files": [
+  "frontend/src/lib/admin/",
+  "frontend/src/routes/admin/+page.server.ts",
+  "frontend/src/routes/admin/+page.svelte",
+  "frontend/tests/e2e/boss-engineer-provisioning.spec.ts"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "boss_engineer_provisioning_browser",
+   "command": "cd frontend && npm run test:e2e -- tests/e2e/boss-engineer-provisioning.spec.ts",
+   "required": true
   },
-  "source_artifacts": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-012",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  {
+   "name": "frontend_check",
+   "command": "cd frontend && npm run check",
+   "required": true
+  },
+  {
+   "name": "frontend_build",
+   "command": "cd frontend && npm run build",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "Independent browser verification covers direct Engineer creation, non-Boss denial, Engineer login, and write-only password handling only."
+ ],
+ "docs": [
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/contracts/admin/boss-admin-http.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "evidence_required": [
+  "FT-016-AC-012 / REQ-020 RED: no Boss browser path can directly create the demo Engineer; GREEN: an isolated Boss creates one Engineer through Boss Admin HTTP, the Engineer authenticates, non-Boss creation fails, and password/auth material is absent from response, page state, logs, storage, and capture input; decisive comparison: browser/API/auth transcript plus configured corpus scan; artifact: provisioning evidence under .tasks/TASK-082-T3-FT-016-W3/."
+ ],
+ "purpose": "Expose only direct Engineer provisioning required by the first demo while identity and password authority remain in Access & Admin.",
+ "success_outcome": "A Boss can create the demo Engineer through the registered backend action, the Engineer can authenticate, non-Boss creation is denied, and password/auth material remains write-only.",
+ "anti_goals": [
+  "Do not add invitations/email, recovery, enterprise identity, role reassignment, Plant/grant management, audit presentation, or frontend-owned authorization state.",
+  "Do not retain the initial password in page state, logs, browser storage, or captures."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "backend Account, Membership, PlantAccessGrant, and audit authority",
+   "password/session persistence or capture",
+   "new identity, role, or permission semantics",
+   "Consultant first-demo UI expansion"
   ],
-  "normative_inputs": [
-    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
-    ".memory-bank/contracts/admin/boss-admin-http.md",
-    ".memory-bank/contracts/admin/boss-admin-http.md#presentation-boundary",
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
-  ],
-  "constraints": [
-    "Primary owner is Operator PWA; Access & Admin remains the only Account, Membership, password, and audit provider.",
-    "Use registered request fields and stable safe backend errors only."
-  ],
-  "invariants": [
-    "The provisioning UI cannot assign Plant access, bypass role rules, or create authority from notices.",
-    "Password and auth material never enter page data, logs, audit text, browser storage, or captures."
-  ],
-  "verification_targets": [
-    "FT-016-AC-012: exact direct Engineer provisioning and authentication with non-Boss denial.",
-    "FT-016-AC-012 / REQ-020 T3 harm proof uses isolated Accounts and confirms no password/auth residue after safe rerun cleanup."
+  "stop_conditions": [
+   "The UI requires a backend route or permission outside registered Boss Admin/Plant Management contracts.",
+   "A safe Boss journey cannot be completed without exposing or retaining password/auth material."
   ]
+ },
+ "source_artifacts": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-012",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+  ".memory-bank/contracts/admin/boss-admin-http.md",
+  ".memory-bank/contracts/admin/boss-admin-http.md#presentation-boundary",
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
+ ],
+ "constraints": [
+  "Primary owner is Operator PWA; Access & Admin remains the only Account, Membership, password, and audit provider.",
+  "Use registered request fields and stable safe backend errors only."
+ ],
+ "invariants": [
+  "The provisioning UI cannot assign Plant access, bypass role rules, or create authority from notices.",
+  "Password and auth material never enter page data, logs, audit text, browser storage, or captures."
+ ],
+ "verification_targets": [
+  "FT-016-AC-012: exact direct Engineer provisioning and authentication with non-Boss denial.",
+  "FT-016-AC-012 / REQ-020 T3 harm proof uses isolated Accounts and confirms no password/auth residue after safe rerun cleanup."
+ ]
 }

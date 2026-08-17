@@ -1,7 +1,7 @@
 {
  "id": "TASK-078-T3-FT-015-W2",
  "title": "Close Companion context redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -36,7 +36,16 @@
   }
  ],
  "verify": [
-  "Independent adversarial verification injects the configured corpus and forbidden context classes through Companion request assembly and the provider spy, proving only the registered typed governance subset may cross, zero forbidden values leave, and governance/Safety/Task authority remains unchanged."
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through Companion request assembly and the provider spy, proving only the registered typed governance subset may cross, zero forbidden values leave, and governance/Safety/Task authority remains unchanged.",
+  "VERDICT: PASS (2026-08-16, scheduler mode): executor probe rerun GREEN 45/45; verifier RED-honesty variant RED 30/45 with failure set byte-identical to attempt01-red.txt; gate companion_context_redaction 19 passed; mb-lint passed; diff_check exit 0; full deterministic suite 976 passed. Evidence: .protocols/TASK-078-T3-FT-015-W2/verification.md, .tasks/TASK-078-T3-FT-015-W2/verify-red-honesty.py. Findings: LOW (vacuous S_structural probe controls; unexercised sanitizer-failure READ_INCONSISTENT test) - non-blocking.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-078-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-16",
+   "summary": "Adversarial probe 106/106 (unicode/JSON-shaped/repeated/bare secrets in observation_text/summary_text, structured auth under empty-seam default, exact parity, unregistered metadata un-injectable, fail-closed zero-I/O incl. force-exercised sanitizer-failure COMPANION_READ_INCONSISTENT with zero provider+classifier+timeline I/O, authority regression 0 DecisionRecords, unbound fail-closed); no findings across all five scopes.",
+   "evidence": ".protocols/TASK-078-T3-FT-015-W2/red-verification.md, .tasks/TASK-078-T3-FT-015-W2/red-verify-probe.py"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

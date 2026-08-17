@@ -18,7 +18,7 @@ built by the single module-level ``_audit_failed_outcome`` helper under the
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import re
@@ -28,6 +28,7 @@ import uuid
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from ..core.redaction import redact_text
 from ..timeline import TimelineEvent, TimelineJsonlAppender
 from .contracts import (
     CandidateTransition,
@@ -145,11 +146,13 @@ class _DatasetAgentRuntimeFlow:
         repository: DatasetGovernanceRepository,
         timeline_append: TimelineAppender,
         clock: Clock,
+        secret_values: Iterable[str] = (),
     ) -> None:
         self._session = session
         self._repository = repository
         self._timeline_append = timeline_append
         self._clock = clock
+        self._secret_values = tuple(secret_values)
 
     def run(
         self,
@@ -283,6 +286,7 @@ class _DatasetAgentRuntimeFlow:
                     agent_labeled_guard=True,
                 ),
             )
+            request = _sanitized_request(request, secret_values=self._secret_values)
         except DatasetGovernanceRuntimeValidationError:
             return self._audit(
                 command,
@@ -474,12 +478,14 @@ class DatasetGovernanceRuntimeService:
         repository: DatasetGovernanceRepository | None = None,
         timeline_append: TimelineAppender | None = None,
         clock: Clock | None = None,
+        secret_values: Iterable[str] = (),
     ) -> None:
         self._flow = _DatasetAgentRuntimeFlow(
             session=session,
             repository=repository or DatasetGovernanceRepository(session),
             timeline_append=timeline_append or TimelineJsonlAppender(),
             clock=clock or _utc_now,
+            secret_values=secret_values,
         )
         self._model_executor = model_executor
 
@@ -536,6 +542,7 @@ class TrainingDataCuratorRuntimeService:
         timeline_append: TimelineAppender | None = None,
         clock: Clock | None = None,
         governance_service: DatasetGovernanceService | None = None,
+        secret_values: Iterable[str] = (),
     ) -> None:
         self._session = session
         self._clock = clock or _utc_now
@@ -544,6 +551,7 @@ class TrainingDataCuratorRuntimeService:
             repository=repository or DatasetGovernanceRepository(session),
             timeline_append=timeline_append or TimelineJsonlAppender(),
             clock=self._clock,
+            secret_values=secret_values,
         )
         self._model_executor = model_executor
         self._governance = governance_service or DatasetGovernanceService(
@@ -727,6 +735,49 @@ def _candidate_snapshot(candidate: DatasetCandidate) -> DatasetGovernanceCandida
         corrected=candidate.corrected,
         evidence_ref_count=len(candidate.evidence_refs),
         evidence_kinds=kinds,
+    )
+
+
+def _sanitized_request(
+    request: (
+        DatasetGovernanceProviderRequestV1 | TrainingDataCuratorProviderRequestV1
+    ),
+    *,
+    secret_values: tuple[str, ...],
+) -> DatasetGovernanceProviderRequestV1 | TrainingDataCuratorProviderRequestV1:
+    """Return the outbound strict request copy with forbidden values removed.
+
+    Only the outbound copy is sanitized; the candidate row and every
+    service-side source stay unchanged. Sanitization is unconditional on the
+    free-text ``evidence_kinds`` channel (FT-015 sibling pattern) and runs
+    before provider I/O; a sanitizer-induced contract failure fails closed as
+    ``context_denied`` with zero provider calls.
+    """
+    snapshot = request.candidate
+    kinds = tuple(
+        redact_text(kind, extra_secrets=secret_values)
+        if isinstance(kind, str)
+        else kind
+        for kind in snapshot.evidence_kinds
+    )
+    if kinds == snapshot.evidence_kinds:
+        return request
+    redacted_snapshot = DatasetGovernanceCandidateSnapshotV1(
+        candidate_status=snapshot.candidate_status,
+        candidate_origin=snapshot.candidate_origin,
+        quality_tier=snapshot.quality_tier,
+        follow_up_seen=snapshot.follow_up_seen,
+        corrected=snapshot.corrected,
+        evidence_ref_count=snapshot.evidence_ref_count,
+        evidence_kinds=kinds,
+    )
+    return type(request)(
+        run_id=request.run_id,
+        requested_at=request.requested_at,
+        plant_id=request.plant_id,
+        candidate_id=request.candidate_id,
+        candidate=redacted_snapshot,
+        policy_context=request.policy_context,
     )
 
 

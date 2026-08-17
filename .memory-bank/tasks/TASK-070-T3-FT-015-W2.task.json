@@ -1,7 +1,7 @@
 {
  "id": "TASK-070-T3-FT-015-W2",
  "title": "Close generic Agent Runtime context redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -36,7 +36,23 @@
   }
  ],
  "verify": [
-  "Independent adversarial verification injects the configured corpus and forbidden context classes through the generic Agent Runtime assembler and provider spy, proves zero outbound leakage or unsafe I/O, and preserves the exact ProviderRequestV1 contract and unbound production behavior."
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through the generic Agent Runtime assembler and provider spy, proves zero outbound leakage or unsafe I/O, and preserves the exact ProviderRequestV1 contract and unbound production behavior.",
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-070-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Fresh verifier-owned probe (verify01, disjoint vv1-* corpus) 40/40 GREEN through the ACTUAL DatabaseAgentInputAssembler + provider spy: zero forbidden outbound values (corpus, cookie/auth headers, UI content, provider history, unregistered metadata absent from payload AND request object), exact allowed-field parity, source observation_text byte-identical, structured-auth/env-corpus rejected context_denied with zero provider/audit I/O, oversized observation input_contract_violation zero I/O, unbound production runtime_not_configured zero I/O. Named gate fresh rerun 20 passed. Executor claim path FT-015-AC-010 honest RED 25/37 -> GREEN 35/35 consistent with outcome.",
+   "evidence": ".protocols/TASK-070-T3-FT-015-W2/verification.md; .tasks/TASK-070-T3-FT-015-W2/verify01-probe.py; .tasks/TASK-070-T3-FT-015-W2/verify01-green.txt"
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-070-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probe 74/75 (1 unreachable manufactured case): corpus absent in payload JSON/request repr/nested fields incl. definitions/instructions; zero-I/O context_denied for 7 unsafe classes; sanitizer failure -> input_contract_violation zero I/O; exact allowed-field parity; source byte-identical; unbound -> runtime_not_configured zero I/O; diff only service.py seam + tests; no admitted findings.",
+   "evidence": ".protocols/TASK-070-T3-FT-015-W2/red-verification.md, .tasks/TASK-070-T3-FT-015-W2/redverify01-out.txt"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

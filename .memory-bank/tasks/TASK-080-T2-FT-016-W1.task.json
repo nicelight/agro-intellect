@@ -1,106 +1,115 @@
 {
-  "id": "TASK-080-T2-FT-016-W1",
-  "title": "Establish the SvelteKit Operator PWA scaffold",
-  "status": "planned",
-  "wave": "W1",
-  "feature": "FT-016",
-  "reqs": [
-    "REQ-021"
-  ],
-  "depends_on": [
-    "TASK-004-T2-FT-000-W0"
-  ],
-  "touched_files": [
-    "frontend/package.json",
-    "frontend/package-lock.json",
-    "frontend/svelte.config.js",
-    "frontend/vite.config.ts",
-    "frontend/tsconfig.json",
-    "frontend/src/routes/+layout.svelte",
-    "frontend/src/routes/+page.svelte",
-    "frontend/src/service-worker.ts",
-    "frontend/static/manifest.webmanifest",
-    "frontend/tests/e2e/pwa-scaffold.spec.ts"
-  ],
-  "tier": "T2",
-  "gates": [
-    {
-      "name": "frontend_check",
-      "command": "cd frontend && npm run check",
-      "required": true
-    },
-    {
-      "name": "frontend_build",
-      "command": "cd frontend && npm run build",
-      "required": true
-    },
-    {
-      "name": "pwa_scaffold_smoke",
-      "command": "cd frontend && npm run test:e2e -- tests/e2e/pwa-scaffold.spec.ts",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent inspection and browser smoke prove one Svelte 5 Runes/TypeScript/SvelteKit stack, an installable static-shell PWA, and no protected-response cache or background mutation queue."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
-  ],
-  "evidence_required": [
-    "FT-016-AC-001 RED: the current tree has no frontend scaffold or runnable Svelte check/build/installability surface; GREEN: one Svelte 5 Runes/TypeScript/SvelteKit scaffold passes check/build and static-shell-only PWA smoke; decisive comparison: dependency/config inspection plus executed commands and cache request log; artifact: scaffold report under .tasks/TASK-080-T2-FT-016-W1/."
-  ],
-  "purpose": "Create the smallest executable frontend substrate required by every FT-016 presentation task without introducing domain behavior or a competing framework.",
-  "success_outcome": "A local Svelte 5/SvelteKit PWA scaffold builds, checks, and installs with static-shell-only caching and the required Playwright command, while protected data and mutations remain uncached.",
-  "anti_goals": [
-    "Do not implement Boss, Plant, provider, Dataset, or storage-prompt product behavior in the scaffold task.",
-    "Do not add a second frontend framework, legacy Svelte syntax, LAN/CORS mode, hosted deployment, background sync, or protected-response cache."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "backend product/domain behavior",
-      "database migrations or state",
-      "FT-015 provider implementation",
-      "cloud/server sync and LAN exposure"
-    ],
-    "stop_conditions": [
-      "The scaffold requires a non-Svelte frontend framework or a shared/global architecture change.",
-      "Installability would require caching protected API/SSR data or queueing mutations."
-    ]
+ "id": "TASK-080-T2-FT-016-W1",
+ "title": "Establish the SvelteKit Operator PWA scaffold",
+ "status": "done",
+ "wave": "W1",
+ "feature": "FT-016",
+ "reqs": [
+  "REQ-021"
+ ],
+ "depends_on": [
+  "TASK-004-T2-FT-000-W0"
+ ],
+ "touched_files": [
+  "frontend/package.json",
+  "frontend/package-lock.json",
+  "frontend/svelte.config.js",
+  "frontend/vite.config.ts",
+  "frontend/tsconfig.json",
+  "frontend/src/routes/+layout.svelte",
+  "frontend/src/routes/+page.svelte",
+  "frontend/src/service-worker.ts",
+  "frontend/static/manifest.webmanifest",
+  "frontend/tests/e2e/pwa-scaffold.spec.ts"
+ ],
+ "tier": "T2",
+ "gates": [
+  {
+   "name": "frontend_check",
+   "command": "cd frontend && npm run check",
+   "required": true
   },
-  "source_artifacts": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-001",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  {
+   "name": "frontend_build",
+   "command": "cd frontend && npm run build",
+   "required": true
+  },
+  {
+   "name": "pwa_scaffold_smoke",
+   "command": "cd frontend && npm run test:e2e -- tests/e2e/pwa-scaffold.spec.ts",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "Independent inspection and browser smoke prove one Svelte 5 Runes/TypeScript/SvelteKit stack, an installable static-shell PWA, and no protected-response cache or background mutation queue.",
+  "2026-08-17 /verify PASS: fresh reruns of check (exit 0, 0 errors), build (exit 0, adapter-node), pwa_scaffold_smoke (exit 0, 3 passed; SW activated, cache log = static shell only, /api/* 404 and cache unchanged after, manifest valid via CDP); built service-worker.js precaches only /_app/immutable/* + icons + manifest, no runtime cache writes, no background sync; dependency inspection proves one Svelte 5/SvelteKit stack; forbidden scope untouched. Evidence: .protocols/TASK-080-T2-FT-016-W1/verification.md#verifier-owned-evidence.",
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-080-T2-FT-016-W1 (scheduler mode)",
+   "date": "2026-08-17",
+   "summary": "Independent reruns: frontend_check exit 0 (0 errors), frontend_build exit 0 (adapter-node), e2e 3 passed (SW activated, cached paths only static shell /_app/immutable+manifest+icons, protected /api/* 404 uncached, CDP manifest errors []); one Svelte 5 Runes/TS/SvelteKit stack, no product behavior, static-shell-only cache (no runtime writes, no sync/IndexedDB), RED honesty proven (no frontend ever existed); findings none.",
+   "evidence": ".protocols/TASK-080-T2-FT-016-W1/verification.md, .tasks/TASK-080-T2-FT-016-W1/"
+  }
+ ],
+ "docs": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "evidence_required": [
+  "FT-016-AC-001 RED: the current tree has no frontend scaffold or runnable Svelte check/build/installability surface; GREEN: one Svelte 5 Runes/TypeScript/SvelteKit scaffold passes check/build and static-shell-only PWA smoke; decisive comparison: dependency/config inspection plus executed commands and cache request log; artifact: scaffold report under .tasks/TASK-080-T2-FT-016-W1/."
+ ],
+ "purpose": "Create the smallest executable frontend substrate required by every FT-016 presentation task without introducing domain behavior or a competing framework.",
+ "success_outcome": "A local Svelte 5/SvelteKit PWA scaffold builds, checks, and installs with static-shell-only caching and the required Playwright command, while protected data and mutations remain uncached.",
+ "anti_goals": [
+  "Do not implement Boss, Plant, provider, Dataset, or storage-prompt product behavior in the scaffold task.",
+  "Do not add a second frontend framework, legacy Svelte syntax, LAN/CORS mode, hosted deployment, background sync, or protected-response cache."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "backend product/domain behavior",
+   "database migrations or state",
+   "FT-015 provider implementation",
+   "cloud/server sync and LAN exposure"
   ],
-  "normative_inputs": [
-    ".memory-bank/architecture/system-architecture.md#ad-009---operator-frontend-uses-svelte-5-and-sveltekit",
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/contracts/operator-pwa.md#sveltekit-pwa-scaffold",
-    ".memory-bank/testing/operator-pwa-first-demo.md#scaffold-and-routing-matrix",
-    ".agents/rules/svelte5.md"
-  ],
-  "constraints": [
-    "Primary owner is Operator PWA under frontend/; code roots are advisory and not a hard write boundary.",
-    "Use Svelte 5 Runes, TypeScript, SvelteKit, server-safe browser API access, and the required validation loop."
-  ],
-  "invariants": [
-    "The PWA is presentation only and has no backend authorization or mutable domain authority.",
-    "Service-worker behavior never stores protected Account/Plant responses or queues mutations."
-  ],
-  "verification_targets": [
-    "FT-016-AC-001: check/build/installability, exact dependency inspection, one framework, Runes-only project code, and protected-cache absence.",
-    "Operator PWA scaffold obligation: static application-shell caching only and no background sync."
+  "stop_conditions": [
+   "The scaffold requires a non-Svelte frontend framework or a shared/global architecture change.",
+   "Installability would require caching protected API/SSR data or queueing mutations."
   ]
+ },
+ "source_artifacts": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-001",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/architecture/system-architecture.md#ad-009---operator-frontend-uses-svelte-5-and-sveltekit",
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/contracts/operator-pwa.md#sveltekit-pwa-scaffold",
+  ".memory-bank/testing/operator-pwa-first-demo.md#scaffold-and-routing-matrix",
+  ".agents/rules/svelte5.md"
+ ],
+ "constraints": [
+  "Primary owner is Operator PWA under frontend/; code roots are advisory and not a hard write boundary.",
+  "Use Svelte 5 Runes, TypeScript, SvelteKit, server-safe browser API access, and the required validation loop."
+ ],
+ "invariants": [
+  "The PWA is presentation only and has no backend authorization or mutable domain authority.",
+  "Service-worker behavior never stores protected Account/Plant responses or queues mutations."
+ ],
+ "verification_targets": [
+  "FT-016-AC-001: check/build/installability, exact dependency inspection, one framework, Runes-only project code, and protected-cache absence.",
+  "Operator PWA scaffold obligation: static application-shell caching only and no background sync."
+ ]
 }

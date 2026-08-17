@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 import uuid
 
 import pytest
@@ -9,10 +10,22 @@ from pydantic import ValidationError
 from sqlalchemy import select
 
 from backend.app.access_admin.dependencies import require_actor_context
-from backend.app.agent_chat import PlantFeedError, PlantFeedErrorCode, PlantFeedService, UIFeedEvent
+from backend.app.agent_chat import (
+    GuardedAgentPublicationService,
+    PlantFeedError,
+    PlantFeedErrorCode,
+    PlantFeedService,
+    UIFeedEvent,
+)
 from backend.app.api.feed import CompanionAttentionPayload, CompanionDecisionPayload
 from backend.app.main import create_app
 from tests.backend.agent_chat.conftest import ft008_database, ft008_seed  # noqa: F401
+from tests.backend.agent_chat.test_ft008_guarded_publication import (
+    CORPUS,
+    _classification,
+    _envelope,
+    corpus_text,
+)
 from tests.backend.plant_operations.conftest import create_actor
 from tests.backend.safety_gate.conftest import ft011_database, ft011_seed  # noqa: F401
 
@@ -213,3 +226,47 @@ def test_feed_response_union_returns_strict_inert_safety_status(
     assert item["display_payload"]["summary_text"] == summary
     assert item["visible_to_agents"] is item["consumable_by_agents"] is False
     assert "candidate" not in str(item).lower()
+
+
+def test_feed_route_serializes_no_configured_corpus(ft008_database, ft008_seed, monkeypatch):
+    from tests.backend.agent_chat.test_ft008_guarded_publication import (
+        CORPUS_API_KEY,
+        CORPUS_DB_PASSWORD,
+        CORPUS_ENV_TOKEN,
+    )
+
+    monkeypatch.setenv("AGRO_BUSUI_CORPUS_TOKEN", CORPUS_ENV_TOKEN)
+    monkeypatch.setenv("AGRO_BUSUI_CORPUS_API_KEY", CORPUS_API_KEY)
+    monkeypatch.setenv("AGRO_BUSUI_CORPUS_PASSWORD", CORPUS_DB_PASSWORD)
+    farm, boss, plant = ft008_seed
+    text = corpus_text()
+    envelope = _envelope(farm.farm_id, plant.plant_id, text)
+    result = GuardedAgentPublicationService(ft008_database).publish(
+        boss, envelope, _classification(envelope)
+    )
+    assert result.status == "accepted"
+    app = create_app(database=ft008_database)
+    app.dependency_overrides[require_actor_context] = lambda: boss
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        response = client.get(f"/api/plants/{plant.plant_id}/feed")
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "no-store"
+    body = json.dumps(response.json())
+    for raw in CORPUS:
+        assert raw not in body
+    assert "***" in body
+    message_items = [
+        item
+        for item in response.json()["items"]
+        if item["display_kind"] == "agent_message"
+    ]
+    assert len(message_items) == 1
+    assert (
+        message_items[0]["display_payload"]["quoted_text"]
+        != envelope.candidate_output
+    )
+    assert (
+        message_items[0]["visible_to_agents"]
+        is message_items[0]["consumable_by_agents"]
+        is False
+    )

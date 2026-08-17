@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 import json
@@ -15,6 +15,7 @@ from ..agent_chat.contracts import UIFeedEventV1, timestamp_text
 from ..agent_chat.models import UIFeedEvent
 from ..agent_runtime.contracts import SafetyClassificationResultV1
 from ..agent_runtime.service import DatabaseRuntimeAuthorizationGuard, ModelExecution
+from ..core.redaction import redact_text
 from .contracts import (
     SUPPORTED_PHYSICAL_ACTION_KINDS,
     UNSUPPORTED_PHYSICAL_ACTION_KINDS,
@@ -22,6 +23,7 @@ from .contracts import (
     SafetyActionDecisionOutcomeV1,
     SafetyClassificationOutcomeV1,
     SafetyGateClassificationCommandV1,
+    SafetyGateMessageCandidateV1,
     SafetyGateModelCandidateV1,
     SafetyGateProviderRequestV1,
     SafetyGateValidationError,
@@ -59,6 +61,7 @@ class SafetyGateClassificationService:
         authorization_guard: DatabaseRuntimeAuthorizationGuard | None = None,
         repository: SafetyClassificationRepository | None = None,
         clock=None,
+        secret_values: Iterable[str] = (),
     ) -> None:
         self._session = session
         self._model_executor = model_executor
@@ -68,6 +71,7 @@ class SafetyGateClassificationService:
             clock=self._clock,
         )
         self._repository = repository or SafetyClassificationRepository(session)
+        self._secret_values = tuple(secret_values)
 
     def classify(
         self,
@@ -77,6 +81,18 @@ class SafetyGateClassificationService:
             raise SafetyGateValidationError()
         envelope = command.message_envelope
         request = SafetyGateProviderRequestV1.from_envelope(envelope)
+        try:
+            request = _sanitized_request(
+                request,
+                secret_values=self._secret_values,
+            )
+        except (SafetyGateValidationError, ValueError):
+            self._end_transaction()
+            return _no_result(
+                command,
+                outcome_kind="guard_denied",
+                error_code="SAFETY_CLASSIFICATION_GUARD_DENIED",
+            )
         input_sha256 = _digest(envelope.as_value())
 
         scope = self._current_scope(command)
@@ -592,6 +608,34 @@ def _no_result(
         model_ref=None,
         provider_call_status=provider_call_status,
         error_code=error_code,
+    )
+
+
+def _sanitized_request(
+    request: SafetyGateProviderRequestV1,
+    *,
+    secret_values: tuple[str, ...],
+) -> SafetyGateProviderRequestV1:
+    """Return the outbound request copy with configured secret values removed.
+
+    Only the outbound copy is sanitized; the service-side envelope and the
+    persisted rows remain unchanged. A sanitizer failure fails closed at the
+    caller before any provider I/O.
+    """
+
+    candidate = request.message_candidate
+    output = redact_text(candidate.candidate_output, extra_secrets=secret_values)
+    if output == candidate.candidate_output:
+        return request
+    return SafetyGateProviderRequestV1(
+        agent_definition=request.agent_definition,
+        message_candidate=SafetyGateMessageCandidateV1(
+            message_id=candidate.message_id,
+            origin_agent_id=candidate.origin_agent_id,
+            runtime_decision=candidate.runtime_decision,
+            candidate_claim_type=candidate.candidate_claim_type,
+            candidate_output=output,
+        ),
     )
 
 

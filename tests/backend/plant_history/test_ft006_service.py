@@ -615,6 +615,165 @@ def test_postgresql_cursor_requires_exact_canonical_service_encoding(
             assert error.value.code is PlantHistoryErrorCode.HISTORY_CURSOR_INVALID
 
 
+def test_configured_corpus_absent_from_actual_history_serialization(
+    ft006_database,
+    ft006_photo_store,
+    event_ref_factory,
+    monkeypatch,
+):
+    corpus_db_password = "corpus-ph-db-pw-7t3m"
+    corpus_env_secret = "corpus-ph-env-secret-4q9w"
+    corpus_bearer = "corpus-ph-bearer-6r2k"
+    corpus_api_key = "corpus-ph-api-key-1n8v"
+    corpus_url_password = "corpus-ph-url-pw-3h5d"
+    corpus = [
+        corpus_db_password,
+        corpus_env_secret,
+        corpus_bearer,
+        corpus_api_key,
+        corpus_url_password,
+    ]
+    monkeypatch.setenv("AGRO_PH_CORPUS_API_KEY", corpus_api_key)
+    monkeypatch.setenv("AGRO_PH_CORPUS_SECRET", corpus_env_secret)
+    monkeypatch.setenv("AGRO_PH_CORPUS_DB_URL", corpus_db_password)
+
+    farm = seed_farm(ft006_database)
+    boss, _ = create_actor(ft006_database, farm, "boss")
+    engineer, engineer_membership = create_actor(ft006_database, farm, "engineer")
+    plant = create_active_plant(
+        ft006_database,
+        boss,
+        plant_key="history_corpus_probe",
+    )
+    grant_access(
+        ft006_database,
+        boss,
+        plant_id=plant.plant_id,
+        membership_id=engineer_membership.membership_id,
+    )
+    check_in, _measurement, photo_id = _create_source_rows(
+        ft006_database,
+        ft006_photo_store,
+        event_ref_factory,
+        engineer,
+        plant.plant_id,
+    )
+    with ft006_database.session() as session, session.begin():
+        stored_check_in = session.get(DailyCheckIn, check_in.check_in_id)
+        assert stored_check_in is not None
+        stored_check_in.source_refs = {
+            **stored_check_in.source_refs,
+            "provenance_note": (
+                f"note password={corpus_db_password} env={corpus_env_secret} "
+                f"key={corpus_api_key} Authorization: Bearer {corpus_bearer} "
+                f"postgresql+psycopg://postgres:{corpus_url_password}@dbhost/agro"
+            ),
+            "api_token": "corpus-ph-session-token-2v8a",
+            "authorization": "Bearer corpus-ph-session-token-2v8a",
+            "db_url": f"postgresql+psycopg://user:{corpus_url_password}@dbhost/agro",
+            "safe_relative_ref": f"plants/{plant.plant_id}/photos/{photo_id}/original.jpg",
+            "nested": {
+                "inner_note": f"inner={corpus_env_secret} key={corpus_api_key}",
+            },
+        }
+        stored_plant = session.get(Plant, plant.plant_id)
+        assert stored_plant is not None
+        stored_plant.display_name = f"Plant {corpus_env_secret}"
+
+    with ft006_database.session() as session:
+        service = PlantHistoryService(session)
+        card = service.get_card(engineer, plant_id=plant.plant_id)
+        first_page = service.list_history(
+            engineer,
+            plant_id=plant.plant_id,
+            limit=2,
+        )
+        second_page = service.list_history(
+            engineer,
+            plant_id=plant.plant_id,
+            cursor=first_page.next_cursor,
+            limit=100,
+        )
+
+    payload = _json_payload(card, first_page, second_page)
+    assert all(raw not in payload for raw in corpus)
+    assert "***" in payload
+    assert "postgresql+psycopg://postgres:***@dbhost/agro" in payload
+    assert "Plant ***" in payload
+    assert "corpus-ph-session-token-2v8a" not in payload
+
+    graph = [asdict(card), asdict(first_page), asdict(second_page)]
+    keys, strings = _mapping_keys_and_string_values(graph)
+    assert {"api_token", "authorization", "db_url"}.isdisjoint(keys)
+    safe_relative_ref = (
+        f"plants/{plant.plant_id}/photos/{photo_id}/original.jpg"
+    )
+    assert safe_relative_ref in strings
+    assert first_page.next_cursor is not None
+    assert len(first_page.items) == 2
+    assert {item.history_entry_id for item in first_page.items}.isdisjoint(
+        {item.history_entry_id for item in second_page.items}
+    )
+
+    with ft006_database.session() as session:
+        stored_check_in = session.get(DailyCheckIn, check_in.check_in_id)
+        stored_plant = session.get(Plant, plant.plant_id)
+        assert stored_check_in.source_refs["api_token"] == (
+            "corpus-ph-session-token-2v8a"
+        )
+        assert corpus_env_secret in stored_plant.display_name
+
+
+class _Unrenderable:
+    def __str__(self) -> str:
+        raise RuntimeError("cannot render this value")
+
+
+def test_unrenderable_history_value_fails_closed_registered_error(
+    ft006_database,
+    event_ref_factory,
+):
+    farm = seed_farm(ft006_database)
+    boss, _ = create_actor(ft006_database, farm, "boss")
+    engineer, engineer_membership = create_actor(ft006_database, farm, "engineer")
+    plant = create_active_plant(
+        ft006_database,
+        boss,
+        plant_key="history_fail_closed",
+    )
+    grant_access(
+        ft006_database,
+        boss,
+        plant_id=plant.plant_id,
+        membership_id=engineer_membership.membership_id,
+    )
+    with ft006_database.session() as session:
+        result = PlantOperationsService(
+            session,
+            timeline_append=event_ref_factory,
+        ).create_check_in(
+            engineer,
+            plant_id=plant.plant_id,
+            observation_state="observed",
+            observation_text="Fail-closed probe",
+            measurement=ManualMeasurementInput(ph="6.50"),
+        )
+        check_in_id = result.check_in.check_in_id
+
+    with ft006_database.session() as session:
+        stored_check_in = session.get(DailyCheckIn, check_in_id)
+        assert stored_check_in is not None
+        stored_check_in.event_refs = {"bad": _Unrenderable()}
+        with pytest.raises(PlantHistoryError) as error:
+            PlantHistoryService(session).list_history(
+                engineer,
+                plant_id=plant.plant_id,
+            )
+        assert error.value.code is PlantHistoryErrorCode.HISTORY_PERSISTENCE_FAILED
+        assert "HISTORY_PERSISTENCE_FAILED" in str(error.value)
+        assert "cannot render" not in str(error.value)
+
+
 def _create_source_rows(
     database,
     photo_store,

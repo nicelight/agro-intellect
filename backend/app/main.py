@@ -19,6 +19,7 @@ from .api import (
     session_router,
 )
 from .api.companion import FT013RawPathCanonicalityMiddleware
+from .api.dataset_governance import router as dataset_governance_router
 from .agent_runtime import ProviderExecutorBindings
 from .api.task_follow_up import (
     FT012RawPathCanonicalityMiddleware,
@@ -56,6 +57,7 @@ def create_app(
     app.include_router(plant_state_router)
     app.include_router(task_follow_up_router)
     app.include_router(companion_router)
+    app.include_router(dataset_governance_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

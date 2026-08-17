@@ -18,6 +18,7 @@ from backend.app.agent_runtime import (
     AgentRuntimeService,
     AgentRuntimeValidationError,
     CurrentAuthorizationScope,
+    DatabaseAgentInputAssembler,
     MessageEnvelopeV1,
     RuntimeDecision,
     SafetyClassificationResultV1,
@@ -27,6 +28,7 @@ from backend.app.plant_operations import ManualMeasurementInput, PlantOperations
 from backend.app.plant_operations.models import DailyCheckIn
 from backend.app.config import AppSettings
 from backend.app.timeline import TimelineAppendError, TimelineEvent, append_timeline_event
+from sqlalchemy import select
 from tests.backend.plant_operations.conftest import (
     archive_plant,
     create_active_plant,
@@ -557,3 +559,229 @@ def test_timeline_writer_keeps_domain_payload_opaque_and_redacts_secrets(tmp_pat
             unregistered,
             settings=AppSettings(local_timeline_root=tmp_path),
         )
+
+
+CORPUS_DB_PASSWORD = "corpus-ft070-db-pw-4h9k"
+CORPUS_BEARER = "corpus-ft070-bearer-7q2m"
+CORPUS_COOKIE = "corpus-ft070-cookie-1p5t"
+CORPUS_SESSION = "corpus-ft070-session-8v3r"
+CORPUS_SECRETS = [
+    CORPUS_DB_PASSWORD,
+    CORPUS_BEARER,
+    CORPUS_COOKIE,
+    CORPUS_SESSION,
+]
+
+CORPUS_OBSERVATION = (
+    f"Watered 2L. dbpw={CORPUS_DB_PASSWORD} bearer={CORPUS_BEARER} "
+    f"cookieval={CORPUS_COOKIE} sess={CORPUS_SESSION}"
+)
+
+
+def _corpus_definition() -> AgentDefinition:
+    return AgentDefinition(
+        agent_id="runtime_test",
+        competence=f"Corpus-bearing competence {CORPUS_DB_PASSWORD}.",
+        instructions=(
+            "Return only the strict schema. "
+            f"dbpw={CORPUS_DB_PASSWORD} bearer={CORPUS_BEARER}"
+        ),
+        allowed_candidate_claim_types=("observation",),
+    )
+
+
+def _corpus_service(session, executor, event_ref_factory):
+    return AgentRuntimeService(
+        session,
+        definition_resolver=StaticAgentDefinitionResolver(
+            {"runtime_test": _corpus_definition()}
+        ),
+        model_executor=executor,
+        timeline_append=event_ref_factory,
+        input_assembler=DatabaseAgentInputAssembler(
+            session,
+            secret_values=tuple(CORPUS_SECRETS),
+        ),
+    )
+
+
+def _seed_check_in(database, actor, plant_id, *, observation_text, event_ref_factory):
+    with database.session() as session:
+        PlantOperationsService(session, timeline_append=event_ref_factory).create_check_in(
+            actor,
+            plant_id=plant_id,
+            observation_state="observed",
+            observation_text=observation_text,
+            measurement=ManualMeasurementInput(ph="6.50", ec_ms_cm="1.250"),
+        )
+
+
+def test_generic_request_removes_configured_corpus_before_provider_boundary(
+    ft004_database,
+    event_ref_factory,
+):
+    farm = seed_farm(ft004_database)
+    boss, _ = create_actor(ft004_database, farm, "boss")
+    plant = create_active_plant(ft004_database, boss, plant_key="corpus_001")
+    _seed_check_in(
+        ft004_database,
+        boss,
+        plant.plant_id,
+        observation_text=CORPUS_OBSERVATION,
+        event_ref_factory=event_ref_factory,
+    )
+
+    actor = _persistent_actor(ft004_database, boss)
+    executor = _Executor(_speak_result(f"plant:{plant.plant_id}"))
+    with ft004_database.session() as session:
+        outcome = _corpus_service(session, executor, event_ref_factory).invoke(
+            _command(actor, plant.plant_id)
+        )
+
+    assert outcome.outcome_kind == "envelope_ready"
+    request = executor.requests[0]
+    payload_text = json.dumps(request.as_provider_payload(), sort_keys=True)
+    record_text = repr(request)
+    for raw in CORPUS_SECRETS:
+        assert raw not in payload_text
+        assert raw not in record_text
+    assert "***" in payload_text
+    definition = request.as_provider_payload()["agent_definition"]
+    assert definition["instructions"] == "Return only the strict schema. dbpw=*** bearer=***"
+
+
+def test_generic_request_keeps_source_values_unchanged_and_safe_parity(
+    ft004_database,
+    event_ref_factory,
+):
+    farm = seed_farm(ft004_database)
+    boss, _ = create_actor(ft004_database, farm, "boss")
+    plant = create_active_plant(ft004_database, boss, plant_key="corpus_002")
+    _seed_check_in(
+        ft004_database,
+        boss,
+        plant.plant_id,
+        observation_text=CORPUS_OBSERVATION,
+        event_ref_factory=event_ref_factory,
+    )
+
+    actor = _persistent_actor(ft004_database, boss)
+    executor = _Executor(_speak_result(f"plant:{plant.plant_id}"))
+    with ft004_database.session() as session:
+        outcome = _corpus_service(session, executor, event_ref_factory).invoke(
+            _command(actor, plant.plant_id)
+        )
+
+    assert outcome.outcome_kind == "envelope_ready"
+    request = executor.requests[0]
+    payload = request.as_provider_payload()
+    assert list(payload) == ["schema_version", "agent_definition", "records", "source_refs"]
+    assert payload["schema_version"] == 1
+    assert set(payload["agent_definition"]) == {
+        "agent_id",
+        "competence",
+        "instructions",
+        "allowed_candidate_claim_types",
+        "output_schema",
+    }
+    records = payload["records"]
+    assert [record["record_type"] for record in records] == [
+        "plant",
+        "daily_checkin",
+        "manual_measurement",
+    ]
+    assert set(records[0]["payload"]) == {"plant_id", "status"}
+    assert set(records[1]["payload"]) == {
+        "check_in_id",
+        "observed_at",
+        "recorded_at",
+        "observation_state",
+        "observation_text",
+    }
+    assert set(records[2]["payload"]) == {
+        "measurement_id",
+        "measured_at",
+        "recorded_at",
+        "ph",
+        "ec_ms_cm",
+        "source_type",
+        "trust_status",
+    }
+    for record in records:
+        assert set(record) == {"record_type", "source_ref", "payload"}
+    assert "***" in records[1]["payload"]["observation_text"]
+    assert records[1]["payload"]["observation_state"] == "observed"
+
+    with ft004_database.session() as session:
+        stored = session.scalar(
+            select(DailyCheckIn).where(DailyCheckIn.plant_id == plant.plant_id)
+        )
+        assert stored.observation_text == CORPUS_OBSERVATION
+
+
+def test_generic_request_fails_closed_on_structured_auth_before_io(
+    ft004_database,
+    event_ref_factory,
+):
+    farm = seed_farm(ft004_database)
+    boss, _ = create_actor(ft004_database, farm, "boss")
+    plant = create_active_plant(ft004_database, boss, plant_key="corpus_003")
+    now = datetime.now(timezone.utc)
+    with ft004_database.session() as session, session.begin():
+        session.add(
+            DailyCheckIn(
+                check_in_id=uuid.uuid4(),
+                farm_id=farm.farm_id,
+                plant_id=plant.plant_id,
+                actor_account_id=boss.account_id,
+                actor_membership_id=boss.membership_id,
+                check_in_state="completed",
+                observed_at=now,
+                recorded_at=now,
+                observation_state="observed",
+                observation_text="note Authorization: Bearer corpus-ft070-bearer-7q2m tail",
+                source_refs={},
+                event_refs={},
+            )
+        )
+
+    actor = _persistent_actor(ft004_database, boss)
+    executor = _Executor(_speak_result(f"plant:{plant.plant_id}"))
+    with ft004_database.session() as session:
+        outcome = _corpus_service(session, executor, event_ref_factory).invoke(
+            _command(actor, plant.plant_id)
+        )
+
+    assert outcome.outcome_kind == "context_denied"
+    assert outcome.reason_code == "context_denied"
+    assert executor.requests == []
+    assert event_ref_factory.events == []
+
+
+def test_generic_request_cookie_header_never_crosses_boundary(
+    ft004_database,
+    event_ref_factory,
+):
+    farm = seed_farm(ft004_database)
+    boss, _ = create_actor(ft004_database, farm, "boss")
+    plant = create_active_plant(ft004_database, boss, plant_key="corpus_004")
+    _seed_check_in(
+        ft004_database,
+        boss,
+        plant.plant_id,
+        observation_text=f"note session={CORPUS_COOKIE}; HttpOnly tail",
+        event_ref_factory=event_ref_factory,
+    )
+
+    actor = _persistent_actor(ft004_database, boss)
+    executor = _Executor(_speak_result(f"plant:{plant.plant_id}"))
+    with ft004_database.session() as session:
+        outcome = _corpus_service(session, executor, event_ref_factory).invoke(
+            _command(actor, plant.plant_id)
+        )
+
+    assert outcome.outcome_kind == "envelope_ready"
+    request = executor.requests[0]
+    payload_text = json.dumps(request.as_provider_payload(), sort_keys=True)
+    assert CORPUS_COOKIE not in payload_text
+    assert "***" in payload_text

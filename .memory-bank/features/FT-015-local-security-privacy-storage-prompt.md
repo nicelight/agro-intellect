@@ -362,3 +362,29 @@ source_of_truth:
   TASK-079 are reconciled to Planning Revision 4. TASK-062 through TASK-070
   preserve their existing identities and `planned` lifecycle; the corrected
   execution-cohesive owner boundaries are ready for fresh task-plan review.
+
+## Semantic Verification
+
+Feature-completion semantic gate `/red-verify --feature FT-015` (2026-08-17).
+All 18 cards implemented (TASK-062 through TASK-079); every T3 card holds
+per-task `semantic-pass` and both T2 cards hold functional `PASS`. Feature-wide
+adversarial probe covered redaction uniformity (shared `redact_text` applied
+unconditionally on every surface, no `if secret_values` composition-dependent
+skip; default compositions still redact env/auth material), source-of-truth
+(PostgreSQL projection authority preserved, no filesystem fallback, no
+sanitizer-gained authority), boundary/contract integrity (exact
+`PhotoStorageStatus` 5-field no-store shape, manifest/Timeline registry,
+Bus/UI consumability flags, `ProviderRequestV1` allowlists, typed governance
+subset, advisory-only Dataset agents), AC-001..019 owner coverage with no
+orphan/duplicate claims, AC-011 browser-capture handoff documented to FT-016,
+and Constitution fit (privacy by default, security boundaries, low
+maintenance, no speculation). Documented non-admissions are the shared
+`_redactable_value` length<3 filter and bare non-env literal values under the
+default composition (uniform shared baseline, accepted in TASK-070/075/076),
+and the TASK-067 operator-restricted corpus reading for bare DSN substrings in
+`X-Request-ID`. No material break of an accepted outcome and no operator
+question required.
+
+Report: `.tasks/FT-015/FT-015-S-RED-VERIFY-final-report-docs-01.md`.
+
+SEMANTIC_VERDICT: semantic-pass

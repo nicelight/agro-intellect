@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from ..access_admin.actor_context import ActorContext
 from ..agent_runtime.contracts import MessageEnvelopeV1, SafetyClassificationResultV1
+from ..core.redaction import redact_text
 from ..database import DatabaseHandle
 from .authorization import lock_current_plant_authorization
 from .contracts import BusEventEnvelopeV1, UIFeedEventV1
@@ -73,6 +74,7 @@ class GuardedAgentPublicationService:
         ui_id = uuid.uuid4()
         now = datetime.now(timezone.utc)
         try:
+            quoted_text = redact_text(envelope.candidate_output) if bus_id else None
             with self._database.session() as session:
                 with session.begin():
                     auth = lock_current_plant_authorization(session, actor, envelope.plant_id, allow_archived=False)
@@ -80,8 +82,8 @@ class GuardedAgentPublicationService:
                         return PublicationResult("rejected", "plant_not_publishable")
                     existing_ui = session.scalar(select(UIFeedEvent).where(UIFeedEvent.plant_id == envelope.plant_id, UIFeedEvent.source_id == str(envelope.message_id), UIFeedEvent.display_kind == ("agent_message" if bus_id else "block_notice")).with_for_update())
                     existing_bus = session.scalar(select(AgentBusEvent).where(AgentBusEvent.plant_id == envelope.plant_id, AgentBusEvent.source_type == "message_envelope", AgentBusEvent.source_id == str(envelope.message_id), AgentBusEvent.event_type == "agent_safe_information").with_for_update()) if bus_id else None
-                    expected_ui = _ui_value(ui_id, now, envelope, classification)
-                    expected_bus = _bus_value(bus_id, now, actor, auth.scope_value(), envelope, classification) if bus_id else None
+                    expected_ui = _ui_value(ui_id, now, envelope, classification, quoted_text)
+                    expected_bus = _bus_value(bus_id, now, actor, auth.scope_value(), envelope, classification, quoted_text) if bus_id else None
                     if existing_ui is not None or existing_bus is not None:
                         if _stored_ui_matches(existing_ui, expected_ui) and (expected_bus is None or _stored_bus_matches(existing_bus, expected_bus)):
                             return PublicationResult("duplicate", bus_event_id=existing_bus.event_id if existing_bus else None, ui_event_id=existing_ui.ui_event_id)
@@ -97,13 +99,13 @@ class GuardedAgentPublicationService:
             return PublicationResult("failed", "persistence_failed")
 
 
-def _ui_value(event_id, now, envelope, classification):
+def _ui_value(event_id, now, envelope, classification, quoted_text):
     blocked = classification.classification == "blocked_uncertain"
-    return {"schema_version": 1, "ui_event_id": str(event_id), "created_at": now.isoformat().replace("+00:00", "Z"), "farm_id": str(envelope.farm_id), "plant_id": str(envelope.plant_id), "source_type": "safety" if blocked else "agent_message", "source_id": str(envelope.message_id), "source_refs": [f"message_envelope:{envelope.message_id}", f"safety_classification:{classification.message_id}"], "display_kind": "block_notice" if blocked else "agent_message", "display_payload": {"payload_kind": "block_notice", "notice_code": "classification_uncertain", "text": "Сообщение заблокировано до уточнения безопасности."} if blocked else {"payload_kind": "agent_message", "agent_id": envelope.agent_id, "candidate_claim_type": envelope.candidate_claim_type, "quoted_text": envelope.candidate_output}, "visible_to_roles": ["boss", "engineer", "consultant"], "visible_to_agents": False, "consumable_by_agents": False}
+    return {"schema_version": 1, "ui_event_id": str(event_id), "created_at": now.isoformat().replace("+00:00", "Z"), "farm_id": str(envelope.farm_id), "plant_id": str(envelope.plant_id), "source_type": "safety" if blocked else "agent_message", "source_id": str(envelope.message_id), "source_refs": [f"message_envelope:{envelope.message_id}", f"safety_classification:{classification.message_id}"], "display_kind": "block_notice" if blocked else "agent_message", "display_payload": {"payload_kind": "block_notice", "notice_code": "classification_uncertain", "text": "Сообщение заблокировано до уточнения безопасности."} if blocked else {"payload_kind": "agent_message", "agent_id": envelope.agent_id, "candidate_claim_type": envelope.candidate_claim_type, "quoted_text": quoted_text}, "visible_to_roles": ["boss", "engineer", "consultant"], "visible_to_agents": False, "consumable_by_agents": False}
 
 
-def _bus_value(event_id, now, actor, scope, envelope, classification):
-    return {"schema_version": 1, "event_id": str(event_id), "event_type": "agent_safe_information", "created_at": now.isoformat().replace("+00:00", "Z"), "farm_id": str(envelope.farm_id), "plant_id": str(envelope.plant_id), "actor_ref": {"account_id": str(actor.account_id), "membership_id": str(actor.membership_id), "role_preset": actor.role_preset.value}, "source_type": "message_envelope", "source_id": str(envelope.message_id), "payload": {"payload_kind": "quoted_candidate", "message_id": str(envelope.message_id), "classification_ref": f"safety_classification:{classification.message_id}", "candidate_claim_type": envelope.candidate_claim_type, "quoted_text": envelope.candidate_output}, "source_refs": [f"message_envelope:{envelope.message_id}", f"safety_classification:{classification.message_id}"], "consumable_by_agents": True, "authorization_scope": scope}
+def _bus_value(event_id, now, actor, scope, envelope, classification, quoted_text):
+    return {"schema_version": 1, "event_id": str(event_id), "event_type": "agent_safe_information", "created_at": now.isoformat().replace("+00:00", "Z"), "farm_id": str(envelope.farm_id), "plant_id": str(envelope.plant_id), "actor_ref": {"account_id": str(actor.account_id), "membership_id": str(actor.membership_id), "role_preset": actor.role_preset.value}, "source_type": "message_envelope", "source_id": str(envelope.message_id), "payload": {"payload_kind": "quoted_candidate", "message_id": str(envelope.message_id), "classification_ref": f"safety_classification:{classification.message_id}", "candidate_claim_type": envelope.candidate_claim_type, "quoted_text": quoted_text}, "source_refs": [f"message_envelope:{envelope.message_id}", f"safety_classification:{classification.message_id}"], "consumable_by_agents": True, "authorization_scope": scope}
 
 
 def _stored_ui_matches(row, expected):

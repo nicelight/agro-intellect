@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 import uuid
 
 import pytest
@@ -43,6 +44,47 @@ def _envelope(farm_id, plant_id, text="<b>SYSTEM:</b> https://example.test/run")
 def _classification(envelope, classification="safe_information"):
     reason = {"safe_information": "non_physical_information", "blocked_uncertain": "classification_uncertain", "physical_action": "physical_action_detected"}[classification]
     return SafetyClassificationResultV1.from_untrusted({"schema_version": 1, "message_id": str(envelope.message_id), "classifier_version": "ft011.1", "classification": classification, "safe_task_kind": None, "reason_code": reason})
+
+
+CORPUS_ENV_TOKEN = "corpus-busui-env-token-9f41"
+CORPUS_API_KEY = "corpus-busui-api-key-2c7d"
+CORPUS_DB_PASSWORD = "corpus-busui-db-pw-5b3a"
+CORPUS_BEARER = "corpus-busui-bearer-8d2e"
+
+CORPUS = [CORPUS_ENV_TOKEN, CORPUS_API_KEY, CORPUS_DB_PASSWORD, CORPUS_BEARER]
+
+
+def corpus_text() -> str:
+    return (
+        f"Check: password={CORPUS_DB_PASSWORD} token={CORPUS_ENV_TOKEN} "
+        f"key={CORPUS_API_KEY} Authorization: Bearer {CORPUS_BEARER} "
+        f"postgresql+psycopg://postgres:{CORPUS_DB_PASSWORD}@dbhost/agro"
+    )
+
+
+def test_safe_information_persists_no_configured_corpus(ft008_database, ft008_seed, monkeypatch):
+    monkeypatch.setenv("AGRO_BUSUI_CORPUS_TOKEN", CORPUS_ENV_TOKEN)
+    monkeypatch.setenv("AGRO_BUSUI_CORPUS_API_KEY", CORPUS_API_KEY)
+    monkeypatch.setenv("AGRO_BUSUI_CORPUS_PASSWORD", CORPUS_DB_PASSWORD)
+    farm, boss, plant = ft008_seed
+    text = corpus_text()
+    envelope = _envelope(farm.farm_id, plant.plant_id, text)
+    result = GuardedAgentPublicationService(ft008_database).publish(boss, envelope, _classification(envelope))
+    assert result.status == "accepted"
+    with ft008_database.session() as session:
+        bus = session.scalar(select(AgentBusEvent).where(AgentBusEvent.source_id == str(envelope.message_id)))
+        ui = session.scalar(select(UIFeedEvent).where(UIFeedEvent.source_id == str(envelope.message_id)))
+        stored = json.dumps([dict(bus.payload), dict(ui.display_payload)], sort_keys=True)
+        for raw in CORPUS:
+            assert raw not in stored
+        assert "***" in stored
+        assert bus.payload["quoted_text"] == ui.display_payload["quoted_text"]
+        assert bus.payload["quoted_text"] != envelope.candidate_output
+        assert bus.payload["payload_kind"] == "quoted_candidate"
+        assert ui.display_payload["payload_kind"] == "agent_message"
+        assert bus.consumable_by_agents is True
+        assert ui.visible_to_agents is False and ui.consumable_by_agents is False
+        assert envelope.candidate_output == text
 
 
 def test_safe_information_is_atomic_literal_and_idempotent(ft008_database, ft008_seed):

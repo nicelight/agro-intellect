@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -25,6 +25,7 @@ from ..agent_runtime.contracts import (
     SafetyClassificationResultV1,
 )
 from ..agent_runtime.service import ModelExecution
+from ..core.redaction import redact_text
 from ..plant_operations.models import DailyCheckIn, ManualMeasurement
 from ..safety_gate import (
     SafetyClassificationOutcomeV1,
@@ -94,9 +95,11 @@ class DatabaseCompanionInputAssembler:
         session: Session,
         *,
         repository: CompanionGovernanceRepository | None = None,
+        secret_values: Iterable[str] = (),
     ) -> None:
         self._session = session
         self._repository = repository or CompanionGovernanceRepository(session)
+        self._secret_values = tuple(secret_values)
 
     def assemble(
         self,
@@ -175,7 +178,10 @@ class DatabaseCompanionInputAssembler:
                 target_mode=(
                     "existing_issue" if command.issue_id is not None else "new_issue"
                 ),
-                records=tuple(records),
+                records=tuple(
+                    _sanitized_record(record, secret_values=self._secret_values)
+                    for record in records
+                ),
             )
         except (CompanionRuntimeValidationError, TypeError, ValueError):
             raise CompanionInputDenied(
@@ -931,6 +937,30 @@ def _plant_record(row: Plant) -> CompanionInputRecordV1:
         record_type="plant",
         source_ref=f"plant:{row.plant_id}",
         payload={"plant_id": str(row.plant_id), "status": "active"},
+    )
+
+
+def _sanitized_record(
+    record: CompanionInputRecordV1,
+    *,
+    secret_values: tuple[str, ...],
+) -> CompanionInputRecordV1:
+    """Return the outbound record copy with configured secret values removed.
+
+    Only the outbound copy is sanitized; the service-side source payload and
+    the persisted rows remain unchanged. A sanitizer failure fails closed.
+    """
+
+    payload = {
+        key: redact_text(value, extra_secrets=secret_values)
+        if isinstance(value, str)
+        else value
+        for key, value in record.payload.items()
+    }
+    return CompanionInputRecordV1(
+        record_type=record.record_type,
+        source_ref=record.source_ref,
+        payload=payload,
     )
 
 

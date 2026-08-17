@@ -10,13 +10,17 @@ appends exactly one redacted ``dataset_candidate_created`` Timeline ref.
 
 from __future__ import annotations
 
+import base64
+import binascii
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
+import json
 import uuid
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from ..access_admin.actor_context import ActorContext
 from ..timeline import TimelineAppendError, TimelineEvent, TimelineJsonlAppender
 from .contracts import (
     AssociateFollowUpEvidenceCommandV1,
@@ -26,6 +30,8 @@ from .contracts import (
     CandidateTransition,
     ConfirmationSource,
     CuratorDecision,
+    DatasetCandidatePageV1,
+    DatasetCandidateViewV1,
     DatasetGovernanceError,
     DatasetGovernanceErrorCode,
     DatasetGovernanceValidationError,
@@ -357,6 +363,54 @@ class DatasetGovernanceService:
                 DatasetGovernanceErrorCode.PERSISTENCE_FAILED
             ) from None
 
+    def list_dataset_candidates(
+        self,
+        actor: ActorContext,
+        *,
+        plant_id: uuid.UUID,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> DatasetCandidatePageV1:
+        """Protected read-only Plant-scoped Dataset Candidate projection.
+
+        Copies authoritative fields only, performs no mutation, resolves the
+        current read authority (active normal read or archived retained
+        history), and paginates with the canonical keyset continuation. Every
+        failure is fail-closed with a safe error.
+        """
+        if not isinstance(actor, ActorContext) or not isinstance(plant_id, uuid.UUID):
+            raise DatasetGovernanceValidationError()
+        if not isinstance(limit, int) or not 1 <= limit <= 100:
+            raise DatasetGovernanceError(DatasetGovernanceErrorCode.LIMIT_INVALID)
+        after = _decode_cursor(cursor, plant_id) if cursor is not None else None
+        try:
+            scope = self._repository.current_read_scope(actor, plant_id=plant_id)
+            if scope is None:
+                raise DatasetGovernanceError(
+                    DatasetGovernanceErrorCode.CONTEXT_FORBIDDEN
+                )
+            rows = self._repository.list_candidates(
+                farm_id=scope.farm_id,
+                plant_id=plant_id,
+                limit=limit,
+                after=after,
+            )
+            page_rows = rows[:limit]
+            next_cursor = None
+            if len(rows) > limit:
+                last = page_rows[-1]
+                next_cursor = _encode_cursor(
+                    plant_id, _as_utc(last.updated_at), last.candidate_id
+                )
+            items = tuple(_candidate_view(row) for row in page_rows)
+            return DatasetCandidatePageV1(items=items, next_cursor=next_cursor)
+        except DatasetGovernanceError:
+            raise
+        except (SQLAlchemyError, TypeError, ValueError):
+            raise DatasetGovernanceError(
+                DatasetGovernanceErrorCode.READ_FAILED
+            ) from None
+
     def _require_create_scope(
         self,
         command: RecordDatasetEvidenceCommandV1,
@@ -626,6 +680,103 @@ class DatasetGovernanceService:
                 },
             )
         )
+
+
+def _as_utc(value: datetime) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _timestamp(value: datetime) -> str:
+    return _as_utc(value).isoformat().replace("+00:00", "Z")
+
+
+def _encode_cursor(
+    plant_id: uuid.UUID,
+    updated_at: datetime,
+    candidate_id: uuid.UUID,
+) -> str:
+    """Unpadded base64url canonical compact UTF-8 JSON continuation cursor."""
+    payload = json.dumps(
+        {
+            "v": 1,
+            "plant_id": str(plant_id),
+            "updated_at": _timestamp(updated_at),
+            "candidate_id": str(candidate_id),
+        },
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("ascii")
+    return base64.urlsafe_b64encode(payload).decode("ascii").rstrip("=")
+
+
+def _decode_cursor(
+    value: str,
+    plant_id: uuid.UUID,
+) -> tuple[datetime, uuid.UUID]:
+    """Strict canonical cursor decode with re-encode identity.
+
+    Wrong-Plant, malformed, padded, non-canonical, unknown-field, and
+    unsupported-version cursors all fail with ``DATASET_CURSOR_INVALID`` before
+    any authorized query is widened.
+    """
+    try:
+        if not isinstance(value, str) or not value or "=" in value:
+            raise ValueError
+        raw = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+        payload = json.loads(raw.decode("utf-8"))
+        if (
+            not isinstance(payload, dict)
+            or set(payload) != {"v", "plant_id", "updated_at", "candidate_id"}
+            or payload["v"] != 1
+            or payload["plant_id"] != str(plant_id)
+        ):
+            raise ValueError
+        timestamp = datetime.fromisoformat(
+            payload["updated_at"].replace("Z", "+00:00")
+        )
+        candidate_id = uuid.UUID(payload["candidate_id"])
+        if (
+            _encode_cursor(plant_id, timestamp, candidate_id) != value
+            or str(candidate_id) != payload["candidate_id"]
+            or _timestamp(timestamp) != payload["updated_at"]
+        ):
+            raise ValueError
+        return _as_utc(timestamp), candidate_id
+    except (
+        AttributeError,
+        binascii.Error,
+        OverflowError,
+        TypeError,
+        UnicodeError,
+        ValueError,
+    ):
+        raise DatasetGovernanceError(
+            DatasetGovernanceErrorCode.CURSOR_INVALID
+        ) from None
+
+
+def _candidate_view(row: DatasetCandidate) -> DatasetCandidateViewV1:
+    return DatasetCandidateViewV1(
+        candidate_id=row.candidate_id,
+        plant_id=row.plant_id,
+        source_kind=row.source_kind,
+        source_ref=row.source_ref,
+        candidate_status=row.candidate_status,
+        quality_tier=row.quality_tier,
+        split=row.split,
+        confirmation_source=row.confirmation_source,
+        evidence_refs=tuple(dict(item) for item in row.evidence_refs),
+        curator_decision=row.curator_decision,
+        corrected=row.corrected,
+        follow_up_seen=row.follow_up_seen,
+        can_train_on=row.can_train_on,
+        record_version=row.record_version,
+        created_at=_as_utc(row.created_at),
+        updated_at=_as_utc(row.updated_at),
+    )
 
 
 __all__ = ["DatasetGovernanceService"]

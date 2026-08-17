@@ -1,7 +1,7 @@
 {
  "id": "TASK-073-T3-FT-015-W2",
  "title": "Close Vision Observation context redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -36,7 +36,16 @@
   }
  ],
  "verify": [
-  "Independent adversarial verification injects the configured corpus and forbidden context classes through Vision request assembly and the provider/media spy, proving exact safe payload/media identity, zero forbidden outbound values, and no unsafe I/O or authority widening."
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through Vision request assembly and the provider/media spy, proving exact safe payload/media identity, zero forbidden outbound values, and no unsafe I/O or authority widening.",
+  "VERDICT: PASS (2026-08-14, scheduler mode). Independent evidence: probe rerun GREEN 72/72 (zero corpus/forbidden-class values in VisionProviderRequestV1 payload/repr and VisionMediaV1 repr/bytes; exact media identity bytes/content_type/sha256/source_ref; exact source_refs/record order; allowed-field parity; source catalog row + file bytes unchanged; hostile photo_type/content_type/sha256 -> context_denied/input_contract_violation with zero provider and zero audit I/O; unbound production -> runtime_not_configured zero I/O); gate vision_context_redaction 25 passed; full deterministic suite 954 passed / 0 failed; mb-lint passed (231 files); git diff --check exit 0; source inspection confirms strict allowlists with no free-text/env/network channel and no production change. Evidence: .protocols/TASK-073-T3-FT-015-W2/verification.md.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-073-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-14",
+   "summary": "Adversarial probes green (executor rerun 72/72 + independent hostile 128/128 + edge probe): strict allowlists reject every hostile input at construction, deep serialized scan zero corpus in payload/repr/media bytes, zero I/O on unsafe input (not_attempted, 0 spy/audit), media bound exactly to accepted photo bytes/hash/ref, authority preserved (unbound fail-closed, no fallback), allowlists hold exactly, no production change (git diff 0 lines), cross-spec consistent; no admitted findings.",
+   "evidence": ".protocols/TASK-073-T3-FT-015-W2/red-verification.md, .tasks/TASK-073-T3-FT-015-W2/TASK-073-T3-FT-015-W2-S-RED-VERIFY-final-report-docs-01.md"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

@@ -1,7 +1,7 @@
 {
  "id": "TASK-076-T3-FT-015-W2",
  "title": "Close Safety Gate context redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -36,7 +36,17 @@
   }
  ],
  "verify": [
-  "Independent adversarial verification injects the configured corpus and forbidden context classes through Safety Gate request assembly and the provider spy, proving zero outbound leakage or unsafe I/O with project-owned classification and physical-action authority unchanged."
+  "Independent adversarial verification injects the configured corpus and forbidden context classes through Safety Gate request assembly and the provider spy, proving zero outbound leakage or unsafe I/O with project-owned classification and physical-action authority unchanged.",
+  "/verify 2026-08-15: VERDICT PASS. Own reruns: safety_gate 78 passed; mb-lint passed (231); diff_check clean; full deterministic suite 966 passed. Own probes (4 passed, .tasks/TASK-076-T3-FT-015-W2/verify-probe-transcript.txt sha256 0212043c): corpus/context-class absence in spy payload + repr, exact allowlist parity, source envelope + input_sha256 unchanged, persisted ec_adjustment, empty-corpus byte-identical default, fail-closed guard_denied/not_attempted with zero spy calls/rows + paired control. Executor RED honest (sha256 e0d9e7aa) and GREEN 24 passed confirmed. Details: .protocols/TASK-076-T3-FT-015-W2/verification.md.",
+  "/verify 2026-08-15 (ATTEMPT 02): VERDICT PASS. Own reruns: safety_gate 80 passed; mb-lint passed (231); diff_check clean; full deterministic suite 968 passed. Own probes (8 passed, .tasks/TASK-076-T3-FT-015-W2/verify-attempt02-probe-transcript.txt sha256 946710ff): (1) _sanitized_request with empty corpus redacts env-scan + structural Authorization forms unconditionally; (2) DEFAULT production composition (no secret_values kwarg) redacts raw env/auth session/bearer/dbpw -> *** in payload and repr; (3) injected-corpus hostile forms absent; (4) empty-corpus clean-input payload byte-identical to from_envelope; (5) fail-closed guard_denied/not_attempted zero spy calls/rows under both compositions; (6) source envelope byte-identical + row.input_sha256 == digest(source); (7) classification/authority/allowlist/result-schema/provider-selection unchanged; (8) ATTEMPT 01 redverify probe value now redacted (redverify01-rerun-after-fix.txt shows session=***/Authorization: ***/dbpw=***). ATTEMPT 01 MEDIUM empty-corpus-skip concern CLOSED: service.py guard removed, sanitization unconditional. Executor RED rerun (4 passed, sha256 627ac137) + GREEN 26 passed confirmed. Details: .protocols/TASK-076-T3-FT-015-W2/verification.md.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-076-T3-FT-015-W2 ATTEMPT 02 (scheduler mode)",
+   "date": "2026-08-15",
+   "summary": "Fresh hostile corpus rv2-* 9/9: default production composition redacts env-scan/session/bearer/URL-userinfo to *** in payload/repr/str/nested, injected corpus absent, fail-closed guard_denied zero-I/O both compositions, unbound not_configured no fallback, exact parity + input_sha256 digest intact, no constructor bypasses classify(); ATTEMPT 01 MEDIUM stays closed; documented non-material classes identical to sibling baseline; no findings.",
+   "evidence": ".protocols/TASK-076-T3-FT-015-W2/red-verification.md, .tasks/TASK-076-T3-FT-015-W2/redverify02-probe.py"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

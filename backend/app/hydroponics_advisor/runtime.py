@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import re
@@ -22,6 +22,7 @@ from ..agent_runtime.contracts import (
     RuntimeDecision,
 )
 from ..agent_runtime.service import DatabaseRuntimeAuthorizationGuard, ModelExecution
+from ..core.redaction import redact_text
 from ..plant_operations.models import DailyCheckIn, ManualMeasurement
 from ..plant_state.models import PlantStateRecord
 from ..timeline import TimelineEvent, TimelineJsonlAppender
@@ -83,11 +84,18 @@ class HydroponicsAdvisorModelExecutor(Protocol):
 class DatabaseHydroponicsAdvisorInputAssembler:
     """Load the exact bounded Plant/advisor evidence from PostgreSQL."""
 
-    def __init__(self, session: Session, *, authorization_guard=None) -> None:
+    def __init__(
+        self,
+        session: Session,
+        *,
+        authorization_guard=None,
+        secret_values: Iterable[str] = (),
+    ) -> None:
         self._session = session
         self._authorization_guard = authorization_guard or DatabaseRuntimeAuthorizationGuard(
             session
         )
+        self._secret_values = tuple(secret_values)
 
     def assemble(
         self,
@@ -199,7 +207,10 @@ class DatabaseHydroponicsAdvisorInputAssembler:
                 analysis_goal=analysis_goal,
                 computed_at=computed_text,
                 analysis_freshness=freshness,
-                records=tuple(records),
+                records=tuple(
+                    _sanitized_record(record, secret_values=self._secret_values)
+                    for record in records
+                ),
             )
         except (HydroponicsAdvisorValidationError, TypeError, ValueError):
             raise HydroponicsAdvisorInputDenied("input_contract_violation") from None
@@ -499,6 +510,30 @@ def _plant_record(plant: Plant) -> HydroponicsAdvisorInputRecordV1:
         record_type="plant",
         source_ref=f"plant:{plant.plant_id}",
         payload={"plant_id": str(plant.plant_id), "status": plant.status},
+    )
+
+
+def _sanitized_record(
+    record: HydroponicsAdvisorInputRecordV1,
+    *,
+    secret_values: tuple[str, ...],
+) -> HydroponicsAdvisorInputRecordV1:
+    """Return the outbound record copy with configured secret values removed.
+
+    Only the outbound copy is sanitized; the service-side source payload and
+    the persisted rows remain unchanged. A sanitizer failure fails closed.
+    """
+
+    payload = {
+        key: redact_text(value, extra_secrets=secret_values)
+        if isinstance(value, str)
+        else value
+        for key, value in record.payload.items()
+    }
+    return HydroponicsAdvisorInputRecordV1(
+        record_type=record.record_type,
+        source_ref=record.source_ref,
+        payload=payload,
     )
 
 

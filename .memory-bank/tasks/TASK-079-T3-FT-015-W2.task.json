@@ -1,7 +1,7 @@
 {
  "id": "TASK-079-T3-FT-015-W2",
  "title": "Close Dataset Agents context redaction",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-015",
  "reqs": [
@@ -37,7 +37,16 @@
   }
  ],
  "verify": [
-  "Independent adversarial verification drives both Dataset Agent thin adapters through the shared post-TASK-060 runtime flow with the configured corpus, distinguishes both strict captured requests, proves zero forbidden outbound values or unsafe I/O, and preserves advisory-only no-MessageEnvelope/Bus/UI/Safety authority."
+  "Independent adversarial verification drives both Dataset Agent thin adapters through the shared post-TASK-060 runtime flow with the configured corpus, distinguishes both strict captured requests, proves zero forbidden outbound values or unsafe I/O, and preserves advisory-only no-MessageEnvelope/Bus/UI/Safety authority.",
+  "VERDICT: PASS (2026-08-16, /verify). Evidence: .tasks/TASK-079-T3-FT-015-W2/verify_probe_ft015_ac019.py (3 passed, fresh corpus-verify-*), fresh gate rerun 35 passed, mb-lint exit 0, git diff --check exit 0, full deterministic suite 980 passed; RED honest per probe_red_transcript.txt and pre-fix HEAD. No lifecycle change; route to per-task /red-verify.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-079-T3-FT-015-W2 (scheduler mode)",
+   "date": "2026-08-16",
+   "summary": "Adversarial probe 7/7 fresh corpus redcorp-*: both adapters zero raw values + exact parity + advisory-only persist, unicode/astral secret -> ***, distinct kinds collapse -> context_denied not_attempted zero I/O both adapters, spy repr/str zero corpus, static absence of MessageEnvelope/Safety/Bus/UI/AgentRuntimeOutcomeV1, unbound fail-closed no fallback, nested/JSON-escaped vectors no leak; single _sanitized_request in shared _prepare before single provider call; no findings.",
+   "evidence": ".protocols/TASK-079-T3-FT-015-W2/red-verification.md, .tasks/TASK-079-T3-FT-015-W2/TASK-079-T3-FT-015-W2-S-RED-VERIFY-final-report-docs-01.md"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-015-local-security-privacy-storage-prompt.md",

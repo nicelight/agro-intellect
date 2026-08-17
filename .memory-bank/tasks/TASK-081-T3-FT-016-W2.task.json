@@ -1,7 +1,7 @@
 {
  "id": "TASK-081-T3-FT-016-W2",
  "title": "Build the authorized session and Plant workspace shell",
- "status": "planned",
+ "status": "done",
  "wave": "W2",
  "feature": "FT-016",
  "reqs": [
@@ -57,7 +57,16 @@
   }
  ],
  "verify": [
-  "Independent browser and source verification covers login/logout, Account and Plant changes, role navigation, denied/revoked/disabled/archived states, cookie forwarding, safe errors, and server-only import isolation."
+  "Independent browser and source verification covers login/logout, Account and Plant changes, role navigation, denied/revoked/disabled/archived states, cookie forwarding, safe errors, and server-only import isolation.",
+  "2026-08-17 /verify (scheduler): VERDICT PASS. Fresh gates: auth_shell_browser 12/12, check 0/0, build 0, mb-lint 231 files, diff-check clean. AC-004 browser outcomes agree with backend transcript; verifier archived probe 404 AUTH_PLANT_FORBIDDEN. AC-011: client bundle 0 corpus hits; transport server-only; no-store proven; forbidden scope untouched. Details: .protocols/TASK-081-T3-FT-016-W2/verification.md",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-081-T3-FT-016-W2 (scheduler mode)",
+   "date": "2026-08-17",
+   "summary": "Adversarial probes: cross-account isolation (Boss logout Back->login, Engineer no Boss nav/plants, direct Boss-plant URL safe error), hostile ids fail-closed, cookie httpOnly SameSite=Lax Path=/, backend unreachable -> stable BACKEND_UNAVAILABLE no traceback/secret, client-bundle corpus scan 0 hits, transport server-only, SW static shell only, backend diff 0; no admitted findings.",
+   "evidence": ".protocols/TASK-081-T3-FT-016-W2/red-verification.md, .tasks/TASK-081-T3-FT-016-W2/red-verify-probe-evidence.json"
+  }
  ],
  "docs": [
   ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",

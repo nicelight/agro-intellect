@@ -7,7 +7,7 @@ invalid composition returns the closed ``runtime_not_configured`` outcome.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import re
@@ -35,6 +35,7 @@ from ..access_admin.permissions import (
     RolePreset,
     _BoundedPlantPermissionResolver,
 )
+from ..core.redaction import redact_text
 from ..plant_operations.models import DailyCheckIn, ManualMeasurement
 from ..timeline import TimelineEvent, TimelineJsonlAppender
 from .contracts import (
@@ -125,8 +126,14 @@ class StaticAgentDefinitionResolver:
 class DatabaseAgentInputAssembler:
     """Loads only canonical Plant Operations rows into ProviderRequestV1."""
 
-    def __init__(self, session: Session) -> None:
+    def __init__(
+        self,
+        session: Session,
+        *,
+        secret_values: Iterable[str] = (),
+    ) -> None:
         self._session = session
+        self._secret_values = tuple(secret_values)
 
     def assemble(
         self,
@@ -235,12 +242,19 @@ class DatabaseAgentInputAssembler:
         ):
             raise InputAssemblyDenied()
         try:
-            return ProviderRequestV1(
-                agent_definition=definition,
-                records=tuple(records),
+            request = ProviderRequestV1(
+                agent_definition=_sanitized_definition(
+                    definition,
+                    secret_values=self._secret_values,
+                ),
+                records=tuple(
+                    _sanitized_record(record, secret_values=self._secret_values)
+                    for record in records
+                ),
             )
-        except AgentRuntimeValidationError:
+        except (AgentRuntimeValidationError, ValueError, TypeError):
             raise InputAssemblyDenied("input_contract_violation") from None
+        return request
 
 
 class DatabaseRuntimeAuthorizationGuard:
@@ -608,6 +622,50 @@ def _measurement_record(measurement: ManualMeasurement) -> AgentInputRecordV1:
             "source_type": measurement.source_type,
             "trust_status": measurement.trust_status,
         },
+    )
+
+
+def _sanitized_record(
+    record: AgentInputRecordV1,
+    *,
+    secret_values: tuple[str, ...],
+) -> AgentInputRecordV1:
+    """Return the outbound record copy with configured secret values removed.
+
+    Only the outbound copy is sanitized; the service-side source payload and
+    the persisted rows remain unchanged. A sanitizer failure fails closed.
+    """
+
+    payload = {
+        key: redact_text(value, extra_secrets=secret_values)
+        if isinstance(value, str)
+        else value
+        for key, value in record.payload.items()
+    }
+    return AgentInputRecordV1(
+        record_type=record.record_type,
+        source_ref=record.source_ref,
+        payload=payload,
+    )
+
+
+def _sanitized_definition(
+    definition: AgentDefinition,
+    *,
+    secret_values: tuple[str, ...],
+) -> AgentDefinition:
+    """Return the outbound definition copy with configured secret values removed."""
+
+    competence = redact_text(definition.competence, extra_secrets=secret_values)
+    instructions = redact_text(definition.instructions, extra_secrets=secret_values)
+    if competence == definition.competence and instructions == definition.instructions:
+        return definition
+    return AgentDefinition(
+        agent_id=definition.agent_id,
+        competence=competence,
+        instructions=instructions,
+        allowed_candidate_claim_types=definition.allowed_candidate_claim_types,
+        output_schema_version=definition.output_schema_version,
     )
 
 
