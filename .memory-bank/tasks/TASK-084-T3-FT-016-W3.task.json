@@ -1,98 +1,107 @@
 {
-  "id": "TASK-084-T3-FT-016-W3",
-  "title": "Compose local photo upload in the PWA",
-  "status": "planned",
-  "wave": "W3",
-  "feature": "FT-016",
-  "reqs": [
-    "REQ-021"
-  ],
-  "depends_on": [
-    "TASK-022-T3-FT-005-W2",
-    "TASK-067-T3-FT-015-W2",
-    "TASK-081-T3-FT-016-W2"
-  ],
-  "touched_files": [
-    "frontend/src/lib/photo-intake/",
-    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
-    "frontend/src/routes/plants/[plant_id]/+page.svelte",
-    "frontend/tests/e2e/photo-upload.spec.ts"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "photo_upload_browser",
-      "command": "cd frontend && npm run test:e2e -- tests/e2e/photo-upload.spec.ts",
-      "required": true
-    },
-    {
-      "name": "frontend_check",
-      "command": "cd frontend && npm run check",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent browser/API verification covers one real multipart upload, exact safe checksum/manifest/event refs, invalid/large/denied/archive failures, and no partially accepted artifact."
-  ],
-  "docs": [
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/contracts/photo-intake-http.md",
-    ".memory-bank/contracts/product-surface-redaction.md",
-    ".memory-bank/testing/photo-intake.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
-  ],
-  "evidence_required": [
-    "FT-016-AC-019 RED: no browser multipart upload consumer exists; GREEN: an authorized real test file returns and renders the exact safe checksum/manifest/event refs while unsupported, oversized, denied, and archived cases remain non-accepted; decisive comparison: multipart request, backend response, DOM, and post-failure artifact state; artifact: upload evidence under .tasks/TASK-084-T3-FT-016-W3/."
-  ],
-  "purpose": "Expose the accepted local-photo upload result to the Engineer without acquiring file, manifest, Dataset, upload-server, or sync authority.",
-  "success_outcome": "The selected-Plant PWA submits a real local test photo only through Photo Intake HTTP and shows the returned safe refs with truthful non-acceptance failures and no remote-upload implication.",
-  "anti_goals": [
-    "Do not implement photo catalog pagination, read/write local artifact paths directly, generate manifests, recompute hashes, or imply server/cloud upload.",
-    "Do not make PhotoCatalogSummary.can_train_on mutable or authoritative for Dataset Governance."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "backend photo file/catalog/manifest/timeline/Dataset authority",
-      "filesystem paths in browser data",
-      "remote upload, server sync, thumbnails, annotations, or export packaging"
-    ],
-    "stop_conditions": [
-      "The browser needs a local filesystem path or a route outside Photo Intake HTTP.",
-      "The UI would imply upload/server availability or mutate Dataset trainability."
-    ]
+ "id": "TASK-084-T3-FT-016-W3",
+ "title": "Compose local photo upload in the PWA",
+ "status": "done",
+ "wave": "W3",
+ "feature": "FT-016",
+ "reqs": [
+  "REQ-021"
+ ],
+ "depends_on": [
+  "TASK-022-T3-FT-005-W2",
+  "TASK-067-T3-FT-015-W2",
+  "TASK-081-T3-FT-016-W2"
+ ],
+ "touched_files": [
+  "frontend/src/lib/photo-intake/",
+  "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+  "frontend/src/routes/plants/[plant_id]/+page.svelte",
+  "frontend/tests/e2e/photo-upload.spec.ts"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "photo_upload_browser",
+   "command": "cd frontend && npm run test:e2e -- tests/e2e/photo-upload.spec.ts",
+   "required": true
   },
-  "source_artifacts": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-019",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  {
+   "name": "frontend_check",
+   "command": "cd frontend && npm run check",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "Independent browser/API verification covers one real multipart upload, exact safe checksum/manifest/event refs, invalid/large/denied/archive failures, and no partially accepted artifact.",
+  "VERDICT: PASS (verify 2026-08-18, scheduler mode). Fresh verifier e2e 2 passed on isolated-loopback PostgreSQL + isolated artifact/timeline roots; fresh check (0/0), build (exit 0), mb-lint (231 files), git diff --check clean. Re-proved exact sha256 (4d3991...45bd == test-photo.jpg digest), exact manifest/event refs, truthful unsupported/oversized/denied/archived non-acceptance with zero residue, local_only wording, no server/path/auth leakage, no pagination/manifest/hash/can_train_on mutation in frontend, backend untouched. Details: .protocols/TASK-084-T3-FT-016-W3/verification.md; evidence: .tasks/TASK-084-T3-FT-016-W3/{photo-evidence.json,test-photo.jpg}. Lifecycle unchanged; T3 per-task /red-verify still required.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-084-T3-FT-016-W3 (scheduler mode)",
+   "date": "2026-08-18",
+   "summary": "Source-level hostile scan + independent digest re-probe (sha256 == exact_checksum_rendered): no FS paths/manifest generation/hash recompute/catalog pagination/can_train_on mutation/remote-cloud implication; unsupported/oversized/denied/archived truthful zero residue (fingerprint unchanged); registered fields only, no content-type forgery, trace/video/screenshot off, no new backend route, backend diff empty; no admitted findings.",
+   "evidence": ".protocols/TASK-084-T3-FT-016-W3/red-verification.md, .tasks/TASK-084-T3-FT-016-W3/photo-evidence.json"
+  }
+ ],
+ "docs": [
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/contracts/photo-intake-http.md",
+  ".memory-bank/contracts/product-surface-redaction.md",
+  ".memory-bank/testing/photo-intake.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "evidence_required": [
+  "FT-016-AC-019 RED: no browser multipart upload consumer exists; GREEN: an authorized real test file returns and renders the exact safe checksum/manifest/event refs while unsupported, oversized, denied, and archived cases remain non-accepted; decisive comparison: multipart request, backend response, DOM, and post-failure artifact state; artifact: upload evidence under .tasks/TASK-084-T3-FT-016-W3/."
+ ],
+ "purpose": "Expose the accepted local-photo upload result to the Engineer without acquiring file, manifest, Dataset, upload-server, or sync authority.",
+ "success_outcome": "The selected-Plant PWA submits a real local test photo only through Photo Intake HTTP and shows the returned safe refs with truthful non-acceptance failures and no remote-upload implication.",
+ "anti_goals": [
+  "Do not implement photo catalog pagination, read/write local artifact paths directly, generate manifests, recompute hashes, or imply server/cloud upload.",
+  "Do not make PhotoCatalogSummary.can_train_on mutable or authoritative for Dataset Governance."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "backend photo file/catalog/manifest/timeline/Dataset authority",
+   "filesystem paths in browser data",
+   "remote upload, server sync, thumbnails, annotations, or export packaging"
   ],
-  "normative_inputs": [
-    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
-    ".memory-bank/contracts/photo-intake-http.md#upload-policy",
-    ".memory-bank/contracts/photo-intake-http.md#response-shapes",
-    ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
-    ".memory-bank/testing/photo-intake.md"
-  ],
-  "constraints": [
-    "Primary owner is Operator PWA; Photo Intake retains file, catalog, checksum, manifest, event, and acceptance authority.",
-    "Browser validation is advisory; backend response and safe errors are decisive."
-  ],
-  "invariants": [
-    "Photo acceptance remains local_only and never implies remote sync.",
-    "Paths, auth material, unsafe filenames, and raw errors never enter the PWA or capture input."
-  ],
-  "verification_targets": [
-    "FT-016-AC-019: real local upload, exact safe refs, invalid/large/denied/archive behavior, and no partial artifact or server/path leakage.",
-    "T3 harm proof isolates photo roots and database state, verifies failed uploads leave no accepted artifact, and cleans temporary files safely."
+  "stop_conditions": [
+   "The browser needs a local filesystem path or a route outside Photo Intake HTTP.",
+   "The UI would imply upload/server availability or mutate Dataset trainability."
   ]
+ },
+ "source_artifacts": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-019",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+  ".memory-bank/contracts/photo-intake-http.md#upload-policy",
+  ".memory-bank/contracts/photo-intake-http.md#response-shapes",
+  ".memory-bank/contracts/product-surface-redaction.md#surface-rules",
+  ".memory-bank/testing/photo-intake.md"
+ ],
+ "constraints": [
+  "Primary owner is Operator PWA; Photo Intake retains file, catalog, checksum, manifest, event, and acceptance authority.",
+  "Browser validation is advisory; backend response and safe errors are decisive."
+ ],
+ "invariants": [
+  "Photo acceptance remains local_only and never implies remote sync.",
+  "Paths, auth material, unsafe filenames, and raw errors never enter the PWA or capture input."
+ ],
+ "verification_targets": [
+  "FT-016-AC-019: real local upload, exact safe refs, invalid/large/denied/archive behavior, and no partial artifact or server/path leakage.",
+  "T3 harm proof isolates photo roots and database state, verifies failed uploads leave no accepted artifact, and cleans temporary files safely."
+ ]
 }

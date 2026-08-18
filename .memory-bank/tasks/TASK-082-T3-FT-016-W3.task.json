@@ -1,7 +1,7 @@
 {
  "id": "TASK-082-T3-FT-016-W3",
-"title": "Provision the demo Engineer through Boss Admin",
-  "status": "in_progress",
+ "title": "Provision the demo Engineer through Boss Admin",
+ "status": "done",
  "wave": "W3",
  "feature": "FT-016",
  "reqs": [
@@ -47,7 +47,15 @@
   }
  ],
  "verify": [
-  "Independent browser verification covers direct Engineer creation, non-Boss denial, Engineer login, and write-only password handling only."
+  "Independent browser verification covers direct Engineer creation, non-Boss denial, Engineer login, and write-only password handling only.",
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-082-T3-FT-016-W3 (scheduler mode)",
+   "date": "2026-08-18",
+   "summary": "Adversarial probes: forged non-Boss action submit -> 403 AUTH_FORBIDDEN no account created no password; Boss duplicate -> 409 safe; role forgery -> account still role engineer (UI hard-coded, no bypass); corpus 0 hits across all surfaces except authorized test-support; no XSS/storage/SSR-cache vectors; authority boundary, password write-only, transport privacy, boundary integrity, Constitution fit all hold; no findings.",
+   "evidence": ".protocols/TASK-082-T3-FT-016-W3/red-verification.md, .tasks/TASK-082-T3-FT-016-W3/TASK-082-T3-FT-016-W3-S-RED-VERIFY-final-report-docs-01.md"
+  }
  ],
  "docs": [
   ".memory-bank/contracts/operator-pwa.md",

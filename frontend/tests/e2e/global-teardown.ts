@@ -5,13 +5,58 @@ import path from 'node:path';
 const frontendDir = import.meta.dirname;
 const repoRoot = path.resolve(frontendDir, '..', '..', '..');
 
-const provisioningRequested =
-	process.argv.some((arg) => arg.includes('boss-engineer-provisioning')) ||
-	Boolean(process.env.E2E_DATABASE_URL);
+interface ProvisioningConfig {
+	evidenceDir: string;
+	dbName: string;
+}
 
-const evidenceDir = provisioningRequested
-	? path.join(repoRoot, '.tasks', 'TASK-082-T3-FT-016-W3')
-	: path.join(repoRoot, '.tasks', 'TASK-081-T3-FT-016-W2');
+const PHOTO_EVIDENCE = {
+	evidenceDir: 'TASK-084-T3-FT-016-W3' as const,
+	dbName: 'agro_intellect_e2e_084' as const,
+	artifactRoot: path.join(
+		repoRoot,
+		'.tasks',
+		'TASK-084-T3-FT-016-W3',
+		'e2e-browser',
+		'artifacts'
+	),
+	timelineRoot: path.join(
+		repoRoot,
+		'.tasks',
+		'TASK-084-T3-FT-016-W3',
+		'e2e-browser',
+		'timeline'
+	)
+};
+
+function provisioningEvidence(): ProvisioningConfig | null {
+	if (process.argv.some((arg) => arg.includes('boss-engineer-provisioning'))) {
+		return { evidenceDir: 'TASK-082-T3-FT-016-W3', dbName: 'agro_intellect_e2e_082' };
+	}
+	if (process.argv.some((arg) => arg.includes('daily-check-in'))) {
+		return { evidenceDir: 'TASK-083-T3-FT-016-W3', dbName: 'agro_intellect_e2e_083' };
+	}
+	if (process.argv.some((arg) => arg.includes('photo-upload'))) {
+		return { evidenceDir: PHOTO_EVIDENCE.evidenceDir, dbName: PHOTO_EVIDENCE.dbName };
+	}
+	if (process.argv.some((arg) => arg.includes('plant-history-card'))) {
+		return { evidenceDir: 'TASK-085-T3-FT-016-W3', dbName: 'agro_intellect_e2e_085' };
+	}
+	if (process.argv.some((arg) => arg.includes('plant-feed'))) {
+		return { evidenceDir: 'TASK-086-T3-FT-016-W3', dbName: 'agro_intellect_e2e_086' };
+	}
+	return null;
+}
+
+const provisioningConfigValue = provisioningEvidence();
+const provisioningRequested =
+	provisioningConfigValue !== null || Boolean(process.env.E2E_DATABASE_URL);
+
+const evidenceDir = provisioningConfigValue
+	? path.join(repoRoot, '.tasks', provisioningConfigValue.evidenceDir)
+	: provisioningRequested
+		? path.join(repoRoot, '.tasks', 'TASK-082-T3-FT-016-W3')
+		: path.join(repoRoot, '.tasks', 'TASK-081-T3-FT-016-W2');
 const e2eDir = path.join(evidenceDir, 'e2e-browser');
 const pidPath = path.join(e2eDir, 'backend.pid');
 const dbPath = path.join(e2eDir, 'auth-shell.sqlite3');
@@ -52,7 +97,7 @@ function dropProvisioningDatabase(): void {
 	if (!base || !base.includes('postgresql')) return;
 	try {
 		const url = new URL(base.replace('postgresql+psycopg://', 'postgresql://'));
-		const dbname = 'agro_intellect_e2e_082';
+		const dbname = provisioningConfigValue?.dbName ?? 'agro_intellect_e2e_082';
 		const creds = url.username + (url.password ? `:${url.password}` : '');
 		const adminUrl = `postgresql+psycopg://${creds}@${url.hostname || 'localhost'}:${url.port || '5432'}/postgres`;
 		execFileSync(
@@ -73,6 +118,10 @@ export default async function globalTeardown(): Promise<void> {
 	await stopBackend();
 	if (provisioningRequested) {
 		dropProvisioningDatabase();
+		if (provisioningConfigValue?.evidenceDir === PHOTO_EVIDENCE.evidenceDir) {
+			rmSync(PHOTO_EVIDENCE.artifactRoot, { force: true, recursive: true });
+			rmSync(PHOTO_EVIDENCE.timelineRoot, { force: true, recursive: true });
+		}
 		console.log('[e2e-teardown] backend stopped; isolated database removed');
 		return;
 	}

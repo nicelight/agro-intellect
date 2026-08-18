@@ -1,105 +1,113 @@
 {
-  "id": "TASK-086-T3-FT-016-W3",
-  "title": "Render the strict literal Plant Feed union",
-  "status": "planned",
-  "wave": "W3",
-  "feature": "FT-016",
-  "reqs": [
-    "REQ-013",
-    "REQ-021"
-  ],
-  "depends_on": [
-    "TASK-036-T3-FT-010-W1",
-    "TASK-038-T3-FT-011-W2",
-    "TASK-043-T3-FT-013-W3",
-    "TASK-046-T3-FT-008-W3",
-    "TASK-069-T3-FT-015-W2",
-    "TASK-081-T3-FT-016-W2"
-  ],
-  "touched_files": [
-    "frontend/src/lib/plant-feed/",
-    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
-    "frontend/src/routes/plants/[plant_id]/+page.svelte",
-    "frontend/tests/e2e/plant-feed.spec.ts"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "plant_feed_browser",
-      "command": "cd frontend && npm run test:e2e -- tests/e2e/plant-feed.spec.ts",
-      "required": true
-    },
-    {
-      "name": "frontend_check",
-      "command": "cd frontend && npm run check",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent browser verification covers every UIFeedEventV1 variant, pagination/retry, literal markup/prompt/URL-looking text, zero active element/action parsing, and unchanged presentation-only flags/authority."
-  ],
-  "docs": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/contracts/plant-feed-http.md",
-    ".memory-bank/contracts/ui-feed.md",
-    ".memory-bank/testing/agent-chat-ui-feed.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
-  ],
-  "evidence_required": [
-    "FT-016-AC-006 RED: no Svelte DOM consumer currently proves literal inert rendering; GREEN: all registered Feed text variants preserve exact visible strings without HTML/Markdown/link/action semantics; decisive comparison: response text versus DOM structure/events/navigation/request log; artifact: literal Feed evidence under .tasks/TASK-086-T3-FT-016-W3/."
-  ],
-  "purpose": "Create the only human Feed consumer while preserving UI Feed isolation, Safety/Advisor read-only presentation, and literal candidate-text semantics.",
-  "success_outcome": "The Plant workspace renders the exact paginated UIFeedEventV1 union as inert Svelte text, including Safety/Advisor/Companion presentation, without creating links, commands, approval, publication, or agent context.",
-  "anti_goals": [
-    "Do not add raw HTML, Markdown, automatic URL linking, command parsing, arbitrary chat submission, or direct agent invocation.",
-    "Do not treat Safety/Advisor/Companion Feed data as approval, Task, governance command, Plant fact, or agent input."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "backend Feed/Bus/classification/Safety/Companion authority",
-      "raw HTML/Markdown/link/action execution",
-      "Feed-to-agent-context or Feed-to-command copying",
-      "direct Feed persistence or introduction materialization"
-    ],
-    "stop_conditions": [
-      "A registered Feed variant cannot be rendered without interpreting its text as executable markup/action data.",
-      "The PWA needs a direct Agent Chat Bus, Safety, or provider boundary."
-    ]
+ "id": "TASK-086-T3-FT-016-W3",
+ "title": "Render the strict literal Plant Feed union",
+  "status": "in_progress",
+ "wave": "W3",
+ "feature": "FT-016",
+ "reqs": [
+  "REQ-013",
+  "REQ-021"
+ ],
+ "depends_on": [
+  "TASK-036-T3-FT-010-W1",
+  "TASK-038-T3-FT-011-W2",
+  "TASK-043-T3-FT-013-W3",
+  "TASK-046-T3-FT-008-W3",
+  "TASK-069-T3-FT-015-W2",
+  "TASK-081-T3-FT-016-W2"
+ ],
+ "touched_files": [
+  "frontend/src/lib/plant-feed/",
+  "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+  "frontend/src/routes/plants/[plant_id]/+page.svelte",
+  "frontend/tests/e2e/plant-feed.spec.ts"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "plant_feed_browser",
+   "command": "cd frontend && npm run test:e2e -- tests/e2e/plant-feed.spec.ts",
+   "required": true
   },
-  "source_artifacts": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-006",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  {
+   "name": "frontend_check",
+   "command": "cd frontend && npm run check",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+  "verify": [
+   "Independent browser verification covers every UIFeedEventV1 variant, pagination/retry, literal markup/prompt/URL-looking text, zero active element/action parsing, and unchanged presentation-only flags/authority.",
+   {
+    "stage": "functional_verification",
+    "verdict": "PASS",
+    "by": "/verify TASK-086-T3-FT-016-W3 (scheduler mode)",
+    "date": "2026-08-18",
+    "summary": "Fresh verifier reruns: plant_feed_browser 2 passed on isolated-loopback PostgreSQL (agro_intellect_e2e_086 dropped/recreated per run, trace/video/screenshot off) — all 7 registered UIFeedEventV1 payload kinds (agent_introduction, agent_message, block_notice, safety_status x3, companion attention/proposal/decision) render exact visible inert text; literal <img>/<b>/<script>/Markdown/prompt/URL corpus yields zero a/img/iframe/script/input/button/role=link in feed items; no pageerror/navigation/action side effect; protected response literal strings and both agent flags exactly preserved; deterministic 10/10/4 pagination + rejected-cursor retry recovery; reload no duplicate DOM; authoritative rereads prove no mutation residue (active+archived) and no Agent Bus publication; seed flags stay false; no Feed text in any request payload; no backend origin/auth material in browser transport. Fresh gates: check 0/0, build exit 0, mb-lint passed (231), git diff --check clean; same-page regressions plant-history-card 2 passed, daily-check-in 3 passed, auth-shell 12 passed, photo-upload 2 passed (one parallel auth-shell launch was a port-8100 bind artifact; serial rerun 12/12). Source inspection: no @html/innerHTML/link/navigate/eval in feed surface; server-only transport; feed-more forwards only opaque cursor; fail-closed on malformed/unknown union and non-false flags. Backend source unmodified (git status backend/ empty); forbidden scope untouched. Lifecycle unchanged; T3 per-task /red-verify still required.",
+    "evidence": ".protocols/TASK-086-T3-FT-016-W3/verification.md, .tasks/TASK-086-T3-FT-016-W3/feed-evidence.json, .tasks/TASK-086-T3-FT-016-W3/probe/RED-claim-ft016-ac006.md"
+   }
   ],
-  "normative_inputs": [
-    ".memory-bank/contracts/operator-pwa.md#plant-feed-surface",
-    ".memory-bank/contracts/plant-feed-http.md#presentation-boundary",
-    ".memory-bank/contracts/ui-feed.md#rules",
-    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
-    ".memory-bank/testing/agent-chat-ui-feed.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md#context-and-literal-text-matrix"
+ "docs": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md",
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/contracts/plant-feed-http.md",
+  ".memory-bank/contracts/ui-feed.md",
+  ".memory-bank/testing/agent-chat-ui-feed.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "evidence_required": [
+  "FT-016-AC-006 RED: no Svelte DOM consumer currently proves literal inert rendering; GREEN: all registered Feed text variants preserve exact visible strings without HTML/Markdown/link/action semantics; decisive comparison: response text versus DOM structure/events/navigation/request log; artifact: literal Feed evidence under .tasks/TASK-086-T3-FT-016-W3/."
+ ],
+ "purpose": "Create the only human Feed consumer while preserving UI Feed isolation, Safety/Advisor read-only presentation, and literal candidate-text semantics.",
+ "success_outcome": "The Plant workspace renders the exact paginated UIFeedEventV1 union as inert Svelte text, including Safety/Advisor/Companion presentation, without creating links, commands, approval, publication, or agent context.",
+ "anti_goals": [
+  "Do not add raw HTML, Markdown, automatic URL linking, command parsing, arbitrary chat submission, or direct agent invocation.",
+  "Do not treat Safety/Advisor/Companion Feed data as approval, Task, governance command, Plant fact, or agent input."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "backend Feed/Bus/classification/Safety/Companion authority",
+   "raw HTML/Markdown/link/action execution",
+   "Feed-to-agent-context or Feed-to-command copying",
+   "direct Feed persistence or introduction materialization"
   ],
-  "constraints": [
-    "Primary owner is Operator PWA; Agent Chat & UI Feed remains the only Feed provider.",
-    "Use Svelte interpolation/text nodes for every untrusted string and exact union discrimination for payloads."
-  ],
-  "invariants": [
-    "UI Feed remains unavailable as agent working context and grants no Safety, Task, governance, or Dataset authority.",
-    "Markup-, prompt-, command-, and URL-looking candidate text remains inert visible data."
-  ],
-  "verification_targets": [
-    "FT-016-AC-006: every representative string produces no active element, link, command, navigation, or action side effect.",
-    "T3 harm proof covers all union variants in isolated Feed state and verifies safe rerun/retry without duplicate authority or unsafe DOM residue."
+  "stop_conditions": [
+   "A registered Feed variant cannot be rendered without interpreting its text as executable markup/action data.",
+   "The PWA needs a direct Agent Chat Bus, Safety, or provider boundary."
   ]
+ },
+ "source_artifacts": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-006",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/operator-pwa.md#plant-feed-surface",
+  ".memory-bank/contracts/plant-feed-http.md#presentation-boundary",
+  ".memory-bank/contracts/ui-feed.md#rules",
+  ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+  ".memory-bank/testing/agent-chat-ui-feed.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md#context-and-literal-text-matrix"
+ ],
+ "constraints": [
+  "Primary owner is Operator PWA; Agent Chat & UI Feed remains the only Feed provider.",
+  "Use Svelte interpolation/text nodes for every untrusted string and exact union discrimination for payloads."
+ ],
+ "invariants": [
+  "UI Feed remains unavailable as agent working context and grants no Safety, Task, governance, or Dataset authority.",
+  "Markup-, prompt-, command-, and URL-looking candidate text remains inert visible data."
+ ],
+ "verification_targets": [
+  "FT-016-AC-006: every representative string produces no active element, link, command, navigation, or action side effect.",
+  "T3 harm proof covers all union variants in isolated Feed state and verifies safe rerun/retry without duplicate authority or unsafe DOM residue."
+ ]
 }

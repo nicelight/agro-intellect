@@ -1,96 +1,112 @@
 {
-  "id": "TASK-083-T3-FT-016-W3",
-  "title": "Compose daily check-in and observation in the PWA",
-  "status": "planned",
-  "wave": "W3",
-  "feature": "FT-016",
-  "reqs": [
-    "REQ-021"
-  ],
-  "depends_on": [
-    "TASK-020-T3-FT-004-W2",
-    "TASK-025-T3-FT-004-W3",
-    "TASK-081-T3-FT-016-W2"
-  ],
-  "touched_files": [
-    "frontend/src/lib/plant-operations/",
-    "frontend/src/routes/plants/[plant_id]/+page.server.ts",
-    "frontend/src/routes/plants/[plant_id]/+page.svelte",
-    "frontend/tests/e2e/daily-check-in.spec.ts"
-  ],
-  "tier": "T3",
-  "gates": [
-    {
-      "name": "daily_check_in_browser",
-      "command": "cd frontend && npm run test:e2e -- tests/e2e/daily-check-in.spec.ts",
-      "required": true
-    },
-    {
-      "name": "frontend_check",
-      "command": "cd frontend && npm run check",
-      "required": true
-    },
-    {
-      "name": "memory_bank_lint",
-      "command": "node scripts/mb-lint.mjs",
-      "required": true
-    },
-    {
-      "name": "diff_check",
-      "command": "git diff --check",
-      "required": true
-    }
-  ],
-  "verify": [
-    "Independent Engineer browser verification covers only the check-in prompt and daily check-in/observation command, including exact fields, authoritative failures, and reread."
-  ],
-  "docs": [
-    ".memory-bank/contracts/operator-pwa.md",
-    ".memory-bank/contracts/plant-operations-http.md",
-    ".memory-bank/testing/plant-operations.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
-  ],
-  "evidence_required": [
-    "FT-016-AC-017 RED: no Engineer browser integration exists for the check-in prompt and daily check-in/observation command; GREEN: exact authorized check-in succeeds while empty/text-length/permission/archive cases remain safe non-mutating backend failures; decisive comparison: request body, response/DOM state, and authoritative reread; artifact: check-in evidence under .tasks/TASK-083-T3-FT-016-W3/."
-  ],
-  "purpose": "Make the accepted daily check-in and observation result usable from the selected-Plant workspace without moving ActorContext, attribution, or audit authority into the PWA.",
-  "success_outcome": "An authorized Engineer can load the prompt and submit the exact daily check-in/observation shape, while validation, permission, and archive failures remain non-mutating and safely presented.",
-  "anti_goals": [
-    "Do not add standalone pH/EC measurement UI, sensor runtime, advice generation, Safety approval, Task creation, or frontend-derived attribution.",
-    "Do not adopt provider-owned persistence, Timeline, Dataset, or freshness proof."
-  ],
-  "runtime_context": {
-    "forbidden_scope": [
-      "backend Plant Operations, ActorContext, Timeline, or Dataset authority",
-      "sensor runtime and automated actuation",
-      "frontend-derived Farm/actor/audit/freshness fields"
-    ],
-    "stop_conditions": [
-      "A required input or result is absent from Plant Operations HTTP and would require a new product contract.",
-      "The PWA would need to infer current authorization, attribution, or freshness."
-    ]
+ "id": "TASK-083-T3-FT-016-W3",
+ "title": "Compose daily check-in and observation in the PWA",
+ "status": "done",
+ "wave": "W3",
+ "feature": "FT-016",
+ "reqs": [
+  "REQ-021"
+ ],
+ "depends_on": [
+  "TASK-020-T3-FT-004-W2",
+  "TASK-025-T3-FT-004-W3",
+  "TASK-081-T3-FT-016-W2"
+ ],
+ "touched_files": [
+  "frontend/src/lib/plant-operations/",
+  "frontend/src/routes/plants/[plant_id]/+page.server.ts",
+  "frontend/src/routes/plants/[plant_id]/+page.svelte",
+  "frontend/tests/e2e/daily-check-in.spec.ts"
+ ],
+ "tier": "T3",
+ "gates": [
+  {
+   "name": "daily_check_in_browser",
+   "command": "cd frontend && npm run test:e2e -- tests/e2e/daily-check-in.spec.ts",
+   "required": true
   },
-  "source_artifacts": [
-    ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-017",
-    ".memory-bank/tasks/plans/IMPL-FT-016.md"
+  {
+   "name": "frontend_check",
+   "command": "cd frontend && npm run check",
+   "required": true
+  },
+  {
+   "name": "memory_bank_lint",
+   "command": "node scripts/mb-lint.mjs",
+   "required": true
+  },
+  {
+   "name": "diff_check",
+   "command": "git diff --check",
+   "required": true
+  }
+ ],
+ "verify": [
+  "Independent Engineer browser verification covers only the check-in prompt and daily check-in/observation command, including exact fields, authoritative failures, and reread.",
+  {
+   "stage": "functional_verification",
+   "verdict": "PASS",
+   "by": "/verify TASK-083-T3-FT-016-W3 (scheduler mode)",
+   "date": "2026-08-18",
+   "summary": "Fresh verifier reruns: daily-check-in e2e 3 passed on isolated PostgreSQL (loopback) — prompt load, exact authorized check-in persists once (row + timeline event), CHECK_IN_EMPTY/OBSERVATION_TEXT_REQUIRED/OBSERVATION_TEXT_FORBIDDEN/OBSERVATION_TEXT_TOO_LONG/AUTH_PLANT_FORBIDDEN (permission+archive) failures non-mutating with zero reread-residue delta; no optimistic state outlives a failed request; browser request bodies carry only registered fields (no farm/actor/audit/freshness attribution); UI Unicode 2000-codepoint cap; no auth material in page HTML; backend origin absent from browser requests. Gates: check 0/0, build exit 0, mb-lint passed (231), diff clean; regression auth-shell+pwa-scaffold 15 passed (SQLite path intact); backend code unmodified; forbidden scope clean. One LOW pre-existing harness note: e2e success writes a test timeline event into shared gitignored data/timeline/timeline.jsonl (no temp timeline root); assertions unaffected (fresh Plant UUIDs, delta-based reread).",
+   "evidence": ".protocols/TASK-083-T3-FT-016-W3/verification.md, .tasks/TASK-083-T3-FT-016-W3/checkin-evidence.json"
+  },
+  {
+   "stage": "semantic_verification",
+   "verdict": "semantic-pass",
+   "by": "/red-verify TASK-083-T3-FT-016-W3 (scheduler mode)",
+   "date": "2026-08-18",
+   "summary": "Adversarial probes: attribution/field/form-param smuggling, archived/denied reachability, cross-account isolation, Unicode/bypass too-long, whitespace-only, prompt-denied degraded path, double-submit, timeline residue — all covered by evidence; zero residue on all failure branches, success persisted once, only registered fields sent, no auth material/origin in browser surfaces; backend untouched; no admitted findings.",
+   "evidence": ".protocols/TASK-083-T3-FT-016-W3/red-verification.md, .tasks/TASK-083-T3-FT-016-W3/TASK-083-T3-FT-016-W3-S-RED-VERIFY-final-report-docs-01.md"
+  }
+ ],
+ "docs": [
+  ".memory-bank/contracts/operator-pwa.md",
+  ".memory-bank/contracts/plant-operations-http.md",
+  ".memory-bank/testing/plant-operations.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "evidence_required": [
+  "FT-016-AC-017 RED: no Engineer browser integration exists for the check-in prompt and daily check-in/observation command; GREEN: exact authorized check-in succeeds while empty/text-length/permission/archive cases remain safe non-mutating backend failures; decisive comparison: request body, response/DOM state, and authoritative reread; artifact: check-in evidence under .tasks/TASK-083-T3-FT-016-W3/."
+ ],
+ "purpose": "Make the accepted daily check-in and observation result usable from the selected-Plant workspace without moving ActorContext, attribution, or audit authority into the PWA.",
+ "success_outcome": "An authorized Engineer can load the prompt and submit the exact daily check-in/observation shape, while validation, permission, and archive failures remain non-mutating and safely presented.",
+ "anti_goals": [
+  "Do not add standalone pH/EC measurement UI, sensor runtime, advice generation, Safety approval, Task creation, or frontend-derived attribution.",
+  "Do not adopt provider-owned persistence, Timeline, Dataset, or freshness proof."
+ ],
+ "runtime_context": {
+  "forbidden_scope": [
+   "backend Plant Operations, ActorContext, Timeline, or Dataset authority",
+   "sensor runtime and automated actuation",
+   "frontend-derived Farm/actor/audit/freshness fields"
   ],
-  "normative_inputs": [
-    ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
-    ".memory-bank/contracts/plant-operations-http.md",
-    ".memory-bank/testing/plant-operations.md",
-    ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
-  ],
-  "constraints": [
-    "Primary owner is Operator PWA; Plant Operations remains the only command/data owner.",
-    "Use exact backend fields and safe errors; no optimistic state may outlive a failed request."
-  ],
-  "invariants": [
-    "Archived or unauthorized Plant operations never mutate state.",
-    "Frontend state never becomes Plant evidence, audit attribution, agent context, or Safety authority."
-  ],
-  "verification_targets": [
-    "FT-016-AC-017: check-in prompt and exact daily check-in/observation success plus validation, permission, and archive failures.",
-    "T3 harm proof uses isolated Plant state, safe rerun identities, and cleanup proving no denied-request residue."
+  "stop_conditions": [
+   "A required input or result is absent from Plant Operations HTTP and would require a new product contract.",
+   "The PWA would need to infer current authorization, attribution, or freshness."
   ]
+ },
+ "source_artifacts": [
+  ".memory-bank/features/FT-016-web-app-pwa-operator-surface-first-demo.md#FT-016-AC-017",
+  ".memory-bank/tasks/plans/IMPL-FT-016.md"
+ ],
+ "normative_inputs": [
+  ".memory-bank/contracts/boundary-map.md#presentation-calls-backend-authority",
+  ".memory-bank/contracts/plant-operations-http.md",
+  ".memory-bank/testing/plant-operations.md",
+  ".memory-bank/testing/operator-pwa-first-demo.md#role-and-provider-surface-matrix"
+ ],
+ "constraints": [
+  "Primary owner is Operator PWA; Plant Operations remains the only command/data owner.",
+  "Use exact backend fields and safe errors; no optimistic state may outlive a failed request."
+ ],
+ "invariants": [
+  "Archived or unauthorized Plant operations never mutate state.",
+  "Frontend state never becomes Plant evidence, audit attribution, agent context, or Safety authority."
+ ],
+ "verification_targets": [
+  "FT-016-AC-017: check-in prompt and exact daily check-in/observation success plus validation, permission, and archive failures.",
+  "T3 harm proof uses isolated Plant state, safe rerun identities, and cleanup proving no denied-request residue."
+ ]
 }

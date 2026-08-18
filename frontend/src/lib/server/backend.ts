@@ -128,6 +128,7 @@ export interface BackendFetchOptions {
 	method?: 'GET' | 'POST';
 	cookie?: string | null;
 	json?: unknown;
+	formData?: FormData;
 }
 
 export async function backendFetch(
@@ -138,8 +139,14 @@ export async function backendFetch(
 	if (options.cookie) {
 		headers.set('cookie', `${SESSION_COOKIE_NAME}=${options.cookie}`);
 	}
+	let requestBody: BodyInit | undefined;
 	if (options.json !== undefined) {
 		headers.set('content-type', 'application/json');
+		requestBody = JSON.stringify(options.json);
+	} else if (options.formData !== undefined) {
+		// The multipart boundary is transport-owned; never set content-type
+		// manually so fetch computes it.
+		requestBody = options.formData;
 	}
 
 	let response: Response;
@@ -147,7 +154,7 @@ export async function backendFetch(
 		response = await fetch(`${backendOrigin()}${path}`, {
 			method: options.method ?? 'GET',
 			headers,
-			body: options.json !== undefined ? JSON.stringify(options.json) : undefined,
+			body: requestBody,
 			redirect: 'manual'
 		});
 	} catch {
