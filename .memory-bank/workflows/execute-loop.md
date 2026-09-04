@@ -7,7 +7,8 @@ status: active
 ## Principle: no task explosion
 - `/prd-to-features` creates L1–L3 only (product/requirements/epics/features) and does not
   write testing documentation.
-- `/write-prd` = PRD-level ambiguity closure. `/feature-doctor` = optional feature-level ambiguity pass.
+- `/write-prd` owns PRD-level decisions. `/feature-doctor` validates and routes
+  reported feature-related semantic findings.
 - Acceptance closure applies when an observable edge/failure outcome or
   non-functional quality can itself block acceptance or realize a significant
   accepted risk: it closes through an accepted REQ/feature AC or a sourced
@@ -98,23 +99,15 @@ status: active
 
 ## Execution-Cohesive Task Boundary
 
-A task is one grounded material unit that can reach an owner-valid useful
-implementation-and-proof completion. That completion need not be
-feature-visible, close a whole AC, or complete the surrounding command,
-invariant, transaction, or end-to-end flow.
+A task owns one material implementation/change result that can complete and be
+proved independently. Proof is completion evidence, not a task boundary; later
+work may compose or depend on the result without completing it.
 
-A unit reaches useful task-level completion when task closure leaves one
-material owner-valid implementation result true and decisively proved. Later
-work may compose or depend on it but is not required to make that result true.
-
-Different exact task-owned claims or canonical semantic owners are split
-signals. Keep independently completable implementation, proof,
-failure/retry/rollout/rollback surfaces in sibling tasks unless accepted
-contracts and, when available, the bounded code/change surface show that they
-cannot complete separately. Shared product outcome, capability owner, tier,
-transaction, AC, flow, or KISS is not merge evidence. Do not split solely by
-files, layers, artifacts, tests, AC count, or modules without distinct semantic
-ownership; task count is not an optimization target.
+Split only independent implementation/change results. Keep tests, probes,
+failure/retry/rollout/rollback checks, and UAT with their implementation task;
+group production-only configuration and checks in at most one final task per
+feature. Files, layers, artifacts, tests, AC count, commands, and modules do not
+create a boundary without a distinct implementation result.
 
 ## Interactive mode (you stay)
 1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts
@@ -125,7 +118,8 @@ ownership; task count is not an optimization target.
 6) `/review-feat-plan` for high-risk, large, or autonomous-boundary work; optional/recommended for small manual flows
 7) `/spec-design` (mandatory; minimal is valid for local/simple feature-set pressure)
 8) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
-9) Pick one top feature; use `/feature-doctor FT-001` only for explicit feature blockers
+9) Pick one top feature; use `/feature-doctor FT-001` for an explicit feature
+   blocker or a semantic finding reported by planning or verification
 10) `/feature-to-tasks FT-001` (resolves feature design concerns through subject-based canonical specs and creates IMPL plan + complete `TASK-NNN-TN-FT-NNN-WN` records for this feature)
 11) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
 feature/task-queue boundary only when T3, autonomous/autopilot handoff, or
@@ -141,9 +135,11 @@ use `/mb-doctor --strict` before autonomous handoff
    - a required higher tier follows
      `tier-policy.md#tier-classification-and-escalation`
 13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
-the planning surface: task cards, specs, dependencies, tier, scope, or
-unresolved plan assumptions. Status/evidence-only closure does not
-trigger another task-plan review.
+verdict-relevant specs/claims, task outcome/slicing/proof obligations,
+dependencies, tier, scope, or unresolved plan assumptions. A current `APPROVE`
+survives status/evidence-only closure and mechanically equivalent
+locator/traceability corrections that preserve the canonical owner and claim
+and pass applicable deterministic checks.
 14) Apply `/spec-redesign` and `#planning-redesign-boundary` to accepted
 backbone/contract changes after initial design.
 

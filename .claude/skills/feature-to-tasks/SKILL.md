@@ -71,7 +71,7 @@ reconcile, not a blocker. Missing clarification metadata alone is allowed.
   satisfied; it does not claim scheduler closure/promotion ownership.
 - Existing queue reconciliation is the default. Preserve ID, feature, wave,
   tier, dependencies, lifecycle status, verification evidence, protocol links,
-  and the semantic basis of `in_progress|done|failed` records. Full re-slicing
+  and the semantic basis of `in_progress|done|done_for_prod|failed` records. Full re-slicing
   requires an explicit operator request.
 - If repair needs identity, tier, wave, dependency, AC, or material-scope
   changes, report `rebuild_required`; do not hide a new task behind repair.
@@ -279,27 +279,27 @@ or sourced exclusion; material NFRs require an accepted REQ/AC result and
 verification method.
 
 Run one slicing pass:
-1. Enumerate recursively the grounded material implementation, proof,
-   failure/retry/rollout/rollback surfaces exposed by exact claims and canonical
-   owners; do not group them into units yet.
-2. For every surface, state separately `implementation result | independent
-   proof`. A surface that reaches the shared completion definition is an
-   unmerged unit; a claim, owner, section, command, transaction, or flow is not
-   an atomic unit by itself.
-3. Merge only when accepted contracts and, when available, bounded code/change
-   evidence show that separate completion is impossible; otherwise keep sibling
-   tasks.
+1. Enumerate grounded material implementation/change outcomes exposed by exact
+   claims and canonical owners.
+2. Keep proof, tests, probes, RED/GREEN, and UAT with their implementation task;
+   they do not create task boundaries.
+3. Group all production-only configuration and checks (ports, SSH, policies,
+   service users, external scans, recovery) into one final, highest-wave
+   `Production acceptance:` task. It depends on all implementation tasks, has no
+   dependents, and may remain `planned` without blocking development.
+   Development-required configuration stays with its implementation task.
+4. Split only independently completable implementation/change outcomes under
+   accepted contracts and available code/change evidence.
 
-Use claims and owners as split signals and assign every eligible exact claim one
-resulting task owner. Existing-queue identity, tier, dependency, AC,
-target/condition, or material-scope changes use `rebuild_required`; unresolved
-authority uses its existing blocker route.
+Assign claims and locators to owning tasks after slicing; they do not determine
+task count. Existing-queue identity, tier, dependency, AC, target/condition, or
+material-scope changes use `rebuild_required`; unresolved authority uses its
+existing blocker route.
 
 In direct interactive use, show the named
-`unmerged units -> justified merges -> final task candidates`: each unmerged
-unit as `implementation result | independent proof`, each merge with the
-source/code fact that makes those completions inseparable, and each final
-candidate outcome.
+`unmerged implementation outcomes -> justified merges -> final task
+candidates`; attach proof to its candidate and justify each merge with the
+source/code fact that makes the outcomes inseparable.
 Counts alone are insufficient. For a new queue, assign no task IDs, tiers,
 waves, concrete `depends_on`, or record fields before explicit boundary
 acceptance. Wait for acceptance or a specific split/consolidation request;
@@ -385,7 +385,7 @@ Before handoff:
   branch remains unresolved.
 
 Do not fabricate or backfill RED/GREEN evidence for historical
-`in_progress|done|failed` records. Preserve their identity, lifecycle, and
+`in_progress|done|done_for_prod|failed` records. Preserve their identity, lifecycle, and
 accumulated evidence under the reconciliation rules above.
 </validation>
 

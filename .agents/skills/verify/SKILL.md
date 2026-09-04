@@ -59,11 +59,16 @@ the rule above.
 <hard_invariants>
 - Before the verdict, load and apply this installed skill's
   `references/finding-adjudication.md` semantic pack.
+- Before the verdict, attempt one fresh best-effort co-review on model
+  `Codex Luna` with reasoning effort `xhigh`, using this installed skill's
+  `agents/review-code.md`; give it the task target, governing evidence, scope,
+  and actual change surface. Do not retry or block verification if it cannot
+  launch. Treat its output only as candidate findings.
 - Route only by `task.tier`; lifecycle/status ownership is canonical in
   `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Verify this task's outcome and mapped AC/REQ subset, not the whole feature or
   acceptance assigned to other tasks.
-- Treat `done` dependency outcomes as prerequisites, not claims to prove.
+- Treat `done` and `done_for_prod` dependency outcomes as prerequisites, not claims to prove.
   Applicable regression checks support the current task outcome and do not
   transfer ownership.
 - Direct task-linked canonical specs outrank secondary task prose for their
@@ -74,7 +79,7 @@ the rule above.
   they are not proof. `/exe` local PASS is input, not automatic PASS.
 - Executor claim-path evidence linked by the current attempt is supporting, not
   an independent observation or replacement for this command's functional
-  proof. Never demand fabricated RED from historical `done|failed` tasks.
+  proof. Never demand fabricated RED from historical `done|done_for_prod|failed` tasks.
 - An execute receipt is self-attested supporting evidence. It does not prove
   that its declared snapshot preceded the command or that the reported result
   occurred, and it is never an independent observation by `/verify`.
@@ -93,24 +98,15 @@ the rule above.
 </hard_invariants>
 
 <operator_decisions>
-If a credible verdict depends on an unresolved product behavior,
-architecture/contract/state/data/storage/security/compatibility interpretation,
-task boundary, tier, dependency, or verification strategy,
-do not choose one.
-
-- Record `VERDICT: NEEDS-CLARIFICATION`, the exact question, affected proof,
-  and current evidence.
-- Interactive flow asks the operator; a recommendation/default/silence is not
-  acceptance. The owning skill durably updates the canonical artifact and the
-  task is revalidated/re-executed before verification resumes.
-- Route task scope/tier/feature-level spec repair to
-  `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-redesign`, product
-  ambiguity to `/feature-doctor FT-<NNN>`, and missing `/exe` evidence
-  to `/exe <TASK_ID>`.
-- Unattended flow returns the blocker and exact route to the scheduler for
-  `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS`.
-
-No question is needed when authoritative evidence already settles the branch.
+Do not validate a feature-related semantic finding from an apparently
+unambiguous downstream specification alone. When the verdict depends on an
+unresolved interpretation, return `NEEDS-CLARIFICATION` with the exact question,
+affected proof, and evidence. Route it, and any observed semantic violation
+whose repair may change feature planning or canonical design, to
+`/feature-doctor FT-<NNN>` while preserving the evidence-required functional
+verdict. Missing `/exe` evidence and proved implementation-only failures with
+fixed semantics retain their existing owners. Resume after the owning repair;
+unattended flow returns the doctor's exact halt route to the scheduler.
 </operator_decisions>
 
 <agent_discretion>
@@ -296,15 +292,15 @@ on self-attested execute evidence, and every reused candidate is
 current-attempt, state-matched, bounded-input, and auditably reported.
 
 Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
-tier and trigger, and routes controlled rebuild/split through
-`/feature-to-tasks FT-<NNN>`, then review/doctor/re-execution of the replacement ID.
+tier and trigger, and routes `/feature-doctor FT-<NNN>` before the owning
+controlled rebuild/split, review, and re-execution of the replacement ID.
 </validation>
 
 <handoff_contract>
 - Scheduler mode -> return verdict/evidence and recommended scheduler action;
   leave lifecycle unchanged.
-- Manual T0/T1 PASS -> may set `done` only under the explicit-owner conditions
-  in tier policy and after evidence is in task `verify`.
+- Manual T0/T1 PASS -> may set `done` or `done_for_prod` under the explicit-owner
+  conditions in tier policy and after evidence is in task `verify`.
 - T2 PASS -> closure-eligible for the explicit owner/scheduler; per-task
   red-verify is optional, while T2 feature completion still requires
   `/red-verify --feature FT-<ID>`.

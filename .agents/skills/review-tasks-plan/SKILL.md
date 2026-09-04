@@ -32,7 +32,7 @@ If the target cannot be resolved, stop and ask for `FT-<NNN>`.
 `FT-000` is not a review target, although its final gate and dependency effect
 must be reviewed when they constrain product tasks.
 
-Read current:
+A full review reads current:
 - Constitution, requirements/RTM, spec backbone/index, task schema, tier policy,
   task index, and Foundation decision when present;
 - the acceptance-closure and task-boundary definitions in
@@ -48,6 +48,12 @@ Read current:
 Require Global Backbone `Planning Revision` to be a positive integer. A missing,
 zero, or invalid revision is a blocking design-readiness gap owned by
 `/spec-design`.
+
+An existing report may bound a rerun only when its Planning Revision matches
+and the exact repair delta is established from the caller handoff, an isolated
+diff, or direct comparison of cited evidence. Otherwise perform a full review.
+On a bounded rerun, recheck the delta and every coverage area it can affect;
+unchanged cited evidence may cover the rest of the feature.
 
 `PLANNING_RECONCILIATION_REQUIRED` in the target feature blocks review and
 routes `/feature-to-tasks FT-<NNN>`.
@@ -69,34 +75,35 @@ routes `/feature-to-tasks FT-<NNN>`.
   create a simulation artifact, field, report, status, or replacement queue.
 - Rubrics below are coverage criteria, not a mandatory reasoning order or an
   exhaustive limit on reviewer probes.
-- Obtain one bounded architecture review per reviewed feature from a fresh
-  Reviewer using the installed `/architecture-review` skill. If fresh
-  delegation is unavailable or fails, perform the same review locally.
+- A previous report is non-authoritative cache. Retain evidence only when its
+  cited coverage and inputs are unchanged; the new verdict covers the current
+  whole feature.
+- Establish two co-review focuses on a full review. On a bounded rerun, retain
+  each focus only when its target, scope, and governing evidence are unchanged;
+  refresh every other focus through the semantic pack.
+- Run `/architecture-review` only when current accepted evidence leaves a
+  material ownership, dependency, or boundary question that could change the
+  verdict. If delegation fails, perform the same architecture review locally.
 </hard_invariants>
 
 <operator_decisions>
-The reviewer never chooses between ambiguous product, design, canonical-path,
-task-boundary, tier, dependency, or verification interpretations.
+The reviewer never chooses between competing product, design, canonical-path,
+task-boundary, tier, dependency, or verification interpretations. Route every
+unresolved feature-related semantic finding to `/feature-doctor FT-<NNN>`, even
+when one inspected specification appears to make the defect unambiguous; the
+doctor validates that finding's governing basis and repair owner.
 
-If such a branch could change the verdict:
-- return `REJECT` with the exact operator question, affected tasks/specs, and
-  repair owner;
-- route feature-level product/design/tasking repair to
-  `/feature-to-tasks FT-<NNN>` or `/feature-doctor FT-<NNN>`;
-- route changes to an accepted shared/global design or competing canonical
-  identity to `/spec-redesign`;
-- do not treat a recommendation as an accepted answer.
-
-The accepted answer is applied by the owning skill to the existing canonical
-artifact and re-reviewed. No question is needed when authoritative evidence
-already resolves the branch.
+Direct repair routing is limited to a mechanically invalid schema/index or an
+absent required artifact whose contents are not disputed. Return `REJECT` with
+exact evidence, affected tasks/specs, the operator question when known, and the
+applicable doctor or direct repair owner. A recommendation is not an accepted
+answer.
 </operator_decisions>
 
 <agent_discretion>
 The reviewer chooses reading order, search tools, working notes, additional
-adversarial probes, verification depth, and when enough context exists to
-launch the architecture Reviewer. The four coverage groups may be explored in
-any useful order, but all must be addressed before the verdict.
+adversarial probes, and verification depth. The four coverage groups may be
+explored in any useful order, but all must be addressed before the verdict.
 </agent_discretion>
 
 <required_outputs>
@@ -111,15 +118,21 @@ Every feature report records the exact standalone marker
 Revision, for both `APPROVE` and `REJECT`. `APPROVE` is valid only while this
 value equals the current positive Planning Revision.
 
-When delegation is available, give one fresh `Reviewer` the target feature ID,
-product and relevant epic paths, implementation plan, task records, and
-discovered direct architecture/spec routes. Require it to read
+On a bounded rerun, replace the report; record the checked delta, finding
+dispositions, retained evidence, and each co-review focus as retained or
+refreshed. A full review records both selected focuses and their evidence.
+Append no review history.
+
+When architecture review is not required, record the exact standalone marker
+`ARCHITECTURE_REVIEW: not_required`. Retained prior architecture evidence is
+not a current architecture verdict.
+
+When required, give one fresh `Reviewer` the target feature ID, product and
+relevant epic paths, implementation plan, task records, and discovered direct
+architecture/spec routes. Require it to read
 `.memory-bank/roles/reviewer.md` and the installed `/architecture-review` skill,
-then return its compact Reviewer report. If delegation is unavailable or fails,
-perform the same review locally. Include the resulting verdict and evidence in
-the main report; do not create a separate architecture-review artifact. Avoid
-rereading full architecture sources unless needed to resolve a gap, conflict,
-or another coverage group.
+then include its compact verdict and evidence in the main report. Create no
+separate architecture-review artifact.
 
 Cover:
 
@@ -134,22 +147,23 @@ Cover:
      dependencies, change surface, gates, and verification targets;
    - independently derive eligible exact claims and canonical semantic owners
      from accepted sources; planner preview and merge rationale are not review
-     proof. Try to partition each task into valid sibling completion units.
-     Reject when a material subset can be implemented and proved without the
-     rest or has its own grounded
-     failure/retry/rollout/rollback boundary. Complete AC coverage, shared
-     outcome, owner, tier, one end-to-end path, or a complete handoff does not
-     prove execution cohesion. Stop after the boundary verdict; do not repeat
-     full implementation planning.
+     proof. Reject proof-only sibling tasks; partition only independent
+     implementation/change outcomes. Allow at most one final `Production
+     acceptance:` task as defined by the execution boundary. Reject only when a
+     material implementation subset can complete separately under accepted
+     contracts or has its own grounded implementation boundary.
+     Complete AC coverage, shared outcome, owner, tier, one end-to-end path, or
+     a complete handoff does not prove execution cohesion. Stop after the
+     boundary verdict; do not repeat full implementation planning.
 3. Design readiness
    - clarification not explicitly pending/blocked; truthful feature design
      status; no applicable `needed_before_tasks|blocked` row; one applicable
      canonical path per concrete concern; sufficient shape/rules/errors/
      verification block; relevant AD/boundary/contract links; no hub-only T2/T3
      design; persistence proof where applicable; no source contradictions.
-   - integrate the architecture verdict and findings; reject a blocking accepted-boundary,
-     ownership, dependency, invariant, or proof-path finding, and resolve any
-     gap that can change the verdict.
+   - integrate any architecture-review verdict and findings; reject a blocking
+     accepted-boundary, ownership, dependency, invariant, or proof-path
+     finding, and resolve any gap that can change the verdict.
    - confirm registered endpoints, exact contracts, consumer impact, and
      compatibility/rollout basis support the plan. Reject copied topology or an
      interaction execution would have to legalize.
@@ -162,10 +176,10 @@ Cover:
      and ownership.
 4. Execution readiness
    - correct tier; every task status is legal and consistent with its lifecycle
-     context and owner; `ready` is valid iff every dependency is `done` and no
+     context and owner; `ready` is valid iff every dependency is `done|done_for_prod` and no
      blocker, review reject, or unresolved semantic gap remains;
    - `planned` remains valid for unmet dependencies or future waves;
-   - existing `in_progress|blocked|done|failed` records are reviewed for evidence and
+   - existing `in_progress|blocked|done|done_for_prod|failed` records are reviewed for evidence and
      ownership consistency, never normalized or mutated by this skill;
      Foundation final gate `done` and linked when required; complete T2/T3
      single-card handoff; hard runtime scope respected; no slice code root was
@@ -198,7 +212,7 @@ Cover:
      path directly discoverable; do not require slices from an accepted
      architecture that uses another primary change unit.
 
-Do not reject historical `in_progress|done|failed` records solely because they
+Do not reject historical `in_progress|done|done_for_prod|failed` records solely because they
 predate this prospective RED/GREEN planning contract, and never request
 fabricated backfill. Apply the material-NFR proof rule prospectively under the
 same boundary.
@@ -208,10 +222,7 @@ Verdicts:
 - `REJECT`: at least one blocking gap exists. Name the failed coverage group,
   exact evidence, question when applicable, and repair owner.
 
-For acceptance closure, name the uncovered outcome and route PRD-owned
-acceptance to `/write-prd`, decomposition to `/prd-to-features`, feature-local
-clarification to `/feature-doctor FT-<NNN>`, accepted shared design change to
-`/spec-redesign`, or task proof to `/feature-to-tasks FT-<NNN>`.
+For acceptance closure, name the uncovered outcome and use the routing above.
 
 For `/autopilot` or autonomous scheduler readiness, every task-linked product
 feature needs a latest independent `APPROVE`; this is necessary but does not
@@ -219,10 +230,11 @@ replace downstream `/mb-doctor --strict`.
 </required_outputs>
 
 <validation>
-Before publishing the verdict, complete every coverage group and report every
-material gap found in one `REJECT`; do not stop at the first gap. Verify that
-every claim cites an inspected task, plan, spec, requirement, dependency, or
-doctor finding; the report uses only `APPROVE|REJECT`; its reviewed revision
+Before publishing the verdict, establish every coverage group through current
+inspection or valid retained evidence. For each finding, inspect directly
+coupled fields and artifacts; report all material gaps in one `REJECT`. Verify
+that every claim cites an inspected task, plan, spec, requirement, dependency,
+or doctor finding; the report uses only `APPROVE|REJECT`; its reviewed revision
 marker exactly matches the current positive Planning Revision; and no reviewed
 durable state was mutated.
 </validation>

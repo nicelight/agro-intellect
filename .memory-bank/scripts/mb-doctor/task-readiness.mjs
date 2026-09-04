@@ -9,13 +9,15 @@ import { isPlainObject, nonEmptyString, normalizeRel } from './readers.mjs';
 // Brownfield tech-specs remain readable; semantic hub-only rejection belongs to review-tasks-plan.
 const TASK_INDEX_REL = '.memory-bank/tasks/index.json';
 const TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$/;
-const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
+const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'done_for_prod', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
-const TERMINAL_STATUSES = new Set(['done', 'failed']);
+const DONE_STATUSES = new Set(['done', 'done_for_prod']);
+const TERMINAL_STATUSES = new Set(['done', 'done_for_prod', 'failed']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const SDD_SPEC_REQUIRED_TIERS = new Set(['T2', 'T3']);
+const PRODUCTION_ACCEPTANCE_TITLE_RE = /^\s*Production acceptance\s*:/i;
 const REQ_ID_RE = /^REQ-(?:[A-Z]+-)?[0-9]{3,}$/;
 const FT_ID_RE = /^FT-[0-9]{3,}$/;
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
@@ -201,7 +203,7 @@ export function createTaskReadinessChecks(context) {
   
     const notDone = task.depends_on
       .map((depId) => records.get(depId))
-      .filter((dep) => dep && dep.task.status !== 'done');
+      .filter((dep) => dep && !DONE_STATUSES.has(dep.task.status));
   
     if (!notDone.length) return;
   
@@ -493,13 +495,14 @@ export function createTaskReadinessChecks(context) {
       }
       const group = groups.get(featureId);
       group.records.push(record);
-      if (record.task.tier === 'T2') group.hasT2 = true;
+      if (record.task.tier === 'T2' && !isProductionAcceptanceTask(record)) group.hasT2 = true;
     }
   
     const severity = options.strict ? 'error' : 'warning';
     for (const group of groups.values()) {
       if (!group.hasT2) continue;
-      if (!group.records.every((record) => record.task.status === 'done')) continue;
+      const implementationRecords = group.records.filter((record) => !isProductionAcceptanceTask(record));
+      if (!implementationRecords.every((record) => DONE_STATUSES.has(record.task.status))) continue;
   
       const passFiles = featureSemanticPassFiles(group.featureId);
       if (passFiles.length) continue;
@@ -512,7 +515,7 @@ export function createTaskReadinessChecks(context) {
           path: '.memory-bank/features/',
           details: {
             feature: group.featureId,
-            tasks: group.records.map((record) => ({ id: record.id, path: record.rel, tier: record.task.tier })),
+            tasks: implementationRecords.map((record) => ({ id: record.id, path: record.rel, tier: record.task.tier })),
           },
           suggested_fix: `Run /red-verify --feature ${group.featureId} and record SEMANTIC_VERDICT: semantic-pass in the matching .memory-bank/features/${group.featureId}-*.md file.`,
         }
@@ -527,6 +530,7 @@ export function createTaskReadinessChecks(context) {
     for (const failed of failedRecords) {
       const notBlocked = records.filter((record) => {
         if (record.id === failed.id || !Array.isArray(record.task.depends_on)) return false;
+        if (isProductionAcceptanceTask(record)) return false;
         return record.task.depends_on.includes(failed.id) && record.task.status !== 'blocked';
       });
       if (!notBlocked.length) continue;
@@ -544,16 +548,18 @@ export function createTaskReadinessChecks(context) {
   
   function checkQueueState(records, recordsById, invalidEntries) {
     if (invalidEntries.length) return;
-  
-    const inProgress = records.filter((record) => record.task.status === 'in_progress');
-    const executableReady = records.filter((record) => {
+
+    const developmentRecords = records.filter((record) => !isProductionAcceptanceTask(record));
+
+    const inProgress = developmentRecords.filter((record) => record.task.status === 'in_progress');
+    const executableReady = developmentRecords.filter((record) => {
       if (record.task.status !== 'ready' || !Array.isArray(record.task.depends_on)) return false;
-      return record.task.depends_on.every((depId) => recordsById.get(depId)?.task.status === 'done');
+      return record.task.depends_on.every((depId) => DONE_STATUSES.has(recordsById.get(depId)?.task.status));
     });
   
-    const unfinished = records.filter((record) => !TERMINAL_STATUSES.has(record.task.status));
-    const readyCandidates = records.filter((record) => isPlannedReadyCandidate(record, recordsById));
-    const blockedByUpstream = records.filter((record) => hasBlockedOrFailedUpstream(record, recordsById));
+    const unfinished = developmentRecords.filter((record) => !TERMINAL_STATUSES.has(record.task.status));
+    const readyCandidates = developmentRecords.filter((record) => isPlannedReadyCandidate(record, recordsById));
+    const blockedByUpstream = developmentRecords.filter((record) => hasBlockedOrFailedUpstream(record, recordsById));
   
     for (const record of readyCandidates) {
       addFinding(
@@ -601,9 +607,15 @@ export function createTaskReadinessChecks(context) {
   
   function isPlannedReadyCandidate(record, recordsById) {
     if (record.task.status !== 'planned' || !Array.isArray(record.task.depends_on)) return false;
-    return record.task.depends_on.every((depId) => recordsById.get(depId)?.task.status === 'done');
+    return record.task.depends_on.every((depId) => DONE_STATUSES.has(recordsById.get(depId)?.task.status));
   }
-  
+
+  function isProductionAcceptanceTask(record) {
+    return PRODUCTION_ACCEPTANCE_TITLE_RE.test(
+      typeof record?.task?.title === 'string' ? record.task.title : ''
+    );
+  }
+
   function hasBlockedOrFailedUpstream(record, recordsById) {
     if (!Array.isArray(record.task.depends_on)) return false;
     return record.task.depends_on.some((depId) => {
@@ -665,8 +677,9 @@ export function createTaskReadinessChecks(context) {
     const missing = [];
   
     for (const candidate of candidates) {
-      if (!isAllowedSddSpecPath(candidate)) continue;
-      if (isFile(absolute(candidate))) {
+      const filePath = candidate.split('#', 1)[0];
+      if (!isAllowedSddSpecPath(filePath)) continue;
+      if (isFile(absolute(filePath))) {
         existing.push(candidate);
       } else {
         missing.push(candidate);
@@ -897,6 +910,7 @@ export function createTaskReadinessChecks(context) {
       in_progress: 0,
       blocked: 0,
       done: 0,
+      done_for_prod: 0,
       failed: 0,
       invalid: invalidEntries.length,
     };

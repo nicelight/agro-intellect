@@ -45,7 +45,7 @@ Require:
   `APPROVE` has exact `REVIEWED_PLANNING_REVISION: <N>` equal to the current
   Planning Revision;
 - no unresolved blocking operator decision;
-- invoke `node scripts/mb-doctor.mjs --strict` before the run, including resume,
+- invoke `node .memory-bank/scripts/mb-doctor.mjs --strict` before the run, including resume,
   and before every later task selection required below. A new run requires
   `PASS`. A resumed run also requires `PASS` unless its only failing findings
   are the durable consequences of the exact unfinished scheduler checkpoint
@@ -59,6 +59,13 @@ FT-000 W0 rules, and authoritative `task.tier`. Every T2/T3 task must have the
 complete single-card handoff: purpose/outcome, direct applicable canonical SDD
 links, expected advisory change surface and/or deliberate hard write boundary,
 verification path, concrete REQ links, and valid dependencies.
+
+Tasks whose title starts with `Production acceptance:` are production-only
+acceptance work. During development, exclude them from promotion, selection,
+unfinished/deadlock checks, and success gates. Leave them `planned` for explicit
+`/exe <TASK_ID>` after production deployment.
+
+For mixed work, write `done_for_prod` after development gates pass when only production acceptance remains; historical `verify` entries do not create queue work.
 
 If no product record exists, return
 `HALT_QUALITY_GATES: no schema-backed product task records found in .memory-bank/tasks/index.json`
@@ -79,7 +86,7 @@ ineligible features one at a time through the Fresh Feature Tasking Boundary.
 
 <hard_invariants>
 - `/autopilot` owns only product task promotion and selection, final
-  `done|failed|blocked` decisions, dependent block/unblock, failure budget, and
+  `done|done_for_prod|failed|blocked` decisions, dependent block/unblock, failure budget, and
   terminal queue result. Installed `/exe` owns `ready -> in_progress` for the
   task selected by the scheduler.
 - It never executes or mutates an FT-000 record.
@@ -117,15 +124,13 @@ ineligible features one at a time through the Fresh Feature Tasking Boundary.
 
 <operator_decisions>
 The scheduler may apply only decisions already fixed in authoritative artifacts.
-If a child or queue transition exposes a new material product/design/contract/
-state/data/storage/security/compatibility/task-boundary/tier/dependency/
-verification/Foundation branch:
-- do not choose a recommendation/default or infer consent;
-- record the exact question, affected tasks/state, evidence, and interactive
-  repair owner in the existing run status/decision log;
-- leave affected work non-closed and do not promote dependents;
-- stop with `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` and name
-  the exact resume skill.
+Apply autonomy policy to an unresolved product-feature semantic finding: invoke
+`/feature-doctor FT-<NNN>` under the current checkpoint stage and follow or
+persist its handoff. Leave affected work non-closed and do not promote
+dependents.
+
+For another operator decision, record its question, affected state, evidence,
+and owner; stop with the applicable halt and exact owning resume skill.
 
 An ordinary implementation tactic within the approved task/spec boundary is not
 an operator decision.
@@ -267,7 +272,7 @@ selection loop:
 1. checkpoint `current task: none`, `current stage: selection`, and the next
    promotion/selection action;
 2. run a separate product promotion pass, writing `planned -> ready` only for
-   eligible features when every dependency is `done` and no blocking review,
+   eligible features when every dependency is `done|done_for_prod` and no blocking review,
    bug, decision, or unresolved semantic concern remains; write dependent
    blocking decisions only to affected records;
 3. select one eligible product `ready` task by earliest wave and stable index
@@ -296,9 +301,12 @@ At each wave boundary:
 3. run `/mb-sync` once for authoritative already-written state, updating the
    checkpoint only after its durable handoff;
 4. run lint then the strict doctor;
-5. rerun `/review-tasks-plan FT-<NNN>` only for product features whose task
-   cards, specs, dependencies, tier, scope, or plan assumptions changed; pure
-   status/evidence closure does not trigger it;
+5. rerun `/review-tasks-plan FT-<NNN>` only for product features whose
+   verdict-relevant specs/claims, task outcome/slicing/proof obligations,
+   dependencies, tier, scope, or plan assumptions changed; a current `APPROVE`
+   survives status/evidence-only closure and mechanically equivalent
+   locator/traceability corrections that preserve the canonical owner and claim
+   and pass applicable deterministic checks;
    if Global Backbone Planning Revision changed, stop the boundary and use the
    global-revision stale-planning route from the input contract instead;
 6. only after all triggered gates pass, checkpoint the existing
@@ -324,7 +332,7 @@ product `ready` task remains:
   resume route as required by autonomy policy;
 - ineligible task-linked features remain -> `HALT_QUALITY_GATES` with the first
   feature's `/feature-to-tasks FT-<NNN>` or `/review-tasks-plan FT-<NNN>` route;
-- all product work closed -> run final review coverage and success checks;
+- all development work closed -> run final review coverage and success checks;
 - only when every unfinished product record is non-runnable solely because its
   task dependencies are unfinished -> record exact dependency evidence and
   `HALT_DEPENDENCY_DEADLOCK`;

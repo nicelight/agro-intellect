@@ -16,7 +16,8 @@ Planning/design priming:
 10. If ROLE: Explorer, read `.memory-bank/roles/explorer.md`.
 11. If ROLE: Implementer, read `.memory-bank/roles/implementer.md`.
 12. If ROLE: Reviewer, read `.memory-bank/roles/reviewer.md`.
-13. Read task/feature-specific docs
+13. If ROLE: JUDGE, read `.memory-bank/roles/judge.md`.
+14. Read task/feature-specific docs
 
 Manual execution priming is owned by the installed `/exe` skill. Invoke it with
 one concrete `TASK-NNN-TN-FT-NNN-WN`; its input contract selects the required
@@ -38,6 +39,7 @@ Full role contracts live in:
 - `.memory-bank/roles/explorer.md`
 - `.memory-bank/roles/implementer.md`
 - `.memory-bank/roles/reviewer.md`
+- `.memory-bank/roles/judge.md`
 
 Delegated Explorer, Implementer, and Reviewer analyze the consequences of their
 work and report potential or evident problems.
@@ -115,6 +117,7 @@ when they are satisfied.
 ## Communication
 
 - Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.
+- Write every user-facing report in plain language with enough context to explain what was done, what happened, why, and what, if anything, the user should do next. Do not substitute internal terminology or status labels for an explanation. Keep the report concise unless the user asks for details.
 
 ## Preferred context routing
 - Start with `.memory-bank/architecture/*` and `.memory-bank/guides/*` for concept priming.
@@ -143,9 +146,10 @@ After finishing a meaningful unit of work:
 
 ## Log papercuts
 
-When minor workflow friction occurs—a failed tool call, confusing setup, flaky
-command, stale cache, misleading error, missing helper, or non-obvious
-gotcha—record it.
+Record minor, evidence-backed problems in the project's code, architecture, or
+structure encountered during current work.
+If current work proves a project-wide problem that makes continuation unsafe or
+invalid, record it in ALL CAPS and stop.
 
 Use one Markdown file per agent session. Create it only when the first papercut
 occurs, at `PAPERCUTS/<model> __ MM-DD-YYYY HH.MM.md`, using the current model
@@ -153,11 +157,6 @@ identifier and the local time of that first papercut. Replace filename-unsafe
 characters in the model identifier with `-`. Reuse that file for every later
 papercut in the same session; do not create a file for each note and do not add
 timestamps inside the file.
-
-Log papercuts proactively when they occur, but do not interrupt the main task.
-Do not record a papercut already present in `PAPERCUTS/`. Papercuts are minor
-workflow friction, distinct from completed-work logs, real bugs, tracked issues,
-and technical debt.
 
 ## Where skills live (don’t confuse)
 - Codex CLI reads project skills from `.agents/skills/<name>/SKILL.md` (not from `.codex/`).

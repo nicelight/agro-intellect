@@ -77,8 +77,10 @@ status: active
   task protocol, handoff, and verdict evidence before acting. Never trust the
   checkpoint alone or use it to override authoritative lifecycle state.
 - Queue summaries in run status are derived snapshots or links. The lifecycle
-  remains `planned|ready|in_progress|blocked|done|failed` only in indexed task
-  records.
+  remains `planned|ready|in_progress|blocked|done|done_for_prod|failed` only in
+  indexed task records.
+
+`done_for_prod` closes dependencies and is terminal for development scheduling once development gates pass and only production acceptance remains; it is not a production verdict.
 
 ## Hard-stop categories
 - security / compliance ambiguity
@@ -177,10 +179,11 @@ disposition.
 - After the third unsuccessful attempt no fourth is permitted. A proven
   upstream or authority gap remains `blocked`; every other task-local or
   inconclusive disposition becomes `failed`.
-- For `/autopilot` product tasks, route task slicing, tier, or direct task spec
-  to `/feature-to-tasks FT-<NNN>`; product ambiguity to
-  `/feature-doctor FT-<NNN>`; and shared architecture, write authority, source
-  of truth, public boundary, or dependency direction to `/spec-redesign`.
+- For `/autopilot` product tasks, route every unresolved feature-related
+  semantic finding through `/feature-doctor FT-<NNN>` before repair. Follow its
+  authority-set repair owner or persist its decision handoff and halt. Missing
+  evidence and proved implementation-only failures with fixed semantics retain
+  their direct owners.
 - A failed disposition writes `in_progress -> failed` with functional/semantic
   and diagnostic evidence. Before the next strict doctor, create a
   `.memory-bank/bugs/` note or route a normal indexed follow-up through its
